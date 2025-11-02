@@ -1,0 +1,44 @@
+{
+  "resonance": {
+    "title": "Résonance",
+    "screens": {
+      "sim": "Simulation"
+    },
+    "controls": {
+      "springConstant": "Constante du Ressort (k)",
+      "dampingCoefficient": "Coefficient d'Amortissement (b)",
+      "drivingFrequency": "Fréquence de Conduite (ω)",
+      "drivingAmplitude": "Amplitude de Conduite",
+      "mass": "Masse (m)",
+      "reset": "Tout Réinitialiser"
+    },
+    "preferences": {
+      "title": "Préférences",
+      "visual": {
+        "title": "Visuel",
+        "colorProfile": "Profil de Couleur",
+        "colorProfileDefault": "Par Défaut",
+        "colorProfileProjector": "Projecteur",
+        "colorProfileColorblind": "Adapté aux Daltoniens",
+        "contrast": "Contraste"
+      },
+      "simulation": {
+        "title": "Simulation",
+        "displayOptions": "Options d'Affichage",
+        "showEnergy": "Afficher l'Énergie",
+        "showVectors": "Afficher les Vecteurs",
+        "showPhase": "Afficher la Phase",
+        "units": "Unités",
+        "unitsMetric": "Métrique",
+        "unitsImperial": "Impérial"
+      },
+      "localization": {
+        "title": "Localisation",
+        "language": "Langue"
+      }
+    },
+    "content": {
+      "sampleText": "Le contenu va ici"
+    }
+  }
+}
