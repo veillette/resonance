@@ -1,10 +1,24 @@
+import { ResonanceModel } from "../../common/model/index.js";
+import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
+
+/**
+ * Main model for the Resonance simulation
+ * Wraps the ResonanceModel and provides the interface expected by the screen
+ */
 export class SimModel {
-  public reset(): void {
-    // Called when the user presses the reset-all button
+  public readonly resonanceModel: ResonanceModel;
+
+  public constructor(preferencesModel: ResonancePreferencesModel) {
+    this.resonanceModel = new ResonanceModel(preferencesModel);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public step(_dt: number): void {
+  public reset(): void {
+    // Called when the user presses the reset-all button
+    this.resonanceModel.reset();
+  }
+
+  public step(dt: number): void {
     // Called every frame, with the time since the last frame in seconds
+    this.resonanceModel.step(dt);
   }
 }
