@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "npx vite",
-    "build": "npx tsc && npx vite build"
+    "build": "npx tsc && npx vite build",
+    "check": "npx tsc --noEmit",
+    "lint": "npx eslint ."
   },
   "dependencies": {
     "scenerystack": "^3.0.0"
