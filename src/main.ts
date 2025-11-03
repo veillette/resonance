@@ -11,7 +11,6 @@ import { ResonanceStrings } from "./strings/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
 import { setColorProfile } from "./common/ResonanceColors.js";
 import type { ColorProfile } from "./common/ResonanceColors.js";
-import { Property } from "scenerystack/axon";
 
 onReadyToLaunch(() => {
   // Create custom preferences model for simulation-specific settings
