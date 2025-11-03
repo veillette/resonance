@@ -30,7 +30,17 @@
         "showPhase": "Show Phase",
         "units": "Units",
         "unitsMetric": "Metric",
-        "unitsImperial": "Imperial"
+        "unitsImperial": "Imperial",
+        "solverMethod": "Solver Method",
+        "solverDescription": "Choose the numerical method used to solve the differential equations. Different methods offer trade-offs between accuracy and performance.",
+        "solverRK4": "Runge-Kutta 4th Order (RK4)",
+        "solverRK4Description": "Classic fixed-step method with good accuracy and stability. Best for most simulations.",
+        "solverAdaptiveRK45": "Adaptive RK45",
+        "solverAdaptiveRK45Description": "Variable step size method that automatically adjusts precision. Best for high accuracy requirements.",
+        "solverAdaptiveEuler": "Adaptive Euler",
+        "solverAdaptiveEulerDescription": "Simple adaptive method with variable step size. Good for testing and debugging.",
+        "solverModifiedMidpoint": "Modified Midpoint",
+        "solverModifiedMidpointDescription": "Fixed-step method with improved stability. Good alternative to RK4."
       },
       "localization": {
         "title": "Localization",
