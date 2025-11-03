@@ -35,6 +35,7 @@ export function getLocale(): string {
 function createStringProperty(path: string): Property<string> {
   const parts = path.split(".");
   const getValue = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let value: any = stringsByLocale[currentLocale];
     for (const part of parts) {
       value = value[part];
