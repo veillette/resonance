@@ -7,7 +7,11 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "strict": true
+    "strict": true,
+    "paths": {
+      "scenerystack": ["./node_modules/scenerystack/dist/prod/index.d.ts"],
+      "scenerystack/*": ["./node_modules/scenerystack/dist/prod/*.d.ts"]
+    }
   },
   "include": ["src"]
 }
