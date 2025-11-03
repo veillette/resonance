@@ -4,6 +4,8 @@ import "./brand.js";
 
 import { onReadyToLaunch, Sim, PreferencesModel } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
+import { VBox } from "scenerystack/scenery";
+import { Property } from "scenerystack/axon";
 import { SimScreen } from "./screen-name/SimScreen.js";
 import { ResonanceStrings } from "./strings/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
