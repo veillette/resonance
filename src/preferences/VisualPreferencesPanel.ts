@@ -3,9 +3,8 @@
  * Allows users to configure visual settings including color profiles
  */
 
-import { VBox, Text, HBox } from "scenerystack/scenery";
+import { VBox, Text } from "scenerystack/scenery";
 import { AquaRadioButtonGroup } from "scenerystack/sun";
-import { Panel } from "scenerystack/sun";
 import { ResonancePreferencesModel } from "./ResonancePreferencesModel.js";
 import { ResonanceStrings } from "../strings/ResonanceStrings.js";
 
