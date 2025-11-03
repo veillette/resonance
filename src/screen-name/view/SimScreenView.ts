@@ -328,7 +328,7 @@ export class SimScreenView extends ScreenView {
     });
 
     // Reset All Button
-    const resetAllButton = new RectangularPushButton({
+    const controlPanelResetButton = new RectangularPushButton({
       content: new Text('Reset All', { font: 'bold 16px sans-serif', fill: 'white' }),
       baseColor: '#CC0000',
       listener: () => {
@@ -353,7 +353,7 @@ export class SimScreenView extends ScreenView {
         new Line(0, 0, 250, 0, { stroke: ResonanceColors.text, lineWidth: 1 }),
         gravityBox,
         rulerCheckbox,
-        resetAllButton
+        controlPanelResetButton
       ],
       spacing: 15,
       align: 'left'
