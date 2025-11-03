@@ -3,7 +3,7 @@
  * Manages all user preferences including visual, simulation, and localization settings
  */
 
-import { Property, StringProperty, BooleanProperty, NumberProperty } from "scenerystack/axon";
+import { Property, BooleanProperty, NumberProperty } from "scenerystack/axon";
 import { SolverType } from "../common/model/SolverType.js";
 
 export type ColorProfileType = "default" | "projector" | "colorblind";

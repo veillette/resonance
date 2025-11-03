@@ -35,6 +35,7 @@ export abstract class ODESolver {
    * Set the fixed timestep for the solver (if applicable)
    * @param fixedTimestep - the fixed timestep in seconds
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public setFixedTimestep(fixedTimestep: number): void {
     // Default implementation does nothing
     // Override in subclasses that use fixed timesteps
