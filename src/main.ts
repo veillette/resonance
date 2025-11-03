@@ -11,6 +11,7 @@ import { ResonanceStrings } from "./strings/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
 import { setColorProfile } from "./common/ResonanceColors.js";
 import type { ColorProfile } from "./common/ResonanceColors.js";
+import { Property } from "scenerystack/axon";
 
 onReadyToLaunch(() => {
   // Create custom preferences model for simulation-specific settings
@@ -28,16 +29,7 @@ onReadyToLaunch(() => {
         supportsSound: true,
       },
       simulationOptions: {
-        customPreferences: [
-          {
-            createContent: (_tandem: Tandem) => {
-              // TODO: Add custom simulation preferences UI here
-              // This could include solver type, units, show energy, show vectors, etc.
-              // Similar to ClassicalMechanicsPreferences in the reference implementation
-              return new VBox();
-            },
-          },
-        ],
+        customPreferences: [],
       },
     }),
   };
@@ -48,8 +40,11 @@ onReadyToLaunch(() => {
     }),
   ];
 
+  // Create title property
+  const titleProperty = new Property<string>(ResonanceStrings.resonance.title);
+
   // Create the simulation
-  const sim = new Sim(new Property(ResonanceStrings.resonance.title), screens, simOptions);
+  const sim = new Sim(titleProperty, screens, simOptions);
 
   // Listen to color profile changes and update the color system
   resonancePreferences.colorProfileProperty.link((colorProfile: ColorProfile) => {
