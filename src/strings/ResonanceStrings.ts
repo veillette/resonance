@@ -6,7 +6,6 @@
  */
 
 import { StringManager } from "./StringManager";
-import { LocalizedString } from "scenerystack";
 
 // Export the StringManager singleton instance
 export const resonanceStringManager = StringManager.getInstance();
@@ -20,7 +19,9 @@ export const ResonanceStrings = {
   get resonance() {
     // Access the current value of the localized strings
     // Note: This is for backward compatibility with code that accesses raw strings
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const getCurrentStrings = (obj: any): any => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result: any = {};
       for (const key in obj) {
         const value = obj[key];
