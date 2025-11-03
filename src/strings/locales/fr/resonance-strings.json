@@ -30,7 +30,17 @@
         "showPhase": "Afficher la Phase",
         "units": "Unités",
         "unitsMetric": "Métrique",
-        "unitsImperial": "Impérial"
+        "unitsImperial": "Impérial",
+        "solverMethod": "Méthode de Résolution",
+        "solverDescription": "Choisissez la méthode numérique utilisée pour résoudre les équations différentielles. Différentes méthodes offrent des compromis entre précision et performance.",
+        "solverRK4": "Runge-Kutta de 4ème Ordre (RK4)",
+        "solverRK4Description": "Méthode classique à pas fixe avec bonne précision et stabilité. Meilleure pour la plupart des simulations.",
+        "solverAdaptiveRK45": "RK45 Adaptatif",
+        "solverAdaptiveRK45Description": "Méthode à taille de pas variable qui ajuste automatiquement la précision. Meilleure pour les exigences de haute précision.",
+        "solverAdaptiveEuler": "Euler Adaptatif",
+        "solverAdaptiveEulerDescription": "Méthode adaptative simple avec taille de pas variable. Bon pour les tests et le débogage.",
+        "solverModifiedMidpoint": "Point Médian Modifié",
+        "solverModifiedMidpointDescription": "Méthode à pas fixe avec stabilité améliorée. Bonne alternative à RK4."
       },
       "localization": {
         "title": "Localisation",

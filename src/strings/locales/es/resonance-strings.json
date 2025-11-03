@@ -30,7 +30,17 @@
         "showPhase": "Mostrar Fase",
         "units": "Unidades",
         "unitsMetric": "Métrico",
-        "unitsImperial": "Imperial"
+        "unitsImperial": "Imperial",
+        "solverMethod": "Método de Resolución",
+        "solverDescription": "Elija el método numérico utilizado para resolver las ecuaciones diferenciales. Diferentes métodos ofrecen compensaciones entre precisión y rendimiento.",
+        "solverRK4": "Runge-Kutta de 4º Orden (RK4)",
+        "solverRK4Description": "Método clásico de paso fijo con buena precisión y estabilidad. Mejor para la mayoría de las simulaciones.",
+        "solverAdaptiveRK45": "RK45 Adaptativo",
+        "solverAdaptiveRK45Description": "Método de tamaño de paso variable que ajusta automáticamente la precisión. Mejor para requisitos de alta precisión.",
+        "solverAdaptiveEuler": "Euler Adaptativo",
+        "solverAdaptiveEulerDescription": "Método adaptativo simple con tamaño de paso variable. Bueno para pruebas y depuración.",
+        "solverModifiedMidpoint": "Punto Medio Modificado",
+        "solverModifiedMidpointDescription": "Método de paso fijo con estabilidad mejorada. Buena alternativa a RK4."
       },
       "localization": {
         "title": "Localización",
