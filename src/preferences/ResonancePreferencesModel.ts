@@ -4,6 +4,7 @@
  */
 
 import { Property, StringProperty, BooleanProperty, NumberProperty } from "scenerystack/axon";
+import { SolverType } from "../common/model/SolverType.js";
 
 export type ColorProfileType = "default" | "projector" | "colorblind";
 export type UnitsType = "metric" | "imperial";
@@ -18,6 +19,7 @@ export class ResonancePreferencesModel {
   public readonly showVectorsProperty: BooleanProperty;
   public readonly showPhaseProperty: BooleanProperty;
   public readonly unitsProperty: Property<UnitsType>;
+  public readonly solverTypeProperty: Property<SolverType>;
 
   // Localization preferences (handled by SceneryStack's locale system)
   // We don't need a separate property for this as it's managed by joist
@@ -32,6 +34,7 @@ export class ResonancePreferencesModel {
     this.showVectorsProperty = new BooleanProperty(false);
     this.showPhaseProperty = new BooleanProperty(true);
     this.unitsProperty = new Property<UnitsType>("metric");
+    this.solverTypeProperty = new Property<SolverType>(SolverType.RUNGE_KUTTA_4);
 
     // Set up persistence
     this.setupPersistence();
@@ -64,6 +67,9 @@ export class ResonancePreferencesModel {
         if (preferences.units) {
           this.unitsProperty.value = preferences.units;
         }
+        if (preferences.solverType) {
+          this.solverTypeProperty.value = preferences.solverType;
+        }
       }
     } catch (error) {
       console.warn("Failed to load preferences:", error);
@@ -82,6 +88,7 @@ export class ResonancePreferencesModel {
         showVectors: this.showVectorsProperty.value,
         showPhase: this.showPhaseProperty.value,
         units: this.unitsProperty.value,
+        solverType: this.solverTypeProperty.value,
       };
       localStorage.setItem("resonance-preferences", JSON.stringify(preferences));
     } catch (error) {
@@ -103,6 +110,7 @@ export class ResonancePreferencesModel {
     this.showVectorsProperty.link(() => this.savePreferences());
     this.showPhaseProperty.link(() => this.savePreferences());
     this.unitsProperty.link(() => this.savePreferences());
+    this.solverTypeProperty.link(() => this.savePreferences());
   }
 
   /**
@@ -115,5 +123,6 @@ export class ResonancePreferencesModel {
     this.showVectorsProperty.reset();
     this.showPhaseProperty.reset();
     this.unitsProperty.reset();
+    this.solverTypeProperty.reset();
   }
 }

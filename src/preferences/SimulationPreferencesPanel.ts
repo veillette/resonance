@@ -7,6 +7,7 @@ import { VBox, Text } from "scenerystack/scenery";
 import { Checkbox, AquaRadioButtonGroup } from "scenerystack/sun";
 import { ResonancePreferencesModel } from "./ResonancePreferencesModel.js";
 import { ResonanceStrings } from "../strings/ResonanceStrings.js";
+import { SolverType, SolverTypeName } from "../common/model/SolverType.js";
 
 export class SimulationPreferencesPanel extends VBox {
   public constructor(preferencesModel: ResonancePreferencesModel) {
@@ -88,11 +89,55 @@ export class SimulationPreferencesPanel extends VBox {
       children: [unitsLabel, unitsButtons],
     });
 
+    // ODE Solver section
+    const solverLabel = new Text("ODE Solver", {
+      font: "14px sans-serif",
+      fontWeight: "bold",
+    });
+
+    const solverButtons = new AquaRadioButtonGroup(
+      preferencesModel.solverTypeProperty,
+      [
+        {
+          value: SolverType.RUNGE_KUTTA_4,
+          createNode: () =>
+            new Text(SolverTypeName[SolverType.RUNGE_KUTTA_4], { font: "12px sans-serif" }),
+        },
+        {
+          value: SolverType.ADAPTIVE_RK45,
+          createNode: () =>
+            new Text(SolverTypeName[SolverType.ADAPTIVE_RK45], { font: "12px sans-serif" }),
+        },
+        {
+          value: SolverType.ADAPTIVE_EULER,
+          createNode: () =>
+            new Text(SolverTypeName[SolverType.ADAPTIVE_EULER], { font: "12px sans-serif" }),
+        },
+        {
+          value: SolverType.MODIFIED_MIDPOINT,
+          createNode: () =>
+            new Text(SolverTypeName[SolverType.MODIFIED_MIDPOINT], { font: "12px sans-serif" }),
+        },
+      ],
+      {
+        spacing: 8,
+        radioButtonOptions: {
+          radius: 8,
+        },
+      }
+    );
+
+    const solverSection = new VBox({
+      align: "left",
+      spacing: 8,
+      children: [solverLabel, solverButtons],
+    });
+
     // Create panel content
     const content = new VBox({
       align: "left",
       spacing: 15,
-      children: [displayOptionsSection, unitsSection],
+      children: [displayOptionsSection, unitsSection, solverSection],
     });
 
     super({
