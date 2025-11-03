@@ -5,7 +5,6 @@ import "./brand.js";
 import { onReadyToLaunch, Sim, PreferencesModel } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { VBox, Text, HStrut } from "scenerystack/scenery";
-import { Property } from "scenerystack/axon";
 import { Checkbox, VerticalAquaRadioButtonGroup } from "scenerystack/sun";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { SimScreen } from "./screen-name/SimScreen.js";
@@ -33,6 +32,7 @@ onReadyToLaunch(() => {
       simulationOptions: {
         customPreferences: [
           {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             createContent: (_tandem: Tandem) => {
               // Display options section
               const displayOptionsSection = new VBox({
