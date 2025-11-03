@@ -2,7 +2,6 @@ import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Path, Node, Circle, Line, VBox, HBox } from "scenerystack/scenery";
-import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { RectangularPushButton, Panel, HSlider, AquaRadioButtonGroup, Checkbox } from "scenerystack/sun";
 import { Shape } from "scenerystack/kite";
@@ -36,9 +35,6 @@ export class SimScreenView extends ScreenView {
     this.rulerVisibleProperty = new Property<boolean>(false);
     this.selectedResonatorProperty = new NumberProperty(1);
     this.gravityEnabledProperty = new Property<boolean>(model.resonanceModel.gravityProperty.value > 0);
-
-    // Get localized strings
-    const strings = ResonanceStrings.resonance.controls;
 
     // Create simulation area container
     const simulationArea = new Node();
@@ -92,6 +88,14 @@ export class SimScreenView extends ScreenView {
       frequencyReadout.centerX = frequencyKnob.centerX;
     });
 
+    const resetAllButton = new ResetAllButton({listener: () => {
+      model.reset();
+      this.reset();
+      }});
+    this.addChild(resetAllButton);
+    resetAllButton.right = this.layoutBounds.maxX - 20;
+    resetAllButton.top = this.layoutBounds.minY + 20; 
+    
     // Driver Amplitude Control (blue slider with readout)
     const amplitudeReadout = new Text('0.50 cm', { font: '12px sans-serif', fill: 'white' });
     const amplitudeSliderTrack = new Rectangle(0, 0, 120, 8, 4, 4, {
@@ -537,7 +541,7 @@ export class SimScreenView extends ScreenView {
     // Called when the user presses the reset-all button
   }
 
-  public step(dt: number): void {
+  public step(): void {
     // Called every frame, update spring and mass positions
     this.updateSpringAndMass(this.driverNode);
   }
