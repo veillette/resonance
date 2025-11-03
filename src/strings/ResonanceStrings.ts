@@ -6,7 +6,6 @@
  */
 
 import { StringManager } from "./StringManager";
-import { LocalizedString } from "scenerystack";
 
 // Export the StringManager singleton instance
 export const resonanceStringManager = StringManager.getInstance();
@@ -20,8 +19,8 @@ export const ResonanceStrings = {
   get resonance() {
     // Access the current value of the localized strings
     // Note: This is for backward compatibility with code that accesses raw strings
-    const getCurrentStrings = (obj: any): any => {
-      const result: any = {};
+    const getCurrentStrings = (obj: Record<string, unknown>): Record<string, unknown> => {
+      const result: Record<string, unknown> = {};
       for (const key in obj) {
         const value = obj[key];
         if (value && typeof value === 'object') {
@@ -29,7 +28,7 @@ export const ResonanceStrings = {
           if ('value' in value && typeof value.value !== 'undefined') {
             result[key.replace('StringProperty', '')] = value.value;
           } else {
-            result[key] = getCurrentStrings(value);
+            result[key] = getCurrentStrings(value as Record<string, unknown>);
           }
         }
       }
