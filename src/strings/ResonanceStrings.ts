@@ -1,77 +1,72 @@
 /**
- * Resonance string module
- * Provides access to all translatable strings in the simulation
+ * ResonanceStrings.ts
  *
- * NOTE: This is a simplified version that directly exports the English strings.
- * For full i18n support with SceneryStack, additional configuration may be needed.
+ * Provides convenient access to localized strings for the Resonance simulation.
+ * This module exports the StringManager singleton for use throughout the application.
  */
 
-import { Property } from "scenerystack/axon";
-import enStrings from "./locales/en/resonance-strings.json";
-import esStrings from "./locales/es/resonance-strings.json";
-import frStrings from "./locales/fr/resonance-strings.json";
+import { StringManager } from "./StringManager";
+import { LocalizedString } from "scenerystack";
 
-// For now, we'll use a simple locale variable
-// In a full implementation, this would be connected to SceneryStack's locale system
-let currentLocale = "en";
+// Export the StringManager singleton instance
+export const resonanceStringManager = StringManager.getInstance();
 
-const stringsByLocale: Record<string, typeof enStrings> = {
-  en: enStrings,
-  es: esStrings,
-  fr: frStrings,
-};
+// Get the raw string properties for backward compatibility
+const allStringProperties = resonanceStringManager.getAllStringProperties();
 
-export function setLocale(locale: string): void {
-  if (stringsByLocale[locale]) {
-    currentLocale = locale;
-  }
-}
-
-export function getLocale(): string {
-  return currentLocale;
-}
-
-// Helper function to create a Property from a string path
-function createStringProperty(path: string): Property<string> {
-  const parts = path.split(".");
-  const getValue = () => {
-    let value: any = stringsByLocale[currentLocale];
-    for (const part of parts) {
-      value = value[part];
-    }
-    return value;
-  };
-  return new Property<string>(getValue());
-}
-
-// Export the strings for the current locale
-// Using a getter so it updates when locale changes
+// Export commonly used string properties for convenience
 export const ResonanceStrings = {
+  // Raw strings for backward compatibility (returns the current locale's string values)
   get resonance() {
-    return stringsByLocale[currentLocale].resonance;
+    // Access the current value of the localized strings
+    // Note: This is for backward compatibility with code that accesses raw strings
+    const getCurrentStrings = (obj: any): any => {
+      const result: any = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (value && typeof value === 'object') {
+          // Check if it's a Property (has a 'value' getter)
+          if ('value' in value && typeof value.value !== 'undefined') {
+            result[key.replace('StringProperty', '')] = value.value;
+          } else {
+            result[key] = getCurrentStrings(value);
+          }
+        }
+      }
+      return result;
+    };
+    return getCurrentStrings(allStringProperties.resonance);
   },
 
-  // String properties for preferences
-  titleStringProperty: createStringProperty("resonance.title"),
+  // Title
+  titleStringProperty: resonanceStringManager.getTitleStringProperty(),
 
+  // Screens
+  screens: resonanceStringManager.getScreenNames(),
+
+  // Controls
+  controls: resonanceStringManager.getControlLabels(),
+
+  // Preferences
   preferences: {
-    simulation: {
-      displayOptionsStringProperty: createStringProperty("resonance.preferences.simulation.displayOptions"),
-      solverMethodStringProperty: createStringProperty("resonance.preferences.simulation.solverMethod"),
-      solverDescriptionStringProperty: createStringProperty("resonance.preferences.simulation.solverDescription"),
-      showEnergyStringProperty: createStringProperty("resonance.preferences.simulation.showEnergy"),
-      showVectorsStringProperty: createStringProperty("resonance.preferences.simulation.showVectors"),
-      showPhaseStringProperty: createStringProperty("resonance.preferences.simulation.showPhase"),
-    },
+    titleStringProperty: resonanceStringManager.getPreferencesLabels().titleStringProperty,
+
+    visual: resonanceStringManager.getVisualPreferencesLabels(),
+
+    simulation: resonanceStringManager.getSimulationPreferencesLabels(),
+
+    localization: resonanceStringManager.getLocalizationPreferencesLabels(),
+
+    // Solver names and descriptions (merged for convenience)
     solvers: {
-      rk4StringProperty: createStringProperty("resonance.preferences.simulation.solverRK4"),
-      rk4DescriptionStringProperty: createStringProperty("resonance.preferences.simulation.solverRK4Description"),
-      adaptiveRK45StringProperty: createStringProperty("resonance.preferences.simulation.solverAdaptiveRK45"),
-      adaptiveRK45DescriptionStringProperty: createStringProperty("resonance.preferences.simulation.solverAdaptiveRK45Description"),
-      adaptiveEulerStringProperty: createStringProperty("resonance.preferences.simulation.solverAdaptiveEuler"),
-      adaptiveEulerDescriptionStringProperty: createStringProperty("resonance.preferences.simulation.solverAdaptiveEulerDescription"),
-      modifiedMidpointStringProperty: createStringProperty("resonance.preferences.simulation.solverModifiedMidpoint"),
-      modifiedMidpointDescriptionStringProperty: createStringProperty("resonance.preferences.simulation.solverModifiedMidpointDescription"),
+      ...resonanceStringManager.getSolverNames(),
+      ...resonanceStringManager.getSolverDescriptions(),
     },
   },
+
+  // Content
+  content: resonanceStringManager.getContentLabels(),
 };
+
+// Export the StringManager for direct access when needed
+export { StringManager };
