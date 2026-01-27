@@ -1,7 +1,7 @@
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
-import { ResetAllButton, PlayPauseStepButtonGroup, NumberControl } from "scenerystack/scenery-phet";
-import { Rectangle, Text, Path, Node, Circle, Line, VBox, HBox } from "scenerystack/scenery";
+import { ResetAllButton, PlayPauseStepButtonGroup, NumberControl, RulerNode } from "scenerystack/scenery-phet";
+import { Rectangle, Text, Path, Node, Circle, Line, VBox, HBox, Image } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { RectangularPushButton, Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch } from "scenerystack/sun";
 import { Shape } from "scenerystack/kite";
@@ -9,6 +9,7 @@ import { ResonancePreferencesModel } from "../../preferences/ResonancePreference
 import { PreferencesDialog } from "../../preferences/PreferencesDialog.js";
 import { Range } from "scenerystack/dot";
 import { Property, NumberProperty } from "scenerystack/axon";
+import { preferencesIcon_png } from "scenerystack/joist";
 
 export class SimScreenView extends ScreenView {
 
@@ -16,7 +17,7 @@ export class SimScreenView extends ScreenView {
   private preferencesDialog: PreferencesDialog | null = null;
   private readonly springNode: Path;
   private readonly massNode: Node;
-  private readonly rulerNode: Node;
+  private readonly rulerNode: RulerNode;
   private readonly rulerVisibleProperty: Property<boolean>;
   private readonly selectedResonatorProperty: NumberProperty;
   private readonly gravityEnabledProperty: Property<boolean>;
@@ -63,30 +64,20 @@ export class SimScreenView extends ScreenView {
     });
     this.driverNode.addChild(powerToggleBox);
 
-    // Driver Frequency Control (dial with readout)
-    const frequencyReadout = new Text('1.00 Hz', { font: '16px sans-serif', fill: 'white' });
-    const frequencyKnob = new Circle(25, {
-      fill: '#00CC00',
-      stroke: '#008800',
-      lineWidth: 2,
-      cursor: 'pointer'
+    // Driver Frequency Control using NumberControl
+    const frequencyControl = new NumberControl('Frequency', model.resonanceModel.drivingFrequencyProperty, new Range(0.1, 5), {
+      numberDisplayOptions: {
+        valuePattern: '{{value}} Hz',
+        decimalPlaces: 2
+      },
+      sliderOptions: {
+        trackFillEnabled: '#00CC00'
+      }
     });
-    const frequencyIndicator = new Line(0, 0, 0, -20, { stroke: 'white', lineWidth: 3 });
-    frequencyKnob.addChild(frequencyIndicator);
-
-    frequencyKnob.centerX = driverBox.centerX;
-    frequencyKnob.centerY = 45;
-    frequencyReadout.centerX = frequencyKnob.centerX;
-    frequencyReadout.top = frequencyKnob.bottom + 5;
-
-    this.driverNode.addChild(frequencyKnob);
-    this.driverNode.addChild(frequencyReadout);
-
-    // Update frequency readout
-    model.resonanceModel.drivingFrequencyProperty.link((freq: number) => {
-      frequencyReadout.string = `${freq.toFixed(2)} Hz`;
-      frequencyReadout.centerX = frequencyKnob.centerX;
-    });
+    frequencyControl.setScaleMagnitude(0.7);
+    frequencyControl.centerX = driverBox.centerX;
+    frequencyControl.top = 40;
+    this.driverNode.addChild(frequencyControl);
 
     const resetAllButton = new ResetAllButton({
       listener: () => {
@@ -142,28 +133,12 @@ export class SimScreenView extends ScreenView {
     simulationArea.addChild(this.massNode);
 
     // ===== RULER (optional, toggled on/off) =====
-    this.rulerNode = new Node();
-    const rulerRect = new Rectangle(0, 0, 30, 300, {
-      fill: '#FFFFCC',
-      stroke: '#666666',
-      lineWidth: 2
+    // Using standard RulerNode from scenerystack
+    const rulerLabels = ['0', '10', '20', '30'];
+    this.rulerNode = new RulerNode(300, 40, 100, rulerLabels, 'cm', {
+      minorTicksPerMajorTick: 4,
+      insetsWidth: 10
     });
-    this.rulerNode.addChild(rulerRect);
-
-    // Add tick marks
-    for (let i = 0; i <= 30; i++) {
-      const tickLength = i % 5 === 0 ? 10 : 5;
-      const tick = new Line(0, i * 10, tickLength, i * 10, { stroke: '#333333', lineWidth: 1 });
-      this.rulerNode.addChild(tick);
-
-      if (i % 10 === 0) {
-        const label = new Text(`${i}`, { font: '10px sans-serif', fill: '#333333' });
-        label.left = tickLength + 2;
-        label.centerY = i * 10;
-        this.rulerNode.addChild(label);
-      }
-    }
-
     this.rulerNode.left = this.layoutBounds.left + 20;
     this.rulerNode.top = this.layoutBounds.top + 50;
     this.rulerNode.visible = false;
@@ -228,23 +203,11 @@ export class SimScreenView extends ScreenView {
       }
     });
 
-    // Gravity Toggle
-    const gravityToggleButtons = [
-      { value: true, createNode: () => new Text('ON', { font: '14px sans-serif' }) },
-      { value: false, createNode: () => new Text('OFF', { font: '14px sans-serif' }) }
-    ];
-
-    const gravityToggle = new AquaRadioButtonGroup(
-      this.gravityEnabledProperty,
-      gravityToggleButtons,
-      {
-        orientation: 'horizontal',
-        spacing: 5,
-        radioButtonOptions: {
-          radius: 8
-        }
-      }
-    );
+    // Gravity Toggle using ToggleSwitch
+    const gravityToggleSwitch = new ToggleSwitch(this.gravityEnabledProperty, false, true, {
+      trackFillLeft: '#999999',
+      trackFillRight: '#4499FF'
+    });
 
     // Listen to gravity toggle changes and update model
     this.gravityEnabledProperty.link((enabled: boolean) => {
@@ -253,7 +216,7 @@ export class SimScreenView extends ScreenView {
 
     const gravityLabel = new Text('Gravity', { font: 'bold 14px sans-serif', fill: ResonanceColors.text });
     const gravityBox = new HBox({
-      children: [gravityLabel, gravityToggle],
+      children: [gravityLabel, gravityToggleSwitch],
       spacing: 10,
       align: 'center'
     });
@@ -365,43 +328,13 @@ export class SimScreenView extends ScreenView {
     });
     this.addChild(phetBranding);
 
-    // Add preferences button (gear icon)
-    const gearIcon = new Path(
-      new Shape()
-        .moveTo(0, -8)
-        .lineTo(2, -6)
-        .lineTo(4, -8)
-        .lineTo(6, -6)
-        .lineTo(8, -4)
-        .lineTo(6, -2)
-        .lineTo(8, 0)
-        .lineTo(6, 2)
-        .lineTo(8, 4)
-        .lineTo(6, 6)
-        .lineTo(4, 8)
-        .lineTo(2, 6)
-        .lineTo(0, 8)
-        .lineTo(-2, 6)
-        .lineTo(-4, 8)
-        .lineTo(-6, 6)
-        .lineTo(-8, 4)
-        .lineTo(-6, 2)
-        .lineTo(-8, 0)
-        .lineTo(-6, -2)
-        .lineTo(-8, -4)
-        .lineTo(-6, -6)
-        .lineTo(-4, -8)
-        .lineTo(-2, -6)
-        .close()
-        .circle(0, 0, 4),
-      {
-        fill: ResonanceColors.text,
-        scale: 1.2,
-      }
-    );
+    // Add preferences button using standard icon from joist
+    const preferencesIcon = new Image(preferencesIcon_png, {
+      scale: 0.8
+    });
 
     const preferencesButton = new RectangularPushButton({
-      content: gearIcon,
+      content: preferencesIcon,
       baseColor: ResonanceColors.panelFill,
       listener: () => {
         if (!this.preferencesDialog) {
