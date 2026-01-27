@@ -319,15 +319,6 @@ export class SimScreenView extends ScreenView {
 
     this.addChild(playbackControls);
 
-    // ===== PhET BRANDING =====
-    const phetBranding = new Text('PhET', {
-      font: 'bold 20px sans-serif',
-      fill: ResonanceColors.text,
-      right: this.layoutBounds.maxX - 20,
-      bottom: this.layoutBounds.maxY - 20
-    });
-    this.addChild(phetBranding);
-
     // Add preferences button using standard icon from joist
     const preferencesIcon = new Image(preferencesIcon_png, {
       scale: 0.8
