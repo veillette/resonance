@@ -2,22 +2,28 @@ import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
 import { ResetAllButton, PlayPauseStepButtonGroup, NumberControl, RulerNode, ParametricSpringNode } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Node, Circle, Line, VBox, HBox } from "scenerystack/scenery";
+import { DragListener } from "scenerystack/scenery";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Vector2Property } from "scenerystack/dot";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch, ComboBox } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
-import { Property } from "scenerystack/axon";
+import { Property, NumberProperty } from "scenerystack/axon";
 import { OscillatorConfigMode } from "../../common/model/OscillatorConfigMode.js";
 import type { OscillatorConfigModeType } from "../../common/model/OscillatorConfigMode.js";
 
 export class SimScreenView extends ScreenView {
 
   private readonly model: SimModel;
+  private readonly modelViewTransform: ModelViewTransform2;
   private readonly resonatorsContainer: Node;
   private springNodes: ParametricSpringNode[] = [];
   private massNodes: Node[] = [];
   private readonly rulerNode: RulerNode;
   private readonly rulerVisibleProperty: Property<boolean>;
+  private readonly rulerPositionProperty: Vector2Property;
   private readonly gravityEnabledProperty: Property<boolean>;
   private readonly driverNode: Node;
 
@@ -29,8 +35,25 @@ export class SimScreenView extends ScreenView {
 
     this.model = model;
 
+    // Initialize ModelViewTransform for converting between model coordinates (meters) and view coordinates (pixels)
+    // Model bounds: reasonable range for oscillator positions (-5 to 5 meters)
+    // View bounds: simulation area bounds  
+    const modelBounds = new Bounds2(-5, -5, 5, 5); // meters
+    const viewBounds = this.layoutBounds;
+    
+    // Create transform using createRectangleMapping which maps model bounds to view bounds
+    // This will handle the coordinate conversion with proper scaling
+    this.modelViewTransform = ModelViewTransform2.createRectangleMapping(modelBounds, viewBounds);
+
     // Initialize properties
     this.rulerVisibleProperty = new Property<boolean>(false);
+    // Ruler position in model coordinates (meters) as Vector2Property
+    // Convert initial view position to model coordinates
+    const initialViewX = this.layoutBounds.left + ResonanceConstants.RULER_LEFT_MARGIN;
+    const initialViewY = this.layoutBounds.top + ResonanceConstants.RULER_TOP_MARGIN;
+    const initialModelX = this.modelViewTransform.viewToModelX(initialViewX);
+    const initialModelY = this.modelViewTransform.viewToModelY(initialViewY);
+    this.rulerPositionProperty = new Vector2Property(new Vector2(initialModelX, initialModelY));
     this.gravityEnabledProperty = new Property<boolean>(model.resonanceModel.gravityProperty.value > 0);
 
     // Create simulation area container
@@ -84,8 +107,12 @@ export class SimScreenView extends ScreenView {
 
     const resetAllButton = new ResetAllButton({
       listener: () => {
+        // Reset model first (this resets all physics properties)
         model.reset();
+        // Then reset view properties
         this.reset();
+        // Sync gravity toggle with model's gravity property after reset
+        this.gravityEnabledProperty.value = model.resonanceModel.gravityProperty.value > 0;
       },
       right: this.layoutBounds.maxX - ResonanceConstants.RESET_ALL_RIGHT_MARGIN,
       bottom: this.layoutBounds.maxY - ResonanceConstants.RESET_ALL_BOTTOM_MARGIN
@@ -133,9 +160,39 @@ export class SimScreenView extends ScreenView {
         minorTicksPerMajorTick: ResonanceConstants.RULER_MINOR_TICKS_PER_MAJOR,
         insetsWidth: ResonanceConstants.RULER_INSETS_WIDTH
       });
-    this.rulerNode.left = this.layoutBounds.left + ResonanceConstants.RULER_LEFT_MARGIN;
-    this.rulerNode.top = this.layoutBounds.top + ResonanceConstants.RULER_TOP_MARGIN;
+    
+    // Convert model coordinates to view coordinates using ModelViewTransform
+    this.rulerPositionProperty.link((modelPosition: Vector2) => {
+      const viewX = this.modelViewTransform.modelToViewX(modelPosition.x);
+      const viewY = this.modelViewTransform.modelToViewY(modelPosition.y);
+      this.rulerNode.left = viewX;
+      this.rulerNode.top = viewY;
+    });
+    
     this.rulerNode.visible = false;
+    
+    // Add drag handler using positionProperty - much simpler!
+    // Calculate drag bounds accounting for ruler size
+    const modelBounds = this.modelViewTransform.viewToModelBounds(this.layoutBounds);
+    const rulerWidthModel = this.modelViewTransform.viewToModelDeltaX(ResonanceConstants.RULER_WIDTH);
+    const rulerHeightModel = Math.abs(this.modelViewTransform.viewToModelDeltaY(ResonanceConstants.RULER_HEIGHT));
+    const dragBounds = new Bounds2(
+      modelBounds.minX,
+      modelBounds.minY,
+      modelBounds.maxX - rulerWidthModel,
+      modelBounds.maxY - rulerHeightModel
+    );
+    
+    const dragListener = new DragListener({
+      targetNode: this.rulerNode,
+      positionProperty: this.rulerPositionProperty,
+      transform: this.modelViewTransform,
+      // Constrain to model bounds accounting for ruler size
+      dragBoundsProperty: new Property(dragBounds)
+    });
+    this.rulerNode.addInputListener(dragListener);
+    this.rulerNode.cursor = 'move';
+    
     simulationArea.addChild(this.rulerNode);
 
     this.addChild(simulationArea);
@@ -455,7 +512,10 @@ export class SimScreenView extends ScreenView {
 
       // Each oscillator has its own position from its own model
       const oscillatorModel = this.model.oscillatorModels[i];
-      const massY = equilibriumY + oscillatorModel.positionProperty.value * ResonanceConstants.METERS_TO_PIXELS;
+      // Convert model position (meters) to view position (pixels) using ModelViewTransform
+      const modelY = oscillatorModel.positionProperty.value; // meters
+      const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelY); // pixels
+      const massY = equilibriumY + viewYOffset;
 
       // Update mass position
       this.massNodes[i].centerX = xCenter;
@@ -486,7 +546,13 @@ export class SimScreenView extends ScreenView {
   }
 
   public reset(): void {
+    // Reset ruler visibility and position
     this.rulerVisibleProperty.reset();
+    this.rulerPositionProperty.reset();
+    
+    // Reset gravity toggle (will be synced with model after model.reset() is called)
+    // Note: gravityEnabledProperty is reset here, but will be updated by the listener
+    // in resetAllButton to match the model's gravityProperty value
     this.gravityEnabledProperty.reset();
   }
 

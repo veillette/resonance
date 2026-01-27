@@ -3,7 +3,7 @@
  * Solvers integrate equations of the form dy/dt = f(t, y)
  */
 
-export interface ODEModel {
+export type ODEModel = {
   /**
    * Get the current state vector
    */
@@ -21,7 +21,7 @@ export interface ODEModel {
    * @returns derivatives vector
    */
   getDerivatives(t: number, state: number[]): number[];
-}
+};
 
 export abstract class ODESolver {
   /**

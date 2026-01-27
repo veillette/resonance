@@ -226,7 +226,7 @@ export class ResonanceModel extends BaseModel {
 /**
  * Configuration preset for the resonance model
  */
-export interface ResonancePreset {
+export type ResonancePreset = {
   nameKey: "lightAndBouncy" | "heavyAndSlow" | "underdamped" | "criticallyDamped" | "overdamped" | "resonanceDemo"; // Key for localized name
   mass: number; // kg
   springConstant: number; // N/m
@@ -235,7 +235,7 @@ export interface ResonancePreset {
   initialVelocity?: number; // m/s
   drivingAmplitude?: number; // N
   drivingFrequency?: number; // Hz
-}
+};
 
 /**
  * Get the localized name for a preset
