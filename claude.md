@@ -933,3 +933,122 @@ Remember: The goal is to make physics concepts intuitive and interactive. Good r
 2. Draw inspiration from PhET Resonance for simulation features
 3. Implement color profiles, i18n, and preferences as core requirements, not afterthoughts
 4. Make the simulation accessible, translatable, and visually adaptable from the start
+
+---
+
+## Implementation Notes for Current Resonance Simulation
+
+### Coordinate System and Scale
+The simulation uses a **centimeter-scale** coordinate system optimized for resonance phenomena:
+
+- **Model bounds**: ±0.5 m (symmetric, 1 meter total)
+- **Natural length**: 20 cm (springs extend upward from driver plate)
+- **Position = 0**: Equilibrium state at natural length
+- **Positive position**: Mass moves UP (spring stretches) - smaller Y in screen coordinates
+- **View coordinate conversion**: Subtract position offset because screen Y increases downward
+
+### Driving Force Implementation
+**IMPORTANT**: The driving amplitude is a **plate displacement**, not a force:
+
+```typescript
+// Driver plate oscillates sinusoidally
+platePosition = amplitude × sin(ω × t)
+
+// Spring force relative to moving plate
+springForce = -k × (massPosition - platePosition)
+```
+
+This creates a **time-varying boundary condition** where the attachment point oscillates.
+
+### Visual Representation Details
+
+#### Mass Boxes (Square, not Circular)
+- Masses are rendered as **square boxes** with numbered labels
+- **Junction point** (model position): Where spring attaches to mass (bottom of square)
+- **Mass center**: Positioned 5 pixels above junction for realistic appearance
+- Size varies with oscillator count (20-50 pixels)
+
+#### Springs
+- Extend **upward** from driver plate to mass
+- Line width varies with spring constant (1-5 pixels) for visual feedback
+- Rendered using ParametricSpringNode with 10 loops
+
+#### Driver System
+- **Control box**: Gray box at bottom with frequency/amplitude controls
+- **Connection rod**: Vertical cylinder connecting box to plate (animates with oscillation)
+- **Driver plate**: Gray horizontal plate where all springs attach (oscillates up/down)
+
+### Multiple Oscillator Management
+
+The `SimModel` manages multiple `ResonanceModel` instances:
+- **Base oscillator (index 0)**: User directly edits mass and spring constant
+- **Derived oscillators (index 1+)**: Parameters calculated based on configuration mode
+- **Configuration modes** determine how parameters scale:
+  - Same k: masses vary
+  - Same m: spring constants vary
+  - Mixed: both vary proportionally
+  - Same frequency: k/m ratio constant
+  - Custom: all independently editable
+
+### Resonator Selection System
+- **NumberSpinner** for selecting oscillator (1-indexed display, 0-indexed internally)
+- **Dynamic property binding**: Display properties sync with selected oscillator
+- **Conditional editing**: Base oscillator always editable; others editable only in Custom mode
+- **Automatic clamping**: Selected index adjusts when oscillator count decreases
+
+### Unit Conversion for Display
+**Amplitude** is displayed in centimeters but stored in meters:
+- Separate `amplitudeCmProperty` for display (with bidirectional sync)
+- Range converted: 0.002-0.02 m → 0.2-2.0 cm
+- Prevents circular updates with flag mechanism
+
+### Parameter Ranges and Defaults
+
+| Parameter | Default | Min | Max | Increment | Unit |
+|-----------|---------|-----|-----|-----------|------|
+| Mass | 0.25 | 0.1 | 5.0 | 0.01 | kg |
+| Spring Constant | 100 | 10 | 1200 | 1 | N/m |
+| Damping | 0.5 | 0.1 | 5.0 | 0.1 | N/(m/s) |
+| Driving Amplitude | 1.0 | 0.2 | 2.0 | 0.01 | cm |
+| Driving Frequency | 1.0 | 0.1 | 5.0 | 0.01 | Hz |
+| Gravity | 0 (OFF) | 0 | 9.8 | toggle | m/s² |
+| Natural Length | 0.2 | - | - | - | m (20 cm) |
+| Initial Position | 0 | - | - | - | m (equilibrium) |
+
+**Natural frequency** with defaults: f₀ = √(100/0.25)/(2π) ≈ **3.2 Hz**
+
+### Common Pitfalls and Solutions
+
+1. **Coordinate System Confusion**
+   - Problem: Springs pointing wrong direction
+   - Solution: Remember Y increases downward in screen coordinates, so subtract position offset
+
+2. **Circular Property Updates**
+   - Problem: Infinite loops when syncing properties
+   - Solution: Use flag variables (`updatingFromModel`, `updatingAmplitude`) to prevent circular updates
+
+3. **Mass Box Positioning**
+   - Problem: Spring not connecting to mass correctly
+   - Solution: Junction point is at model position; mass center is offset above by 5 pixels
+
+4. **Scale Mismatch**
+   - Problem: Visual displacement doesn't match ruler measurements
+   - Solution: Use `modelViewTransform.modelToViewDeltaY()` for all position conversions
+
+5. **Initial Values Out of Bounds**
+   - Problem: Masses start off-screen
+   - Solution: Ensure initial position = 0 (equilibrium) and bounds are ±0.5 m
+
+### Performance Considerations
+- **60 FPS target**: Step methods called every ~16ms
+- **Multiple oscillators**: Each has own model that steps independently
+- **Spring rendering**: ParametricSpringNode efficiently handles dynamic length changes
+- **Property listeners**: Use lazy evaluation and avoid unnecessary calculations in listeners
+
+### Future Enhancement Ideas
+- Add energy visualization (kinetic + potential + elastic)
+- Phase space diagrams (position vs velocity)
+- Frequency response curves (amplitude vs driving frequency)
+- Preset scenarios (at resonance, off resonance, etc.)
+- Export data for analysis
+- Sound synthesis based on oscillation frequency
