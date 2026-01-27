@@ -153,6 +153,34 @@ const ResonanceColors = {
   amplitudeTrackProperty: new ProfileColorProperty(resonance, 'amplitudeTrack', {
     default: new Color(51, 153, 255),
     projector: new Color(0, 100, 200)
+  }),
+
+  // Toggle switch colors
+  toggleTrackOffProperty: new ProfileColorProperty(resonance, 'toggleTrackOff', {
+    default: new Color(102, 102, 102), // #666666
+    projector: new Color(80, 80, 80)
+  }),
+
+  toggleTrackOnProperty: new ProfileColorProperty(resonance, 'toggleTrackOn', {
+    default: new Color(0, 204, 0), // #00CC00
+    projector: new Color(0, 153, 0)
+  }),
+
+  // Spring back color (for ParametricSpringNode)
+  springBackProperty: new ProfileColorProperty(resonance, 'springBack', {
+    default: new Color(102, 0, 0), // #660000
+    projector: new Color(80, 0, 0)
+  }),
+
+  // Gravity toggle colors
+  gravityToggleOffProperty: new ProfileColorProperty(resonance, 'gravityToggleOff', {
+    default: new Color(153, 153, 153), // #999999
+    projector: new Color(120, 120, 120)
+  }),
+
+  gravityToggleOnProperty: new ProfileColorProperty(resonance, 'gravityToggleOn', {
+    default: new Color(68, 153, 255), // #4499FF
+    projector: new Color(40, 120, 200)
   })
 };
 

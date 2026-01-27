@@ -14,7 +14,18 @@
       "oscillatorConfig": "Configuración",
       "sameMass": "Misma Masa",
       "sameSpringConstant": "Misma Constante de Resorte",
-      "mixed": "Mixto"
+      "mixed": "Mixto",
+      "frequency": "Frecuencia",
+      "amplitude": "Amplitud",
+      "resonators": "Resonadores",
+      "resonator1": "Resonador 1",
+      "massSimple": "Masa",
+      "springConstantSimple": "Constante del Resorte",
+      "damping": "Amortiguamiento",
+      "gravity": "Gravedad",
+      "ruler": "Regla",
+      "on": "ON",
+      "frequencyEquals": "frecuencia ="
     },
     "preferences": {
       "title": "Preferencias",

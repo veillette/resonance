@@ -10,9 +10,10 @@ import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch, ComboBox } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
-import { Property, NumberProperty } from "scenerystack/axon";
+import { Property} from "scenerystack/axon";
 import { OscillatorConfigMode } from "../../common/model/OscillatorConfigMode.js";
 import type { OscillatorConfigModeType } from "../../common/model/OscillatorConfigMode.js";
+import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
 
 export class SimScreenView extends ScreenView {
 
@@ -38,12 +39,12 @@ export class SimScreenView extends ScreenView {
     // Initialize ModelViewTransform for converting between model coordinates (meters) and view coordinates (pixels)
     // Model bounds: reasonable range for oscillator positions (-5 to 5 meters)
     // View bounds: simulation area bounds  
-    const modelBounds = new Bounds2(-5, -5, 5, 5); // meters
+    const transformModelBounds = new Bounds2(-5, -5, 5, 5); // meters
     const viewBounds = this.layoutBounds;
     
     // Create transform using createRectangleMapping which maps model bounds to view bounds
     // This will handle the coordinate conversion with proper scaling
-    this.modelViewTransform = ModelViewTransform2.createRectangleMapping(modelBounds, viewBounds);
+    this.modelViewTransform = ModelViewTransform2.createRectangleMapping(transformModelBounds, viewBounds);
 
     // Initialize properties
     this.rulerVisibleProperty = new Property<boolean>(false);
@@ -73,13 +74,13 @@ export class SimScreenView extends ScreenView {
     this.driverNode.addChild(driverBox);
 
     // Driver Power Toggle
-    const powerToggleLabel = new Text('ON', {
+    const powerToggleLabel = new Text(ResonanceStrings.controls.onStringProperty, {
       font: ResonanceConstants.LABEL_FONT,
       fill: ResonanceColors.driverTextProperty
     });
     const powerToggleSwitch = new ToggleSwitch(model.resonanceModel.drivingEnabledProperty, false, true, {
-      trackFillLeft: ResonanceConstants.TOGGLE_TRACK_OFF_COLOR,
-      trackFillRight: ResonanceConstants.TOGGLE_TRACK_ON_COLOR,
+      trackFillLeft: ResonanceColors.toggleTrackOffProperty,
+      trackFillRight: ResonanceColors.toggleTrackOnProperty,
       thumbFill: 'white'
     });
     const powerToggleBox = new HBox({
@@ -91,7 +92,7 @@ export class SimScreenView extends ScreenView {
     this.driverNode.addChild(powerToggleBox);
 
     // Driver Frequency Control using NumberControl
-    const frequencyControl = new NumberControl('Frequency', model.resonanceModel.drivingFrequencyProperty, ResonanceConstants.FREQUENCY_RANGE, {
+    const frequencyControl = new NumberControl(ResonanceStrings.controls.frequencyStringProperty, model.resonanceModel.drivingFrequencyProperty, ResonanceConstants.FREQUENCY_RANGE, {
       numberDisplayOptions: {
         valuePattern: '{{value}} Hz',
         decimalPlaces: 2
@@ -120,7 +121,7 @@ export class SimScreenView extends ScreenView {
     this.addChild(resetAllButton);
 
     // Driver Amplitude Control using NumberControl
-    const amplitudeControl = new NumberControl('Amplitude', model.resonanceModel.drivingAmplitudeProperty, ResonanceConstants.AMPLITUDE_RANGE, {
+    const amplitudeControl = new NumberControl(ResonanceStrings.controls.amplitudeStringProperty, model.resonanceModel.drivingAmplitudeProperty, ResonanceConstants.AMPLITUDE_RANGE, {
       numberDisplayOptions: {
         valuePattern: '{{value}} N',
         decimalPlaces: 1
@@ -151,42 +152,52 @@ export class SimScreenView extends ScreenView {
     });
 
     // ===== RULER (optional, toggled on/off) =====
+    // Create vertical ruler by swapping width/height and rotating
+    // For vertical: rulerWidth (tick extent) = 300, rulerHeight (thickness) = 40
     const rulerLabels = ['0', '10', '20', '30'];
     this.rulerNode = new RulerNode(
-      ResonanceConstants.RULER_WIDTH,
-      ResonanceConstants.RULER_HEIGHT,
-      ResonanceConstants.RULER_MAJOR_TICK_WIDTH,
+      ResonanceConstants.RULER_WIDTH,   // rulerWidth: distance between ticks (300 for vertical extent)
+      ResonanceConstants.RULER_HEIGHT,   // rulerHeight: thickness of ruler (40 for horizontal extent)
+      ResonanceConstants.RULER_MAJOR_TICK_WIDTH, // majorTickWidth: spacing between major ticks (100)
       rulerLabels, 'cm', {
         minorTicksPerMajorTick: ResonanceConstants.RULER_MINOR_TICKS_PER_MAJOR,
         insetsWidth: ResonanceConstants.RULER_INSETS_WIDTH
       });
     
+    // Rotate ruler -90 degrees to make it vertical (pointing upward)
+    this.rulerNode.rotation = -Math.PI / 2;
+    
     // Convert model coordinates to view coordinates using ModelViewTransform
     this.rulerPositionProperty.link((modelPosition: Vector2) => {
       const viewX = this.modelViewTransform.modelToViewX(modelPosition.x);
       const viewY = this.modelViewTransform.modelToViewY(modelPosition.y);
-      this.rulerNode.left = viewX;
-      this.rulerNode.top = viewY;
+      // Position at the center of the rotated ruler
+      this.rulerNode.centerX = viewX;
+      this.rulerNode.centerY = viewY;
     });
     
     this.rulerNode.visible = false;
     
     // Add drag handler using positionProperty - much simpler!
-    // Calculate drag bounds accounting for ruler size
-    const modelBounds = this.modelViewTransform.viewToModelBounds(this.layoutBounds);
-    const rulerWidthModel = this.modelViewTransform.viewToModelDeltaX(ResonanceConstants.RULER_WIDTH);
-    const rulerHeightModel = Math.abs(this.modelViewTransform.viewToModelDeltaY(ResonanceConstants.RULER_HEIGHT));
+    // Calculate drag bounds accounting for ruler size (rotated dimensions)
+    const rulerModelBounds = this.modelViewTransform.viewToModelBounds(this.layoutBounds);
+    // After rotation, the effective width (horizontal) is RULER_HEIGHT and height (vertical) is RULER_WIDTH
+    const rulerWidthModel = this.modelViewTransform.viewToModelDeltaX(ResonanceConstants.RULER_HEIGHT);
+    const rulerHeightModel = Math.abs(this.modelViewTransform.viewToModelDeltaY(ResonanceConstants.RULER_WIDTH));
     const dragBounds = new Bounds2(
-      modelBounds.minX,
-      modelBounds.minY,
-      modelBounds.maxX - rulerWidthModel,
-      modelBounds.maxY - rulerHeightModel
+      rulerModelBounds.minX,
+      rulerModelBounds.minY,
+      rulerModelBounds.maxX - rulerWidthModel,
+      rulerModelBounds.maxY - rulerHeightModel
     );
     
     const dragListener = new DragListener({
       targetNode: this.rulerNode,
       positionProperty: this.rulerPositionProperty,
       transform: this.modelViewTransform,
+      // Use parent offset to handle rotation correctly - computes offsets in parent coordinate space
+      // rather than using the node's transform, which is necessary when positioning via centerX/centerY
+      useParentOffset: true,
       // Constrain to model bounds accounting for ruler size
       dragBoundsProperty: new Property(dragBounds)
     });
@@ -200,7 +211,7 @@ export class SimScreenView extends ScreenView {
     // ===== CONTROL PANEL (Right side, green panel) =====
 
     // Number of Resonators control using NumberControl
-    const resonatorCountControl = new NumberControl('Resonators', model.resonatorCountProperty, ResonanceConstants.RESONATOR_COUNT_RANGE, {
+    const resonatorCountControl = new NumberControl(ResonanceStrings.controls.resonatorsStringProperty, model.resonatorCountProperty, ResonanceConstants.RESONATOR_COUNT_RANGE, {
       delta: 1,
       numberDisplayOptions: {
         decimalPlaces: 0
@@ -215,7 +226,7 @@ export class SimScreenView extends ScreenView {
     });
 
     // ===== OSCILLATOR CONFIGURATION COMBO BOX =====
-    const configLabel = new Text('Configuration', {
+    const configLabel = new Text(ResonanceStrings.controls.oscillatorConfigStringProperty, {
       font: ResonanceConstants.LABEL_FONT,
       fill: ResonanceColors.textProperty
     });
@@ -223,19 +234,19 @@ export class SimScreenView extends ScreenView {
     const comboBoxItems: ComboBoxItem<OscillatorConfigModeType>[] = [
       {
         value: OscillatorConfigMode.SAME_MASS,
-        createNode: () => new Text('Same Mass', {
+        createNode: () => new Text(ResonanceStrings.controls.sameMassStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         })
       },
       {
         value: OscillatorConfigMode.SAME_SPRING_CONSTANT,
-        createNode: () => new Text('Same Spring Constant', {
+        createNode: () => new Text(ResonanceStrings.controls.sameSpringConstantStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         })
       },
       {
         value: OscillatorConfigMode.MIXED,
-        createNode: () => new Text('Mixed', {
+        createNode: () => new Text(ResonanceStrings.controls.mixedStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         })
       }
@@ -263,13 +274,13 @@ export class SimScreenView extends ScreenView {
     });
 
     // Resonator 1 Parameters Box
-    const resonatorLabel = new Text('Resonator 1', {
+    const resonatorLabel = new Text(ResonanceStrings.controls.resonator1StringProperty, {
       font: ResonanceConstants.TITLE_FONT,
       fill: ResonanceColors.textProperty
     });
 
     // Mass control using NumberControl
-    const massControl = new NumberControl('Mass', model.resonanceModel.massProperty, ResonanceConstants.MASS_RANGE, {
+    const massControl = new NumberControl(ResonanceStrings.controls.massSimpleStringProperty, model.resonanceModel.massProperty, ResonanceConstants.MASS_RANGE, {
       numberDisplayOptions: {
         valuePattern: '{{value}} kg',
         decimalPlaces: 4
@@ -277,7 +288,7 @@ export class SimScreenView extends ScreenView {
     });
 
     // Spring Constant control using NumberControl
-    const springConstantControl = new NumberControl('Spring Constant', model.resonanceModel.springConstantProperty, ResonanceConstants.SPRING_CONSTANT_RANGE, {
+    const springConstantControl = new NumberControl(ResonanceStrings.controls.springConstantSimpleStringProperty, model.resonanceModel.springConstantProperty, ResonanceConstants.SPRING_CONSTANT_RANGE, {
       numberDisplayOptions: {
         valuePattern: '{{value}} N/m',
         decimalPlaces: 0
@@ -291,7 +302,7 @@ export class SimScreenView extends ScreenView {
     });
 
     model.resonanceModel.naturalFrequencyHzProperty.link((freq: number) => {
-      naturalFrequencyText.string = `frequency = ${freq.toFixed(3)} Hz`;
+      naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${freq.toFixed(3)} Hz`;
     });
 
     // Damping Constant control using NumberControl
@@ -304,8 +315,8 @@ export class SimScreenView extends ScreenView {
 
     // Gravity Toggle using ToggleSwitch
     const gravityToggleSwitch = new ToggleSwitch(this.gravityEnabledProperty, false, true, {
-      trackFillLeft: ResonanceConstants.GRAVITY_TOGGLE_OFF_COLOR,
-      trackFillRight: ResonanceConstants.GRAVITY_TOGGLE_ON_COLOR
+      trackFillLeft: ResonanceColors.gravityToggleOffProperty,
+      trackFillRight: ResonanceColors.gravityToggleOnProperty
     });
 
     // Listen to gravity toggle changes and update model
@@ -313,7 +324,7 @@ export class SimScreenView extends ScreenView {
       model.resonanceModel.gravityProperty.value = enabled ? ResonanceConstants.GRAVITY_ACCELERATION : 0;
     });
 
-    const gravityLabel = new Text('Gravity', {
+    const gravityLabel = new Text(ResonanceStrings.controls.gravityStringProperty, {
       font: ResonanceConstants.LABEL_FONT,
       fill: ResonanceColors.textProperty
     });
@@ -324,7 +335,7 @@ export class SimScreenView extends ScreenView {
     });
 
     // Ruler Toggle
-    const rulerCheckbox = new Checkbox(this.rulerVisibleProperty, new Text('Ruler', {
+    const rulerCheckbox = new Checkbox(this.rulerVisibleProperty, new Text(ResonanceStrings.controls.rulerStringProperty, {
       font: ResonanceConstants.CONTROL_FONT,
       fill: ResonanceColors.textProperty
     }), {
@@ -450,7 +461,7 @@ export class SimScreenView extends ScreenView {
       const springNode = new ParametricSpringNode({
         frontColor: ResonanceColors.springProperty,
         middleColor: ResonanceColors.springProperty,
-        backColor: ResonanceConstants.SPRING_BACK_COLOR,
+        backColor: ResonanceColors.springBackProperty,
         loops: ResonanceConstants.SPRING_LOOPS,
         radius: ResonanceConstants.SPRING_RADIUS,
         aspectRatio: ResonanceConstants.SPRING_ASPECT_RATIO,

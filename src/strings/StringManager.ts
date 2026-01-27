@@ -70,6 +70,21 @@ export class StringManager {
       drivingAmplitudeStringProperty: this.stringProperties.resonance.controls.drivingAmplitudeStringProperty,
       massStringProperty: this.stringProperties.resonance.controls.massStringProperty,
       resetStringProperty: this.stringProperties.resonance.controls.resetStringProperty,
+      oscillatorConfigStringProperty: this.stringProperties.resonance.controls.oscillatorConfigStringProperty,
+      sameMassStringProperty: this.stringProperties.resonance.controls.sameMassStringProperty,
+      sameSpringConstantStringProperty: this.stringProperties.resonance.controls.sameSpringConstantStringProperty,
+      mixedStringProperty: this.stringProperties.resonance.controls.mixedStringProperty,
+      frequencyStringProperty: this.stringProperties.resonance.controls.frequencyStringProperty,
+      amplitudeStringProperty: this.stringProperties.resonance.controls.amplitudeStringProperty,
+      resonatorsStringProperty: this.stringProperties.resonance.controls.resonatorsStringProperty,
+      resonator1StringProperty: this.stringProperties.resonance.controls.resonator1StringProperty,
+      massSimpleStringProperty: this.stringProperties.resonance.controls.massSimpleStringProperty,
+      springConstantSimpleStringProperty: this.stringProperties.resonance.controls.springConstantSimpleStringProperty,
+      dampingStringProperty: this.stringProperties.resonance.controls.dampingStringProperty,
+      gravityStringProperty: this.stringProperties.resonance.controls.gravityStringProperty,
+      rulerStringProperty: this.stringProperties.resonance.controls.rulerStringProperty,
+      onStringProperty: this.stringProperties.resonance.controls.onStringProperty,
+      frequencyEqualsStringProperty: this.stringProperties.resonance.controls.frequencyEqualsStringProperty,
     };
   }
 

@@ -14,7 +14,7 @@ const CONTROL_FONT = '14px sans-serif';
 
 // ===== DRIVER BOX =====
 
-const DRIVER_BOX_WIDTH = 200;
+const DRIVER_BOX_WIDTH = 600;
 const DRIVER_BOX_HEIGHT = 120;
 const DRIVER_BOX_CORNER_RADIUS = 10;
 const DRIVER_BOX_LINE_WIDTH = 2;
@@ -24,8 +24,6 @@ const DRIVER_CENTER_X_OFFSET = -100; // offset from layout center
 // ===== DRIVER CONTROLS =====
 
 const CONTROL_SCALE = 0.7;
-const TOGGLE_TRACK_OFF_COLOR = '#666666';
-const TOGGLE_TRACK_ON_COLOR = '#00CC00';
 const POWER_TOGGLE_SPACING = 8;
 const POWER_TOGGLE_LEFT = 15;
 const POWER_TOGGLE_TOP = 15;
@@ -44,7 +42,6 @@ const DAMPING_RANGE = new Range( 0, 10 );
 
 // ===== SPRING AND MASS RENDERING =====
 
-const METERS_TO_PIXELS = 100;
 const EQUILIBRIUM_Y_OFFSET = 150; // pixels above driver top
 
 // Mass node sizing: radius = max( MIN_MASS_RADIUS, MAX_MASS_RADIUS - count )
@@ -54,13 +51,12 @@ const MASS_STROKE_LINE_WIDTH = 3;
 
 // ParametricSpringNode configuration
 const SPRING_LOOPS = 10;
-const SPRING_RADIUS = 8;
+const SPRING_RADIUS = 5; // Reduced from 8 to make springs narrower
 const SPRING_ASPECT_RATIO = 4;
 const SPRING_POINTS_PER_LOOP = 40;
-const SPRING_LINE_WIDTH = 3;
+const SPRING_LINE_WIDTH = 1;
 const SPRING_LEFT_END_LENGTH = 5;
 const SPRING_RIGHT_END_LENGTH = 5;
-const SPRING_BACK_COLOR = '#660000';
 const MIN_SPRING_XSCALE = 0.3;
 
 // ===== RULER =====
@@ -93,8 +89,6 @@ const COMBO_BOX_SPACING = 5;
 
 // ===== GRAVITY =====
 
-const GRAVITY_TOGGLE_OFF_COLOR = '#999999';
-const GRAVITY_TOGGLE_ON_COLOR = '#4499FF';
 const GRAVITY_ACCELERATION = 9.8;
 const GRAVITY_BOX_SPACING = 10;
 
@@ -133,8 +127,6 @@ const ResonanceConstants = {
 
   // Driver controls
   CONTROL_SCALE,
-  TOGGLE_TRACK_OFF_COLOR,
-  TOGGLE_TRACK_ON_COLOR,
   POWER_TOGGLE_SPACING,
   POWER_TOGGLE_LEFT,
   POWER_TOGGLE_TOP,
@@ -151,7 +143,6 @@ const ResonanceConstants = {
   DAMPING_RANGE,
 
   // Spring and mass rendering
-  METERS_TO_PIXELS,
   EQUILIBRIUM_Y_OFFSET,
   MAX_MASS_RADIUS,
   MIN_MASS_RADIUS,
@@ -163,7 +154,6 @@ const ResonanceConstants = {
   SPRING_LINE_WIDTH,
   SPRING_LEFT_END_LENGTH,
   SPRING_RIGHT_END_LENGTH,
-  SPRING_BACK_COLOR,
   MIN_SPRING_XSCALE,
 
   // Ruler
@@ -192,8 +182,6 @@ const ResonanceConstants = {
   COMBO_BOX_SPACING,
 
   // Gravity
-  GRAVITY_TOGGLE_OFF_COLOR,
-  GRAVITY_TOGGLE_ON_COLOR,
   GRAVITY_ACCELERATION,
   GRAVITY_BOX_SPACING,
 
