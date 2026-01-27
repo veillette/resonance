@@ -15,8 +15,9 @@ export class SimScreenView extends ScreenView {
 
   private readonly model: SimModel;
   private preferencesDialog: PreferencesDialog | null = null;
-  private readonly springNode: Path;
-  private readonly massNode: Node;
+  private readonly resonatorsContainer: Node;
+  private springNodes: Path[] = [];
+  private massNodes: Node[] = [];
   private readonly rulerNode: RulerNode;
   private readonly rulerVisibleProperty: Property<boolean>;
   private readonly selectedResonatorProperty: NumberProperty;
@@ -109,28 +110,16 @@ export class SimScreenView extends ScreenView {
     this.driverNode.bottom = this.layoutBounds.bottom - 150;
     simulationArea.addChild(this.driverNode);
 
-    // ===== SPRING (Red helical element) =====
-    this.springNode = new Path(null, {
-      stroke: '#CC0000',
-      lineWidth: 3
-    });
-    simulationArea.addChild(this.springNode);
+    // ===== RESONATORS (springs + masses, displayed side by side) =====
+    this.resonatorsContainer = new Node();
+    simulationArea.addChild(this.resonatorsContainer);
+    this.rebuildResonators(1);
 
-    // ===== MASS/RESONATOR (Blue circle labeled "1") =====
-    this.massNode = new Node();
-    const massCircle = new Circle(25, {
-      fill: '#3366FF',
-      stroke: '#0033AA',
-      lineWidth: 3
+    // Rebuild resonators when count changes
+    this.selectedResonatorProperty.link((count: number) => {
+      this.rebuildResonators(count);
+      this.updateSpringAndMass(this.driverNode);
     });
-    const massNumberLabel = new Text('1', {
-      font: 'bold 24px sans-serif',
-      fill: 'white',
-      center: massCircle.center
-    });
-    this.massNode.addChild(massCircle);
-    this.massNode.addChild(massNumberLabel);
-    simulationArea.addChild(this.massNode);
 
     // ===== RULER (optional, toggled on/off) =====
     // Using standard RulerNode from scenerystack
@@ -319,15 +308,6 @@ export class SimScreenView extends ScreenView {
 
     this.addChild(playbackControls);
 
-    // ===== PhET BRANDING =====
-    const phetBranding = new Text('PhET', {
-      font: 'bold 20px sans-serif',
-      fill: ResonanceColors.text,
-      right: this.layoutBounds.maxX - 20,
-      bottom: this.layoutBounds.maxY - 20
-    });
-    this.addChild(phetBranding);
-
     // Add preferences button using standard icon from joist
     const preferencesIcon = new Image(preferencesIcon_png, {
       scale: 0.8
@@ -364,41 +344,91 @@ export class SimScreenView extends ScreenView {
     this.updateSpringAndMass(this.driverNode);
   }
 
+  /**
+   * Rebuild the visual resonator nodes (springs + masses) for a given count.
+   */
+  private rebuildResonators(count: number): void {
+    this.resonatorsContainer.removeAllChildren();
+    this.springNodes = [];
+    this.massNodes = [];
+
+    // Scale mass radius based on count so they fit on the platform
+    const massRadius = Math.max(10, 25 - count);
+
+    for (let i = 0; i < count; i++) {
+      const springNode = new Path(null, {
+        stroke: '#CC0000',
+        lineWidth: 3
+      });
+      this.resonatorsContainer.addChild(springNode);
+      this.springNodes.push(springNode);
+
+      const massNode = new Node();
+      const massCircle = new Circle(massRadius, {
+        fill: '#3366FF',
+        stroke: '#0033AA',
+        lineWidth: 3
+      });
+      const massLabel = new Text(`${i + 1}`, {
+        font: `bold ${Math.max(10, 24 - count)}px sans-serif`,
+        fill: 'white',
+        center: massCircle.center
+      });
+      massNode.addChild(massCircle);
+      massNode.addChild(massLabel);
+      this.resonatorsContainer.addChild(massNode);
+      this.massNodes.push(massNode);
+    }
+  }
+
   private updateSpringAndMass(driverNode: Node): void {
     const model = this.model.resonanceModel;
+    const count = this.springNodes.length;
+    if (count === 0) {
+      return;
+    }
 
     // Driver top position
     const driverTopY = driverNode.top;
     const driverCenterX = driverNode.centerX;
 
+    // Spacing: distribute resonators evenly across the driver width
+    const driverWidth = 200;
+    const spacing = driverWidth / (count + 1);
+
     // Calculate mass position based on model position property
-    // Position is in meters, we'll scale it to pixels
-    const metersToPixels = 100; // 100 pixels per meter
-    const equilibriumY = driverTopY - 150; // Equilibrium position 150px above driver
+    const metersToPixels = 100;
+    const equilibriumY = driverTopY - 150;
     const massY = equilibriumY + model.positionProperty.value * metersToPixels;
 
-    // Update mass position
-    this.massNode.centerX = driverCenterX;
-    this.massNode.centerY = massY;
+    const massRadius = Math.max(10, 25 - count);
+    const coilWidth = Math.max(8, 20 - count);
 
-    // Update spring path - create a helical spring shape
-    const springStartY = driverTopY;
-    const springEndY = massY - 25; // End at top of mass (25px radius)
-    const springHeight = springEndY - springStartY;
-    const numCoils = Math.max(8, Math.abs(springHeight / 15)); // Adjust coil density
-    const coilWidth = 20;
+    for (let i = 0; i < count; i++) {
+      const xCenter = driverCenterX - driverWidth / 2 + spacing * (i + 1);
 
-    const springShape = new Shape();
-    springShape.moveTo(driverCenterX, springStartY);
+      // Update mass position
+      this.massNodes[i].centerX = xCenter;
+      this.massNodes[i].centerY = massY;
 
-    for (let i = 0; i <= numCoils; i++) {
-      const t = i / numCoils;
-      const y = springStartY + t * springHeight;
-      const x = driverCenterX + Math.sin(i * Math.PI) * coilWidth;
-      springShape.lineTo(x, y);
+      // Update spring path
+      const springStartY = driverTopY;
+      const springEndY = massY - massRadius;
+      const springHeight = springEndY - springStartY;
+      const numCoils = Math.max(8, Math.abs(springHeight / 15));
+
+      const springShape = new Shape();
+      springShape.moveTo(xCenter, springStartY);
+
+      for (let j = 0; j <= numCoils; j++) {
+        const t = j / numCoils;
+        const y = springStartY + t * springHeight;
+        const x = xCenter + Math.sin(j * Math.PI) * coilWidth;
+        springShape.lineTo(x, y);
+      }
+
+      this.springNodes[i].shape = springShape;
     }
-
-    this.springNode.shape = springShape;
   }
 
   public reset(): void {
