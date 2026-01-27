@@ -26,7 +26,9 @@ export class SimScreenView extends ScreenView {
   private readonly rulerVisibleProperty: Property<boolean>;
   private readonly rulerPositionProperty: Vector2Property;
   private readonly gravityEnabledProperty: Property<boolean>;
-  private readonly driverNode: Node;
+  private readonly driverNode: Node; // Control box with UI
+  private driverPlate!: Rectangle; // Gray plate that oscillates and springs attach to (initialized in constructor)
+  private connectionRod!: Rectangle; // Connection rod between control box and plate (initialized in constructor)
 
   public constructor(
     model: SimModel,
@@ -135,10 +137,39 @@ export class SimScreenView extends ScreenView {
     amplitudeControl.bottom = driverBox.bottom - ResonanceConstants.AMPLITUDE_CONTROL_BOTTOM_MARGIN;
     this.driverNode.addChild(amplitudeControl);
 
-    // Position driver at bottom center-left
+    // Position driver control box at bottom center-left
     this.driverNode.centerX = this.layoutBounds.centerX + ResonanceConstants.DRIVER_CENTER_X_OFFSET;
     this.driverNode.bottom = this.layoutBounds.bottom - ResonanceConstants.DRIVER_BOTTOM_MARGIN;
     simulationArea.addChild(this.driverNode);
+
+    // ===== DRIVER PLATE (Gray plate that oscillates, springs attach to this) =====
+    // This is the gray plate that all springs connect to and is driven by oscillations
+    const driverPlateWidth = ResonanceConstants.DRIVER_BOX_WIDTH;
+    const driverPlateHeight = 20; // Thinner plate for the driver
+    const driverPlateBaseY = this.driverNode.top - 30; // Position above the control box
+    const connectionRodHeight = 30; // Height of the connection rod between box and plate
+    
+    // Create connection rod (vertical cylinder/rectangle) that connects the control box to the plate
+    this.connectionRod = new Rectangle(0, 0, 15, connectionRodHeight, {
+      fill: ResonanceColors.driverFillProperty,
+      stroke: ResonanceColors.driverStrokeProperty,
+      lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
+      cornerRadius: 7.5 // Make it cylindrical looking
+    });
+    this.connectionRod.centerX = this.driverNode.centerX;
+    this.connectionRod.bottom = this.driverNode.top;
+    simulationArea.addChild(this.connectionRod);
+    
+    // Create the driver plate
+    this.driverPlate = new Rectangle(0, 0, driverPlateWidth, driverPlateHeight, {
+      fill: ResonanceColors.driverFillProperty,
+      stroke: ResonanceColors.driverStrokeProperty,
+      lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
+      cornerRadius: 5
+    });
+    this.driverPlate.centerX = this.driverNode.centerX;
+    this.driverPlate.y = driverPlateBaseY;
+    simulationArea.addChild(this.driverPlate);
 
     // ===== RESONATORS (springs + masses, displayed side by side) =====
     this.resonatorsContainer = new Node();
@@ -511,7 +542,8 @@ export class SimScreenView extends ScreenView {
   /**
    * Update spring and mass positions each frame.
    * Computes the desired spring length and adjusts ParametricSpringNode xScale
-   * so the spring visually connects the driver to the mass.
+   * so the spring visually connects the driver plate to the mass.
+   * Also updates the driver plate position based on driving force.
    */
   private updateSpringAndMass(driverNode: Node): void {
     const count = this.springNodes.length;
@@ -519,9 +551,53 @@ export class SimScreenView extends ScreenView {
       return;
     }
 
-    // Driver top position
-    const driverTopY = driverNode.top;
-    const driverCenterX = driverNode.centerX;
+    // Update driver plate position based on driving force
+    // The driver plate oscillates: y = baseY + A * sin(ω*t)
+    // The amplitude directly controls the oscillation amplitude
+    const driverModel = this.model.resonanceModel;
+    if (driverModel.drivingEnabledProperty.value) {
+      const omega = driverModel.drivingFrequencyProperty.value * 2 * Math.PI; // rad/s
+      const time = driverModel.timeProperty.value;
+      
+      // Get driving amplitude (N) - this directly controls the oscillation amplitude
+      const drivingAmplitude = driverModel.drivingAmplitudeProperty.value;
+      
+      // Convert amplitude to view displacement
+      // Map amplitude range (0-10 N) to view displacement range (0-100 pixels)
+      // This gives a direct, visible response to amplitude changes
+      const amplitudeRange = ResonanceConstants.AMPLITUDE_RANGE;
+      const maxViewDisplacement = 100; // Maximum view displacement in pixels
+      const normalizedAmplitude = (drivingAmplitude - amplitudeRange.min) / (amplitudeRange.max - amplitudeRange.min);
+      const amplitudeViewDisplacement = normalizedAmplitude * maxViewDisplacement;
+      
+      // Calculate oscillation: amplitude * sin(ω*t)
+      const viewDisplacement = amplitudeViewDisplacement * Math.sin(omega * time);
+      
+      // Update driver plate Y position (oscillates around base position)
+      const driverPlateBaseY = this.driverNode.top - 30;
+      this.driverPlate.y = driverPlateBaseY + viewDisplacement;
+      
+      // Update connection rod to stretch/compress with the plate movement
+      const connectionRodBaseHeight = 30;
+      const connectionRodBaseBottom = this.driverNode.top;
+      // Rod height adjusts to maintain connection between box and plate
+      // When plate moves up, rod compresses (shorter), when down, rod extends (longer)
+      const rodHeight = Math.max(10, connectionRodBaseHeight - viewDisplacement);
+      this.connectionRod.setRectHeight(rodHeight);
+      this.connectionRod.bottom = connectionRodBaseBottom;
+    } else {
+      // When driving is off, plate stays at base position
+      const driverPlateBaseY = this.driverNode.top - 30;
+      this.driverPlate.y = driverPlateBaseY;
+      
+      // Reset connection rod to base height
+      this.connectionRod.setRectHeight(30);
+      this.connectionRod.bottom = this.driverNode.top;
+    }
+
+    // Driver plate top position (where springs attach)
+    const driverTopY = this.driverPlate.top;
+    const driverCenterX = this.driverPlate.centerX;
 
     // Spacing: distribute resonators evenly across the driver width
     const spacing = ResonanceConstants.DRIVER_BOX_WIDTH / (count + 1);
