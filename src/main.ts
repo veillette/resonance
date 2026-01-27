@@ -10,8 +10,6 @@ import { PhetFont } from "scenerystack/scenery-phet";
 import { SimScreen } from "./screen-name/SimScreen.js";
 import { ResonanceStrings } from "./strings/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
-import { setColorProfile } from "./common/ResonanceColors.js";
-import type { ColorProfile } from "./common/ResonanceColors.js";
 import { SolverType } from "./common/model/SolverType.js";
 
 onReadyToLaunch(() => {
@@ -206,13 +204,6 @@ onReadyToLaunch(() => {
 
   // Create the simulation
   const sim = new Sim(ResonanceStrings.titleStringProperty, screens, simOptions);
-
-  // Listen to color profile changes and update the color system
-  resonancePreferences.colorProfileProperty.link((colorProfile: ColorProfile) => {
-    setColorProfile(colorProfile);
-    // Force a redraw by dispatching a custom event
-    window.dispatchEvent(new Event("colorProfileChanged"));
-  });
 
   sim.start();
 });

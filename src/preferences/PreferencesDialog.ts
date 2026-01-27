@@ -23,19 +23,19 @@ export class PreferencesDialog extends Panel {
     const title = new Text(strings.title, {
       font: "20px sans-serif",
       fontWeight: "bold",
-      fill: ResonanceColors.text,
+      fill: ResonanceColors.textProperty,
     });
 
     // Create preference panels
     const visualLabel = new Text(strings.visual.title, {
       font: "16px sans-serif",
       fontWeight: "bold",
-      fill: ResonanceColors.text,
+      fill: ResonanceColors.textProperty,
     });
 
     const visualPanel = new Panel(new VisualPreferencesPanel(preferencesModel), {
-      fill: ResonanceColors.panelFill,
-      stroke: ResonanceColors.panelStroke,
+      fill: ResonanceColors.panelFillProperty,
+      stroke: ResonanceColors.panelStrokeProperty,
       cornerRadius: 5,
       xMargin: 15,
       yMargin: 15,
@@ -44,14 +44,14 @@ export class PreferencesDialog extends Panel {
     const simulationLabel = new Text(strings.simulation.title, {
       font: "16px sans-serif",
       fontWeight: "bold",
-      fill: ResonanceColors.text,
+      fill: ResonanceColors.textProperty,
     });
 
     const simulationPanel = new Panel(
       new SimulationPreferencesPanel(preferencesModel),
       {
-        fill: ResonanceColors.panelFill,
-        stroke: ResonanceColors.panelStroke,
+        fill: ResonanceColors.panelFillProperty,
+        stroke: ResonanceColors.panelStrokeProperty,
         cornerRadius: 5,
         xMargin: 15,
         yMargin: 15,
@@ -62,10 +62,10 @@ export class PreferencesDialog extends Panel {
     const closeButton = new RectangularPushButton({
       content: new Text("Close", {
         font: "14px sans-serif",
-        fill: ResonanceColors.text,
+        fill: ResonanceColors.textProperty,
       }),
       listener: closeCallback,
-      baseColor: ResonanceColors.panelFill,
+      baseColor: ResonanceColors.panelFillProperty,
       xMargin: 10,
       yMargin: 6,
     });
@@ -85,8 +85,8 @@ export class PreferencesDialog extends Panel {
     });
 
     super(content, {
-      fill: ResonanceColors.background,
-      stroke: ResonanceColors.panelStroke,
+      fill: ResonanceColors.backgroundProperty,
+      stroke: ResonanceColors.panelStrokeProperty,
       xMargin: 20,
       yMargin: 20,
       cornerRadius: 10,
