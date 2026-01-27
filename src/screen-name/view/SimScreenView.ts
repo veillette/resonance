@@ -88,13 +88,15 @@ export class SimScreenView extends ScreenView {
       frequencyReadout.centerX = frequencyKnob.centerX;
     });
 
-    const resetAllButton = new ResetAllButton({listener: () => {
-      model.reset();
-      this.reset();
-      }});
+    const resetAllButton = new ResetAllButton({
+      listener: () => {
+        model.reset();
+        this.reset();
+      },
+      right: this.layoutBounds.maxX - 20,
+      bottom: this.layoutBounds.maxY - 20
+    });
     this.addChild(resetAllButton);
-    resetAllButton.right = this.layoutBounds.maxX - 20;
-    resetAllButton.top = this.layoutBounds.minY + 20; 
     
     // Driver Amplitude Control (blue slider with readout)
     const amplitudeReadout = new Text('0.50 cm', { font: '12px sans-serif', fill: 'white' });
@@ -297,18 +299,6 @@ export class SimScreenView extends ScreenView {
       this.rulerNode.visible = visible;
     });
 
-    // Reset All Button
-    const controlPanelResetButton = new RectangularPushButton({
-      content: new Text('Reset All', { font: 'bold 16px sans-serif', fill: 'white' }),
-      baseColor: '#CC0000',
-      listener: () => {
-        model.reset();
-        this.reset();
-      },
-      xMargin: 20,
-      yMargin: 10
-    });
-
     // Assemble control panel contents
     const controlPanelContent = new VBox({
       children: [
@@ -322,8 +312,7 @@ export class SimScreenView extends ScreenView {
         dampingControl,
         new Line(0, 0, 250, 0, { stroke: ResonanceColors.text, lineWidth: 1 }),
         gravityBox,
-        rulerCheckbox,
-        controlPanelResetButton
+        rulerCheckbox
       ],
       spacing: 15,
       align: 'left'
