@@ -97,42 +97,21 @@ export class SimScreenView extends ScreenView {
       bottom: this.layoutBounds.maxY - 20
     });
     this.addChild(resetAllButton);
-    
-    // Driver Amplitude Control (blue slider with readout)
-    const amplitudeReadout = new Text('0.50 cm', { font: '12px sans-serif', fill: 'white' });
-    const amplitudeSliderTrack = new Rectangle(0, 0, 120, 8, 4, 4, {
-      fill: '#003366',
-      stroke: '#0055AA',
-      lineWidth: 1
+
+    // Driver Amplitude Control using NumberControl
+    const amplitudeControl = new NumberControl('Amplitude', model.resonanceModel.drivingAmplitudeProperty, new Range(0, 10), {
+      numberDisplayOptions: {
+        valuePattern: '{{value}} N',
+        decimalPlaces: 1
+      },
+      sliderOptions: {
+        trackFillEnabled: '#3399FF'
+      }
     });
-    const amplitudeSliderThumb = new Circle(8, {
-      fill: '#3399FF',
-      stroke: '#0066CC',
-      lineWidth: 2,
-      cursor: 'pointer'
-    });
-
-    amplitudeSliderTrack.left = driverBox.right - 135;
-    amplitudeSliderTrack.bottom = driverBox.bottom - 15;
-    amplitudeSliderThumb.centerY = amplitudeSliderTrack.centerY;
-
-    // Set initial thumb position based on amplitude (0-10N range mapped to slider width)
-    const updateAmplitudeThumb = () => {
-      const normalizedValue = model.resonanceModel.drivingAmplitudeProperty.value / 10;
-      amplitudeSliderThumb.centerX = amplitudeSliderTrack.left + normalizedValue * amplitudeSliderTrack.width;
-      amplitudeReadout.string = `${(model.resonanceModel.drivingAmplitudeProperty.value / 10).toFixed(2)} cm`;
-      amplitudeReadout.centerX = amplitudeSliderTrack.centerX;
-    };
-    updateAmplitudeThumb();
-
-    amplitudeReadout.centerX = amplitudeSliderTrack.centerX;
-    amplitudeReadout.bottom = amplitudeSliderTrack.top - 5;
-
-    this.driverNode.addChild(amplitudeSliderTrack);
-    this.driverNode.addChild(amplitudeSliderThumb);
-    this.driverNode.addChild(amplitudeReadout);
-
-    model.resonanceModel.drivingAmplitudeProperty.link(updateAmplitudeThumb);
+    amplitudeControl.setScaleMagnitude(0.7);
+    amplitudeControl.left = 10;
+    amplitudeControl.bottom = driverBox.bottom - 10;
+    this.driverNode.addChild(amplitudeControl);
 
     // Position driver at bottom center-left
     this.driverNode.centerX = this.layoutBounds.centerX - 100;
@@ -194,26 +173,19 @@ export class SimScreenView extends ScreenView {
 
     // ===== CONTROL PANEL (Right side, green panel) =====
 
-    // Number of Resonators selector (currently just showing '1')
-    const resonatorSelectorButtons = [
-      { value: 1, createNode: () => new Text('1', { font: 'bold 18px sans-serif' }) }
-    ];
-
-    const resonatorSelector = new AquaRadioButtonGroup(
-      this.selectedResonatorProperty,
-      resonatorSelectorButtons,
-      {
-        orientation: 'horizontal',
-        spacing: 10,
-        radioButtonOptions: {
-          radius: 12
-        }
+    // Number of Resonators control using NumberControl
+    const resonatorCountControl = new NumberControl('Resonators', this.selectedResonatorProperty, new Range(1, 10), {
+      delta: 1,
+      numberDisplayOptions: {
+        decimalPlaces: 0
+      },
+      sliderOptions: {
+        majorTicks: [
+          { value: 1, label: new Text('1', { font: '12px sans-serif' }) },
+          { value: 10, label: new Text('10', { font: '12px sans-serif' }) }
+        ],
+        minorTickSpacing: 1
       }
-    );
-
-    const resonatorSelectorLabel = new Text('Number of Resonators', {
-      font: 'bold 14px sans-serif',
-      fill: ResonanceColors.text
     });
 
     // Resonator 1 Parameters Box
@@ -302,8 +274,7 @@ export class SimScreenView extends ScreenView {
     // Assemble control panel contents
     const controlPanelContent = new VBox({
       children: [
-        resonatorSelectorLabel,
-        resonatorSelector,
+        resonatorCountControl,
         new Line(0, 0, 250, 0, { stroke: ResonanceColors.text, lineWidth: 1 }),
         resonatorLabel,
         massControl,
