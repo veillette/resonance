@@ -456,6 +456,8 @@ export class SimScreenView extends ScreenView {
     const massRadius = Math.max(ResonanceConstants.MIN_MASS_RADIUS, ResonanceConstants.MAX_MASS_RADIUS - count);
 
     for (let i = 0; i < count; i++) {
+      // Get the oscillator model for this resonator
+      const oscillatorModel = this.model.oscillatorModels[i];
 
       // Create a ParametricSpringNode for each resonator
       const springNode = new ParametricSpringNode({
@@ -472,6 +474,19 @@ export class SimScreenView extends ScreenView {
         rotation: -Math.PI / 2, // Rotate to vertical (upward from origin)
         boundsMethod: 'none'
       });
+      
+      // Link line width to spring constant: map spring constant (1-200) to line width (1-5 pixels)
+      oscillatorModel.springConstantProperty.link((springConstant: number) => {
+        // Linear mapping: minK (1) -> minWidth (1), maxK (200) -> maxWidth (5)
+        const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
+        const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
+        const minWidth = 1;
+        const maxWidth = 5;
+        const normalizedK = (springConstant - minK) / (maxK - minK); // 0 to 1
+        const lineWidth = minWidth + normalizedK * (maxWidth - minWidth);
+        springNode.lineWidthProperty.value = lineWidth;
+      });
+      
       this.resonatorsContainer.addChild(springNode);
       this.springNodes.push(springNode);
 
