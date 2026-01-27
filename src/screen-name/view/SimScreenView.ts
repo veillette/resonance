@@ -3,7 +3,7 @@ import { SimModel } from "../model/SimModel.js";
 import { ResetAllButton, PlayPauseStepButtonGroup, NumberControl } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Path, Node, Circle, Line, VBox, HBox } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
-import { RectangularPushButton, Panel, AquaRadioButtonGroup, Checkbox } from "scenerystack/sun";
+import { RectangularPushButton, Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch } from "scenerystack/sun";
 import { Shape } from "scenerystack/kite";
 import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
 import { PreferencesDialog } from "../../preferences/PreferencesDialog.js";
@@ -48,20 +48,20 @@ export class SimScreenView extends ScreenView {
     });
     this.driverNode.addChild(driverBox);
 
-    // Driver Power Toggle (Green ON button)
-    const powerToggleButton = new RectangularPushButton({
-      content: new Text('ON', { font: 'bold 14px sans-serif', fill: 'white' }),
-      baseColor: model.resonanceModel.drivingEnabledProperty.value ? '#00CC00' : '#666666',
-      listener: () => {
-        model.resonanceModel.drivingEnabledProperty.value = !model.resonanceModel.drivingEnabledProperty.value;
-        powerToggleButton.baseColor = model.resonanceModel.drivingEnabledProperty.value ? '#00CC00' : '#666666';
-      },
-      xMargin: 10,
-      yMargin: 6
+    // Driver Power Toggle
+    const powerToggleLabel = new Text('ON', { font: 'bold 14px sans-serif', fill: 'white' });
+    const powerToggleSwitch = new ToggleSwitch(model.resonanceModel.drivingEnabledProperty, false, true, {
+      trackFillLeft: '#666666',
+      trackFillRight: '#00CC00',
+      thumbFill: 'white'
     });
-    powerToggleButton.left = 15;
-    powerToggleButton.top = 15;
-    this.driverNode.addChild(powerToggleButton);
+    const powerToggleBox = new HBox({
+      children: [powerToggleLabel, powerToggleSwitch],
+      spacing: 8,
+      left: 15,
+      top: 15
+    });
+    this.driverNode.addChild(powerToggleBox);
 
     // Driver Frequency Control (dial with readout)
     const frequencyReadout = new Text('1.00 Hz', { font: '16px sans-serif', fill: 'white' });
