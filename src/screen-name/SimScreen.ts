@@ -10,7 +10,7 @@ export class SimScreen extends Screen<SimModel, SimScreenView> {
   ) {
     super(
       () => new SimModel(preferencesModel),
-      (model: SimModel) => new SimScreenView(model, preferencesModel),
+      (model: SimModel) => new SimScreenView(model),
       options,
     );
   }
