@@ -1,6 +1,6 @@
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
-import { ResetAllButton, PlayPauseButton, NumberControl } from "scenerystack/scenery-phet";
+import { ResetAllButton, PlayPauseStepButtonGroup, NumberControl } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Path, Node, Circle, Line, VBox, HBox } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { RectangularPushButton, Panel, AquaRadioButtonGroup, Checkbox } from "scenerystack/sun";
@@ -363,16 +363,20 @@ export class SimScreenView extends ScreenView {
     );
 
     // Playback Controls using SceneryStack components
-    const playPauseButton = new PlayPauseButton(model.resonanceModel.isPlayingProperty, {
-      scale: 0.8,
-      stepForwardButton: {
+    const playPauseStepButtonGroup = new PlayPauseStepButtonGroup(model.resonanceModel.isPlayingProperty, {
+      playPauseButtonOptions: {
+        scale: 0.8
+      },
+      includeStepForwardButton: true,
+      includeStepBackwardButton: true,
+      stepForwardButtonOptions: {
         listener: () => {
           // Step forward by one frame (0.016 seconds at 60 FPS)
           // forceStep=true ensures it steps even when paused
           model.resonanceModel.step(0.016, true);
         }
       },
-      stepBackwardButton: {
+      stepBackwardButtonOptions: {
         listener: () => {
           // Step backward by reversing the time step
           // Note: This is a simplified backward step - for accurate backward integration,
@@ -383,7 +387,7 @@ export class SimScreenView extends ScreenView {
     });
 
     const playbackControls = new HBox({
-      children: [speedControl, playPauseButton],
+      children: [speedControl, playPauseStepButtonGroup],
       spacing: 10,
       align: 'center',
       centerX: this.layoutBounds.centerX - 100,
