@@ -15,6 +15,8 @@
       "sameMass": "Même Masse",
       "sameSpringConstant": "Même Constante de Ressort",
       "mixed": "Mixte",
+      "sameFrequency": "Même Fréquence",
+      "custom": "Personnalisé",
       "frequency": "Fréquence",
       "amplitude": "Amplitude",
       "resonators": "Résonateurs",

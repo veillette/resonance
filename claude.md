@@ -10,6 +10,93 @@ This is a physics simulation focused on demonstrating resonance phenomena in osc
 - **Vite**: For development and building
 - **Model-View Pattern**: Clean separation of physics logic and visualization
 
+## Current Implementation Status
+
+### Scale and Coordinate System
+- **Model bounds**: ±0.5 m (1 meter total visible height and width)
+- **Coordinate system**: Springs extend **upward** from the driver plate
+  - Positive position = mass moves up (spring stretches)
+  - Negative position = mass moves down (spring compresses)
+- **Natural length**: 20 cm (0.2 m) - the spring length at equilibrium (position = 0)
+- **Ruler**: Vertical ruler showing 0-50 cm, draggable throughout simulation area
+
+### Physics Parameters (Current Defaults)
+- **Mass**: 0.25 kg (range: 0.1 to 5.0 kg)
+- **Spring Constant**: 100 N/m (range: 10 to 1200 N/m)
+- **Damping**: 0.5 N/(m/s) (range: 0.1 to 5.0 N/(m/s))
+- **Driving Amplitude**: 1.0 cm or 0.01 m (range: 0.2 to 2.0 cm)
+  - **Important**: Amplitude is a **displacement** of the plate, NOT a force
+  - Displayed in centimeters with 0.01 cm increments
+- **Driving Frequency**: 1.0 Hz (range: 0.1 to 5.0 Hz)
+- **Gravity**: OFF by default (can be toggled to 9.8 m/s²)
+- **Initial Position**: 0 m (equilibrium)
+
+### Visual Representation
+- **Masses**: Rendered as **square boxes** (not circles)
+  - Size ranges from 20×20 to 50×50 pixels depending on oscillator count
+  - Numbered labels (1, 2, 3, ...) for identification
+  - **Junction point**: The model position corresponds to where the spring connects to the mass (bottom of square)
+  - **Mass center**: Positioned 5 pixels above the junction point for realistic appearance
+- **Springs**:
+  - Rendered as ParametricSpringNode extending upward from driver plate
+  - Line width varies with spring constant (1-5 pixels for visual feedback)
+  - 10 loops, 5 pixel radius
+- **Driver Plate**: Gray oscillating platform with connection rod to control box
+
+### Oscillator Configuration Modes
+Five preset modes determine how multiple oscillators' parameters are distributed:
+1. **Same Spring Constant (k)**: All share spring constant; masses vary (m, 2m, 3m, ...)
+2. **Same Mass (m)**: All share mass; spring constants vary (k, 2k, 3k, ...)
+3. **Mixed (m and k)**: Both vary proportionally
+4. **Same Frequency**: All have same natural frequency (k/m ratio constant)
+5. **Custom**: User can independently configure each oscillator
+
+### User Interface Features
+- **Resonator Count**: 1-10 oscillators
+- **Resonator Selection**: NumberSpinner to select which oscillator to view/edit (1-indexed display)
+  - Only base oscillator (1) is editable in preset modes
+  - All oscillators editable in Custom mode
+- **Fine-grained Controls**: Small increment steps for precise adjustments
+  - Amplitude: 0.01 cm steps
+  - Frequency: 0.01 Hz steps
+  - Mass: 0.01 kg steps
+  - Spring constant: 1 N/m steps
+  - Damping: 0.1 N/(m/s) steps
+- **Playback**: Play/pause, step forward/backward, slow/normal speed
+- **Gravity Toggle**: Enable/disable gravity
+- **Ruler**: Draggable vertical measurement tool (0-50 cm)
+
+### Key Implementation Details
+
+#### Driving Force Model
+The driver plate position oscillates sinusoidally:
+```typescript
+platePosition = amplitude × sin(ω × t)
+```
+
+The spring force is calculated relative to the moving plate:
+```typescript
+springForce = -k × (massPosition - platePosition)
+```
+
+This creates a time-varying boundary condition where the effective equilibrium position oscillates.
+
+#### Model-View Transform
+Uses `ModelViewTransform2.createRectangleMapping()` to map:
+- Model coordinates: -0.5 to 0.5 meters
+- View coordinates: Full layout bounds (pixels)
+
+The transform ensures:
+- Physical measurements match visual representation
+- 1 cm in model space = 1 cm on the ruler
+- Amplitude displacement is physically accurate
+
+#### Position Convention
+- **Equilibrium (position = 0)**: Mass is at natural length (20 cm) above driver plate
+- **Positive position**: Mass moves **up** (spring stretches) - smaller Y in screen coordinates
+- **Negative position**: Mass moves **down** (spring compresses) - larger Y in screen coordinates
+- Screen coordinates: Y increases downward, so we subtract position offset when converting to view
+
 ## Design References and Requirements
 
 ### Physics Model Reference
@@ -153,9 +240,9 @@ export class DampedOscillatorModel {
   public readonly position: Property<number>;
   public readonly velocity: Property<number>;
 
-  // Driving force parameters
+  // Driving plate parameters
   public readonly drivingFrequency: Property<number>;
-  public readonly drivingAmplitude: Property<number>;
+  public readonly plateAmplitude: Property<number>;
 
   public constructor() {
     this.springConstant = new NumberProperty(10.0); // N/m
@@ -163,7 +250,7 @@ export class DampedOscillatorModel {
     this.position = new NumberProperty(0);
     this.velocity = new NumberProperty(0);
     this.drivingFrequency = new NumberProperty(3.14); // rad/s
-    this.drivingAmplitude = new NumberProperty(1.0); // N
+    this.plateAmplitude = new NumberProperty(0.1); // m (displacement amplitude)
   }
 
   public reset(): void {
@@ -172,7 +259,7 @@ export class DampedOscillatorModel {
     this.position.reset();
     this.velocity.reset();
     this.drivingFrequency.reset();
-    this.drivingAmplitude.reset();
+    this.plateAmplitude.reset();
   }
 
   public step(dt: number): void {
@@ -180,15 +267,18 @@ export class DampedOscillatorModel {
     const k = this.springConstant.value;
     const b = this.dampingCoefficient.value;
     const m = this.mass;
-    const t = Date.now() / 1000; // Current time for driving force
+    const t = Date.now() / 1000; // Current time for plate oscillation
 
-    // F = F_driving - kx - bv
-    const drivingForce = this.drivingAmplitude.value *
-                         Math.sin(this.drivingFrequency.value * t);
-    const springForce = -k * this.position.value;
+    // Calculate plate position (oscillating boundary condition)
+    const platePosition = this.plateAmplitude.value *
+                          Math.sin(this.drivingFrequency.value * t);
+
+    // F = -k(x - x_plate) - bv
+    // Spring force is proportional to displacement relative to the moving plate
+    const springForce = -k * (this.position.value - platePosition);
     const dampingForce = -b * this.velocity.value;
 
-    const totalForce = drivingForce + springForce + dampingForce;
+    const totalForce = springForce + dampingForce;
     const acceleration = totalForce / m;
 
     // Update velocity and position

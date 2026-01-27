@@ -74,6 +74,8 @@ export class StringManager {
       sameMassStringProperty: this.stringProperties.resonance.controls.sameMassStringProperty,
       sameSpringConstantStringProperty: this.stringProperties.resonance.controls.sameSpringConstantStringProperty,
       mixedStringProperty: this.stringProperties.resonance.controls.mixedStringProperty,
+      sameFrequencyStringProperty: this.stringProperties.resonance.controls.sameFrequencyStringProperty,
+      customStringProperty: this.stringProperties.resonance.controls.customStringProperty,
       frequencyStringProperty: this.stringProperties.resonance.controls.frequencyStringProperty,
       amplitudeStringProperty: this.stringProperties.resonance.controls.amplitudeStringProperty,
       resonatorsStringProperty: this.stringProperties.resonance.controls.resonatorsStringProperty,

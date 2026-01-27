@@ -29,6 +29,9 @@ export class SimModel {
   // Number of active oscillators
   public readonly resonatorCountProperty: NumberProperty;
 
+  // Index of the currently selected resonator for editing (0-indexed)
+  public readonly selectedResonatorIndexProperty: NumberProperty;
+
   private readonly preferencesModel: ResonancePreferencesModel;
 
   // Maximum number of oscillators supported
@@ -44,6 +47,7 @@ export class SimModel {
     );
 
     this.resonatorCountProperty = new NumberProperty(1);
+    this.selectedResonatorIndexProperty = new NumberProperty(0); // Start with first resonator selected
 
     // Pre-create all oscillator models
     for (let i = 1; i < SimModel.MAX_OSCILLATORS; i++) {
@@ -59,9 +63,13 @@ export class SimModel {
       this.updateOscillatorParameters();
     });
 
-    // When resonator count changes, recalculate parameters
-    this.resonatorCountProperty.link(() => {
+    // When resonator count changes, recalculate parameters and clamp selected index
+    this.resonatorCountProperty.link((count: number) => {
       this.updateOscillatorParameters();
+      // Clamp selected resonator index to valid range [0, count-1]
+      if (this.selectedResonatorIndexProperty.value >= count) {
+        this.selectedResonatorIndexProperty.value = count - 1;
+      }
     });
 
     // When base mass or spring constant changes, recalculate
@@ -147,6 +155,18 @@ export class SimModel {
           model.massProperty.value = baseMass * multiplier;
           model.springConstantProperty.value = baseK * multiplier;
           break;
+
+        case OscillatorConfigMode.SAME_FREQUENCY:
+          // Same natural frequency: ω₀ = √(k/m) remains constant
+          // Keep k/m ratio constant by scaling both proportionally
+          model.massProperty.value = baseMass * multiplier;
+          model.springConstantProperty.value = baseK * multiplier;
+          break;
+
+        case OscillatorConfigMode.CUSTOM:
+          // Custom mode: don't modify values, user sets them manually
+          // Parameters remain as they are
+          break;
       }
     }
   }
@@ -175,6 +195,7 @@ export class SimModel {
   public reset(): void {
     this.oscillatorConfigProperty.reset();
     this.resonatorCountProperty.reset();
+    this.selectedResonatorIndexProperty.reset();
     for (const model of this.oscillatorModels) {
       model.reset();
     }

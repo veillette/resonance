@@ -4,13 +4,13 @@ import { ResetAllButton, PlayPauseStepButtonGroup, NumberControl, RulerNode, Par
 import { Rectangle, Text, Node, Circle, Line, VBox, HBox } from "scenerystack/scenery";
 import { DragListener } from "scenerystack/scenery";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Bounds2, Vector2, Range } from "scenerystack/dot";
 import { Vector2Property } from "scenerystack/dot";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
-import { Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch, ComboBox } from "scenerystack/sun";
+import { Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch, ComboBox, NumberSpinner } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
-import { Property} from "scenerystack/axon";
+import { Property, NumberProperty, DerivedProperty } from "scenerystack/axon";
 import { OscillatorConfigMode } from "../../common/model/OscillatorConfigMode.js";
 import type { OscillatorConfigModeType } from "../../common/model/OscillatorConfigMode.js";
 import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
@@ -39,9 +39,14 @@ export class SimScreenView extends ScreenView {
     this.model = model;
 
     // Initialize ModelViewTransform for converting between model coordinates (meters) and view coordinates (pixels)
-    // Model bounds: reasonable range for oscillator positions (-5 to 5 meters)
-    // View bounds: simulation area bounds  
-    const transformModelBounds = new Bounds2(-5, -5, 5, 5); // meters
+    // Model bounds: reasonable range for oscillator positions
+    // View bounds: simulation area bounds
+    const transformModelBounds = new Bounds2(
+      ResonanceConstants.MODEL_BOUNDS_MIN,
+      ResonanceConstants.MODEL_BOUNDS_MIN,
+      ResonanceConstants.MODEL_BOUNDS_MAX,
+      ResonanceConstants.MODEL_BOUNDS_MAX
+    );
     const viewBounds = this.layoutBounds;
     
     // Create transform using createRectangleMapping which maps model bounds to view bounds
@@ -95,6 +100,7 @@ export class SimScreenView extends ScreenView {
 
     // Driver Frequency Control using NumberControl
     const frequencyControl = new NumberControl(ResonanceStrings.controls.frequencyStringProperty, model.resonanceModel.drivingFrequencyProperty, ResonanceConstants.FREQUENCY_RANGE, {
+      delta: 0.01, // Small increment: 0.01 Hz per arrow click
       numberDisplayOptions: {
         valuePattern: '{{value}} Hz',
         decimalPlaces: 2
@@ -123,15 +129,47 @@ export class SimScreenView extends ScreenView {
     this.addChild(resetAllButton);
 
     // Driver Amplitude Control using NumberControl
-    const amplitudeControl = new NumberControl(ResonanceStrings.controls.amplitudeStringProperty, model.resonanceModel.drivingAmplitudeProperty, ResonanceConstants.AMPLITUDE_RANGE, {
-      numberDisplayOptions: {
-        valuePattern: '{{value}} N',
-        decimalPlaces: 1
-      },
-      sliderOptions: {
-        trackFillEnabled: ResonanceColors.amplitudeTrackProperty
+    // Create a property in centimeters for display (model property is in meters)
+    const amplitudeCmProperty = new NumberProperty(model.resonanceModel.drivingAmplitudeProperty.value * 100);
+
+    // Bidirectional sync: cm <-> meters (with flag to prevent circular updates)
+    let updatingAmplitude = false;
+    amplitudeCmProperty.link((cm: number) => {
+      if (!updatingAmplitude) {
+        updatingAmplitude = true;
+        model.resonanceModel.drivingAmplitudeProperty.value = cm / 100; // cm to meters
+        updatingAmplitude = false;
       }
     });
+    model.resonanceModel.drivingAmplitudeProperty.link((meters: number) => {
+      if (!updatingAmplitude) {
+        updatingAmplitude = true;
+        amplitudeCmProperty.value = meters * 100; // meters to cm
+        updatingAmplitude = false;
+      }
+    });
+
+    // Range in centimeters
+    const amplitudeRangeCm = new Range(
+      ResonanceConstants.AMPLITUDE_RANGE.min * 100,
+      ResonanceConstants.AMPLITUDE_RANGE.max * 100
+    );
+
+    const amplitudeControl = new NumberControl(
+      ResonanceStrings.controls.amplitudeStringProperty,
+      amplitudeCmProperty,
+      amplitudeRangeCm,
+      {
+        delta: 0.01, // Small increment: 0.01 cm per arrow click
+        numberDisplayOptions: {
+          valuePattern: '{{value}} cm',
+          decimalPlaces: 2
+        },
+        sliderOptions: {
+          trackFillEnabled: ResonanceColors.amplitudeTrackProperty
+        }
+      }
+    );
     amplitudeControl.setScaleMagnitude(ResonanceConstants.CONTROL_SCALE);
     amplitudeControl.left = ResonanceConstants.AMPLITUDE_CONTROL_LEFT;
     amplitudeControl.bottom = driverBox.bottom - ResonanceConstants.AMPLITUDE_CONTROL_BOTTOM_MARGIN;
@@ -145,27 +183,27 @@ export class SimScreenView extends ScreenView {
     // ===== DRIVER PLATE (Gray plate that oscillates, springs attach to this) =====
     // This is the gray plate that all springs connect to and is driven by oscillations
     const driverPlateWidth = ResonanceConstants.DRIVER_BOX_WIDTH;
-    const driverPlateHeight = 20; // Thinner plate for the driver
-    const driverPlateBaseY = this.driverNode.top - 30; // Position above the control box
-    const connectionRodHeight = 30; // Height of the connection rod between box and plate
-    
+    const driverPlateHeight = ResonanceConstants.DRIVER_PLATE_HEIGHT;
+    const driverPlateBaseY = this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
+    const connectionRodHeight = ResonanceConstants.CONNECTION_ROD_HEIGHT;
+
     // Create connection rod (vertical cylinder/rectangle) that connects the control box to the plate
-    this.connectionRod = new Rectangle(0, 0, 15, connectionRodHeight, {
+    this.connectionRod = new Rectangle(0, 0, ResonanceConstants.CONNECTION_ROD_WIDTH, connectionRodHeight, {
       fill: ResonanceColors.driverFillProperty,
       stroke: ResonanceColors.driverStrokeProperty,
       lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
-      cornerRadius: 7.5 // Make it cylindrical looking
+      cornerRadius: ResonanceConstants.CONNECTION_ROD_CORNER_RADIUS
     });
     this.connectionRod.centerX = this.driverNode.centerX;
     this.connectionRod.bottom = this.driverNode.top;
     simulationArea.addChild(this.connectionRod);
-    
+
     // Create the driver plate
     this.driverPlate = new Rectangle(0, 0, driverPlateWidth, driverPlateHeight, {
       fill: ResonanceColors.driverFillProperty,
       stroke: ResonanceColors.driverStrokeProperty,
       lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
-      cornerRadius: 5
+      cornerRadius: ResonanceConstants.DRIVER_PLATE_CORNER_RADIUS
     });
     this.driverPlate.centerX = this.driverNode.centerX;
     this.driverPlate.y = driverPlateBaseY;
@@ -184,10 +222,11 @@ export class SimScreenView extends ScreenView {
 
     // ===== RULER (optional, toggled on/off) =====
     // Create vertical ruler by swapping width/height and rotating
-    // For vertical: rulerWidth (tick extent) = 300, rulerHeight (thickness) = 40
-    const rulerLabels = ['0', '10', '20', '30'];
+    // For vertical: rulerWidth (tick extent) = 500, rulerHeight (thickness) = 40
+    // Ruler shows 0-50 cm (0-0.5 m)
+    const rulerLabels = ['0', '10', '20', '30', '40', '50'];
     this.rulerNode = new RulerNode(
-      ResonanceConstants.RULER_WIDTH,   // rulerWidth: distance between ticks (300 for vertical extent)
+      ResonanceConstants.RULER_WIDTH,   // rulerWidth: distance between ticks (500 for vertical extent)
       ResonanceConstants.RULER_HEIGHT,   // rulerHeight: thickness of ruler (40 for horizontal extent)
       ResonanceConstants.RULER_MAJOR_TICK_WIDTH, // majorTickWidth: spacing between major ticks (100)
       rulerLabels, 'cm', {
@@ -215,11 +254,13 @@ export class SimScreenView extends ScreenView {
     // After rotation, the effective width (horizontal) is RULER_HEIGHT and height (vertical) is RULER_WIDTH
     const rulerWidthModel = this.modelViewTransform.viewToModelDeltaX(ResonanceConstants.RULER_HEIGHT);
     const rulerHeightModel = Math.abs(this.modelViewTransform.viewToModelDeltaY(ResonanceConstants.RULER_WIDTH));
+
+    // Allow ruler to reach the bottom of the screen (maxY stays at rulerModelBounds.maxY)
     const dragBounds = new Bounds2(
       rulerModelBounds.minX,
-      rulerModelBounds.minY,
+      rulerModelBounds.minY + rulerHeightModel / 2, // Keep top half visible at minimum
       rulerModelBounds.maxX - rulerWidthModel,
-      rulerModelBounds.maxY - rulerHeightModel
+      rulerModelBounds.maxY // Allow ruler to reach bottom
     );
     
     const dragListener = new DragListener({
@@ -264,20 +305,32 @@ export class SimScreenView extends ScreenView {
 
     const comboBoxItems: ComboBoxItem<OscillatorConfigModeType>[] = [
       {
-        value: OscillatorConfigMode.SAME_MASS,
-        createNode: () => new Text(ResonanceStrings.controls.sameMassStringProperty, {
-          font: ResonanceConstants.CONTROL_FONT
-        })
-      },
-      {
         value: OscillatorConfigMode.SAME_SPRING_CONSTANT,
         createNode: () => new Text(ResonanceStrings.controls.sameSpringConstantStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         })
       },
       {
+        value: OscillatorConfigMode.SAME_MASS,
+        createNode: () => new Text(ResonanceStrings.controls.sameMassStringProperty, {
+          font: ResonanceConstants.CONTROL_FONT
+        })
+      },
+      {
         value: OscillatorConfigMode.MIXED,
         createNode: () => new Text(ResonanceStrings.controls.mixedStringProperty, {
+          font: ResonanceConstants.CONTROL_FONT
+        })
+      },
+      {
+        value: OscillatorConfigMode.SAME_FREQUENCY,
+        createNode: () => new Text(ResonanceStrings.controls.sameFrequencyStringProperty, {
+          font: ResonanceConstants.CONTROL_FONT
+        })
+      },
+      {
+        value: OscillatorConfigMode.CUSTOM,
+        createNode: () => new Text(ResonanceStrings.controls.customStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         })
       }
@@ -304,26 +357,154 @@ export class SimScreenView extends ScreenView {
       align: 'left'
     });
 
-    // Resonator 1 Parameters Box
-    const resonatorLabel = new Text(ResonanceStrings.controls.resonator1StringProperty, {
+    // Resonator Selection Spinner (1-indexed for display)
+    // Convert between 0-indexed internal and 1-indexed display
+    const displayResonatorNumberProperty = new NumberProperty(1);
+
+    // Sync display property with model's selected index (with offset)
+    displayResonatorNumberProperty.link((displayNumber: number) => {
+      model.selectedResonatorIndexProperty.value = displayNumber - 1;
+    });
+    model.selectedResonatorIndexProperty.link((index: number) => {
+      displayResonatorNumberProperty.value = index + 1;
+    });
+
+    // Create a dynamic range property that updates with resonator count
+    const spinnerRangeProperty = new Property(new Range(1, model.resonatorCountProperty.value));
+
+    // Update spinner range when resonator count changes
+    model.resonatorCountProperty.link((count: number) => {
+      spinnerRangeProperty.value = new Range(1, count);
+    });
+
+    const resonatorSpinner = new NumberSpinner(
+      displayResonatorNumberProperty,
+      spinnerRangeProperty,
+      {
+        arrowsPosition: 'bothRight',
+        arrowsScale: 0.8
+      }
+    );
+
+    const resonatorLabel = new Text('', {
       font: ResonanceConstants.TITLE_FONT,
       fill: ResonanceColors.textProperty
     });
 
-    // Mass control using NumberControl
-    const massControl = new NumberControl(ResonanceStrings.controls.massSimpleStringProperty, model.resonanceModel.massProperty, ResonanceConstants.MASS_RANGE, {
-      numberDisplayOptions: {
-        valuePattern: '{{value}} kg',
-        decimalPlaces: 4
+    // Update label based on selected resonator
+    displayResonatorNumberProperty.link((num: number) => {
+      resonatorLabel.string = `Resonator ${num}`;
+    });
+
+    const resonatorSelectionBox = new HBox({
+      children: [resonatorLabel, resonatorSpinner],
+      spacing: 10,
+      align: 'center'
+    });
+
+    // Create display properties that will show/edit the selected oscillator's values
+    const displayMassProperty = new NumberProperty(model.resonanceModel.massProperty.value);
+    const displaySpringConstantProperty = new NumberProperty(model.resonanceModel.springConstantProperty.value);
+
+    // Mass control - shows selected oscillator's mass
+    const massControl = new NumberControl(
+      ResonanceStrings.controls.massSimpleStringProperty,
+      displayMassProperty,
+      ResonanceConstants.MASS_RANGE,
+      {
+        delta: 0.01, // Small increment: 0.01 kg per arrow click
+        numberDisplayOptions: {
+          valuePattern: '{{value}} kg',
+          decimalPlaces: 4
+        }
+      }
+    );
+
+    // Spring Constant control - shows selected oscillator's spring constant
+    const springConstantControl = new NumberControl(
+      ResonanceStrings.controls.springConstantSimpleStringProperty,
+      displaySpringConstantProperty,
+      ResonanceConstants.SPRING_CONSTANT_RANGE,
+      {
+        delta: 1, // Small increment: 1 N/m per arrow click
+        numberDisplayOptions: {
+          valuePattern: '{{value}} N/m',
+          decimalPlaces: 0
+        }
+      }
+    );
+
+    // Sync display properties with selected oscillator
+    const updateControlsEnabledState = () => {
+      const index = model.selectedResonatorIndexProperty.value;
+      const isCustomMode = model.oscillatorConfigProperty.value === OscillatorConfigMode.CUSTOM;
+
+      // Enable editing for:
+      // - Base oscillator (index 0) in any mode
+      // - Any oscillator in CUSTOM mode
+      massControl.enabled = (index === 0) || isCustomMode;
+      springConstantControl.enabled = (index === 0) || isCustomMode;
+    };
+
+    model.selectedResonatorIndexProperty.link((index: number) => {
+      const selectedOscillator = model.oscillatorModels[index];
+
+      // Update display to show selected oscillator's values
+      displayMassProperty.value = selectedOscillator.massProperty.value;
+      displaySpringConstantProperty.value = selectedOscillator.springConstantProperty.value;
+
+      updateControlsEnabledState();
+    });
+
+    // Also update enabled state when config mode changes
+    model.oscillatorConfigProperty.link(() => {
+      updateControlsEnabledState();
+    });
+
+    // When display properties change and oscillator 0 is selected, update the model
+    // Use a flag to prevent circular updates
+    let updatingFromModel = false;
+
+    displayMassProperty.link((mass: number) => {
+      if (!updatingFromModel) {
+        const index = model.selectedResonatorIndexProperty.value;
+        const isCustomMode = model.oscillatorConfigProperty.value === OscillatorConfigMode.CUSTOM;
+
+        // Update model if editing base oscillator or in CUSTOM mode
+        if (index === 0 || isCustomMode) {
+          model.oscillatorModels[index].massProperty.value = mass;
+        }
       }
     });
 
-    // Spring Constant control using NumberControl
-    const springConstantControl = new NumberControl(ResonanceStrings.controls.springConstantSimpleStringProperty, model.resonanceModel.springConstantProperty, ResonanceConstants.SPRING_CONSTANT_RANGE, {
-      numberDisplayOptions: {
-        valuePattern: '{{value}} N/m',
-        decimalPlaces: 0
+    displaySpringConstantProperty.link((springConstant: number) => {
+      if (!updatingFromModel) {
+        const index = model.selectedResonatorIndexProperty.value;
+        const isCustomMode = model.oscillatorConfigProperty.value === OscillatorConfigMode.CUSTOM;
+
+        // Update model if editing base oscillator or in CUSTOM mode
+        if (index === 0 || isCustomMode) {
+          model.oscillatorModels[index].springConstantProperty.value = springConstant;
+        }
       }
+    });
+
+    // When oscillator parameters change, update display if showing that oscillator
+    model.oscillatorModels.forEach((oscillator, index) => {
+      oscillator.massProperty.link((mass: number) => {
+        if (model.selectedResonatorIndexProperty.value === index) {
+          updatingFromModel = true;
+          displayMassProperty.value = mass;
+          updatingFromModel = false;
+        }
+      });
+      oscillator.springConstantProperty.link((springConstant: number) => {
+        if (model.selectedResonatorIndexProperty.value === index) {
+          updatingFromModel = true;
+          displaySpringConstantProperty.value = springConstant;
+          updatingFromModel = false;
+        }
+      });
     });
 
     // Natural Frequency Readout (derived, non-editable)
@@ -332,12 +513,22 @@ export class SimScreenView extends ScreenView {
       fill: ResonanceColors.textProperty
     });
 
-    model.resonanceModel.naturalFrequencyHzProperty.link((freq: number) => {
+    // Update natural frequency display based on selected oscillator
+    const updateNaturalFrequency = () => {
+      const index = model.selectedResonatorIndexProperty.value;
+      const freq = model.oscillatorModels[index].naturalFrequencyHzProperty.value;
       naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${freq.toFixed(3)} Hz`;
+    };
+
+    model.selectedResonatorIndexProperty.link(updateNaturalFrequency);
+    // Also listen to each oscillator's frequency changes
+    model.oscillatorModels.forEach(oscillator => {
+      oscillator.naturalFrequencyHzProperty.link(updateNaturalFrequency);
     });
 
     // Damping Constant control using NumberControl
     const dampingControl = new NumberControl('Damping', model.resonanceModel.dampingProperty, ResonanceConstants.DAMPING_RANGE, {
+      delta: 0.1, // Small increment: 0.1 N/(m/s) per arrow click
       numberDisplayOptions: {
         valuePattern: '{{value}} N/(m/s)',
         decimalPlaces: 1
@@ -383,13 +574,13 @@ export class SimScreenView extends ScreenView {
       children: [
         resonatorCountControl,
         configBox,
-        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, { stroke: ResonanceColors.textProperty, lineWidth: 1 }),
-        resonatorLabel,
+        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, { stroke: ResonanceColors.textProperty, lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH }),
+        resonatorSelectionBox,
         massControl,
         springConstantControl,
         naturalFrequencyText,
         dampingControl,
-        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, { stroke: ResonanceColors.textProperty, lineWidth: 1 }),
+        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, { stroke: ResonanceColors.textProperty, lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH }),
         gravityBox,
         rulerCheckbox
       ],
@@ -483,8 +674,8 @@ export class SimScreenView extends ScreenView {
     this.springNodes = [];
     this.massNodes = [];
 
-    // Scale mass radius based on count so they fit on the platform
-    const massRadius = Math.max(ResonanceConstants.MIN_MASS_RADIUS, ResonanceConstants.MAX_MASS_RADIUS - count);
+    // Scale mass size based on count so they fit on the platform
+    const massSize = Math.max(ResonanceConstants.MIN_MASS_SIZE, ResonanceConstants.MAX_MASS_SIZE - count);
 
     for (let i = 0; i < count; i++) {
       // Get the oscillator model for this resonator
@@ -506,15 +697,13 @@ export class SimScreenView extends ScreenView {
         boundsMethod: 'none'
       });
       
-      // Link line width to spring constant: map spring constant (1-200) to line width (1-5 pixels)
+      // Link line width to spring constant: map spring constant range to line width range
       oscillatorModel.springConstantProperty.link((springConstant: number) => {
-        // Linear mapping: minK (1) -> minWidth (1), maxK (200) -> maxWidth (5)
+        // Linear mapping: minK -> minWidth, maxK -> maxWidth
         const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
         const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-        const minWidth = 1;
-        const maxWidth = 5;
         const normalizedK = (springConstant - minK) / (maxK - minK); // 0 to 1
-        const lineWidth = minWidth + normalizedK * (maxWidth - minWidth);
+        const lineWidth = ResonanceConstants.SPRING_LINE_WIDTH_MIN + normalizedK * (ResonanceConstants.SPRING_LINE_WIDTH_MAX - ResonanceConstants.SPRING_LINE_WIDTH_MIN);
         springNode.lineWidthProperty.value = lineWidth;
       });
       
@@ -522,17 +711,19 @@ export class SimScreenView extends ScreenView {
       this.springNodes.push(springNode);
 
       const massNode = new Node();
-      const massCircle = new Circle(massRadius, {
+      // Create square mass box
+      const massBox = new Rectangle(0, 0, massSize, massSize, {
         fill: ResonanceColors.massProperty,
         stroke: ResonanceColors.massStrokeProperty,
-        lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH
+        lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH,
+        cornerRadius: 3 // Slight rounding for aesthetics
       });
       const massLabel = new Text(`${i + 1}`, {
-        font: `bold ${Math.max(10, 24 - count)}px sans-serif`,
+        font: `bold ${Math.max(ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN, ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE - count)}px sans-serif`,
         fill: ResonanceColors.massLabelProperty,
-        center: massCircle.center
+        center: massBox.center
       });
-      massNode.addChild(massCircle);
+      massNode.addChild(massBox);
       massNode.addChild(massLabel);
       this.resonatorsContainer.addChild(massNode);
       this.massNodes.push(massNode);
@@ -559,39 +750,34 @@ export class SimScreenView extends ScreenView {
       const omega = driverModel.drivingFrequencyProperty.value * 2 * Math.PI; // rad/s
       const time = driverModel.timeProperty.value;
       
-      // Get driving amplitude (N) - this directly controls the oscillation amplitude
+      // Get driving amplitude (meters) - plate displacement amplitude
       const drivingAmplitude = driverModel.drivingAmplitudeProperty.value;
-      
-      // Convert amplitude to view displacement
-      // Map amplitude range (0-10 N) to view displacement range (0-100 pixels)
-      // This gives a direct, visible response to amplitude changes
-      const amplitudeRange = ResonanceConstants.AMPLITUDE_RANGE;
-      const maxViewDisplacement = 100; // Maximum view displacement in pixels
-      const normalizedAmplitude = (drivingAmplitude - amplitudeRange.min) / (amplitudeRange.max - amplitudeRange.min);
-      const amplitudeViewDisplacement = normalizedAmplitude * maxViewDisplacement;
-      
+
+      // Convert amplitude from model coordinates (meters) to view coordinates (pixels)
+      // This ensures the visual displacement matches the physical displacement
+      const amplitudeViewDisplacement = Math.abs(this.modelViewTransform.modelToViewDeltaY(drivingAmplitude));
+
       // Calculate oscillation: amplitude * sin(ω*t)
       const viewDisplacement = amplitudeViewDisplacement * Math.sin(omega * time);
-      
+
       // Update driver plate Y position (oscillates around base position)
-      const driverPlateBaseY = this.driverNode.top - 30;
+      const driverPlateBaseY = this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
       this.driverPlate.y = driverPlateBaseY + viewDisplacement;
-      
+
       // Update connection rod to stretch/compress with the plate movement
-      const connectionRodBaseHeight = 30;
       const connectionRodBaseBottom = this.driverNode.top;
       // Rod height adjusts to maintain connection between box and plate
       // When plate moves up, rod compresses (shorter), when down, rod extends (longer)
-      const rodHeight = Math.max(10, connectionRodBaseHeight - viewDisplacement);
-      this.connectionRod.setRectHeight(rodHeight);
+      const rodHeight = Math.max(ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT, ResonanceConstants.CONNECTION_ROD_HEIGHT - viewDisplacement);
+      this.connectionRod.setRect(0, 0, ResonanceConstants.CONNECTION_ROD_WIDTH, rodHeight);
       this.connectionRod.bottom = connectionRodBaseBottom;
     } else {
       // When driving is off, plate stays at base position
-      const driverPlateBaseY = this.driverNode.top - 30;
+      const driverPlateBaseY = this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
       this.driverPlate.y = driverPlateBaseY;
-      
+
       // Reset connection rod to base height
-      this.connectionRod.setRectHeight(30);
+      this.connectionRod.setRect(0, 0, ResonanceConstants.CONNECTION_ROD_WIDTH, ResonanceConstants.CONNECTION_ROD_HEIGHT);
       this.connectionRod.bottom = this.driverNode.top;
     }
 
@@ -602,8 +788,13 @@ export class SimScreenView extends ScreenView {
     // Spacing: distribute resonators evenly across the driver width
     const spacing = ResonanceConstants.DRIVER_BOX_WIDTH / (count + 1);
 
-    const equilibriumY = driverTopY - ResonanceConstants.EQUILIBRIUM_Y_OFFSET;
-    const massRadius = Math.max(ResonanceConstants.MIN_MASS_RADIUS, ResonanceConstants.MAX_MASS_RADIUS - count);
+    // Calculate equilibrium position based on natural length from model
+    // Natural length is the spring length when mass is at rest (position = 0)
+    // Springs extend UPWARD from the driver plate, so equilibrium is above the plate
+    const naturalLength = this.model.resonanceModel.naturalLengthProperty.value; // meters
+    const naturalLengthView = Math.abs(this.modelViewTransform.modelToViewDeltaY(naturalLength)); // pixels
+    const equilibriumY = driverTopY - naturalLengthView; // Subtract to go up (smaller Y = higher on screen)
+    const massSize = Math.max(ResonanceConstants.MIN_MASS_SIZE, ResonanceConstants.MAX_MASS_SIZE - count);
 
     // Pre-compute the spring geometry constants for xScale calculation
     const endLengths = ResonanceConstants.SPRING_LEFT_END_LENGTH + ResonanceConstants.SPRING_RIGHT_END_LENGTH;
@@ -615,17 +806,25 @@ export class SimScreenView extends ScreenView {
       // Each oscillator has its own position from its own model
       const oscillatorModel = this.model.oscillatorModels[i];
       // Convert model position (meters) to view position (pixels) using ModelViewTransform
+      // For springs extending upward: positive position = moving up (spring stretches)
+      // In screen coordinates: moving up = smaller Y values, so we SUBTRACT the offset
       const modelY = oscillatorModel.positionProperty.value; // meters
       const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelY); // pixels
-      const massY = equilibriumY + viewYOffset;
 
-      // Update mass position
+      // Junction point (where spring connects to mass bottom) is at the model position
+      const junctionY = equilibriumY - viewYOffset; // Subtract: positive position moves mass UP (smaller Y)
+
+      // Mass box center is positioned slightly above the junction point
+      const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
+
+      // Update mass position (centered at massCenterY)
       this.massNodes[i].centerX = xCenter;
-      this.massNodes[i].centerY = massY;
+      this.massNodes[i].centerY = massCenterY;
 
       // Compute the spring connection endpoints
       const springStartY = driverTopY;
-      const springEndY = massY - massRadius;
+      // Spring connects to the bottom of the mass box (junction point)
+      const springEndY = junctionY;
       const springLength = Math.abs(springEndY - springStartY);
 
       // Compute the xScale needed to achieve the desired spring length.
