@@ -10,3 +10,5 @@ export { ModifiedMidpointSolver } from "./ModifiedMidpointSolver.js";
 export { SolverType, SolverTypeName } from "./SolverType.js";
 export { BaseModel, TimeSpeed } from "./BaseModel.js";
 export { ResonanceModel, ResonancePreset, ResonancePresets } from "./ResonanceModel.js";
+export { OscillatorConfigMode } from "./OscillatorConfigMode.js";
+export type { OscillatorConfigModeType } from "./OscillatorConfigMode.js";

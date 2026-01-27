@@ -10,7 +10,11 @@
       "drivingFrequency": "Fréquence de Conduite (ω)",
       "drivingAmplitude": "Amplitude de Conduite",
       "mass": "Masse (m)",
-      "reset": "Tout Réinitialiser"
+      "reset": "Tout Réinitialiser",
+      "oscillatorConfig": "Configuration",
+      "sameMass": "Même Masse",
+      "sameSpringConstant": "Même Constante de Ressort",
+      "mixed": "Mixte"
     },
     "preferences": {
       "title": "Préférences",

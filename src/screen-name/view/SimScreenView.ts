@@ -3,13 +3,16 @@ import { SimModel } from "../model/SimModel.js";
 import { ResetAllButton, PlayPauseStepButtonGroup, NumberControl, RulerNode } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Path, Node, Circle, Line, VBox, HBox, Image } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
-import { RectangularPushButton, Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch } from "scenerystack/sun";
+import { RectangularPushButton, Panel, AquaRadioButtonGroup, Checkbox, ToggleSwitch, ComboBox } from "scenerystack/sun";
+import type { ComboBoxItem } from "scenerystack/sun";
 import { Shape } from "scenerystack/kite";
 import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
 import { PreferencesDialog } from "../../preferences/PreferencesDialog.js";
 import { Range } from "scenerystack/dot";
-import { Property, NumberProperty } from "scenerystack/axon";
+import { Property } from "scenerystack/axon";
 import { preferencesIcon_png } from "scenerystack/joist";
+import { OscillatorConfigMode } from "../../common/model/OscillatorConfigMode.js";
+import type { OscillatorConfigModeType } from "../../common/model/OscillatorConfigMode.js";
 
 export class SimScreenView extends ScreenView {
 
@@ -20,7 +23,6 @@ export class SimScreenView extends ScreenView {
   private massNodes: Node[] = [];
   private readonly rulerNode: RulerNode;
   private readonly rulerVisibleProperty: Property<boolean>;
-  private readonly selectedResonatorProperty: NumberProperty;
   private readonly gravityEnabledProperty: Property<boolean>;
   private readonly driverNode: Node;
 
@@ -35,7 +37,6 @@ export class SimScreenView extends ScreenView {
 
     // Initialize properties
     this.rulerVisibleProperty = new Property<boolean>(false);
-    this.selectedResonatorProperty = new NumberProperty(1);
     this.gravityEnabledProperty = new Property<boolean>(model.resonanceModel.gravityProperty.value > 0);
 
     // Create simulation area container
@@ -116,13 +117,12 @@ export class SimScreenView extends ScreenView {
     this.rebuildResonators(1);
 
     // Rebuild resonators when count changes
-    this.selectedResonatorProperty.link((count: number) => {
+    model.resonatorCountProperty.link((count: number) => {
       this.rebuildResonators(count);
       this.updateSpringAndMass(this.driverNode);
     });
 
     // ===== RULER (optional, toggled on/off) =====
-    // Using standard RulerNode from scenerystack
     const rulerLabels = ['0', '10', '20', '30'];
     this.rulerNode = new RulerNode(300, 40, 100, rulerLabels, 'cm', {
       minorTicksPerMajorTick: 4,
@@ -138,7 +138,7 @@ export class SimScreenView extends ScreenView {
     // ===== CONTROL PANEL (Right side, green panel) =====
 
     // Number of Resonators control using NumberControl
-    const resonatorCountControl = new NumberControl('Resonators', this.selectedResonatorProperty, new Range(1, 10), {
+    const resonatorCountControl = new NumberControl('Resonators', model.resonatorCountProperty, new Range(1, 10), {
       delta: 1,
       numberDisplayOptions: {
         decimalPlaces: 0
@@ -150,6 +150,54 @@ export class SimScreenView extends ScreenView {
         ],
         minorTickSpacing: 1
       }
+    });
+
+    // ===== OSCILLATOR CONFIGURATION COMBO BOX =====
+    const configLabel = new Text('Configuration', {
+      font: 'bold 14px sans-serif',
+      fill: ResonanceColors.textProperty
+    });
+
+    const comboBoxItems: ComboBoxItem<OscillatorConfigModeType>[] = [
+      {
+        value: OscillatorConfigMode.SAME_MASS,
+        createNode: () => new Text('Same Mass', {
+          font: '14px sans-serif'
+        })
+      },
+      {
+        value: OscillatorConfigMode.SAME_SPRING_CONSTANT,
+        createNode: () => new Text('Same Spring Constant', {
+          font: '14px sans-serif'
+        })
+      },
+      {
+        value: OscillatorConfigMode.MIXED,
+        createNode: () => new Text('Mixed', {
+          font: '14px sans-serif'
+        })
+      }
+    ];
+
+    // The ComboBox list needs a parent node that's high in the scene graph
+    // so the popup list renders above everything else
+    const comboBoxListParent = new Node();
+
+    const configComboBox = new ComboBox(
+      model.oscillatorConfigProperty,
+      comboBoxItems,
+      comboBoxListParent,
+      {
+        xMargin: 10,
+        yMargin: 6,
+        cornerRadius: 5
+      }
+    );
+
+    const configBox = new VBox({
+      children: [configLabel, configComboBox],
+      spacing: 5,
+      align: 'left'
     });
 
     // Resonator 1 Parameters Box
@@ -227,6 +275,7 @@ export class SimScreenView extends ScreenView {
     const controlPanelContent = new VBox({
       children: [
         resonatorCountControl,
+        configBox,
         new Line(0, 0, 250, 0, { stroke: ResonanceColors.textProperty, lineWidth: 1 }),
         resonatorLabel,
         massControl,
@@ -253,6 +302,9 @@ export class SimScreenView extends ScreenView {
     });
 
     this.addChild(controlPanel);
+
+    // Add the combo box list parent on top of the control panel so the popup renders above
+    this.addChild(comboBoxListParent);
 
     // ===== SIMULATION CONTROLS (Below driver) =====
 
@@ -283,17 +335,21 @@ export class SimScreenView extends ScreenView {
       includeStepBackwardButton: true,
       stepForwardButtonOptions: {
         listener: () => {
-          // Step forward by one frame (0.016 seconds at 60 FPS)
-          // forceStep=true ensures it steps even when paused
           model.resonanceModel.step(0.016, true);
+          // Step the other active oscillators too
+          const count = model.resonatorCountProperty.value;
+          for (let i = 1; i < count; i++) {
+            model.oscillatorModels[i].step(0.016, true);
+          }
         }
       },
       stepBackwardButtonOptions: {
         listener: () => {
-          // Step backward by reversing the time step
-          // Note: This is a simplified backward step - for accurate backward integration,
-          // you'd need a reversible solver, but for small steps this approximation works
           model.resonanceModel.step(-0.016, true);
+          const count = model.resonatorCountProperty.value;
+          for (let i = 1; i < count; i++) {
+            model.oscillatorModels[i].step(-0.016, true);
+          }
         }
       }
     });
@@ -382,7 +438,6 @@ export class SimScreenView extends ScreenView {
   }
 
   private updateSpringAndMass(driverNode: Node): void {
-    const model = this.model.resonanceModel;
     const count = this.springNodes.length;
     if (count === 0) {
       return;
@@ -396,16 +451,18 @@ export class SimScreenView extends ScreenView {
     const driverWidth = 200;
     const spacing = driverWidth / (count + 1);
 
-    // Calculate mass position based on model position property
     const metersToPixels = 100;
     const equilibriumY = driverTopY - 150;
-    const massY = equilibriumY + model.positionProperty.value * metersToPixels;
 
     const massRadius = Math.max(10, 25 - count);
     const coilWidth = Math.max(8, 20 - count);
 
     for (let i = 0; i < count; i++) {
       const xCenter = driverCenterX - driverWidth / 2 + spacing * (i + 1);
+
+      // Each oscillator has its own position from its own model
+      const oscillatorModel = this.model.oscillatorModels[i];
+      const massY = equilibriumY + oscillatorModel.positionProperty.value * metersToPixels;
 
       // Update mass position
       this.massNodes[i].centerX = xCenter;
@@ -432,7 +489,8 @@ export class SimScreenView extends ScreenView {
   }
 
   public reset(): void {
-    // Called when the user presses the reset-all button
+    this.rulerVisibleProperty.reset();
+    this.gravityEnabledProperty.reset();
   }
 
   public step(): void {
