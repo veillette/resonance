@@ -1,13 +1,13 @@
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
-import { ResetAllButton } from "scenerystack/scenery-phet";
+import { ResetAllButton, PlayPauseButton, NumberControl } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Path, Node, Circle, Line, VBox, HBox } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
-import { RectangularPushButton, Panel, HSlider, AquaRadioButtonGroup, Checkbox } from "scenerystack/sun";
+import { RectangularPushButton, Panel, AquaRadioButtonGroup, Checkbox } from "scenerystack/sun";
 import { Shape } from "scenerystack/kite";
 import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
 import { PreferencesDialog } from "../../preferences/PreferencesDialog.js";
-import { Range, Dimension2 } from "scenerystack/dot";
+import { Range } from "scenerystack/dot";
 import { Property, NumberProperty } from "scenerystack/axon";
 
 export class SimScreenView extends ScreenView {
@@ -220,40 +220,20 @@ export class SimScreenView extends ScreenView {
       fill: ResonanceColors.text
     });
 
-    // Mass control - slider with text
-    const massLabel = new Text('Mass', { font: '12px sans-serif', fill: ResonanceColors.text });
-    const massValue = new Text('', { font: '12px sans-serif', fill: ResonanceColors.text });
-    const massSlider = new HSlider(model.resonanceModel.massProperty, new Range(0.1, 10), {
-      trackSize: new Dimension2(150, 5)
-    });
-    model.resonanceModel.massProperty.link((value: number) => {
-      massValue.string = `${value.toFixed(4)} kg`;
-    });
-    const massControl = new VBox({
-      children: [
-        new HBox({ children: [massLabel, massValue], spacing: 10, align: 'center' }),
-        massSlider
-      ],
-      spacing: 5,
-      align: 'left'
+    // Mass control using NumberControl
+    const massControl = new NumberControl('Mass', model.resonanceModel.massProperty, new Range(0.1, 10), {
+      numberDisplayOptions: {
+        valuePattern: '{{value}} kg',
+        decimalPlaces: 4
+      }
     });
 
-    // Spring Constant control - slider with text
-    const springLabel = new Text('Spring Constant', { font: '12px sans-serif', fill: ResonanceColors.text });
-    const springValue = new Text('', { font: '12px sans-serif', fill: ResonanceColors.text });
-    const springSlider = new HSlider(model.resonanceModel.springConstantProperty, new Range(1, 200), {
-      trackSize: new Dimension2(150, 5)
-    });
-    model.resonanceModel.springConstantProperty.link((value: number) => {
-      springValue.string = `${value.toFixed(0)} N/m`;
-    });
-    const springConstantControl = new VBox({
-      children: [
-        new HBox({ children: [springLabel, springValue], spacing: 10, align: 'center' }),
-        springSlider
-      ],
-      spacing: 5,
-      align: 'left'
+    // Spring Constant control using NumberControl
+    const springConstantControl = new NumberControl('Spring Constant', model.resonanceModel.springConstantProperty, new Range(1, 200), {
+      numberDisplayOptions: {
+        valuePattern: '{{value}} N/m',
+        decimalPlaces: 0
+      }
     });
 
     // Natural Frequency Readout (derived, non-editable)
@@ -266,22 +246,12 @@ export class SimScreenView extends ScreenView {
       naturalFrequencyText.string = `frequency = ${freq.toFixed(3)} Hz`;
     });
 
-    // Damping Constant control - slider with text
-    const dampingLabel = new Text('Damping', { font: '12px sans-serif', fill: ResonanceColors.text });
-    const dampingValue = new Text('', { font: '12px sans-serif', fill: ResonanceColors.text });
-    const dampingSlider = new HSlider(model.resonanceModel.dampingProperty, new Range(0, 10), {
-      trackSize: new Dimension2(150, 5)
-    });
-    model.resonanceModel.dampingProperty.link((value: number) => {
-      dampingValue.string = `${value.toFixed(1)} N/(m/s)`;
-    });
-    const dampingControl = new VBox({
-      children: [
-        new HBox({ children: [dampingLabel, dampingValue], spacing: 10, align: 'center' }),
-        dampingSlider
-      ],
-      spacing: 5,
-      align: 'left'
+    // Damping Constant control using NumberControl
+    const dampingControl = new NumberControl('Damping', model.resonanceModel.dampingProperty, new Range(0, 10), {
+      numberDisplayOptions: {
+        valuePattern: '{{value}} N/(m/s)',
+        decimalPlaces: 1
+      }
     });
 
     // Gravity Toggle
@@ -392,31 +362,28 @@ export class SimScreenView extends ScreenView {
       }
     );
 
-    // Playback Controls (pause and step)
-    const pauseButton = new RectangularPushButton({
-      content: new Text('pause', { font: '14px sans-serif' }),
-      baseColor: '#DDDDDD',
-      listener: () => {
-        model.resonanceModel.isPlayingProperty.value = !model.resonanceModel.isPlayingProperty.value;
+    // Playback Controls using SceneryStack components
+    const playPauseButton = new PlayPauseButton(model.resonanceModel.isPlayingProperty, {
+      scale: 0.8,
+      stepForwardButton: {
+        listener: () => {
+          // Step forward by one frame (0.016 seconds at 60 FPS)
+          // forceStep=true ensures it steps even when paused
+          model.resonanceModel.step(0.016, true);
+        }
       },
-      xMargin: 12,
-      yMargin: 6
-    });
-
-    const stepButton = new RectangularPushButton({
-      content: new Text('step', { font: '14px sans-serif' }),
-      baseColor: '#DDDDDD',
-      listener: () => {
-        model.resonanceModel.isPlayingProperty.value = false;
-        // Step forward by one frame (will be handled by the step method)
-        model.resonanceModel.step(0.016);
-      },
-      xMargin: 12,
-      yMargin: 6
+      stepBackwardButton: {
+        listener: () => {
+          // Step backward by reversing the time step
+          // Note: This is a simplified backward step - for accurate backward integration,
+          // you'd need a reversible solver, but for small steps this approximation works
+          model.resonanceModel.step(-0.016, true);
+        }
+      }
     });
 
     const playbackControls = new HBox({
-      children: [speedControl, pauseButton, stepButton],
+      children: [speedControl, playPauseButton],
       spacing: 10,
       align: 'center',
       centerX: this.layoutBounds.centerX - 100,
