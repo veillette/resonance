@@ -1,153 +1,159 @@
 /**
- * Color definitions for the Resonance simulation
- * Simple color constants that can be updated based on preferences
- *
- * NOTE: This is a simplified version. For full ProfileColorProperty support,
- * additional SceneryStack configuration may be needed.
+ * ResonanceColors defines the color palette for the Resonance simulation.
+ * Colors are defined as ProfileColorProperty instances which adapt to different color profiles.
  */
 
-// Color profiles
-export type ColorProfile = "default" | "projector" | "colorblind";
+import { ProfileColorProperty, Color } from "scenerystack/scenery";
+import resonance from "./ResonanceNamespace.js";
 
-// Color definitions for each profile
-const colorProfiles = {
-  default: {
-    spring: "#2196F3",
-    mass: "#FF5722",
-    equilibrium: "#4CAF50",
-    background: "#FFFFFF",
-    panelFill: "#F0F0F0",
-    panelStroke: "#CCCCCC",
-    text: "#000000",
-    textSecondary: "#666666",
-    plot1: "#2196F3",
-    plot2: "#FF5722",
-    plot3: "#9C27B0",
-    gridLines: "#E0E0E0",
-    axes: "#757575",
-    kineticEnergy: "#FF9800",
-    potentialEnergy: "#03A9F4",
-    totalEnergy: "#9C27B0",
-    inPhase: "#4CAF50",
-    outOfPhase: "#F44336",
-    rotatingRectangle: "#CCCCCC",
-  },
-  projector: {
-    spring: "#0D47A1",
-    mass: "#BF360C",
-    equilibrium: "#1B5E20",
-    background: "#F5F5F5",
-    panelFill: "#E0E0E0",
-    panelStroke: "#999999",
-    text: "#000000",
-    textSecondary: "#333333",
-    plot1: "#0D47A1",
-    plot2: "#BF360C",
-    plot3: "#4A148C",
-    gridLines: "#BDBDBD",
-    axes: "#424242",
-    kineticEnergy: "#E65100",
-    potentialEnergy: "#01579B",
-    totalEnergy: "#4A148C",
-    inPhase: "#1B5E20",
-    outOfPhase: "#B71C1C",
-    rotatingRectangle: "#999999",
-  },
-  colorblind: {
-    spring: "#0077BB",
-    mass: "#EE7733",
-    equilibrium: "#009988",
-    background: "#FFFFFF",
-    panelFill: "#F0F0F0",
-    panelStroke: "#CCCCCC",
-    text: "#000000",
-    textSecondary: "#666666",
-    plot1: "#0077BB",
-    plot2: "#EE7733",
-    plot3: "#CC3311",
-    gridLines: "#E0E0E0",
-    axes: "#757575",
-    kineticEnergy: "#EE7733",
-    potentialEnergy: "#0077BB",
-    totalEnergy: "#CC3311",
-    inPhase: "#009988",
-    outOfPhase: "#CC3311",
-    rotatingRectangle: "#CCCCCC",
-  },
-};
-
-// Current active profile (default)
-let activeProfile: ColorProfile = "default";
-
-// Function to set the active color profile
-export function setColorProfile(profile: ColorProfile): void {
-  activeProfile = profile;
-}
-
-// Function to get the current color profile
-export function getColorProfile(): ColorProfile {
-  return activeProfile;
-}
-
-// Export color getters that return the color for the active profile
 const ResonanceColors = {
-  get spring() {
-    return colorProfiles[activeProfile].spring;
-  },
-  get mass() {
-    return colorProfiles[activeProfile].mass;
-  },
-  get equilibrium() {
-    return colorProfiles[activeProfile].equilibrium;
-  },
-  get background() {
-    return colorProfiles[activeProfile].background;
-  },
-  get panelFill() {
-    return colorProfiles[activeProfile].panelFill;
-  },
-  get panelStroke() {
-    return colorProfiles[activeProfile].panelStroke;
-  },
-  get text() {
-    return colorProfiles[activeProfile].text;
-  },
-  get textSecondary() {
-    return colorProfiles[activeProfile].textSecondary;
-  },
-  get plot1() {
-    return colorProfiles[activeProfile].plot1;
-  },
-  get plot2() {
-    return colorProfiles[activeProfile].plot2;
-  },
-  get plot3() {
-    return colorProfiles[activeProfile].plot3;
-  },
-  get gridLines() {
-    return colorProfiles[activeProfile].gridLines;
-  },
-  get axes() {
-    return colorProfiles[activeProfile].axes;
-  },
-  get kineticEnergy() {
-    return colorProfiles[activeProfile].kineticEnergy;
-  },
-  get potentialEnergy() {
-    return colorProfiles[activeProfile].potentialEnergy;
-  },
-  get totalEnergy() {
-    return colorProfiles[activeProfile].totalEnergy;
-  },
-  get inPhase() {
-    return colorProfiles[activeProfile].inPhase;
-  },
-  get outOfPhase() {
-    return colorProfiles[activeProfile].outOfPhase;
-  },
-  get rotatingRectangle() {
-    return colorProfiles[activeProfile].rotatingRectangle;
-  },
+
+  // Background
+  backgroundProperty: new ProfileColorProperty(resonance, 'background', {
+    default: new Color(255, 255, 255),
+    projector: new Color(245, 245, 245)
+  }),
+
+  // Panel
+  panelFillProperty: new ProfileColorProperty(resonance, 'panelFill', {
+    default: new Color(240, 240, 240),
+    projector: new Color(224, 224, 224)
+  }),
+
+  panelStrokeProperty: new ProfileColorProperty(resonance, 'panelStroke', {
+    default: new Color(204, 204, 204),
+    projector: new Color(153, 153, 153)
+  }),
+
+  // Text
+  textProperty: new ProfileColorProperty(resonance, 'text', {
+    default: new Color(0, 0, 0),
+    projector: new Color(0, 0, 0)
+  }),
+
+  textSecondaryProperty: new ProfileColorProperty(resonance, 'textSecondary', {
+    default: new Color(102, 102, 102),
+    projector: new Color(51, 51, 51)
+  }),
+
+  // Spring and mass
+  springProperty: new ProfileColorProperty(resonance, 'spring', {
+    default: new Color(204, 0, 0),
+    projector: new Color(153, 0, 0)
+  }),
+
+  massProperty: new ProfileColorProperty(resonance, 'mass', {
+    default: new Color(51, 102, 255),
+    projector: new Color(0, 51, 170)
+  }),
+
+  massStrokeProperty: new ProfileColorProperty(resonance, 'massStroke', {
+    default: new Color(0, 51, 170),
+    projector: new Color(0, 30, 100)
+  }),
+
+  massLabelProperty: new ProfileColorProperty(resonance, 'massLabel', {
+    default: new Color(255, 255, 255),
+    projector: new Color(255, 255, 255)
+  }),
+
+  equilibriumProperty: new ProfileColorProperty(resonance, 'equilibrium', {
+    default: new Color(76, 175, 80),
+    projector: new Color(27, 94, 32)
+  }),
+
+  // Driver box
+  driverFillProperty: new ProfileColorProperty(resonance, 'driverFill', {
+    default: new Color(136, 136, 136),
+    projector: new Color(100, 100, 100)
+  }),
+
+  driverStrokeProperty: new ProfileColorProperty(resonance, 'driverStroke', {
+    default: new Color(68, 68, 68),
+    projector: new Color(40, 40, 40)
+  }),
+
+  driverTextProperty: new ProfileColorProperty(resonance, 'driverText', {
+    default: new Color(255, 255, 255),
+    projector: new Color(255, 255, 255)
+  }),
+
+  // Control panel
+  controlPanelFillProperty: new ProfileColorProperty(resonance, 'controlPanelFill', {
+    default: new Color(204, 255, 204),
+    projector: new Color(180, 230, 180)
+  }),
+
+  controlPanelStrokeProperty: new ProfileColorProperty(resonance, 'controlPanelStroke', {
+    default: new Color(0, 102, 0),
+    projector: new Color(0, 80, 0)
+  }),
+
+  // Energy colors
+  kineticEnergyProperty: new ProfileColorProperty(resonance, 'kineticEnergy', {
+    default: new Color(255, 152, 0),
+    projector: new Color(230, 81, 0)
+  }),
+
+  potentialEnergyProperty: new ProfileColorProperty(resonance, 'potentialEnergy', {
+    default: new Color(3, 169, 244),
+    projector: new Color(1, 87, 155)
+  }),
+
+  totalEnergyProperty: new ProfileColorProperty(resonance, 'totalEnergy', {
+    default: new Color(156, 39, 176),
+    projector: new Color(74, 20, 140)
+  }),
+
+  // Plots
+  plot1Property: new ProfileColorProperty(resonance, 'plot1', {
+    default: new Color(33, 150, 243),
+    projector: new Color(13, 71, 161)
+  }),
+
+  plot2Property: new ProfileColorProperty(resonance, 'plot2', {
+    default: new Color(255, 87, 34),
+    projector: new Color(191, 54, 12)
+  }),
+
+  plot3Property: new ProfileColorProperty(resonance, 'plot3', {
+    default: new Color(156, 39, 176),
+    projector: new Color(74, 20, 140)
+  }),
+
+  // Grid and axes
+  gridLinesProperty: new ProfileColorProperty(resonance, 'gridLines', {
+    default: new Color(224, 224, 224),
+    projector: new Color(189, 189, 189)
+  }),
+
+  axesProperty: new ProfileColorProperty(resonance, 'axes', {
+    default: new Color(117, 117, 117),
+    projector: new Color(66, 66, 66)
+  }),
+
+  // Phase colors
+  inPhaseProperty: new ProfileColorProperty(resonance, 'inPhase', {
+    default: new Color(76, 175, 80),
+    projector: new Color(27, 94, 32)
+  }),
+
+  outOfPhaseProperty: new ProfileColorProperty(resonance, 'outOfPhase', {
+    default: new Color(244, 67, 54),
+    projector: new Color(183, 28, 28)
+  }),
+
+  // Frequency slider track
+  frequencyTrackProperty: new ProfileColorProperty(resonance, 'frequencyTrack', {
+    default: new Color(0, 204, 0),
+    projector: new Color(0, 153, 0)
+  }),
+
+  // Amplitude slider track
+  amplitudeTrackProperty: new ProfileColorProperty(resonance, 'amplitudeTrack', {
+    default: new Color(51, 153, 255),
+    projector: new Color(0, 100, 200)
+  })
 };
 
 export default ResonanceColors;

@@ -44,14 +44,14 @@ export class SimScreenView extends ScreenView {
     // ===== DRIVER (Grey box at bottom) =====
     this.driverNode = new Node();
     const driverBox = new Rectangle(0, 0, 200, 120, 10, 10, {
-      fill: '#888888',
-      stroke: '#444444',
+      fill: ResonanceColors.driverFillProperty,
+      stroke: ResonanceColors.driverStrokeProperty,
       lineWidth: 2
     });
     this.driverNode.addChild(driverBox);
 
     // Driver Power Toggle
-    const powerToggleLabel = new Text('ON', { font: 'bold 14px sans-serif', fill: 'white' });
+    const powerToggleLabel = new Text('ON', { font: 'bold 14px sans-serif', fill: ResonanceColors.driverTextProperty });
     const powerToggleSwitch = new ToggleSwitch(model.resonanceModel.drivingEnabledProperty, false, true, {
       trackFillLeft: '#666666',
       trackFillRight: '#00CC00',
@@ -72,7 +72,7 @@ export class SimScreenView extends ScreenView {
         decimalPlaces: 2
       },
       sliderOptions: {
-        trackFillEnabled: '#00CC00'
+        trackFillEnabled: ResonanceColors.frequencyTrackProperty
       }
     });
     frequencyControl.setScaleMagnitude(0.7);
@@ -97,7 +97,7 @@ export class SimScreenView extends ScreenView {
         decimalPlaces: 1
       },
       sliderOptions: {
-        trackFillEnabled: '#3399FF'
+        trackFillEnabled: ResonanceColors.amplitudeTrackProperty
       }
     });
     amplitudeControl.setScaleMagnitude(0.7);
@@ -155,7 +155,7 @@ export class SimScreenView extends ScreenView {
     // Resonator 1 Parameters Box
     const resonatorLabel = new Text('Resonator 1', {
       font: 'bold 16px sans-serif',
-      fill: ResonanceColors.text
+      fill: ResonanceColors.textProperty
     });
 
     // Mass control using NumberControl
@@ -177,7 +177,7 @@ export class SimScreenView extends ScreenView {
     // Natural Frequency Readout (derived, non-editable)
     const naturalFrequencyText = new Text('', {
       font: '14px sans-serif',
-      fill: ResonanceColors.text
+      fill: ResonanceColors.textProperty
     });
 
     model.resonanceModel.naturalFrequencyHzProperty.link((freq: number) => {
@@ -203,7 +203,7 @@ export class SimScreenView extends ScreenView {
       model.resonanceModel.gravityProperty.value = enabled ? 9.8 : 0;
     });
 
-    const gravityLabel = new Text('Gravity', { font: 'bold 14px sans-serif', fill: ResonanceColors.text });
+    const gravityLabel = new Text('Gravity', { font: 'bold 14px sans-serif', fill: ResonanceColors.textProperty });
     const gravityBox = new HBox({
       children: [gravityLabel, gravityToggleSwitch],
       spacing: 10,
@@ -213,7 +213,7 @@ export class SimScreenView extends ScreenView {
     // Ruler Toggle
     const rulerCheckbox = new Checkbox(this.rulerVisibleProperty, new Text('Ruler', {
       font: '14px sans-serif',
-      fill: ResonanceColors.text
+      fill: ResonanceColors.textProperty
     }), {
       boxWidth: 18
     });
@@ -227,13 +227,13 @@ export class SimScreenView extends ScreenView {
     const controlPanelContent = new VBox({
       children: [
         resonatorCountControl,
-        new Line(0, 0, 250, 0, { stroke: ResonanceColors.text, lineWidth: 1 }),
+        new Line(0, 0, 250, 0, { stroke: ResonanceColors.textProperty, lineWidth: 1 }),
         resonatorLabel,
         massControl,
         springConstantControl,
         naturalFrequencyText,
         dampingControl,
-        new Line(0, 0, 250, 0, { stroke: ResonanceColors.text, lineWidth: 1 }),
+        new Line(0, 0, 250, 0, { stroke: ResonanceColors.textProperty, lineWidth: 1 }),
         gravityBox,
         rulerCheckbox
       ],
@@ -242,8 +242,8 @@ export class SimScreenView extends ScreenView {
     });
 
     const controlPanel = new Panel(controlPanelContent, {
-      fill: '#CCFFCC',
-      stroke: '#006600',
+      fill: ResonanceColors.controlPanelFillProperty,
+      stroke: ResonanceColors.controlPanelStrokeProperty,
       lineWidth: 2,
       cornerRadius: 10,
       xMargin: 15,
@@ -315,7 +315,7 @@ export class SimScreenView extends ScreenView {
 
     const preferencesButton = new RectangularPushButton({
       content: preferencesIcon,
-      baseColor: ResonanceColors.panelFill,
+      baseColor: ResonanceColors.panelFillProperty,
       listener: () => {
         if (!this.preferencesDialog) {
           this.preferencesDialog = new PreferencesDialog(
@@ -357,7 +357,7 @@ export class SimScreenView extends ScreenView {
 
     for (let i = 0; i < count; i++) {
       const springNode = new Path(null, {
-        stroke: '#CC0000',
+        stroke: ResonanceColors.springProperty,
         lineWidth: 3
       });
       this.resonatorsContainer.addChild(springNode);
@@ -365,13 +365,13 @@ export class SimScreenView extends ScreenView {
 
       const massNode = new Node();
       const massCircle = new Circle(massRadius, {
-        fill: '#3366FF',
-        stroke: '#0033AA',
+        fill: ResonanceColors.massProperty,
+        stroke: ResonanceColors.massStrokeProperty,
         lineWidth: 3
       });
       const massLabel = new Text(`${i + 1}`, {
         font: `bold ${Math.max(10, 24 - count)}px sans-serif`,
-        fill: 'white',
+        fill: ResonanceColors.massLabelProperty,
         center: massCircle.center
       });
       massNode.addChild(massCircle);
