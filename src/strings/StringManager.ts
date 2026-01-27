@@ -158,6 +158,32 @@ export class StringManager {
   }
 
   /**
+   * Get preset name string properties
+   */
+  public getPresetNames() {
+    return {
+      lightAndBouncyStringProperty: this.stringProperties.resonance.presets.lightAndBouncyStringProperty,
+      heavyAndSlowStringProperty: this.stringProperties.resonance.presets.heavyAndSlowStringProperty,
+      underdampedStringProperty: this.stringProperties.resonance.presets.underdampedStringProperty,
+      criticallyDampedStringProperty: this.stringProperties.resonance.presets.criticallyDampedStringProperty,
+      overdampedStringProperty: this.stringProperties.resonance.presets.overdampedStringProperty,
+      resonanceDemoStringProperty: this.stringProperties.resonance.presets.resonanceDemoStringProperty,
+    };
+  }
+
+  /**
+   * Get common solver name string properties (for use in model code)
+   */
+  public getCommonSolverNames() {
+    return {
+      solverRK4StringProperty: this.stringProperties.resonance.common.solverRK4StringProperty,
+      solverAdaptiveRK45StringProperty: this.stringProperties.resonance.common.solverAdaptiveRK45StringProperty,
+      solverAdaptiveEulerStringProperty: this.stringProperties.resonance.common.solverAdaptiveEulerStringProperty,
+      solverModifiedMidpointStringProperty: this.stringProperties.resonance.common.solverModifiedMidpointStringProperty,
+    };
+  }
+
+  /**
    * Get all raw string properties
    * This can be used if direct access is needed to a specific string property
    */

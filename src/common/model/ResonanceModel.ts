@@ -14,9 +14,10 @@
  * the driving frequency relative to the natural frequency.
  */
 
-import { NumberProperty, Property, DerivedProperty, TReadOnlyProperty } from "scenerystack/axon";
+import { NumberProperty, Property, DerivedProperty, TReadOnlyProperty, ReadOnlyProperty } from "scenerystack/axon";
 import { BaseModel } from "./BaseModel.js";
 import { SolverType } from "./SolverType.js";
+import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
 
 export class ResonanceModel extends BaseModel {
   // State variables
@@ -226,7 +227,7 @@ export class ResonanceModel extends BaseModel {
  * Configuration preset for the resonance model
  */
 export interface ResonancePreset {
-  name: string;
+  nameKey: "lightAndBouncy" | "heavyAndSlow" | "underdamped" | "criticallyDamped" | "overdamped" | "resonanceDemo"; // Key for localized name
   mass: number; // kg
   springConstant: number; // N/m
   damping: number; // N·s/m
@@ -237,11 +238,19 @@ export interface ResonancePreset {
 }
 
 /**
+ * Get the localized name for a preset
+ */
+export function getPresetName(preset: ResonancePreset): ReadOnlyProperty<string> {
+  const propertyName = `${preset.nameKey}StringProperty` as keyof typeof ResonanceStrings.presets;
+  return ResonanceStrings.presets[propertyName] as ReadOnlyProperty<string>;
+}
+
+/**
  * Predefined presets demonstrating different damping regimes and resonance
  */
 export const ResonancePresets: ResonancePreset[] = [
   {
-    name: "Light and Bouncy",
+    nameKey: "lightAndBouncy",
     mass: 0.5,
     springConstant: 50,
     damping: 0.1,
@@ -250,7 +259,7 @@ export const ResonancePresets: ResonancePreset[] = [
     drivingFrequency: 1.6, // Near natural frequency ~1.59 Hz
   },
   {
-    name: "Heavy and Slow",
+    nameKey: "heavyAndSlow",
     mass: 5.0,
     springConstant: 5,
     damping: 0.5,
@@ -259,7 +268,7 @@ export const ResonancePresets: ResonancePreset[] = [
     drivingFrequency: 0.16, // Near natural frequency ~0.159 Hz
   },
   {
-    name: "Underdamped",
+    nameKey: "underdamped",
     mass: 1.0,
     springConstant: 25,
     damping: 2.0, // ζ = 0.2 (underdamped)
@@ -268,7 +277,7 @@ export const ResonancePresets: ResonancePreset[] = [
     drivingFrequency: 0.8, // Near natural frequency ~0.796 Hz
   },
   {
-    name: "Critically Damped",
+    nameKey: "criticallyDamped",
     mass: 1.0,
     springConstant: 25,
     damping: 10.0, // ζ = 1.0 (critical damping = 2√(mk))
@@ -277,7 +286,7 @@ export const ResonancePresets: ResonancePreset[] = [
     drivingFrequency: 0.8,
   },
   {
-    name: "Overdamped",
+    nameKey: "overdamped",
     mass: 1.0,
     springConstant: 25,
     damping: 20.0, // ζ = 2.0 (overdamped)
@@ -286,7 +295,7 @@ export const ResonancePresets: ResonancePreset[] = [
     drivingFrequency: 0.8,
   },
   {
-    name: "Resonance Demo",
+    nameKey: "resonanceDemo",
     mass: 1.0,
     springConstant: 10.0,
     damping: 0.3, // Light damping for clear resonance

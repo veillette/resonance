@@ -53,6 +53,20 @@
     },
     "content": {
       "sampleText": "El contenido va aquí"
+    },
+    "presets": {
+      "lightAndBouncy": "Ligero y Elástico",
+      "heavyAndSlow": "Pesado y Lento",
+      "underdamped": "Subamortiguado",
+      "criticallyDamped": "Amortiguamiento Crítico",
+      "overdamped": "Sobreamortiguado",
+      "resonanceDemo": "Demostración de Resonancia"
+    },
+    "common": {
+      "solverRK4": "Runge-Kutta de 4º Orden",
+      "solverAdaptiveRK45": "RK45 Adaptativo",
+      "solverAdaptiveEuler": "Euler Adaptativo",
+      "solverModifiedMidpoint": "Punto Medio Modificado"
     }
   }
 }

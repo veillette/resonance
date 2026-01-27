@@ -1,3 +1,6 @@
+import { ReadOnlyProperty } from "scenerystack/axon";
+import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
+
 /**
  * Enumeration of available ODE solver types
  */
@@ -9,11 +12,11 @@ export enum SolverType {
 }
 
 /**
- * Human-readable names for solver types
+ * Human-readable names for solver types (localized)
  */
-export const SolverTypeName: Record<SolverType, string> = {
-  [SolverType.RUNGE_KUTTA_4]: "Runge-Kutta 4th Order",
-  [SolverType.ADAPTIVE_RK45]: "Adaptive RK45",
-  [SolverType.ADAPTIVE_EULER]: "Adaptive Euler",
-  [SolverType.MODIFIED_MIDPOINT]: "Modified Midpoint",
+export const SolverTypeName: Record<SolverType, ReadOnlyProperty<string>> = {
+  [SolverType.RUNGE_KUTTA_4]: ResonanceStrings.common.solverNames.solverRK4StringProperty,
+  [SolverType.ADAPTIVE_RK45]: ResonanceStrings.common.solverNames.solverAdaptiveRK45StringProperty,
+  [SolverType.ADAPTIVE_EULER]: ResonanceStrings.common.solverNames.solverAdaptiveEulerStringProperty,
+  [SolverType.MODIFIED_MIDPOINT]: ResonanceStrings.common.solverNames.solverModifiedMidpointStringProperty,
 };

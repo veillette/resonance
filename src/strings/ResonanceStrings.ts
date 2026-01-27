@@ -67,6 +67,14 @@ export const ResonanceStrings = {
 
   // Content
   content: resonanceStringManager.getContentLabels(),
+
+  // Presets
+  presets: resonanceStringManager.getPresetNames(),
+
+  // Common (for use in model code)
+  common: {
+    solverNames: resonanceStringManager.getCommonSolverNames(),
+  },
 };
 
 // Export the StringManager for direct access when needed

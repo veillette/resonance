@@ -2,13 +2,16 @@
  * Barrel export for common model classes
  */
 
-export { ODESolver, ODEModel } from "./ODESolver.js";
+export { ODESolver } from "./ODESolver.js";
+export type { ODEModel } from "./ODESolver.js";
 export { RungeKuttaSolver } from "./RungeKuttaSolver.js";
 export { AdaptiveEulerSolver } from "./AdaptiveEulerSolver.js";
 export { AdaptiveRK45Solver } from "./AdaptiveRK45Solver.js";
 export { ModifiedMidpointSolver } from "./ModifiedMidpointSolver.js";
 export { SolverType, SolverTypeName } from "./SolverType.js";
-export { BaseModel, TimeSpeed } from "./BaseModel.js";
-export { ResonanceModel, ResonancePreset, ResonancePresets } from "./ResonanceModel.js";
+export { BaseModel } from "./BaseModel.js";
+export type { TimeSpeed } from "./BaseModel.js";
+export { ResonanceModel, ResonancePresets, getPresetName } from "./ResonanceModel.js";
+export type { ResonancePreset } from "./ResonanceModel.js";
 export { OscillatorConfigMode } from "./OscillatorConfigMode.js";
 export type { OscillatorConfigModeType } from "./OscillatorConfigMode.js";
