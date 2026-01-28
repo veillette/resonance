@@ -154,15 +154,15 @@ resonance/
 │   │   │   └── OscillatorConfigMode.ts
 │   │   ├── ResonanceColors.ts     # Color profile definitions
 │   │   └── ResonanceConstants.ts  # Physical and layout constants
-│   ├── strings/                   # Internationalization
-│   │   ├── locales/
-│   │   │   ├── en/               # English
-│   │   │   ├── es/               # Spanish
-│   │   │   └── fr/               # French
-│   │   └── StringManager.ts
+│   ├── i18n/                      # Internationalization
+│   │   ├── strings_en.json       # English strings
+│   │   ├── strings_es.json       # Spanish strings
+│   │   ├── strings_fr.json       # French strings
+│   │   ├── ResonanceStrings.ts   # String property exports
+│   │   └── StringManager.ts      # Locale management
 │   └── preferences/
 │       └── ResonancePreferencesModel.ts
-├── CLAUDE.md                      # Developer documentation
+├── claude.md                      # Developer documentation
 ├── package.json
 ├── tsconfig.json
 └── vite.config.js
@@ -188,7 +188,7 @@ All parameters have carefully chosen ranges for realistic simulation:
 ## Contributing
 
 ### Development Guidelines
-See `CLAUDE.md` for detailed development instructions, including:
+See `claude.md` for detailed development instructions, including:
 - Creating new simulation screens
 - Implementing physics models
 - Adding UI controls

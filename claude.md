@@ -592,45 +592,44 @@ The color profile selection should be available in the Visual preferences panel 
 
 All user-facing text must be translatable and loaded from string files.
 
-**Step 1: Create a strings directory structure**
+**Step 1: Create an i18n directory structure**
 ```
 src/
-└── strings/
-    ├── resonance-strings.ts          # Main strings file
-    └── locales/
-        ├── en/
-        │   └── resonance-strings.json
-        ├── es/
-        │   └── resonance-strings.json
-        └── fr/
-            └── resonance-strings.json
+└── i18n/
+    ├── ResonanceStrings.ts    # Exports string properties for use in code
+    ├── StringManager.ts       # Singleton that manages locale switching
+    ├── strings_en.json        # English strings
+    ├── strings_es.json        # Spanish strings
+    └── strings_fr.json        # French strings
 ```
 
 **Step 2: Define strings in JSON files**
 ```json
-// src/strings/locales/en/resonance-strings.json
+// src/i18n/strings_en.json
 {
   "resonance": {
     "title": "Resonance",
-    "springConstant": "Spring Constant",
-    "dampingCoefficient": "Damping Coefficient",
-    "drivingFrequency": "Driving Frequency",
-    "mass": "Mass",
-    "reset": "Reset All"
+    "controls": {
+      "springConstant": "Spring Constant (k)",
+      "dampingCoefficient": "Damping Coefficient (b)",
+      "drivingFrequency": "Driving Frequency (ω)",
+      "mass": "Mass (m)",
+      "reset": "Reset All"
+    }
   }
 }
 ```
 
 **Step 3: Load and use strings in code**
 ```typescript
-import { getStringProperty } from "scenerystack/joist";
+import { ResonanceStrings } from '../i18n/ResonanceStrings';
 
 // Get translatable string properties
-const springConstantString = getStringProperty('resonance', 'springConstant');
-const massString = getStringProperty('resonance', 'mass');
+const springConstantStringProperty = ResonanceStrings.controls.springConstantStringProperty;
+const massStringProperty = ResonanceStrings.controls.massStringProperty;
 
 // Use in UI components
-const control = new NumberControl(springConstantString, model.springConstant, new Range(1, 20));
+const control = new NumberControl(springConstantStringProperty, model.springConstant, new Range(1, 20));
 ```
 
 **Step 4: Configure available locales**
@@ -889,9 +888,9 @@ Before considering a resonance simulation complete, verify:
 - [ ] Color profile selector in Visual preferences
 
 ### Internationalization (REQUIRED)
-- [ ] String files created in `src/strings/locales/`
+- [ ] String files created in `src/i18n/` (e.g., strings_en.json, strings_es.json)
 - [ ] At least English (en) locale supported
-- [ ] All UI text uses `getStringProperty()`
+- [ ] All UI text uses StringProperty from `ResonanceStrings`
 - [ ] NO hardcoded English strings in code
 - [ ] `availableLocales` configured in `init.ts`
 - [ ] `allowLocaleSwitching: true` in `init.ts`
