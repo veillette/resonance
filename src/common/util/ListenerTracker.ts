@@ -23,8 +23,7 @@ import type { TReadOnlyProperty } from 'scenerystack/axon';
  * ```
  */
 export class ListenerTracker {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly tracked: Array<{ property: TReadOnlyProperty<any>; listener: ( value: any ) => void }> = [];
+  private readonly cleanups: Array<() => void> = [];
 
   /**
    * Links a listener to a property and tracks it for later cleanup.
@@ -32,7 +31,7 @@ export class ListenerTracker {
    */
   public link<T>( property: TReadOnlyProperty<T>, listener: ( value: T ) => void ): void {
     property.link( listener );
-    this.tracked.push( { property, listener } );
+    this.cleanups.push( () => property.unlink( listener ) );
   }
 
   /**
@@ -41,16 +40,14 @@ export class ListenerTracker {
    */
   public lazyLink<T>( property: TReadOnlyProperty<T>, listener: ( value: T ) => void ): void {
     property.lazyLink( listener );
-    this.tracked.push( { property, listener } );
+    this.cleanups.push( () => property.unlink( listener ) );
   }
 
   /**
    * Unlinks all tracked listeners and clears the tracking list.
    */
   public dispose(): void {
-    this.tracked.forEach( ( { property, listener } ) => {
-      property.unlink( listener );
-    } );
-    this.tracked.length = 0;
+    this.cleanups.forEach( cleanup => cleanup() );
+    this.cleanups.length = 0;
   }
 }
