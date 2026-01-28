@@ -12,6 +12,7 @@ import { VisualPreferencesPanel } from "./VisualPreferencesPanel.js";
 import { SimulationPreferencesPanel } from "./SimulationPreferencesPanel.js";
 import { ResonanceStrings } from "../strings/ResonanceStrings.js";
 import ResonanceColors from "../common/ResonanceColors.js";
+import ResonanceConstants from "../common/ResonanceConstants.js";
 
 export class PreferencesDialog extends Panel {
   public constructor(
@@ -28,7 +29,7 @@ export class PreferencesDialog extends Panel {
 
     // Create preference panels
     const visualLabel = new Text(strings.visual.title, {
-      font: new PhetFont({ size: 16, weight: 'bold' }),
+      font: ResonanceConstants.TITLE_FONT,
       fill: ResonanceColors.textProperty,
     });
 
@@ -41,7 +42,7 @@ export class PreferencesDialog extends Panel {
     });
 
     const simulationLabel = new Text(strings.simulation.title, {
-      font: new PhetFont({ size: 16, weight: 'bold' }),
+      font: ResonanceConstants.TITLE_FONT,
       fill: ResonanceColors.textProperty,
     });
 
@@ -58,8 +59,8 @@ export class PreferencesDialog extends Panel {
 
     // Close button
     const closeButton = new RectangularPushButton({
-      content: new Text("Close", {
-        font: new PhetFont({ size: 14 }),
+      content: new Text(ResonanceStrings.controls.closeStringProperty, {
+        font: ResonanceConstants.CONTROL_FONT,
         fill: ResonanceColors.textProperty,
       }),
       listener: closeCallback,

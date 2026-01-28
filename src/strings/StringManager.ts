@@ -80,6 +80,7 @@ export class StringManager {
       amplitudeStringProperty: this.stringProperties.resonance.controls.amplitudeStringProperty,
       resonatorsStringProperty: this.stringProperties.resonance.controls.resonatorsStringProperty,
       resonator1StringProperty: this.stringProperties.resonance.controls.resonator1StringProperty,
+      resonatorPatternStringProperty: this.stringProperties.resonance.controls.resonatorPatternStringProperty,
       massSimpleStringProperty: this.stringProperties.resonance.controls.massSimpleStringProperty,
       springConstantSimpleStringProperty: this.stringProperties.resonance.controls.springConstantSimpleStringProperty,
       dampingStringProperty: this.stringProperties.resonance.controls.dampingStringProperty,
@@ -87,6 +88,9 @@ export class StringManager {
       rulerStringProperty: this.stringProperties.resonance.controls.rulerStringProperty,
       onStringProperty: this.stringProperties.resonance.controls.onStringProperty,
       frequencyEqualsStringProperty: this.stringProperties.resonance.controls.frequencyEqualsStringProperty,
+      slowStringProperty: this.stringProperties.resonance.controls.slowStringProperty,
+      normalStringProperty: this.stringProperties.resonance.controls.normalStringProperty,
+      closeStringProperty: this.stringProperties.resonance.controls.closeStringProperty,
     };
   }
 
@@ -128,6 +132,7 @@ export class StringManager {
       unitsImperialStringProperty: this.stringProperties.resonance.preferences.simulation.unitsImperialStringProperty,
       solverMethodStringProperty: this.stringProperties.resonance.preferences.simulation.solverMethodStringProperty,
       solverDescriptionStringProperty: this.stringProperties.resonance.preferences.simulation.solverDescriptionStringProperty,
+      odeSolverStringProperty: this.stringProperties.resonance.preferences.simulation.odeSolverStringProperty,
     };
   }
 
@@ -197,6 +202,20 @@ export class StringManager {
       solverAdaptiveRK45StringProperty: this.stringProperties.resonance.common.solverAdaptiveRK45StringProperty,
       solverAdaptiveEulerStringProperty: this.stringProperties.resonance.common.solverAdaptiveEulerStringProperty,
       solverModifiedMidpointStringProperty: this.stringProperties.resonance.common.solverModifiedMidpointStringProperty,
+    };
+  }
+
+  /**
+   * Get unit string properties
+   */
+  public getUnitLabels() {
+    return {
+      hertzPatternStringProperty: this.stringProperties.resonance.units.hertzPatternStringProperty,
+      cmPatternStringProperty: this.stringProperties.resonance.units.cmPatternStringProperty,
+      kgPatternStringProperty: this.stringProperties.resonance.units.kgPatternStringProperty,
+      newtonPerMeterPatternStringProperty: this.stringProperties.resonance.units.newtonPerMeterPatternStringProperty,
+      dampingUnitsPatternStringProperty: this.stringProperties.resonance.units.dampingUnitsPatternStringProperty,
+      cmStringProperty: this.stringProperties.resonance.units.cmStringProperty,
     };
   }
 

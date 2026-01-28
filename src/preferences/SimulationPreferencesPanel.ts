@@ -5,10 +5,10 @@
 
 import { VBox, Text } from "scenerystack/scenery";
 import { Checkbox, AquaRadioButtonGroup } from "scenerystack/sun";
-import { PhetFont } from "scenerystack/scenery-phet";
 import { ResonancePreferencesModel } from "./ResonancePreferencesModel.js";
 import { ResonanceStrings } from "../strings/ResonanceStrings.js";
 import { SolverType, SolverTypeName } from "../common/model/SolverType.js";
+import ResonanceConstants from "../common/ResonanceConstants.js";
 
 export class SimulationPreferencesPanel extends VBox {
   public constructor(preferencesModel: ResonancePreferencesModel) {
@@ -17,12 +17,12 @@ export class SimulationPreferencesPanel extends VBox {
 
     // Display options section
     const displayOptionsLabel = new Text(strings.displayOptions, {
-      font: new PhetFont({ size: 14, weight: 'bold' }),
+      font: ResonanceConstants.LABEL_FONT,
     });
 
     const showEnergyCheckbox = new Checkbox(
       preferencesModel.showEnergyProperty,
-      new Text(strings.showEnergy, { font: new PhetFont({ size: 12 }) }),
+      new Text(strings.showEnergy, { font: ResonanceConstants.TICK_LABEL_FONT }),
       {
         boxWidth: 16,
       }
@@ -30,7 +30,7 @@ export class SimulationPreferencesPanel extends VBox {
 
     const showVectorsCheckbox = new Checkbox(
       preferencesModel.showVectorsProperty,
-      new Text(strings.showVectors, { font: new PhetFont({ size: 12 }) }),
+      new Text(strings.showVectors, { font: ResonanceConstants.TICK_LABEL_FONT }),
       {
         boxWidth: 16,
       }
@@ -38,7 +38,7 @@ export class SimulationPreferencesPanel extends VBox {
 
     const showPhaseCheckbox = new Checkbox(
       preferencesModel.showPhaseProperty,
-      new Text(strings.showPhase, { font: new PhetFont({ size: 12 }) }),
+      new Text(strings.showPhase, { font: ResonanceConstants.TICK_LABEL_FONT }),
       {
         boxWidth: 16,
       }
@@ -57,7 +57,7 @@ export class SimulationPreferencesPanel extends VBox {
 
     // Units section
     const unitsLabel = new Text(strings.units, {
-      font: new PhetFont({ size: 14, weight: 'bold' }),
+      font: ResonanceConstants.LABEL_FONT,
     });
 
     const unitsButtons = new AquaRadioButtonGroup(
@@ -66,12 +66,12 @@ export class SimulationPreferencesPanel extends VBox {
         {
           value: "metric",
           createNode: () =>
-            new Text(strings.unitsMetric, { font: new PhetFont({ size: 12 }) }),
+            new Text(strings.unitsMetric, { font: ResonanceConstants.TICK_LABEL_FONT }),
         },
         {
           value: "imperial",
           createNode: () =>
-            new Text(strings.unitsImperial, { font: new PhetFont({ size: 12 }) }),
+            new Text(strings.unitsImperial, { font: ResonanceConstants.TICK_LABEL_FONT }),
         },
       ],
       {
@@ -89,8 +89,8 @@ export class SimulationPreferencesPanel extends VBox {
     });
 
     // ODE Solver section
-    const solverLabel = new Text("ODE Solver", {
-      font: new PhetFont({ size: 14, weight: 'bold' }),
+    const solverLabel = new Text(strings.odeSolver, {
+      font: ResonanceConstants.LABEL_FONT,
     });
 
     const solverButtons = new AquaRadioButtonGroup(
@@ -99,22 +99,22 @@ export class SimulationPreferencesPanel extends VBox {
         {
           value: SolverType.RUNGE_KUTTA_4,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.RUNGE_KUTTA_4], { font: new PhetFont({ size: 12 }) }),
+            new Text(SolverTypeName[SolverType.RUNGE_KUTTA_4], { font: ResonanceConstants.TICK_LABEL_FONT }),
         },
         {
           value: SolverType.ADAPTIVE_RK45,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.ADAPTIVE_RK45], { font: new PhetFont({ size: 12 }) }),
+            new Text(SolverTypeName[SolverType.ADAPTIVE_RK45], { font: ResonanceConstants.TICK_LABEL_FONT }),
         },
         {
           value: SolverType.ADAPTIVE_EULER,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.ADAPTIVE_EULER], { font: new PhetFont({ size: 12 }) }),
+            new Text(SolverTypeName[SolverType.ADAPTIVE_EULER], { font: ResonanceConstants.TICK_LABEL_FONT }),
         },
         {
           value: SolverType.MODIFIED_MIDPOINT,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.MODIFIED_MIDPOINT], { font: new PhetFont({ size: 12 }) }),
+            new Text(SolverTypeName[SolverType.MODIFIED_MIDPOINT], { font: ResonanceConstants.TICK_LABEL_FONT }),
         },
       ],
       {

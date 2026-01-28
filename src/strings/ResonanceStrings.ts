@@ -71,6 +71,9 @@ export const ResonanceStrings = {
   // Presets
   presets: resonanceStringManager.getPresetNames(),
 
+  // Units
+  units: resonanceStringManager.getUnitLabels(),
+
   // Common (for use in model code)
   common: {
     solverNames: resonanceStringManager.getCommonSolverNames(),

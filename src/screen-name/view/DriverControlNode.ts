@@ -52,7 +52,7 @@ export class DriverControlNode extends Node {
     const frequencyControl = new NumberControl( ResonanceStrings.controls.frequencyStringProperty, model.resonanceModel.drivingFrequencyProperty, ResonanceConstants.FREQUENCY_RANGE, {
       delta: 0.1,
       numberDisplayOptions: {
-        valuePattern: '{{value}} Hz',
+        valuePattern: ResonanceStrings.units.hertzPatternStringProperty,
         decimalPlaces: 1
       },
       sliderOptions: {
@@ -96,7 +96,7 @@ export class DriverControlNode extends Node {
       {
         delta: 0.01,
         numberDisplayOptions: {
-          valuePattern: '{{value}} cm',
+          valuePattern: ResonanceStrings.units.cmPatternStringProperty,
           decimalPlaces: 2
         },
         sliderOptions: {

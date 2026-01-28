@@ -9,6 +9,7 @@ import { AquaRadioButtonGroup } from "scenerystack/sun";
 import { Bounds2 } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
+import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
 
 export class PlaybackControlNode extends HBox {
 
@@ -16,8 +17,8 @@ export class PlaybackControlNode extends HBox {
 
     // Speed radio buttons
     const speedButtons = [
-      { value: 'slow', createNode: () => new Text( 'slow', { font: ResonanceConstants.CONTROL_FONT } ) },
-      { value: 'normal', createNode: () => new Text( 'normal', { font: ResonanceConstants.CONTROL_FONT } ) }
+      { value: 'slow', createNode: () => new Text( ResonanceStrings.controls.slowStringProperty, { font: ResonanceConstants.CONTROL_FONT } ) },
+      { value: 'normal', createNode: () => new Text( ResonanceStrings.controls.normalStringProperty, { font: ResonanceConstants.CONTROL_FONT } ) }
     ];
 
     const speedControl = new AquaRadioButtonGroup(
