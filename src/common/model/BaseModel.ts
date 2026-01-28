@@ -42,7 +42,7 @@ export abstract class BaseModel implements ODEModel {
   protected constructor(solverTypeProperty: Property<SolverType>) {
     // Initialize time management properties
     this.timeProperty = new NumberProperty(0);
-    this.isPlayingProperty = new BooleanProperty(false);
+    this.isPlayingProperty = new BooleanProperty(true);
     this.timeSpeedProperty = new Property<TimeSpeed>("normal");
 
     // Initialize solver

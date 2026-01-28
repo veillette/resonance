@@ -9,11 +9,17 @@ import { TimeSpeed } from "../../common/model/BaseModel.js";
  *
  * Manages multiple independent ResonanceModel instances (one per oscillator).
  * The oscillator configuration mode determines how masses and spring constants
- * are distributed across oscillators:
+ * are distributed across oscillators.
  *
- * - SAME_MASS: All share the base mass; spring constants = k, 2k, 3k, ...
- * - SAME_SPRING_CONSTANT: All share the base spring constant; masses = m, 2m, 3m, ...
- * - MIXED: masses = m, 2m, 3m, ...; spring constants = k, 2k, 3k, ...
+ * Frequencies are evenly distributed from 1.0 Hz (oscillator 1) to 5.5 Hz (oscillator 10):
+ * f_i = 1.0 + (i-1) / (count-1) × (5.5 - 1.0) Hz
+ *
+ * - SAME_MASS: All oscillators have mass = 1 kg; spring constants calculated to match target frequencies
+ * - SAME_SPRING_CONSTANT: All oscillators have k = 200 N/m; masses calculated to match target frequencies
+ * - MIXED: Both mass and spring constant scale proportionally (m_i = i×m₁, k_i = i×k₁)
+ *   → All frequencies equal (resonance at same frequency)
+ * - SAME_FREQUENCY: Same as MIXED (both scale proportionally to maintain constant f)
+ * - CUSTOM: User sets all parameters manually
  */
 export class SimModel {
   // The first resonance model acts as the "reference" model that controls
@@ -33,6 +39,9 @@ export class SimModel {
   public readonly selectedResonatorIndexProperty: NumberProperty;
 
   private readonly preferencesModel: ResonancePreferencesModel;
+
+  // Flag to prevent circular updates
+  private updatingParameters: boolean = false;
 
   // Maximum number of oscillators supported
   public static readonly MAX_OSCILLATORS = 10;
@@ -74,11 +83,15 @@ export class SimModel {
 
     // When base mass or spring constant changes, recalculate
     this.resonanceModel.massProperty.link(() => {
-      this.updateOscillatorParameters();
+      if (!this.updatingParameters) {
+        this.updateOscillatorParameters();
+      }
     });
 
     this.resonanceModel.springConstantProperty.link(() => {
-      this.updateOscillatorParameters();
+      if (!this.updatingParameters) {
+        this.updateOscillatorParameters();
+      }
     });
   }
 
@@ -126,32 +139,63 @@ export class SimModel {
   /**
    * Update per-oscillator mass and spring constant based on the current
    * configuration mode and the reference model's base values.
+   *
+   * Frequencies are distributed evenly from f_min (oscillator 1) to f_max (last oscillator).
+   * Default: 1 Hz to 5.5 Hz for 10 oscillators.
    */
   private updateOscillatorParameters(): void {
+    if (this.updatingParameters) return;
+    this.updatingParameters = true;
+
     const mode = this.oscillatorConfigProperty.value;
+    const count = this.resonatorCountProperty.value;
+
+    // Target frequency range
+    const f_min = 1.0; // Hz
+    const f_max = 5.5; // Hz
+
+    // Set parameters for oscillator 0 (base oscillator) to achieve f_min
+    const omega_min = 2 * Math.PI * f_min;
+    if (mode === OscillatorConfigMode.SAME_MASS) {
+      // For same mass mode: m = 1 kg, calculate k for f = 1 Hz
+      this.resonanceModel.massProperty.value = 1.0;
+      this.resonanceModel.springConstantProperty.value = omega_min * omega_min * 1.0;
+    } else if (mode === OscillatorConfigMode.SAME_SPRING_CONSTANT) {
+      // For same spring constant mode: k = 200 N/m, calculate m for f = 1 Hz
+      this.resonanceModel.springConstantProperty.value = 200.0;
+      this.resonanceModel.massProperty.value = 200.0 / (omega_min * omega_min);
+    }
+
     const baseMass = this.resonanceModel.massProperty.value;
     const baseK = this.resonanceModel.springConstantProperty.value;
-    const count = this.resonatorCountProperty.value;
 
     for (let i = 1; i < count; i++) {
       const model = this.oscillatorModels[i];
-      const multiplier = i + 1; // 2, 3, 4, ...
+
+      // Calculate target frequency for this oscillator (evenly distributed)
+      // f_i = f_min + (i / (count - 1)) × (f_max - f_min)
+      const targetFrequency = f_min + (i / (count - 1)) * (f_max - f_min);
+      const omega = 2 * Math.PI * targetFrequency; // Angular frequency (rad/s)
 
       switch (mode) {
         case OscillatorConfigMode.SAME_MASS:
-          // Same mass, increasing spring constants
+          // Same mass, vary spring constant to achieve target frequency
+          // f = (1/2π) × √(k/m)  →  k = (2πf)² × m
           model.massProperty.value = baseMass;
-          model.springConstantProperty.value = baseK * multiplier;
+          model.springConstantProperty.value = omega * omega * baseMass;
           break;
 
         case OscillatorConfigMode.SAME_SPRING_CONSTANT:
-          // Same spring constant, increasing masses
+          // Same spring constant, vary mass to achieve target frequency
+          // f = (1/2π) × √(k/m)  →  m = k / (2πf)²
           model.springConstantProperty.value = baseK;
-          model.massProperty.value = baseMass * multiplier;
+          model.massProperty.value = baseK / (omega * omega);
           break;
 
         case OscillatorConfigMode.MIXED:
-          // Both vary: masses increase, spring constants increase
+          // Both vary: masses increase, spring constants increase proportionally
+          // Keep natural frequency constant for all oscillators
+          const multiplier = i + 1;
           model.massProperty.value = baseMass * multiplier;
           model.springConstantProperty.value = baseK * multiplier;
           break;
@@ -159,8 +203,9 @@ export class SimModel {
         case OscillatorConfigMode.SAME_FREQUENCY:
           // Same natural frequency: ω₀ = √(k/m) remains constant
           // Keep k/m ratio constant by scaling both proportionally
-          model.massProperty.value = baseMass * multiplier;
-          model.springConstantProperty.value = baseK * multiplier;
+          const multiplier2 = i + 1;
+          model.massProperty.value = baseMass * multiplier2;
+          model.springConstantProperty.value = baseK * multiplier2;
           break;
 
         case OscillatorConfigMode.CUSTOM:
@@ -169,6 +214,8 @@ export class SimModel {
           break;
       }
     }
+
+    this.updatingParameters = false;
   }
 
   /**

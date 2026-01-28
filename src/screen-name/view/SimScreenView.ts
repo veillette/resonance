@@ -195,14 +195,29 @@ export class SimScreenView extends ScreenView {
   }
 
   /**
+   * Calculate mass box size based on mass value using surface area scaling.
+   * Surface area scales linearly with mass, so side length scales with √mass.
+   */
+  private calculateMassSize(mass: number): number {
+    const minMass = ResonanceConstants.MASS_RANGE.min;
+    const maxMass = ResonanceConstants.MASS_RANGE.max;
+    const minSize = ResonanceConstants.MIN_MASS_SIZE;
+    const maxSize = ResonanceConstants.MAX_MASS_SIZE;
+
+    // Surface area scaling: side = minSize + (maxSize - minSize) × √((mass - minMass) / (maxMass - minMass))
+    const normalizedMass = (mass - minMass) / (maxMass - minMass);
+    const size = minSize + (maxSize - minSize) * Math.sqrt(normalizedMass);
+
+    return size;
+  }
+
+  /**
    * Rebuild the visual resonator nodes (springs + masses) for a given count.
    */
   private rebuildResonators(count: number): void {
     this.resonatorsContainer.removeAllChildren();
     this.springNodes = [];
     this.massNodes = [];
-
-    const massSize = Math.max(ResonanceConstants.MIN_MASS_SIZE, ResonanceConstants.MAX_MASS_SIZE - count);
 
     for (let i = 0; i < count; i++) {
       const oscillatorModel = this.model.oscillatorModels[i];
@@ -235,21 +250,85 @@ export class SimScreenView extends ScreenView {
       this.resonatorsContainer.addChild(springNode);
       this.springNodes.push(springNode);
 
-      // Mass node
+      // Mass node with dynamic sizing based on mass
       const massNode = new Node();
-      const massBox = new Rectangle(0, 0, massSize, massSize, {
+      const initialMassSize = this.calculateMassSize(oscillatorModel.massProperty.value);
+      const massBox = new Rectangle(0, 0, initialMassSize, initialMassSize, {
         fill: ResonanceColors.massProperty,
         stroke: ResonanceColors.massStrokeProperty,
         lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH,
         cornerRadius: 3
       });
       const massLabel = new Text(`${i + 1}`, {
-        font: `bold ${Math.max(ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN, ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE - count)}px sans-serif`,
+        font: `bold ${Math.max(ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN, ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE - count * 2)}px sans-serif`,
         fill: ResonanceColors.massLabelProperty,
         center: massBox.center
       });
       massNode.addChild(massBox);
       massNode.addChild(massLabel);
+
+      // Update mass box size when mass changes
+      oscillatorModel.massProperty.link((mass: number) => {
+        const newSize = this.calculateMassSize(mass);
+        massBox.setRect(0, 0, newSize, newSize);
+        massLabel.center = massBox.center;
+      });
+
+      // Add vertical drag listener using positionProperty
+      massNode.cursor = 'ns-resize';
+
+      // Create a Vector2Property for dragging that stays synchronized with the oscillator's position
+      const massPositionProperty = new Vector2Property(new Vector2(0, 0));
+
+      // Flag to prevent circular updates
+      let updatingPosition = false;
+
+      // Bidirectional sync: model position -> view position
+      oscillatorModel.positionProperty.link((modelPosition: number) => {
+        if (updatingPosition) return;
+
+        updatingPosition = true;
+        const naturalLength = oscillatorModel.naturalLengthProperty.value;
+        const naturalLengthView = Math.abs(this.modelViewTransform.modelToViewDeltaY(naturalLength));
+        const driverTopY = this.driverPlate.top;
+        const equilibriumY = driverTopY - naturalLengthView;
+        const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelPosition);
+        const junctionY = equilibriumY - viewYOffset;
+        const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
+
+        // Keep x fixed, only update y
+        massPositionProperty.value = new Vector2(massPositionProperty.value.x, massCenterY);
+        updatingPosition = false;
+      });
+
+      // View position -> model position
+      massPositionProperty.lazyLink((viewPosition: Vector2) => {
+        if (updatingPosition) return;
+
+        updatingPosition = true;
+        const massCenterY = viewPosition.y;
+        const junctionY = massCenterY + ResonanceConstants.MASS_CENTER_OFFSET;
+
+        const naturalLength = oscillatorModel.naturalLengthProperty.value;
+        const naturalLengthView = Math.abs(this.modelViewTransform.modelToViewDeltaY(naturalLength));
+        const driverTopY = this.driverPlate.top;
+        const equilibriumY = driverTopY - naturalLengthView;
+        const viewYOffset = equilibriumY - junctionY;
+        const modelPosition = this.modelViewTransform.viewToModelDeltaY(viewYOffset);
+
+        oscillatorModel.positionProperty.value = modelPosition;
+        oscillatorModel.velocityProperty.value = 0;
+        oscillatorModel.isPlayingProperty.value = false;
+        updatingPosition = false;
+      });
+
+      const dragListener = new DragListener({
+        targetNode: massNode,
+        positionProperty: massPositionProperty,
+        dragBoundsProperty: new Property(this.layoutBounds)
+      });
+      massNode.addInputListener(dragListener);
+
       this.resonatorsContainer.addChild(massNode);
       this.massNodes.push(massNode);
     }
@@ -295,7 +374,6 @@ export class SimScreenView extends ScreenView {
     const naturalLength = this.model.resonanceModel.naturalLengthProperty.value;
     const naturalLengthView = Math.abs(this.modelViewTransform.modelToViewDeltaY(naturalLength));
     const equilibriumY = driverTopY - naturalLengthView;
-    const massSize = Math.max(ResonanceConstants.MIN_MASS_SIZE, ResonanceConstants.MAX_MASS_SIZE - count);
 
     const endLengths = ResonanceConstants.SPRING_LEFT_END_LENGTH + ResonanceConstants.SPRING_RIGHT_END_LENGTH;
     const loopsTimesRadius = ResonanceConstants.SPRING_LOOPS * ResonanceConstants.SPRING_RADIUS;
@@ -336,7 +414,11 @@ export class SimScreenView extends ScreenView {
     this.controlPanel.reset();
   }
 
-  public step(): void {
+  public step(dt: number): void {
+    // Step the physics model first
+    this.model.step(dt);
+
+    // Then update the visual representation
     this.updateSpringAndMass();
   }
 }

@@ -116,6 +116,11 @@ export class ResonatorControlPanel extends Panel {
       align: 'left'
     } );
 
+    // Hide configuration combo box when there's only one oscillator
+    model.resonatorCountProperty.link( ( count: number ) => {
+      configBox.visible = count > 1;
+    } );
+
     // --- Resonator selection spinner ---
     const displayResonatorNumberProperty = new NumberProperty( 1 );
 
@@ -153,6 +158,11 @@ export class ResonatorControlPanel extends Panel {
       children: [ resonatorLabel, resonatorSpinner ],
       spacing: 10,
       align: 'center'
+    } );
+
+    // Hide resonator selection when there's only one oscillator
+    model.resonatorCountProperty.link( ( count: number ) => {
+      resonatorSelectionBox.visible = count > 1;
     } );
 
     // --- Mass and spring constant controls ---
