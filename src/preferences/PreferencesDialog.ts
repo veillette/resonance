@@ -6,6 +6,7 @@
 import { VBox, Text } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
 import { RectangularPushButton } from "scenerystack/sun";
+import { PhetFont } from "scenerystack/scenery-phet";
 import { ResonancePreferencesModel } from "./ResonancePreferencesModel.js";
 import { VisualPreferencesPanel } from "./VisualPreferencesPanel.js";
 import { SimulationPreferencesPanel } from "./SimulationPreferencesPanel.js";
@@ -21,15 +22,13 @@ export class PreferencesDialog extends Panel {
 
     // Title
     const title = new Text(strings.title, {
-      font: "20px sans-serif",
-      fontWeight: "bold",
+      font: new PhetFont({ size: 20, weight: 'bold' }),
       fill: ResonanceColors.textProperty,
     });
 
     // Create preference panels
     const visualLabel = new Text(strings.visual.title, {
-      font: "16px sans-serif",
-      fontWeight: "bold",
+      font: new PhetFont({ size: 16, weight: 'bold' }),
       fill: ResonanceColors.textProperty,
     });
 
@@ -42,8 +41,7 @@ export class PreferencesDialog extends Panel {
     });
 
     const simulationLabel = new Text(strings.simulation.title, {
-      font: "16px sans-serif",
-      fontWeight: "bold",
+      font: new PhetFont({ size: 16, weight: 'bold' }),
       fill: ResonanceColors.textProperty,
     });
 
@@ -61,7 +59,7 @@ export class PreferencesDialog extends Panel {
     // Close button
     const closeButton = new RectangularPushButton({
       content: new Text("Close", {
-        font: "14px sans-serif",
+        font: new PhetFont({ size: 14 }),
         fill: ResonanceColors.textProperty,
       }),
       listener: closeCallback,

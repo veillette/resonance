@@ -11,7 +11,7 @@
  * - Ruler visibility checkbox
  */
 
-import { Node, Text, Line, VBox, HBox } from "scenerystack/scenery";
+import { Node, Text, Line, VBox, HBox, AlignBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
 import { Panel, ComboBox, Checkbox, ToggleSwitch, NumberSpinner } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
@@ -271,6 +271,11 @@ export class ResonatorControlPanel extends Panel {
       oscillator.naturalFrequencyHzProperty.link( updateNaturalFrequency );
     } );
 
+    // Wrap the natural frequency text in an AlignBox to center it
+    const naturalFrequencyBox = new AlignBox( naturalFrequencyText, {
+      xAlign: 'center'
+    } );
+
     // --- Damping control ---
     const dampingControl = new NumberControl( 'Damping', model.resonanceModel.dampingProperty, ResonanceConstants.DAMPING_RANGE, {
       delta: 0.1,
@@ -313,7 +318,7 @@ export class ResonatorControlPanel extends Panel {
         resonatorSelectionBox,
         massControl,
         springConstantControl,
-        naturalFrequencyText,
+        naturalFrequencyBox,
         dampingControl,
         new Line( 0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, { stroke: ResonanceColors.textProperty, lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH } ),
         gravityBox,

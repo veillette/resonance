@@ -35,6 +35,7 @@ export class ResonanceModel extends BaseModel {
   public readonly drivingAmplitudeProperty: NumberProperty; // driving force amplitude (N)
   public readonly drivingFrequencyProperty: NumberProperty; // driving frequency (Hz)
   public readonly drivingEnabledProperty: Property<boolean>; // whether driving force is enabled
+  public readonly drivingPhaseProperty: NumberProperty; // accumulated phase (radians) for phase-continuous frequency changes
 
   // Derived properties
   public readonly naturalFrequencyProperty: TReadOnlyProperty<number>; // ω₀ = √(k/m) (rad/s)
@@ -66,7 +67,8 @@ export class ResonanceModel extends BaseModel {
     // Initialize driving force parameters
     this.drivingAmplitudeProperty = new NumberProperty(0.01); // 1 cm (in meters)
     this.drivingFrequencyProperty = new NumberProperty(1.0); // Start at 1.0 Hz
-    this.drivingEnabledProperty = new Property<boolean>(false);
+    this.drivingEnabledProperty = new Property<boolean>(true); // Enabled by default
+    this.drivingPhaseProperty = new NumberProperty(0.0); // Start at zero phase
 
     // Compute natural frequency: ω₀ = √(k/m)
     this.naturalFrequencyProperty = new DerivedProperty(
@@ -134,45 +136,54 @@ export class ResonanceModel extends BaseModel {
   }
 
   /**
-   * Get the current state vector [position, velocity]
+   * Get the current state vector [position, velocity, drivingPhase]
    */
   public override getState(): number[] {
-    return [this.positionProperty.value, this.velocityProperty.value];
+    return [
+      this.positionProperty.value,
+      this.velocityProperty.value,
+      this.drivingPhaseProperty.value
+    ];
   }
 
   /**
-   * Set the state vector [position, velocity]
+   * Set the state vector [position, velocity, drivingPhase]
    */
   public override setState(state: number[]): void {
     this.positionProperty.value = state[0];
     this.velocityProperty.value = state[1];
+    this.drivingPhaseProperty.value = state[2];
   }
 
   /**
-   * Get the derivatives [dx/dt, dv/dt] for the ODE solver
+   * Get the derivatives [dx/dt, dv/dt, dphase/dt] for the ODE solver
    *
    * Equation of motion:
    * dx/dt = v
    * dv/dt = (-k*x - b*v + m*g + F_drive) / m
+   * dphase/dt = ω (angular frequency of driving force)
    *
-   * where F_drive = F0*sin(ω*t) if enabled, 0 otherwise
+   * where F_drive = F0*sin(phase) if enabled, 0 otherwise
+   * Using phase instead of time ensures smooth frequency changes
    */
   public override getDerivatives(t: number, state: number[]): number[] {
     const x = state[0]; // position
     const v = state[1]; // velocity
+    const phase = state[2]; // driving phase
 
     const m = this.massProperty.value;
     const k = this.springConstantProperty.value;
     const b = this.dampingProperty.value;
     const g = this.gravityProperty.value;
 
-    // Calculate driving force
+    // Calculate driving force using phase for smooth frequency changes
     let F_drive = 0;
+    let phaseDerivative = 0;
     if (this.drivingEnabledProperty.value) {
       const F0 = this.drivingAmplitudeProperty.value;
       const omega = this.drivingFrequencyProperty.value * 2 * Math.PI; // Convert Hz to rad/s
-      const currentTime = this.timeProperty.value + t;
-      F_drive = F0 * Math.sin(omega * currentTime);
+      F_drive = F0 * Math.sin(phase);
+      phaseDerivative = omega; // dphase/dt = ω
     }
 
     // Calculate acceleration: a = F_total / m
@@ -182,6 +193,7 @@ export class ResonanceModel extends BaseModel {
     return [
       v, // dx/dt = v
       acceleration, // dv/dt = a
+      phaseDerivative // dphase/dt = ω
     ];
   }
 
@@ -204,6 +216,7 @@ export class ResonanceModel extends BaseModel {
     this.drivingAmplitudeProperty.reset();
     this.drivingFrequencyProperty.reset();
     this.drivingEnabledProperty.reset();
+    this.drivingPhaseProperty.reset();
 
     // Reset time and playback state
     this.resetCommon();

@@ -4,21 +4,22 @@
  */
 
 import { Range } from "scenerystack/dot";
+import { PhetFont } from "scenerystack/scenery-phet";
 
 // ===== FONTS =====
 
-const LABEL_FONT = 'bold 14px sans-serif';
-const TITLE_FONT = 'bold 16px sans-serif';
-const TICK_LABEL_FONT = '12px sans-serif';
-const CONTROL_FONT = '14px sans-serif';
+const LABEL_FONT = new PhetFont({ size: 14, weight: 'bold' });
+const TITLE_FONT = new PhetFont({ size: 16, weight: 'bold' });
+const TICK_LABEL_FONT = new PhetFont({ size: 12 });
+const CONTROL_FONT = new PhetFont({ size: 14 });
 
 // ===== DRIVER BOX =====
 
 const DRIVER_BOX_WIDTH = 600;
-const DRIVER_BOX_HEIGHT = 120;
+const DRIVER_BOX_HEIGHT = 200;
 const DRIVER_BOX_CORNER_RADIUS = 10;
 const DRIVER_BOX_LINE_WIDTH = 2;
-const DRIVER_BOTTOM_MARGIN = 150; // distance from layout bounds bottom
+const DRIVER_BOTTOM_MARGIN = 100; // distance from layout bounds bottom
 const DRIVER_CENTER_X_OFFSET = -100; // offset from layout center
 
 // ===== DRIVER PLATE AND CONNECTION ROD =====
@@ -39,7 +40,7 @@ const POWER_TOGGLE_LEFT = 15;
 const POWER_TOGGLE_TOP = 15;
 const FREQUENCY_CONTROL_TOP = 40;
 const AMPLITUDE_CONTROL_LEFT = 10;
-const AMPLITUDE_CONTROL_BOTTOM_MARGIN = 10;
+const AMPLITUDE_CONTROL_BOTTOM_MARGIN = 40;
 
 // ===== PHYSICS RANGES =====
 

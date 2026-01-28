@@ -346,11 +346,10 @@ export class SimScreenView extends ScreenView {
     // Update driver plate position based on driving force
     const driverModel = this.model.resonanceModel;
     if (driverModel.drivingEnabledProperty.value) {
-      const omega = driverModel.drivingFrequencyProperty.value * 2 * Math.PI;
-      const time = driverModel.timeProperty.value;
+      const phase = driverModel.drivingPhaseProperty.value;
       const drivingAmplitude = driverModel.drivingAmplitudeProperty.value;
       const amplitudeViewDisplacement = Math.abs(this.modelViewTransform.modelToViewDeltaY(drivingAmplitude));
-      const viewDisplacement = amplitudeViewDisplacement * Math.sin(omega * time);
+      const viewDisplacement = amplitudeViewDisplacement * Math.sin(phase);
 
       const driverPlateBaseY = this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
       this.driverPlate.y = driverPlateBaseY + viewDisplacement;

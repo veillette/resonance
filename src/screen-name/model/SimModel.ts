@@ -68,29 +68,43 @@ export class SimModel {
     this.syncSharedParameters();
 
     // When config mode changes, recalculate per-oscillator parameters
+    // Reset base oscillator to default values for the mode
     this.oscillatorConfigProperty.link(() => {
-      this.updateOscillatorParameters();
+      this.updateOscillatorParameters(true);
     });
 
     // When resonator count changes, recalculate parameters and clamp selected index
     this.resonatorCountProperty.link((count: number) => {
-      this.updateOscillatorParameters();
+      this.updateOscillatorParameters(false);
       // Clamp selected resonator index to valid range [0, count-1]
       if (this.selectedResonatorIndexProperty.value >= count) {
         this.selectedResonatorIndexProperty.value = count - 1;
       }
     });
 
-    // When base mass or spring constant changes, recalculate
+    // When base mass or spring constant changes, recalculate other oscillators
+    // But only if we're in a preset mode (not CUSTOM)
     this.resonanceModel.massProperty.link(() => {
       if (!this.updatingParameters) {
-        this.updateOscillatorParameters();
+        const mode = this.oscillatorConfigProperty.value;
+        // In SAME_MASS or SAME_FREQUENCY/MIXED modes, update when mass changes
+        if (mode === OscillatorConfigMode.SAME_MASS ||
+            mode === OscillatorConfigMode.MIXED ||
+            mode === OscillatorConfigMode.SAME_FREQUENCY) {
+          this.updateOscillatorParameters(false);
+        }
       }
     });
 
     this.resonanceModel.springConstantProperty.link(() => {
       if (!this.updatingParameters) {
-        this.updateOscillatorParameters();
+        const mode = this.oscillatorConfigProperty.value;
+        // In SAME_SPRING_CONSTANT or SAME_FREQUENCY/MIXED modes, update when k changes
+        if (mode === OscillatorConfigMode.SAME_SPRING_CONSTANT ||
+            mode === OscillatorConfigMode.MIXED ||
+            mode === OscillatorConfigMode.SAME_FREQUENCY) {
+          this.updateOscillatorParameters(false);
+        }
       }
     });
   }
@@ -142,8 +156,12 @@ export class SimModel {
    *
    * Frequencies are distributed evenly from f_min (oscillator 1) to f_max (last oscillator).
    * Default: 1 Hz to 5.5 Hz for 10 oscillators.
+   *
+   * @param resetBaseValues - If true, reset the base oscillator to mode-specific defaults
+   *                          (1 kg for SAME_MASS, 200 N/m for SAME_SPRING_CONSTANT)
+   *                          If false, use current user-set values
    */
-  private updateOscillatorParameters(): void {
+  private updateOscillatorParameters(resetBaseValues: boolean = false): void {
     if (this.updatingParameters) return;
     this.updatingParameters = true;
 
@@ -154,18 +172,22 @@ export class SimModel {
     const f_min = 1.0; // Hz
     const f_max = 5.5; // Hz
 
-    // Set parameters for oscillator 0 (base oscillator) to achieve f_min
-    const omega_min = 2 * Math.PI * f_min;
-    if (mode === OscillatorConfigMode.SAME_MASS) {
-      // For same mass mode: m = 1 kg, calculate k for f = 1 Hz
-      this.resonanceModel.massProperty.value = 1.0;
-      this.resonanceModel.springConstantProperty.value = omega_min * omega_min * 1.0;
-    } else if (mode === OscillatorConfigMode.SAME_SPRING_CONSTANT) {
-      // For same spring constant mode: k = 200 N/m, calculate m for f = 1 Hz
-      this.resonanceModel.springConstantProperty.value = 200.0;
-      this.resonanceModel.massProperty.value = 200.0 / (omega_min * omega_min);
+    // Set base oscillator values when mode changes
+    if (resetBaseValues) {
+      const omega_min = 2 * Math.PI * f_min;
+      if (mode === OscillatorConfigMode.SAME_MASS) {
+        // For same mass mode: m = 1 kg, calculate k for f = 1 Hz
+        this.resonanceModel.massProperty.value = 1.0;
+        this.resonanceModel.springConstantProperty.value = omega_min * omega_min * 1.0;
+      } else if (mode === OscillatorConfigMode.SAME_SPRING_CONSTANT) {
+        // For same spring constant mode: k = 200 N/m, calculate m for f = 1 Hz
+        this.resonanceModel.springConstantProperty.value = 200.0;
+        this.resonanceModel.massProperty.value = 200.0 / (omega_min * omega_min);
+      }
     }
 
+    // Use the base oscillator's current mass and spring constant as reference
+    // The user can adjust these via the control panel, and we calculate others from these values
     const baseMass = this.resonanceModel.massProperty.value;
     const baseK = this.resonanceModel.springConstantProperty.value;
 

@@ -50,16 +50,16 @@ export class DriverControlNode extends Node {
 
     // Frequency Control
     const frequencyControl = new NumberControl( ResonanceStrings.controls.frequencyStringProperty, model.resonanceModel.drivingFrequencyProperty, ResonanceConstants.FREQUENCY_RANGE, {
-      delta: 0.01,
+      delta: 0.1,
       numberDisplayOptions: {
         valuePattern: '{{value}} Hz',
-        decimalPlaces: 2
+        decimalPlaces: 1
       },
       sliderOptions: {
         trackFillEnabled: ResonanceColors.frequencyTrackProperty
       }
     } );
-    frequencyControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE );
+    frequencyControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE * 1.3 );
     frequencyControl.centerX = driverBox.centerX;
     frequencyControl.top = ResonanceConstants.FREQUENCY_CONTROL_TOP;
     this.addChild( frequencyControl );
@@ -104,8 +104,8 @@ export class DriverControlNode extends Node {
         }
       }
     );
-    amplitudeControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE );
-    amplitudeControl.left = ResonanceConstants.AMPLITUDE_CONTROL_LEFT;
+    amplitudeControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE * 1.3 );
+    amplitudeControl.centerX = driverBox.centerX;
     amplitudeControl.bottom = driverBox.bottom - ResonanceConstants.AMPLITUDE_CONTROL_BOTTOM_MARGIN;
     this.addChild( amplitudeControl );
   }

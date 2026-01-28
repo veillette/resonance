@@ -5,6 +5,7 @@
 
 import { VBox, Text } from "scenerystack/scenery";
 import { AquaRadioButtonGroup } from "scenerystack/sun";
+import { PhetFont } from "scenerystack/scenery-phet";
 import { ResonancePreferencesModel } from "./ResonancePreferencesModel.js";
 import { ResonanceStrings } from "../strings/ResonanceStrings.js";
 
@@ -15,8 +16,7 @@ export class VisualPreferencesPanel extends VBox {
 
     // Color profile selector
     const colorProfileLabel = new Text(strings.colorProfile, {
-      font: "14px sans-serif",
-      fontWeight: "bold",
+      font: new PhetFont({ size: 14, weight: 'bold' }),
     });
 
     const colorProfileButtons = new AquaRadioButtonGroup(
@@ -26,21 +26,21 @@ export class VisualPreferencesPanel extends VBox {
           value: "default",
           createNode: () =>
             new Text(strings.colorProfileDefault, {
-              font: "12px sans-serif",
+              font: new PhetFont({ size: 12 }),
             }),
         },
         {
           value: "projector",
           createNode: () =>
             new Text(strings.colorProfileProjector, {
-              font: "12px sans-serif",
+              font: new PhetFont({ size: 12 }),
             }),
         },
         {
           value: "colorblind",
           createNode: () =>
             new Text(strings.colorProfileColorblind, {
-              font: "12px sans-serif",
+              font: new PhetFont({ size: 12 }),
             }),
         },
       ],

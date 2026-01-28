@@ -5,6 +5,7 @@
 
 import { VBox, Text } from "scenerystack/scenery";
 import { Checkbox, AquaRadioButtonGroup } from "scenerystack/sun";
+import { PhetFont } from "scenerystack/scenery-phet";
 import { ResonancePreferencesModel } from "./ResonancePreferencesModel.js";
 import { ResonanceStrings } from "../strings/ResonanceStrings.js";
 import { SolverType, SolverTypeName } from "../common/model/SolverType.js";
@@ -16,13 +17,12 @@ export class SimulationPreferencesPanel extends VBox {
 
     // Display options section
     const displayOptionsLabel = new Text(strings.displayOptions, {
-      font: "14px sans-serif",
-      fontWeight: "bold",
+      font: new PhetFont({ size: 14, weight: 'bold' }),
     });
 
     const showEnergyCheckbox = new Checkbox(
       preferencesModel.showEnergyProperty,
-      new Text(strings.showEnergy, { font: "12px sans-serif" }),
+      new Text(strings.showEnergy, { font: new PhetFont({ size: 12 }) }),
       {
         boxWidth: 16,
       }
@@ -30,7 +30,7 @@ export class SimulationPreferencesPanel extends VBox {
 
     const showVectorsCheckbox = new Checkbox(
       preferencesModel.showVectorsProperty,
-      new Text(strings.showVectors, { font: "12px sans-serif" }),
+      new Text(strings.showVectors, { font: new PhetFont({ size: 12 }) }),
       {
         boxWidth: 16,
       }
@@ -38,7 +38,7 @@ export class SimulationPreferencesPanel extends VBox {
 
     const showPhaseCheckbox = new Checkbox(
       preferencesModel.showPhaseProperty,
-      new Text(strings.showPhase, { font: "12px sans-serif" }),
+      new Text(strings.showPhase, { font: new PhetFont({ size: 12 }) }),
       {
         boxWidth: 16,
       }
@@ -57,8 +57,7 @@ export class SimulationPreferencesPanel extends VBox {
 
     // Units section
     const unitsLabel = new Text(strings.units, {
-      font: "14px sans-serif",
-      fontWeight: "bold",
+      font: new PhetFont({ size: 14, weight: 'bold' }),
     });
 
     const unitsButtons = new AquaRadioButtonGroup(
@@ -67,12 +66,12 @@ export class SimulationPreferencesPanel extends VBox {
         {
           value: "metric",
           createNode: () =>
-            new Text(strings.unitsMetric, { font: "12px sans-serif" }),
+            new Text(strings.unitsMetric, { font: new PhetFont({ size: 12 }) }),
         },
         {
           value: "imperial",
           createNode: () =>
-            new Text(strings.unitsImperial, { font: "12px sans-serif" }),
+            new Text(strings.unitsImperial, { font: new PhetFont({ size: 12 }) }),
         },
       ],
       {
@@ -91,8 +90,7 @@ export class SimulationPreferencesPanel extends VBox {
 
     // ODE Solver section
     const solverLabel = new Text("ODE Solver", {
-      font: "14px sans-serif",
-      fontWeight: "bold",
+      font: new PhetFont({ size: 14, weight: 'bold' }),
     });
 
     const solverButtons = new AquaRadioButtonGroup(
@@ -101,22 +99,22 @@ export class SimulationPreferencesPanel extends VBox {
         {
           value: SolverType.RUNGE_KUTTA_4,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.RUNGE_KUTTA_4], { font: "12px sans-serif" }),
+            new Text(SolverTypeName[SolverType.RUNGE_KUTTA_4], { font: new PhetFont({ size: 12 }) }),
         },
         {
           value: SolverType.ADAPTIVE_RK45,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.ADAPTIVE_RK45], { font: "12px sans-serif" }),
+            new Text(SolverTypeName[SolverType.ADAPTIVE_RK45], { font: new PhetFont({ size: 12 }) }),
         },
         {
           value: SolverType.ADAPTIVE_EULER,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.ADAPTIVE_EULER], { font: "12px sans-serif" }),
+            new Text(SolverTypeName[SolverType.ADAPTIVE_EULER], { font: new PhetFont({ size: 12 }) }),
         },
         {
           value: SolverType.MODIFIED_MIDPOINT,
           createNode: () =>
-            new Text(SolverTypeName[SolverType.MODIFIED_MIDPOINT], { font: "12px sans-serif" }),
+            new Text(SolverTypeName[SolverType.MODIFIED_MIDPOINT], { font: new PhetFont({ size: 12 }) }),
         },
       ],
       {
