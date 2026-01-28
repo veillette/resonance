@@ -1,7 +1,7 @@
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
-import { ResetAllButton, RulerNode, ParametricSpringNode, PhetFont } from "scenerystack/scenery-phet";
-import { Rectangle, Text, Node } from "scenerystack/scenery";
+import { ResetAllButton, RulerNode, ParametricSpringNode } from "scenerystack/scenery-phet";
+import { Rectangle, Node } from "scenerystack/scenery";
 import { DragListener } from "scenerystack/scenery";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
@@ -13,6 +13,7 @@ import { DriverControlNode } from "./DriverControlNode.js";
 import { ResonatorControlPanel } from "./ResonatorControlPanel.js";
 import { PlaybackControlNode } from "./PlaybackControlNode.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+import { ResonatorNodeBuilder } from "./ResonatorNodeBuilder.js";
 
 export class SimScreenView extends ScreenView {
 
@@ -21,6 +22,7 @@ export class SimScreenView extends ScreenView {
   private readonly resonatorsContainer: Node;
   private springNodes: ParametricSpringNode[] = [];
   private massNodes: Node[] = [];
+  private resonatorCleanups: Array<() => void> = [];
   private readonly rulerNode: RulerNode;
   private readonly rulerVisibleProperty: Property<boolean>;
   private readonly rulerPositionProperty: Vector2Property;
@@ -196,142 +198,41 @@ export class SimScreenView extends ScreenView {
   }
 
   /**
-   * Calculate mass box size based on mass value using surface area scaling.
-   * Surface area scales linearly with mass, so side length scales with √mass.
-   */
-  private calculateMassSize(mass: number): number {
-    const minMass = ResonanceConstants.MASS_RANGE.min;
-    const maxMass = ResonanceConstants.MASS_RANGE.max;
-    const minSize = ResonanceConstants.MIN_MASS_SIZE;
-    const maxSize = ResonanceConstants.MAX_MASS_SIZE;
-
-    // Surface area scaling: side = minSize + (maxSize - minSize) × √((mass - minMass) / (maxMass - minMass))
-    const normalizedMass = (mass - minMass) / (maxMass - minMass);
-    const size = minSize + (maxSize - minSize) * Math.sqrt(normalizedMass);
-
-    return size;
-  }
-
-  /**
    * Rebuild the visual resonator nodes (springs + masses) for a given count.
+   * Cleans up existing listeners before rebuilding to prevent memory leaks.
    */
-  private rebuildResonators(count: number): void {
+  private rebuildResonators( count: number ): void {
+    // Clean up existing listeners before rebuilding
+    this.resonatorCleanups.forEach( cleanup => cleanup() );
+    this.resonatorCleanups = [];
+
     this.resonatorsContainer.removeAllChildren();
     this.springNodes = [];
     this.massNodes = [];
 
-    for (let i = 0; i < count; i++) {
-      const oscillatorModel = this.model.oscillatorModels[i];
+    // Build new resonators using the builder
+    const context = {
+      modelViewTransform: this.modelViewTransform,
+      layoutBounds: this.layoutBounds,
+      driverPlate: this.driverPlate
+    };
 
-      // Spring node
-      const springNode = new ParametricSpringNode({
-        frontColor: ResonanceColors.springProperty,
-        middleColor: ResonanceColors.springProperty,
-        backColor: ResonanceColors.springBackProperty,
-        loops: ResonanceConstants.SPRING_LOOPS,
-        radius: ResonanceConstants.SPRING_RADIUS,
-        aspectRatio: ResonanceConstants.SPRING_ASPECT_RATIO,
-        pointsPerLoop: ResonanceConstants.SPRING_POINTS_PER_LOOP,
-        lineWidth: ResonanceConstants.SPRING_LINE_WIDTH,
-        leftEndLength: ResonanceConstants.SPRING_LEFT_END_LENGTH,
-        rightEndLength: ResonanceConstants.SPRING_RIGHT_END_LENGTH,
-        rotation: -Math.PI / 2,
-        boundsMethod: 'none'
-      });
+    const result = ResonatorNodeBuilder.buildResonators(
+      this.model.oscillatorModels,
+      count,
+      context
+    );
 
-      // Line width varies with spring constant
-      oscillatorModel.springConstantProperty.link((springConstant: number) => {
-        const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
-        const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-        const normalizedK = (springConstant - minK) / (maxK - minK);
-        const lineWidth = ResonanceConstants.SPRING_LINE_WIDTH_MIN + normalizedK * (ResonanceConstants.SPRING_LINE_WIDTH_MAX - ResonanceConstants.SPRING_LINE_WIDTH_MIN);
-        springNode.lineWidthProperty.value = lineWidth;
-      });
+    this.springNodes = result.springNodes;
+    this.massNodes = result.massNodes;
+    this.resonatorCleanups = result.cleanups;
 
-      this.resonatorsContainer.addChild(springNode);
-      this.springNodes.push(springNode);
-
-      // Mass node with dynamic sizing based on mass
-      const massNode = new Node();
-      const initialMassSize = this.calculateMassSize(oscillatorModel.massProperty.value);
-      const massBox = new Rectangle(0, 0, initialMassSize, initialMassSize, {
-        fill: ResonanceColors.massProperty,
-        stroke: ResonanceColors.massStrokeProperty,
-        lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH,
-        cornerRadius: 3
-      });
-      const massLabel = new Text(`${i + 1}`, {
-        font: new PhetFont( { size: Math.max( ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN, ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE - count * 2 ), weight: 'bold' } ),
-        fill: ResonanceColors.massLabelProperty,
-        center: massBox.center
-      });
-      massNode.addChild(massBox);
-      massNode.addChild(massLabel);
-
-      // Update mass box size when mass changes
-      oscillatorModel.massProperty.link((mass: number) => {
-        const newSize = this.calculateMassSize(mass);
-        massBox.setRect(0, 0, newSize, newSize);
-        massLabel.center = massBox.center;
-      });
-
-      // Add vertical drag listener using positionProperty
-      massNode.cursor = 'ns-resize';
-
-      // Create a Vector2Property for dragging that stays synchronized with the oscillator's position
-      const massPositionProperty = new Vector2Property(new Vector2(0, 0));
-
-      // Flag to prevent circular updates
-      let updatingPosition = false;
-
-      // Bidirectional sync: model position -> view position
-      oscillatorModel.positionProperty.link((modelPosition: number) => {
-        if (updatingPosition) return;
-
-        updatingPosition = true;
-        const naturalLength = oscillatorModel.naturalLengthProperty.value;
-        const naturalLengthView = Math.abs(this.modelViewTransform.modelToViewDeltaY(naturalLength));
-        const driverTopY = this.driverPlate.top;
-        const equilibriumY = driverTopY - naturalLengthView;
-        const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelPosition);
-        const junctionY = equilibriumY - viewYOffset;
-        const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
-
-        // Keep x fixed, only update y
-        massPositionProperty.value = new Vector2(massPositionProperty.value.x, massCenterY);
-        updatingPosition = false;
-      });
-
-      // View position -> model position
-      massPositionProperty.lazyLink((viewPosition: Vector2) => {
-        if (updatingPosition) return;
-
-        updatingPosition = true;
-        const massCenterY = viewPosition.y;
-        const junctionY = massCenterY + ResonanceConstants.MASS_CENTER_OFFSET;
-
-        const naturalLength = oscillatorModel.naturalLengthProperty.value;
-        const naturalLengthView = Math.abs(this.modelViewTransform.modelToViewDeltaY(naturalLength));
-        const driverTopY = this.driverPlate.top;
-        const equilibriumY = driverTopY - naturalLengthView;
-        const viewYOffset = equilibriumY - junctionY;
-        const modelPosition = this.modelViewTransform.viewToModelDeltaY(viewYOffset);
-
-        oscillatorModel.positionProperty.value = modelPosition;
-        oscillatorModel.velocityProperty.value = 0;
-        oscillatorModel.isPlayingProperty.value = false;
-        updatingPosition = false;
-      });
-
-      const dragListener = new DragListener({
-        targetNode: massNode,
-        positionProperty: massPositionProperty,
-        dragBoundsProperty: new Property(this.layoutBounds)
-      });
-      massNode.addInputListener(dragListener);
-
-      this.resonatorsContainer.addChild(massNode);
-      this.massNodes.push(massNode);
+    // Add nodes to container
+    for ( const springNode of this.springNodes ) {
+      this.resonatorsContainer.addChild( springNode );
+    }
+    for ( const massNode of this.massNodes ) {
+      this.resonatorsContainer.addChild( massNode );
     }
   }
 

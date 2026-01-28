@@ -3,6 +3,7 @@ import { OscillatorConfigMode, OscillatorConfigModeType } from "../../common/mod
 import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
 import { Property, NumberProperty } from "scenerystack/axon";
 import { TimeSpeed } from "../../common/model/BaseModel.js";
+import { CircularUpdateGuard } from "../../common/util/index.js";
 
 /**
  * Main model for the Resonance simulation.
@@ -40,8 +41,8 @@ export class SimModel {
 
   private readonly preferencesModel: ResonancePreferencesModel;
 
-  // Flag to prevent circular updates
-  private updatingParameters: boolean = false;
+  // Guard to prevent circular updates when parameters change
+  private readonly parameterGuard = new CircularUpdateGuard();
 
   // Maximum number of oscillators supported
   public static readonly MAX_OSCILLATORS = 10;
@@ -85,28 +86,28 @@ export class SimModel {
     // When base mass or spring constant changes, recalculate other oscillators
     // But only if we're in a preset mode (not CUSTOM)
     this.resonanceModel.massProperty.link(() => {
-      if (!this.updatingParameters) {
+      if ( !this.parameterGuard.isUpdating ) {
         const mode = this.oscillatorConfigProperty.value;
         // In SAME_MASS or SAME_FREQUENCY/MIXED modes, update when mass changes
-        if (mode === OscillatorConfigMode.SAME_MASS ||
+        if ( mode === OscillatorConfigMode.SAME_MASS ||
             mode === OscillatorConfigMode.MIXED ||
-            mode === OscillatorConfigMode.SAME_FREQUENCY) {
-          this.updateOscillatorParameters(false);
+            mode === OscillatorConfigMode.SAME_FREQUENCY ) {
+          this.updateOscillatorParameters( false );
         }
       }
-    });
+    } );
 
     this.resonanceModel.springConstantProperty.link(() => {
-      if (!this.updatingParameters) {
+      if ( !this.parameterGuard.isUpdating ) {
         const mode = this.oscillatorConfigProperty.value;
         // In SAME_SPRING_CONSTANT or SAME_FREQUENCY/MIXED modes, update when k changes
-        if (mode === OscillatorConfigMode.SAME_SPRING_CONSTANT ||
+        if ( mode === OscillatorConfigMode.SAME_SPRING_CONSTANT ||
             mode === OscillatorConfigMode.MIXED ||
-            mode === OscillatorConfigMode.SAME_FREQUENCY) {
-          this.updateOscillatorParameters(false);
+            mode === OscillatorConfigMode.SAME_FREQUENCY ) {
+          this.updateOscillatorParameters( false );
         }
       }
-    });
+    } );
   }
 
   /**
@@ -161,85 +162,83 @@ export class SimModel {
    *                          (1 kg for SAME_MASS, 200 N/m for SAME_SPRING_CONSTANT)
    *                          If false, use current user-set values
    */
-  private updateOscillatorParameters(resetBaseValues: boolean = false): void {
-    if (this.updatingParameters) return;
-    this.updatingParameters = true;
+  private updateOscillatorParameters( resetBaseValues: boolean = false ): void {
+    this.parameterGuard.run( () => {
+      const mode = this.oscillatorConfigProperty.value;
+      const count = this.resonatorCountProperty.value;
 
-    const mode = this.oscillatorConfigProperty.value;
-    const count = this.resonatorCountProperty.value;
+      // Target frequency range
+      const f_min = 1.0; // Hz
+      const f_max = 5.5; // Hz
 
-    // Target frequency range
-    const f_min = 1.0; // Hz
-    const f_max = 5.5; // Hz
-
-    // Set base oscillator values when mode changes
-    if (resetBaseValues) {
-      const omega_min = 2 * Math.PI * f_min;
-      if (mode === OscillatorConfigMode.SAME_MASS) {
-        // For same mass mode: m = 1 kg, calculate k for f = 1 Hz
-        this.resonanceModel.massProperty.value = 1.0;
-        this.resonanceModel.springConstantProperty.value = omega_min * omega_min * 1.0;
-      } else if (mode === OscillatorConfigMode.SAME_SPRING_CONSTANT) {
-        // For same spring constant mode: k = 200 N/m, calculate m for f = 1 Hz
-        this.resonanceModel.springConstantProperty.value = 200.0;
-        this.resonanceModel.massProperty.value = 200.0 / (omega_min * omega_min);
-      }
-    }
-
-    // Use the base oscillator's current mass and spring constant as reference
-    // The user can adjust these via the control panel, and we calculate others from these values
-    const baseMass = this.resonanceModel.massProperty.value;
-    const baseK = this.resonanceModel.springConstantProperty.value;
-
-    for (let i = 1; i < count; i++) {
-      const model = this.oscillatorModels[i];
-
-      // Calculate target frequency for this oscillator (evenly distributed)
-      // f_i = f_min + (i / (count - 1)) × (f_max - f_min)
-      const targetFrequency = f_min + (i / (count - 1)) * (f_max - f_min);
-      const omega = 2 * Math.PI * targetFrequency; // Angular frequency (rad/s)
-
-      switch (mode) {
-        case OscillatorConfigMode.SAME_MASS:
-          // Same mass, vary spring constant to achieve target frequency
-          // f = (1/2π) × √(k/m)  →  k = (2πf)² × m
-          model.massProperty.value = baseMass;
-          model.springConstantProperty.value = omega * omega * baseMass;
-          break;
-
-        case OscillatorConfigMode.SAME_SPRING_CONSTANT:
-          // Same spring constant, vary mass to achieve target frequency
-          // f = (1/2π) × √(k/m)  →  m = k / (2πf)²
-          model.springConstantProperty.value = baseK;
-          model.massProperty.value = baseK / (omega * omega);
-          break;
-
-        case OscillatorConfigMode.MIXED: {
-          // Both vary: masses increase, spring constants increase proportionally
-          // Keep natural frequency constant for all oscillators
-          const multiplier = i + 1;
-          model.massProperty.value = baseMass * multiplier;
-          model.springConstantProperty.value = baseK * multiplier;
-          break;
+      // Set base oscillator values when mode changes
+      if ( resetBaseValues ) {
+        const omega_min = 2 * Math.PI * f_min;
+        if ( mode === OscillatorConfigMode.SAME_MASS ) {
+          // For same mass mode: m = 1 kg, calculate k for f = 1 Hz
+          this.resonanceModel.massProperty.value = 1.0;
+          this.resonanceModel.springConstantProperty.value = omega_min * omega_min * 1.0;
         }
-
-        case OscillatorConfigMode.SAME_FREQUENCY: {
-          // Same natural frequency: ω₀ = √(k/m) remains constant
-          // Keep k/m ratio constant by scaling both proportionally
-          const multiplier2 = i + 1;
-          model.massProperty.value = baseMass * multiplier2;
-          model.springConstantProperty.value = baseK * multiplier2;
-          break;
+        else if ( mode === OscillatorConfigMode.SAME_SPRING_CONSTANT ) {
+          // For same spring constant mode: k = 200 N/m, calculate m for f = 1 Hz
+          this.resonanceModel.springConstantProperty.value = 200.0;
+          this.resonanceModel.massProperty.value = 200.0 / ( omega_min * omega_min );
         }
-
-        case OscillatorConfigMode.CUSTOM:
-          // Custom mode: don't modify values, user sets them manually
-          // Parameters remain as they are
-          break;
       }
-    }
 
-    this.updatingParameters = false;
+      // Use the base oscillator's current mass and spring constant as reference
+      // The user can adjust these via the control panel, and we calculate others from these values
+      const baseMass = this.resonanceModel.massProperty.value;
+      const baseK = this.resonanceModel.springConstantProperty.value;
+
+      for ( let i = 1; i < count; i++ ) {
+        const model = this.oscillatorModels[ i ];
+
+        // Calculate target frequency for this oscillator (evenly distributed)
+        // f_i = f_min + (i / (count - 1)) × (f_max - f_min)
+        const targetFrequency = f_min + ( i / ( count - 1 ) ) * ( f_max - f_min );
+        const omega = 2 * Math.PI * targetFrequency; // Angular frequency (rad/s)
+
+        switch ( mode ) {
+          case OscillatorConfigMode.SAME_MASS:
+            // Same mass, vary spring constant to achieve target frequency
+            // f = (1/2π) × √(k/m)  →  k = (2πf)² × m
+            model.massProperty.value = baseMass;
+            model.springConstantProperty.value = omega * omega * baseMass;
+            break;
+
+          case OscillatorConfigMode.SAME_SPRING_CONSTANT:
+            // Same spring constant, vary mass to achieve target frequency
+            // f = (1/2π) × √(k/m)  →  m = k / (2πf)²
+            model.springConstantProperty.value = baseK;
+            model.massProperty.value = baseK / ( omega * omega );
+            break;
+
+          case OscillatorConfigMode.MIXED: {
+            // Both vary: masses increase, spring constants increase proportionally
+            // Keep natural frequency constant for all oscillators
+            const multiplier = i + 1;
+            model.massProperty.value = baseMass * multiplier;
+            model.springConstantProperty.value = baseK * multiplier;
+            break;
+          }
+
+          case OscillatorConfigMode.SAME_FREQUENCY: {
+            // Same natural frequency: ω₀ = √(k/m) remains constant
+            // Keep k/m ratio constant by scaling both proportionally
+            const multiplier2 = i + 1;
+            model.massProperty.value = baseMass * multiplier2;
+            model.springConstantProperty.value = baseK * multiplier2;
+            break;
+          }
+
+          case OscillatorConfigMode.CUSTOM:
+            // Custom mode: don't modify values, user sets them manually
+            // Parameters remain as they are
+            break;
+        }
+      }
+    } );
   }
 
   /**

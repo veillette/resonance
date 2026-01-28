@@ -12,6 +12,7 @@ import { SimModel } from "../model/SimModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+import { CircularUpdateGuard } from "../../common/util/index.js";
 
 export class DriverControlNode extends Node {
 
@@ -72,20 +73,16 @@ export class DriverControlNode extends Node {
     const amplitudeCmProperty = new NumberProperty( model.resonanceModel.drivingAmplitudeProperty.value * 100 );
 
     // Bidirectional sync: cm <-> meters
-    let updatingAmplitude = false;
+    const amplitudeGuard = new CircularUpdateGuard();
     amplitudeCmProperty.link( ( cm: number ) => {
-      if ( !updatingAmplitude ) {
-        updatingAmplitude = true;
+      amplitudeGuard.run( () => {
         model.resonanceModel.drivingAmplitudeProperty.value = cm / 100;
-        updatingAmplitude = false;
-      }
+      } );
     } );
     model.resonanceModel.drivingAmplitudeProperty.link( ( meters: number ) => {
-      if ( !updatingAmplitude ) {
-        updatingAmplitude = true;
+      amplitudeGuard.run( () => {
         amplitudeCmProperty.value = meters * 100;
-        updatingAmplitude = false;
-      }
+      } );
     } );
 
     const amplitudeRangeCm = new Range(
