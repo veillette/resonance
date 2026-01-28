@@ -1,6 +1,6 @@
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
-import { ResetAllButton, RulerNode, ParametricSpringNode } from "scenerystack/scenery-phet";
+import { ResetAllButton, RulerNode, ParametricSpringNode, PhetFont } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Node } from "scenerystack/scenery";
 import { DragListener } from "scenerystack/scenery";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
@@ -12,6 +12,7 @@ import { Property } from "scenerystack/axon";
 import { DriverControlNode } from "./DriverControlNode.js";
 import { ResonatorControlPanel } from "./ResonatorControlPanel.js";
 import { PlaybackControlNode } from "./PlaybackControlNode.js";
+import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
 
 export class SimScreenView extends ScreenView {
 
@@ -152,7 +153,7 @@ export class SimScreenView extends ScreenView {
       ResonanceConstants.RULER_WIDTH,
       ResonanceConstants.RULER_HEIGHT,
       ResonanceConstants.RULER_MAJOR_TICK_WIDTH,
-      rulerLabels, 'cm', {
+      rulerLabels, ResonanceStrings.units.cmStringProperty.value, {
         minorTicksPerMajorTick: ResonanceConstants.RULER_MINOR_TICKS_PER_MAJOR,
         insetsWidth: ResonanceConstants.RULER_INSETS_WIDTH
       });
@@ -260,7 +261,7 @@ export class SimScreenView extends ScreenView {
         cornerRadius: 3
       });
       const massLabel = new Text(`${i + 1}`, {
-        font: `bold ${Math.max(ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN, ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE - count * 2)}px sans-serif`,
+        font: new PhetFont( { size: Math.max( ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN, ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE - count * 2 ), weight: 'bold' } ),
         fill: ResonanceColors.massLabelProperty,
         center: massBox.center
       });

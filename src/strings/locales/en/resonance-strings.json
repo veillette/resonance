@@ -21,13 +21,17 @@
       "amplitude": "Amplitude",
       "resonators": "Resonators",
       "resonator1": "Resonator 1",
+      "resonatorPattern": "Resonator {{number}}",
       "massSimple": "Mass",
       "springConstantSimple": "Spring Constant",
       "damping": "Damping",
       "gravity": "Gravity",
       "ruler": "Ruler",
       "on": "ON",
-      "frequencyEquals": "frequency ="
+      "frequencyEquals": "frequency =",
+      "slow": "Slow",
+      "normal": "Normal",
+      "close": "Close"
     },
     "preferences": {
       "title": "Preferences",
@@ -57,12 +61,21 @@
         "solverAdaptiveEuler": "Adaptive Euler",
         "solverAdaptiveEulerDescription": "Simple adaptive method with variable step size. Good for testing and debugging.",
         "solverModifiedMidpoint": "Modified Midpoint",
-        "solverModifiedMidpointDescription": "Fixed-step method with improved stability. Good alternative to RK4."
+        "solverModifiedMidpointDescription": "Fixed-step method with improved stability. Good alternative to RK4.",
+        "odeSolver": "ODE Solver"
       },
       "localization": {
         "title": "Localization",
         "language": "Language"
       }
+    },
+    "units": {
+      "hertzPattern": "{{value}} Hz",
+      "cmPattern": "{{value}} cm",
+      "kgPattern": "{{value}} kg",
+      "newtonPerMeterPattern": "{{value}} N/m",
+      "dampingUnitsPattern": "{{value}} N/(m/s)",
+      "cm": "cm"
     },
     "content": {
       "sampleText": "Content goes here"

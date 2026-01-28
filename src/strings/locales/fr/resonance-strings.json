@@ -21,13 +21,17 @@
       "amplitude": "Amplitude",
       "resonators": "Résonateurs",
       "resonator1": "Résonateur 1",
+      "resonatorPattern": "Résonateur {{number}}",
       "massSimple": "Masse",
       "springConstantSimple": "Constante du Ressort",
       "damping": "Amortissement",
       "gravity": "Gravité",
       "ruler": "Règle",
       "on": "ON",
-      "frequencyEquals": "fréquence ="
+      "frequencyEquals": "fréquence =",
+      "slow": "Lent",
+      "normal": "Normal",
+      "close": "Fermer"
     },
     "preferences": {
       "title": "Préférences",
@@ -57,12 +61,21 @@
         "solverAdaptiveEuler": "Euler Adaptatif",
         "solverAdaptiveEulerDescription": "Méthode adaptative simple avec taille de pas variable. Bon pour les tests et le débogage.",
         "solverModifiedMidpoint": "Point Médian Modifié",
-        "solverModifiedMidpointDescription": "Méthode à pas fixe avec stabilité améliorée. Bonne alternative à RK4."
+        "solverModifiedMidpointDescription": "Méthode à pas fixe avec stabilité améliorée. Bonne alternative à RK4.",
+        "odeSolver": "Solveur EDO"
       },
       "localization": {
         "title": "Localisation",
         "language": "Langue"
       }
+    },
+    "units": {
+      "hertzPattern": "{{value}} Hz",
+      "cmPattern": "{{value}} cm",
+      "kgPattern": "{{value}} kg",
+      "newtonPerMeterPattern": "{{value}} N/m",
+      "dampingUnitsPattern": "{{value}} N/(m/s)",
+      "cm": "cm"
     },
     "content": {
       "sampleText": "Le contenu va ici"

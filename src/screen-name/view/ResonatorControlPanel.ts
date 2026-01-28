@@ -151,7 +151,7 @@ export class ResonatorControlPanel extends Panel {
     } );
 
     displayResonatorNumberProperty.link( ( num: number ) => {
-      resonatorLabel.string = `Resonator ${num}`;
+      resonatorLabel.string = ResonanceStrings.controls.resonatorPatternStringProperty.value.replace( '{{number}}', String( num ) );
     } );
 
     const resonatorSelectionBox = new HBox( {
@@ -176,7 +176,7 @@ export class ResonatorControlPanel extends Panel {
       {
         delta: 0.01,
         numberDisplayOptions: {
-          valuePattern: '{{value}} kg',
+          valuePattern: ResonanceStrings.units.kgPatternStringProperty,
           decimalPlaces: 4
         }
       }
@@ -189,7 +189,7 @@ export class ResonatorControlPanel extends Panel {
       {
         delta: 1,
         numberDisplayOptions: {
-          valuePattern: '{{value}} N/m',
+          valuePattern: ResonanceStrings.units.newtonPerMeterPatternStringProperty,
           decimalPlaces: 0
         }
       }
@@ -263,7 +263,8 @@ export class ResonatorControlPanel extends Panel {
     const updateNaturalFrequency = () => {
       const index = model.selectedResonatorIndexProperty.value;
       const freq = model.oscillatorModels[ index ].naturalFrequencyHzProperty.value;
-      naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${freq.toFixed( 3 )} Hz`;
+      const valueWithUnit = ResonanceStrings.units.hertzPatternStringProperty.value.replace( '{{value}}', freq.toFixed( 3 ) );
+      naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${valueWithUnit}`;
     };
 
     model.selectedResonatorIndexProperty.link( updateNaturalFrequency );
@@ -277,10 +278,10 @@ export class ResonatorControlPanel extends Panel {
     } );
 
     // --- Damping control ---
-    const dampingControl = new NumberControl( 'Damping', model.resonanceModel.dampingProperty, ResonanceConstants.DAMPING_RANGE, {
+    const dampingControl = new NumberControl( ResonanceStrings.controls.dampingStringProperty, model.resonanceModel.dampingProperty, ResonanceConstants.DAMPING_RANGE, {
       delta: 0.1,
       numberDisplayOptions: {
-        valuePattern: '{{value}} N/(m/s)',
+        valuePattern: ResonanceStrings.units.dampingUnitsPatternStringProperty,
         decimalPlaces: 1
       }
     } );
