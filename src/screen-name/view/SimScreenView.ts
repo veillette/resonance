@@ -218,7 +218,7 @@ export class SimScreenView extends ScreenView {
     };
 
     const result = ResonatorNodeBuilder.buildResonators(
-      this.model.oscillatorModels,
+      this.model.resonatorModels,
       count,
       context
     );
@@ -282,8 +282,8 @@ export class SimScreenView extends ScreenView {
     for (let i = 0; i < count; i++) {
       const xCenter = driverCenterX - ResonanceConstants.DRIVER_BOX_WIDTH / 2 + spacing * (i + 1);
 
-      const oscillatorModel = this.model.oscillatorModels[i];
-      const modelY = oscillatorModel.positionProperty.value;
+      const resonatorModel = this.model.resonatorModels[i];
+      const modelY = resonatorModel.positionProperty.value;
       const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelY);
 
       const junctionY = equilibriumY - viewYOffset;

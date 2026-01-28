@@ -11,7 +11,7 @@
       "drivingAmplitude": "Amplitude de Conduite",
       "mass": "Masse (m)",
       "reset": "Tout Réinitialiser",
-      "oscillatorConfig": "Configuration",
+      "resonatorConfig": "Configuration",
       "sameMass": "Même Masse",
       "sameSpringConstant": "Même Constante de Ressort",
       "mixed": "Mixte",

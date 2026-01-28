@@ -70,7 +70,7 @@ export class StringManager {
       drivingAmplitudeStringProperty: this.stringProperties.resonance.controls.drivingAmplitudeStringProperty,
       massStringProperty: this.stringProperties.resonance.controls.massStringProperty,
       resetStringProperty: this.stringProperties.resonance.controls.resetStringProperty,
-      oscillatorConfigStringProperty: this.stringProperties.resonance.controls.oscillatorConfigStringProperty,
+      resonatorConfigStringProperty: this.stringProperties.resonance.controls.resonatorConfigStringProperty,
       sameMassStringProperty: this.stringProperties.resonance.controls.sameMassStringProperty,
       sameSpringConstantStringProperty: this.stringProperties.resonance.controls.sameSpringConstantStringProperty,
       mixedStringProperty: this.stringProperties.resonance.controls.mixedStringProperty,

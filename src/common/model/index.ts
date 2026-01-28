@@ -13,5 +13,5 @@ export { BaseModel } from "./BaseModel.js";
 export type { TimeSpeed } from "./BaseModel.js";
 export { ResonanceModel, ResonancePresets, getPresetName } from "./ResonanceModel.js";
 export type { ResonancePreset } from "./ResonanceModel.js";
-export { OscillatorConfigMode } from "./OscillatorConfigMode.js";
-export type { OscillatorConfigModeType } from "./OscillatorConfigMode.js";
+export { ResonatorConfigMode } from "./ResonatorConfigMode.js";
+export type { ResonatorConfigModeType } from "./ResonatorConfigMode.js";

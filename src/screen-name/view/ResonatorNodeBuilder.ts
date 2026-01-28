@@ -69,9 +69,9 @@ export class ResonatorNodeBuilder {
   }
 
   /**
-   * Creates a spring node for an oscillator with line width varying by spring constant.
+   * Creates a spring node for a resonator with line width varying by spring constant.
    */
-  public static createSpringNode( oscillatorModel: ResonanceModel ): SpringNodeResult {
+  public static createSpringNode( resonatorModel: ResonanceModel ): SpringNodeResult {
     const springNode = new ParametricSpringNode( {
       frontColor: ResonanceColors.springProperty,
       middleColor: ResonanceColors.springProperty,
@@ -97,20 +97,20 @@ export class ResonatorNodeBuilder {
       springNode.lineWidthProperty.value = lineWidth;
     };
 
-    oscillatorModel.springConstantProperty.link( springConstantListener );
+    resonatorModel.springConstantProperty.link( springConstantListener );
 
     const cleanup = () => {
-      oscillatorModel.springConstantProperty.unlink( springConstantListener );
+      resonatorModel.springConstantProperty.unlink( springConstantListener );
     };
 
     return { node: springNode, cleanup };
   }
 
   /**
-   * Creates a mass node for an oscillator with drag handling and position sync.
+   * Creates a mass node for a resonator with drag handling and position sync.
    */
   public static createMassNode(
-    oscillatorModel: ResonanceModel,
+    resonatorModel: ResonanceModel,
     index: number,
     count: number,
     context: ResonatorBuildContext
@@ -118,7 +118,7 @@ export class ResonatorNodeBuilder {
     const { modelViewTransform, layoutBounds, driverPlate } = context;
 
     const massNode = new Node();
-    const initialMassSize = ResonatorNodeBuilder.calculateMassSize( oscillatorModel.massProperty.value );
+    const initialMassSize = ResonatorNodeBuilder.calculateMassSize( resonatorModel.massProperty.value );
     const massBox = new Rectangle( 0, 0, initialMassSize, initialMassSize, {
       fill: ResonanceColors.massProperty,
       stroke: ResonanceColors.massStrokeProperty,
@@ -142,12 +142,12 @@ export class ResonatorNodeBuilder {
       massBox.setRect( 0, 0, newSize, newSize );
       massLabel.center = massBox.center;
     };
-    oscillatorModel.massProperty.link( massListener );
+    resonatorModel.massProperty.link( massListener );
 
     // Add vertical drag listener using positionProperty
     massNode.cursor = 'ns-resize';
 
-    // Create a Vector2Property for dragging that stays synchronized with the oscillator's position
+    // Create a Vector2Property for dragging that stays synchronized with the resonator's position
     const massPositionProperty = new Vector2Property( new Vector2( 0, 0 ) );
 
     // Guard to prevent circular updates
@@ -156,7 +156,7 @@ export class ResonatorNodeBuilder {
     // Bidirectional sync: model position -> view position
     const positionListener = ( modelPosition: number ) => {
       positionGuard.run( () => {
-        const naturalLength = oscillatorModel.naturalLengthProperty.value;
+        const naturalLength = resonatorModel.naturalLengthProperty.value;
         const naturalLengthView = Math.abs( modelViewTransform.modelToViewDeltaY( naturalLength ) );
         const driverTopY = driverPlate.top;
         const equilibriumY = driverTopY - naturalLengthView;
@@ -168,7 +168,7 @@ export class ResonatorNodeBuilder {
         massPositionProperty.value = new Vector2( massPositionProperty.value.x, massCenterY );
       } );
     };
-    oscillatorModel.positionProperty.link( positionListener );
+    resonatorModel.positionProperty.link( positionListener );
 
     // View position -> model position
     const viewPositionListener = ( viewPosition: Vector2 ) => {
@@ -176,16 +176,16 @@ export class ResonatorNodeBuilder {
         const massCenterY = viewPosition.y;
         const junctionY = massCenterY + ResonanceConstants.MASS_CENTER_OFFSET;
 
-        const naturalLength = oscillatorModel.naturalLengthProperty.value;
+        const naturalLength = resonatorModel.naturalLengthProperty.value;
         const naturalLengthView = Math.abs( modelViewTransform.modelToViewDeltaY( naturalLength ) );
         const driverTopY = driverPlate.top;
         const equilibriumY = driverTopY - naturalLengthView;
         const viewYOffset = equilibriumY - junctionY;
         const modelPosition = modelViewTransform.viewToModelDeltaY( viewYOffset );
 
-        oscillatorModel.positionProperty.value = modelPosition;
-        oscillatorModel.velocityProperty.value = 0;
-        oscillatorModel.isPlayingProperty.value = false;
+        resonatorModel.positionProperty.value = modelPosition;
+        resonatorModel.velocityProperty.value = 0;
+        resonatorModel.isPlayingProperty.value = false;
       } );
     };
     massPositionProperty.lazyLink( viewPositionListener );
@@ -198,8 +198,8 @@ export class ResonatorNodeBuilder {
     massNode.addInputListener( dragListener );
 
     const cleanup = () => {
-      oscillatorModel.massProperty.unlink( massListener );
-      oscillatorModel.positionProperty.unlink( positionListener );
+      resonatorModel.massProperty.unlink( massListener );
+      resonatorModel.positionProperty.unlink( positionListener );
       massPositionProperty.unlink( viewPositionListener );
       massNode.removeInputListener( dragListener );
     };
@@ -208,10 +208,10 @@ export class ResonatorNodeBuilder {
   }
 
   /**
-   * Builds all resonator nodes (springs + masses) for the given oscillator models.
+   * Builds all resonator nodes (springs + masses) for the given resonator models.
    */
   public static buildResonators(
-    oscillatorModels: ResonanceModel[],
+    resonatorModels: ResonanceModel[],
     count: number,
     context: ResonatorBuildContext
   ): ResonatorBuildResult {
@@ -220,15 +220,15 @@ export class ResonatorNodeBuilder {
     const cleanups: Array<() => void> = [];
 
     for ( let i = 0; i < count; i++ ) {
-      const oscillatorModel = oscillatorModels[ i ];
+      const resonatorModel = resonatorModels[ i ];
 
       // Create spring node
-      const springResult = ResonatorNodeBuilder.createSpringNode( oscillatorModel );
+      const springResult = ResonatorNodeBuilder.createSpringNode( resonatorModel );
       springNodes.push( springResult.node );
       cleanups.push( springResult.cleanup );
 
       // Create mass node
-      const massResult = ResonatorNodeBuilder.createMassNode( oscillatorModel, i, count, context );
+      const massResult = ResonatorNodeBuilder.createMassNode( resonatorModel, i, count, context );
       massNodes.push( massResult.node );
       cleanups.push( massResult.cleanup );
     }

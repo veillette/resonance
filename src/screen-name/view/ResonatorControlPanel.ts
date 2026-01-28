@@ -2,7 +2,7 @@
  * ResonatorControlPanel is the green panel on the right side of the simulation.
  * It contains controls for:
  * - Number of resonators
- * - Oscillator configuration mode (combo box)
+ * - Resonator configuration mode (combo box)
  * - Selected resonator spinner
  * - Mass and spring constant controls
  * - Natural frequency readout
@@ -18,8 +18,8 @@ import type { ComboBoxItem } from "scenerystack/sun";
 import { Property, NumberProperty } from "scenerystack/axon";
 import { Range, Bounds2, Dimension2 } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
-import { OscillatorConfigMode } from "../../common/model/OscillatorConfigMode.js";
-import type { OscillatorConfigModeType } from "../../common/model/OscillatorConfigMode.js";
+import { ResonatorConfigMode } from "../../common/model/ResonatorConfigMode.js";
+import type { ResonatorConfigModeType } from "../../common/model/ResonatorConfigMode.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
@@ -174,41 +174,41 @@ export class ResonatorControlPanel extends Panel {
   }
 
   /**
-   * Creates the oscillator configuration combo box and its container.
+   * Creates the resonator configuration combo box and its container.
    */
   private static createConfigurationControls( model: SimModel ): { configBox: VBox; comboBoxListParent: Node } {
-    const configLabel = new Text( ResonanceStrings.controls.oscillatorConfigStringProperty, {
+    const configLabel = new Text( ResonanceStrings.controls.resonatorConfigStringProperty, {
       font: ResonanceConstants.LABEL_FONT,
       fill: ResonanceColors.textProperty
     } );
 
-    const comboBoxItems: ComboBoxItem<OscillatorConfigModeType>[] = [
+    const comboBoxItems: ComboBoxItem<ResonatorConfigModeType>[] = [
       {
-        value: OscillatorConfigMode.SAME_SPRING_CONSTANT,
+        value: ResonatorConfigMode.SAME_SPRING_CONSTANT,
         createNode: () => new Text( ResonanceStrings.controls.sameSpringConstantStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         } )
       },
       {
-        value: OscillatorConfigMode.SAME_MASS,
+        value: ResonatorConfigMode.SAME_MASS,
         createNode: () => new Text( ResonanceStrings.controls.sameMassStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         } )
       },
       {
-        value: OscillatorConfigMode.MIXED,
+        value: ResonatorConfigMode.MIXED,
         createNode: () => new Text( ResonanceStrings.controls.mixedStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         } )
       },
       {
-        value: OscillatorConfigMode.SAME_FREQUENCY,
+        value: ResonatorConfigMode.SAME_FREQUENCY,
         createNode: () => new Text( ResonanceStrings.controls.sameFrequencyStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         } )
       },
       {
-        value: OscillatorConfigMode.CUSTOM,
+        value: ResonatorConfigMode.CUSTOM,
         createNode: () => new Text( ResonanceStrings.controls.customStringProperty, {
           font: ResonanceConstants.CONTROL_FONT
         } )
@@ -218,7 +218,7 @@ export class ResonatorControlPanel extends Panel {
     const comboBoxListParent = new Node();
 
     const configComboBox = new ComboBox(
-      model.oscillatorConfigProperty,
+      model.resonatorConfigProperty,
       comboBoxItems,
       comboBoxListParent,
       {
@@ -344,8 +344,8 @@ export class ResonatorControlPanel extends Panel {
       fill: ResonanceColors.textProperty
     } );
 
-    // Initialize with first oscillator's frequency
-    const freq = model.oscillatorModels[ 0 ].naturalFrequencyHzProperty.value;
+    // Initialize with first resonator's frequency
+    const freq = model.resonatorModels[ 0 ].naturalFrequencyHzProperty.value;
     const valueWithUnit = ResonanceStrings.units.hertzPatternStringProperty.value.replace( '{{value}}', freq.toFixed( 3 ) );
     naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${valueWithUnit}`;
 
@@ -420,12 +420,12 @@ export class ResonatorControlPanel extends Panel {
    * Sets up listeners that control visibility of UI elements based on resonator count.
    */
   private setupVisibilityListeners(): void {
-    // Hide configuration combo box when there's only one oscillator
+    // Hide configuration combo box when there's only one resonator
     this.listenerTracker.link( this.model.resonatorCountProperty, ( count: number ) => {
       this.configBox.visible = count > 1;
     } );
 
-    // Hide resonator selection when there's only one oscillator
+    // Hide resonator selection when there's only one resonator
     this.listenerTracker.link( this.model.resonatorCountProperty, ( count: number ) => {
       this.resonatorSelectionBox.visible = count > 1;
     } );
@@ -437,21 +437,21 @@ export class ResonatorControlPanel extends Panel {
   private setupMassSpringSync(): void {
     const updateControlsEnabledState = () => {
       const index = this.model.selectedResonatorIndexProperty.value;
-      const isCustomMode = this.model.oscillatorConfigProperty.value === OscillatorConfigMode.CUSTOM;
+      const isCustomMode = this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
       this.massControl.enabled = ( index === 0 ) || isCustomMode;
       this.springConstantControl.enabled = ( index === 0 ) || isCustomMode;
     };
 
     // Update display properties when selected resonator changes
     this.listenerTracker.link( this.model.selectedResonatorIndexProperty, ( index: number ) => {
-      const selectedOscillator = this.model.oscillatorModels[ index ];
-      this.displayMassProperty.value = selectedOscillator.massProperty.value;
-      this.displaySpringConstantProperty.value = selectedOscillator.springConstantProperty.value;
+      const selectedResonator = this.model.resonatorModels[ index ];
+      this.displayMassProperty.value = selectedResonator.massProperty.value;
+      this.displaySpringConstantProperty.value = selectedResonator.springConstantProperty.value;
       updateControlsEnabledState();
     } );
 
     // Update enabled state when config mode changes
-    this.listenerTracker.link( this.model.oscillatorConfigProperty, () => {
+    this.listenerTracker.link( this.model.resonatorConfigProperty, () => {
       updateControlsEnabledState();
     } );
 
@@ -462,9 +462,9 @@ export class ResonatorControlPanel extends Panel {
     this.listenerTracker.link( this.displayMassProperty, ( mass: number ) => {
       if ( !updatingFromModel ) {
         const index = this.model.selectedResonatorIndexProperty.value;
-        const isCustomMode = this.model.oscillatorConfigProperty.value === OscillatorConfigMode.CUSTOM;
+        const isCustomMode = this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
         if ( index === 0 || isCustomMode ) {
-          this.model.oscillatorModels[ index ].massProperty.value = mass;
+          this.model.resonatorModels[ index ].massProperty.value = mass;
         }
       }
     } );
@@ -472,23 +472,23 @@ export class ResonatorControlPanel extends Panel {
     this.listenerTracker.link( this.displaySpringConstantProperty, ( springConstant: number ) => {
       if ( !updatingFromModel ) {
         const index = this.model.selectedResonatorIndexProperty.value;
-        const isCustomMode = this.model.oscillatorConfigProperty.value === OscillatorConfigMode.CUSTOM;
+        const isCustomMode = this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
         if ( index === 0 || isCustomMode ) {
-          this.model.oscillatorModels[ index ].springConstantProperty.value = springConstant;
+          this.model.resonatorModels[ index ].springConstantProperty.value = springConstant;
         }
       }
     } );
 
-    // Model -> Display sync (for each oscillator)
-    this.model.oscillatorModels.forEach( ( oscillator, index ) => {
-      this.listenerTracker.link( oscillator.massProperty, ( mass: number ) => {
+    // Model -> Display sync (for each resonator)
+    this.model.resonatorModels.forEach( ( resonator, index ) => {
+      this.listenerTracker.link( resonator.massProperty, ( mass: number ) => {
         if ( this.model.selectedResonatorIndexProperty.value === index ) {
           updatingFromModel = true;
           this.displayMassProperty.value = mass;
           updatingFromModel = false;
         }
       } );
-      this.listenerTracker.link( oscillator.springConstantProperty, ( springConstant: number ) => {
+      this.listenerTracker.link( resonator.springConstantProperty, ( springConstant: number ) => {
         if ( this.model.selectedResonatorIndexProperty.value === index ) {
           updatingFromModel = true;
           this.displaySpringConstantProperty.value = springConstant;
@@ -504,14 +504,14 @@ export class ResonatorControlPanel extends Panel {
   private setupNaturalFrequencySync(): void {
     const updateNaturalFrequency = () => {
       const index = this.model.selectedResonatorIndexProperty.value;
-      const freq = this.model.oscillatorModels[ index ].naturalFrequencyHzProperty.value;
+      const freq = this.model.resonatorModels[ index ].naturalFrequencyHzProperty.value;
       const valueWithUnit = ResonanceStrings.units.hertzPatternStringProperty.value.replace( '{{value}}', freq.toFixed( 3 ) );
       this.naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${valueWithUnit}`;
     };
 
     this.listenerTracker.link( this.model.selectedResonatorIndexProperty, updateNaturalFrequency );
-    this.model.oscillatorModels.forEach( oscillator => {
-      this.listenerTracker.link( oscillator.naturalFrequencyHzProperty, updateNaturalFrequency );
+    this.model.resonatorModels.forEach( resonator => {
+      this.listenerTracker.link( resonator.naturalFrequencyHzProperty, updateNaturalFrequency );
     } );
   }
 
