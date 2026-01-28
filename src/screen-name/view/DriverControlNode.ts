@@ -11,7 +11,7 @@ import { Range, Dimension2 } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
-import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 export class DriverControlNode extends Node {
 

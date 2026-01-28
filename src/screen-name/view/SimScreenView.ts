@@ -12,7 +12,7 @@ import { Property } from "scenerystack/axon";
 import { DriverControlNode } from "./DriverControlNode.js";
 import { ResonatorControlPanel } from "./ResonatorControlPanel.js";
 import { PlaybackControlNode } from "./PlaybackControlNode.js";
-import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 export class SimScreenView extends ScreenView {
 

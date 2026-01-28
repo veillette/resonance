@@ -22,7 +22,7 @@ import { OscillatorConfigMode } from "../../common/model/OscillatorConfigMode.js
 import type { OscillatorConfigModeType } from "../../common/model/OscillatorConfigMode.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
-import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 export class ResonatorControlPanel extends Panel {
 

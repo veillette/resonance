@@ -17,7 +17,7 @@
 import { NumberProperty, Property, DerivedProperty, TReadOnlyProperty, ReadOnlyProperty } from "scenerystack/axon";
 import { BaseModel } from "./BaseModel.js";
 import { SolverType } from "./SolverType.js";
-import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 export class ResonanceModel extends BaseModel {
   // State variables

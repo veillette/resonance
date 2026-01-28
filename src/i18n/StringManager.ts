@@ -6,9 +6,9 @@
  */
 
 import { LocalizedString, ReadOnlyProperty } from "scenerystack";
-import strings_en from "./locales/en/resonance-strings.json";
-import strings_fr from "./locales/fr/resonance-strings.json";
-import strings_es from "./locales/es/resonance-strings.json";
+import strings_en from "./strings_en.json";
+import strings_fr from "./strings_fr.json";
+import strings_es from "./strings_es.json";
 
 /**
  * Manages all localized strings for the simulation

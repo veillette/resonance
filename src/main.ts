@@ -8,7 +8,7 @@ import { VBox, Text, HStrut } from "scenerystack/scenery";
 import { Checkbox, VerticalAquaRadioButtonGroup } from "scenerystack/sun";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { SimScreen } from "./screen-name/SimScreen.js";
-import { ResonanceStrings } from "./strings/ResonanceStrings.js";
+import { ResonanceStrings } from "./i18n/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
 import { SolverType } from "./common/model/SolverType.js";
 import ResonanceColors from "./common/ResonanceColors.js";

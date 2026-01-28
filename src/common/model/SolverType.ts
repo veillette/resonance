@@ -1,5 +1,5 @@
 import { ReadOnlyProperty } from "scenerystack/axon";
-import { ResonanceStrings } from "../../strings/ResonanceStrings.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 /**
  * Enumeration of available ODE solver types
