@@ -214,21 +214,23 @@ export class SimModel {
           model.massProperty.value = baseK / (omega * omega);
           break;
 
-        case OscillatorConfigMode.MIXED:
+        case OscillatorConfigMode.MIXED: {
           // Both vary: masses increase, spring constants increase proportionally
           // Keep natural frequency constant for all oscillators
           const multiplier = i + 1;
           model.massProperty.value = baseMass * multiplier;
           model.springConstantProperty.value = baseK * multiplier;
           break;
+        }
 
-        case OscillatorConfigMode.SAME_FREQUENCY:
+        case OscillatorConfigMode.SAME_FREQUENCY: {
           // Same natural frequency: ω₀ = √(k/m) remains constant
           // Keep k/m ratio constant by scaling both proportionally
           const multiplier2 = i + 1;
           model.massProperty.value = baseMass * multiplier2;
           model.springConstantProperty.value = baseK * multiplier2;
           break;
+        }
 
         case OscillatorConfigMode.CUSTOM:
           // Custom mode: don't modify values, user sets them manually
