@@ -16,7 +16,7 @@ import { NumberControl } from "scenerystack/scenery-phet";
 import { Panel, ComboBox, Checkbox, ToggleSwitch, NumberSpinner } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
 import { Property, NumberProperty } from "scenerystack/axon";
-import { Range, Bounds2 } from "scenerystack/dot";
+import { Range, Bounds2, Dimension2 } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
 import { OscillatorConfigMode } from "../../common/model/OscillatorConfigMode.js";
 import type { OscillatorConfigModeType } from "../../common/model/OscillatorConfigMode.js";
@@ -50,6 +50,7 @@ export class ResonatorControlPanel extends Panel {
         decimalPlaces: 0
       },
       sliderOptions: {
+        trackSize: new Dimension2( 150, 3 ),
         majorTicks: [
           { value: 1, label: new Text( '1', { font: ResonanceConstants.TICK_LABEL_FONT } ) },
           { value: 10, label: new Text( '10', { font: ResonanceConstants.TICK_LABEL_FONT } ) }
@@ -178,6 +179,9 @@ export class ResonatorControlPanel extends Panel {
         numberDisplayOptions: {
           valuePattern: ResonanceStrings.units.kgPatternStringProperty,
           decimalPlaces: 4
+        },
+        sliderOptions: {
+          trackSize: new Dimension2( 150, 3 )
         }
       }
     );
@@ -191,6 +195,9 @@ export class ResonatorControlPanel extends Panel {
         numberDisplayOptions: {
           valuePattern: ResonanceStrings.units.newtonPerMeterPatternStringProperty,
           decimalPlaces: 0
+        },
+        sliderOptions: {
+          trackSize: new Dimension2( 150, 3 )
         }
       }
     );
@@ -274,7 +281,8 @@ export class ResonatorControlPanel extends Panel {
 
     // Wrap the natural frequency text in an AlignBox to center it
     const naturalFrequencyBox = new AlignBox( naturalFrequencyText, {
-      xAlign: 'center'
+      xAlign: 'center',
+      alignBounds: new Bounds2( 0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0 )
     } );
 
     // --- Damping control ---
@@ -283,13 +291,17 @@ export class ResonatorControlPanel extends Panel {
       numberDisplayOptions: {
         valuePattern: ResonanceStrings.units.dampingUnitsPatternStringProperty,
         decimalPlaces: 1
+      },
+      sliderOptions: {
+        trackSize: new Dimension2( 150, 3 )
       }
     } );
 
     // --- Gravity toggle ---
     const gravityToggleSwitch = new ToggleSwitch( gravityEnabledProperty, false, true, {
       trackFillLeft: ResonanceColors.gravityToggleOffProperty,
-      trackFillRight: ResonanceColors.gravityToggleOnProperty
+      trackFillRight: ResonanceColors.gravityToggleOnProperty,
+      scale: 0.7
     } );
 
     const gravityLabel = new Text( ResonanceStrings.controls.gravityStringProperty, {

@@ -16,7 +16,7 @@ const CONTROL_FONT = new PhetFont({ size: 14 });
 // ===== DRIVER BOX =====
 
 const DRIVER_BOX_WIDTH = 600;
-const DRIVER_BOX_HEIGHT = 200;
+const DRIVER_BOX_HEIGHT = 120;
 const DRIVER_BOX_CORNER_RADIUS = 10;
 const DRIVER_BOX_LINE_WIDTH = 2;
 const DRIVER_BOTTOM_MARGIN = 100; // distance from layout bounds bottom
@@ -83,11 +83,11 @@ const MIN_SPRING_XSCALE = 0.3;
 
 const RULER_WIDTH = 500; // 50 cm total length
 const RULER_HEIGHT = 40;
-const RULER_MAJOR_TICK_WIDTH = 100; // 10 cm per major tick
-const RULER_MINOR_TICKS_PER_MAJOR = 4; // 2 cm per minor tick
+const RULER_MAJOR_TICK_WIDTH = 50; // 5 cm per major tick
+const RULER_MINOR_TICKS_PER_MAJOR = 4; // 1 cm per minor tick
 const RULER_INSETS_WIDTH = 10;
-const RULER_LEFT_MARGIN = 20;
-const RULER_TOP_MARGIN = 50;
+const RULER_LEFT_MARGIN = 80;
+const RULER_TOP_MARGIN = 300;
 
 // ===== CONTROL PANEL =====
 

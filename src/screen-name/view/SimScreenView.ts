@@ -148,7 +148,7 @@ export class SimScreenView extends ScreenView {
    * Create and configure the ruler node with drag handling.
    */
   private createRulerNode(): RulerNode {
-    const rulerLabels = ['0', '10', '20', '30', '40', '50'];
+    const rulerLabels = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50'];
     const rulerNode = new RulerNode(
       ResonanceConstants.RULER_WIDTH,
       ResonanceConstants.RULER_HEIGHT,

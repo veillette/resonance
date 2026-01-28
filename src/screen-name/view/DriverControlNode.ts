@@ -3,11 +3,11 @@
  * the power toggle, frequency slider, and amplitude slider for the driving force.
  */
 
-import { Node, Text, Rectangle, HBox } from "scenerystack/scenery";
+import { Node, Text, Rectangle, HBox, VBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
 import { ToggleSwitch } from "scenerystack/sun";
 import { NumberProperty } from "scenerystack/axon";
-import { Range } from "scenerystack/dot";
+import { Range, Dimension2 } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
@@ -38,31 +38,35 @@ export class DriverControlNode extends Node {
     const powerToggleSwitch = new ToggleSwitch( model.resonanceModel.drivingEnabledProperty, false, true, {
       trackFillLeft: ResonanceColors.toggleTrackOffProperty,
       trackFillRight: ResonanceColors.toggleTrackOnProperty,
-      thumbFill: 'white'
+      thumbFill: 'white',
+      scale: 0.7
     } );
-    const powerToggleBox = new HBox( {
+    const powerToggleBox = new VBox( {
       children: [ powerToggleLabel, powerToggleSwitch ],
       spacing: ResonanceConstants.POWER_TOGGLE_SPACING,
-      left: ResonanceConstants.POWER_TOGGLE_LEFT,
-      top: ResonanceConstants.POWER_TOGGLE_TOP
+      align: 'center'
     } );
-    this.addChild( powerToggleBox );
 
     // Frequency Control
     const frequencyControl = new NumberControl( ResonanceStrings.controls.frequencyStringProperty, model.resonanceModel.drivingFrequencyProperty, ResonanceConstants.FREQUENCY_RANGE, {
       delta: 0.1,
       numberDisplayOptions: {
         valuePattern: ResonanceStrings.units.hertzPatternStringProperty,
-        decimalPlaces: 1
+        decimalPlaces: 1,
+        textOptions: {
+          font: ResonanceConstants.LABEL_FONT
+        }
+      },
+      titleNodeOptions: {
+        font: ResonanceConstants.LABEL_FONT
       },
       sliderOptions: {
-        trackFillEnabled: ResonanceColors.frequencyTrackProperty
+        trackFillEnabled: ResonanceColors.frequencyTrackProperty,
+        trackSize: new Dimension2( 120, 3 ),
+        minorTickSpacing: 0.5
       }
     } );
-    frequencyControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE * 1.3 );
-    frequencyControl.centerX = driverBox.centerX;
-    frequencyControl.top = ResonanceConstants.FREQUENCY_CONTROL_TOP;
-    this.addChild( frequencyControl );
+    frequencyControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE );
 
     // Amplitude Control (display in cm, model in meters)
     const amplitudeCmProperty = new NumberProperty( model.resonanceModel.drivingAmplitudeProperty.value * 100 );
@@ -97,16 +101,30 @@ export class DriverControlNode extends Node {
         delta: 0.01,
         numberDisplayOptions: {
           valuePattern: ResonanceStrings.units.cmPatternStringProperty,
-          decimalPlaces: 2
+          decimalPlaces: 2,
+          textOptions: {
+            font: ResonanceConstants.LABEL_FONT
+          }
+        },
+        titleNodeOptions: {
+          font: ResonanceConstants.LABEL_FONT
         },
         sliderOptions: {
-          trackFillEnabled: ResonanceColors.amplitudeTrackProperty
+          trackFillEnabled: ResonanceColors.amplitudeTrackProperty,
+          trackSize: new Dimension2( 120, 3 ),
+          minorTickSpacing: 0.2
         }
       }
     );
-    amplitudeControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE * 1.3 );
-    amplitudeControl.centerX = driverBox.centerX;
-    amplitudeControl.bottom = driverBox.bottom - ResonanceConstants.AMPLITUDE_CONTROL_BOTTOM_MARGIN;
-    this.addChild( amplitudeControl );
+    amplitudeControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE );
+
+    // Container for all three controls in a row
+    const controlsBox = new HBox( {
+      children: [ powerToggleBox, frequencyControl, amplitudeControl ],
+      spacing: 25,
+      align: 'center'
+    } );
+    controlsBox.center = driverBox.center;
+    this.addChild( controlsBox );
   }
 }

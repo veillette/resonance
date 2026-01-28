@@ -17,12 +17,12 @@ const ResonanceColors = {
   // Panel
   panelFillProperty: new ProfileColorProperty(resonance, 'panelFill', {
     default: new Color(240, 240, 240),
-    projector: new Color(30, 30, 30)
+    projector: new Color(40, 40, 40)
   }),
 
   panelStrokeProperty: new ProfileColorProperty(resonance, 'panelStroke', {
     default: new Color(204, 204, 204),
-    projector: new Color(100, 100, 100)
+    projector: new Color(150, 150, 150)
   }),
 
   // Text
@@ -39,38 +39,38 @@ const ResonanceColors = {
   // Spring and mass
   springProperty: new ProfileColorProperty(resonance, 'spring', {
     default: new Color(204, 0, 0),
-    projector: new Color(255, 80, 80)
+    projector: new Color(255, 100, 100)
   }),
 
   massProperty: new ProfileColorProperty(resonance, 'mass', {
     default: new Color(51, 102, 255),
-    projector: new Color(100, 150, 255)
+    projector: new Color(120, 180, 255)
   }),
 
   massStrokeProperty: new ProfileColorProperty(resonance, 'massStroke', {
     default: new Color(0, 51, 170),
-    projector: new Color(150, 200, 255)
+    projector: new Color(180, 220, 255)
   }),
 
   massLabelProperty: new ProfileColorProperty(resonance, 'massLabel', {
     default: new Color(255, 255, 255),
-    projector: new Color(0, 0, 0)
+    projector: new Color(255, 255, 255)
   }),
 
   equilibriumProperty: new ProfileColorProperty(resonance, 'equilibrium', {
     default: new Color(76, 175, 80),
-    projector: new Color(100, 255, 100)
+    projector: new Color(120, 255, 120)
   }),
 
   // Driver box
   driverFillProperty: new ProfileColorProperty(resonance, 'driverFill', {
     default: new Color(136, 136, 136),
-    projector: new Color(60, 60, 60)
+    projector: new Color(80, 80, 80)
   }),
 
   driverStrokeProperty: new ProfileColorProperty(resonance, 'driverStroke', {
     default: new Color(68, 68, 68),
-    projector: new Color(150, 150, 150)
+    projector: new Color(180, 180, 180)
   }),
 
   driverTextProperty: new ProfileColorProperty(resonance, 'driverText', {
@@ -81,12 +81,12 @@ const ResonanceColors = {
   // Control panel
   controlPanelFillProperty: new ProfileColorProperty(resonance, 'controlPanelFill', {
     default: new Color(204, 255, 204),
-    projector: new Color(20, 60, 20)
+    projector: new Color(30, 80, 30)
   }),
 
   controlPanelStrokeProperty: new ProfileColorProperty(resonance, 'controlPanelStroke', {
     default: new Color(0, 102, 0),
-    projector: new Color(0, 200, 0)
+    projector: new Color(100, 255, 100)
   }),
 
   // Energy colors
@@ -124,12 +124,12 @@ const ResonanceColors = {
   // Grid and axes
   gridLinesProperty: new ProfileColorProperty(resonance, 'gridLines', {
     default: new Color(224, 224, 224),
-    projector: new Color(50, 50, 50)
+    projector: new Color(60, 60, 60)
   }),
 
   axesProperty: new ProfileColorProperty(resonance, 'axes', {
     default: new Color(117, 117, 117),
-    projector: new Color(180, 180, 180)
+    projector: new Color(200, 200, 200)
   }),
 
   // Phase colors
@@ -158,12 +158,12 @@ const ResonanceColors = {
   // Toggle switch colors
   toggleTrackOffProperty: new ProfileColorProperty(resonance, 'toggleTrackOff', {
     default: new Color(102, 102, 102), // #666666
-    projector: new Color(80, 80, 80)
+    projector: new Color(100, 100, 100)
   }),
 
   toggleTrackOnProperty: new ProfileColorProperty(resonance, 'toggleTrackOn', {
     default: new Color(0, 204, 0), // #00CC00
-    projector: new Color(0, 255, 0)
+    projector: new Color(100, 255, 100)
   }),
 
   // Spring back color (for ParametricSpringNode)

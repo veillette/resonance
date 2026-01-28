@@ -11,6 +11,7 @@ import { SimScreen } from "./screen-name/SimScreen.js";
 import { ResonanceStrings } from "./strings/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
 import { SolverType } from "./common/model/SolverType.js";
+import ResonanceColors from "./common/ResonanceColors.js";
 
 onReadyToLaunch(() => {
   // Create custom preferences model for simulation-specific settings
@@ -18,6 +19,7 @@ onReadyToLaunch(() => {
 
   const simOptions = {
     webgl: true,
+    backgroundColor: ResonanceColors.backgroundProperty,
     preferencesModel: new PreferencesModel({
       visualOptions: {
         supportsProjectorMode: true,
@@ -39,13 +41,13 @@ onReadyToLaunch(() => {
                 children: [
                   new Text(ResonanceStrings.preferences.simulation.displayOptionsStringProperty, {
                     font: new PhetFont({ size: 16, weight: "bold" }),
-                    fill: "black",
+                    fill: ResonanceColors.textProperty,
                   }),
                   new Checkbox(
                     resonancePreferences.showEnergyProperty,
                     new Text(ResonanceStrings.preferences.simulation.showEnergyStringProperty, {
                       font: new PhetFont(16),
-                      fill: "black",
+                      fill: ResonanceColors.textProperty,
                     }),
                     {
                       boxWidth: 16,
@@ -55,7 +57,7 @@ onReadyToLaunch(() => {
                     resonancePreferences.showVectorsProperty,
                     new Text(ResonanceStrings.preferences.simulation.showVectorsStringProperty, {
                       font: new PhetFont(16),
-                      fill: "black",
+                      fill: ResonanceColors.textProperty,
                     }),
                     {
                       boxWidth: 16,
@@ -65,7 +67,7 @@ onReadyToLaunch(() => {
                     resonancePreferences.showPhaseProperty,
                     new Text(ResonanceStrings.preferences.simulation.showPhaseStringProperty, {
                       font: new PhetFont(16),
-                      fill: "black",
+                      fill: ResonanceColors.textProperty,
                     }),
                     {
                       boxWidth: 16,
@@ -86,11 +88,11 @@ onReadyToLaunch(() => {
                       children: [
                         new Text(ResonanceStrings.preferences.solvers.rk4StringProperty, {
                           font: new PhetFont(14),
-                          fill: "black",
+                          fill: ResonanceColors.textProperty,
                         }),
                         new Text(ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty, {
                           font: new PhetFont(11),
-                          fill: "rgb(80,80,80)",
+                          fill: ResonanceColors.textSecondaryProperty,
                           maxWidth: 550,
                         }),
                       ],
@@ -105,11 +107,11 @@ onReadyToLaunch(() => {
                       children: [
                         new Text(ResonanceStrings.preferences.solvers.adaptiveRK45StringProperty, {
                           font: new PhetFont(14),
-                          fill: "black",
+                          fill: ResonanceColors.textProperty,
                         }),
                         new Text(ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty, {
                           font: new PhetFont(11),
-                          fill: "rgb(80,80,80)",
+                          fill: ResonanceColors.textSecondaryProperty,
                           maxWidth: 550,
                         }),
                       ],
@@ -124,11 +126,11 @@ onReadyToLaunch(() => {
                       children: [
                         new Text(ResonanceStrings.preferences.solvers.adaptiveEulerStringProperty, {
                           font: new PhetFont(14),
-                          fill: "black",
+                          fill: ResonanceColors.textProperty,
                         }),
                         new Text(ResonanceStrings.preferences.solvers.adaptiveEulerDescriptionStringProperty, {
                           font: new PhetFont(11),
-                          fill: "rgb(80,80,80)",
+                          fill: ResonanceColors.textSecondaryProperty,
                           maxWidth: 550,
                         }),
                       ],
@@ -143,11 +145,11 @@ onReadyToLaunch(() => {
                       children: [
                         new Text(ResonanceStrings.preferences.solvers.modifiedMidpointStringProperty, {
                           font: new PhetFont(14),
-                          fill: "black",
+                          fill: ResonanceColors.textProperty,
                         }),
                         new Text(ResonanceStrings.preferences.solvers.modifiedMidpointDescriptionStringProperty, {
                           font: new PhetFont(11),
-                          fill: "rgb(80,80,80)",
+                          fill: ResonanceColors.textSecondaryProperty,
                           maxWidth: 550,
                         }),
                       ],
