@@ -9,13 +9,18 @@
     "check": "npx tsc --noEmit",
     "lint": "npx eslint .",
     "test": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:fuzz": "npx playwright test --project=chromium",
+    "test:fuzz:headed": "npx playwright test --project=chromium --headed",
+    "test:fuzz:quick": "FUZZ_DURATION=30 npx playwright test --project=chromium fuzz.spec.ts",
+    "test:fuzz:long": "FUZZ_DURATION=300 npx playwright test --project=chromium fuzz.spec.ts"
   },
   "dependencies": {
     "scenerystack": "^3.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.58.0",
     "@vitest/coverage-v8": "^4.0.18",
     "canvas": "^3.2.1",
     "eslint": "^9.17.0",

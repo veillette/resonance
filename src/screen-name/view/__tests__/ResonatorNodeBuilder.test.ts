@@ -5,7 +5,7 @@
  * and the buildResonators orchestration method.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { ResonatorNodeBuilder } from "../ResonatorNodeBuilder.js";
 import { ResonanceModel } from "../../../common/model/index.js";
 import { SolverType } from "../../../common/model/SolverType.js";
