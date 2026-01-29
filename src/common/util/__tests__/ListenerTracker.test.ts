@@ -303,10 +303,10 @@ describe("ListenerTracker", () => {
         public lastReceivedCount: number | null = null;
 
         constructor() {
-          this.listenerTracker.link(nameProperty as never, (value) => {
+          this.listenerTracker.link(nameProperty as never, (value: string) => {
             this.lastReceivedName = value;
           });
-          this.listenerTracker.link(countProperty as never, (value) => {
+          this.listenerTracker.link(countProperty as never, (value: number) => {
             this.lastReceivedCount = value;
           });
         }
@@ -342,7 +342,7 @@ describe("ListenerTracker", () => {
       const property = new MockProperty("initial");
       const changes: string[] = [];
 
-      tracker.lazyLink(property as never, (value) => {
+      tracker.lazyLink(property as never, (value: string) => {
         changes.push(value);
       });
 
