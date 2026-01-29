@@ -5,12 +5,9 @@
 
 import { Node, Line, Rectangle } from "scenerystack/scenery";
 import { DragListener } from "scenerystack/scenery";
-import { Vector2, Bounds2 } from "scenerystack/dot";
-import { NumberProperty, Property } from "scenerystack/axon";
+import { Bounds2, Range } from "scenerystack/dot";
+import { NumberProperty } from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { CircularUpdateGuard } from "../../common/util/index.js";
-
-// Note: Bounds2 is used in MeasurementLine class
 
 /**
  * A single draggable measurement line with a handle.
@@ -21,13 +18,14 @@ class MeasurementLine extends Node {
   public constructor(
     initialHeightCm: number,
     driverWidth: number,
-    modelViewTransform: ModelViewTransform2,
-    dragBounds: Bounds2,
+    modelDragBounds: Bounds2,
   ) {
     super();
 
-    // Height in model coordinates (meters)
-    this.heightProperty = new NumberProperty(initialHeightCm / 100);
+    // Height in model coordinates (meters) - positive = up from driver plate
+    this.heightProperty = new NumberProperty(initialHeightCm / 100, {
+      range: new Range(modelDragBounds.minY, modelDragBounds.maxY),
+    });
 
     // Create the dashed horizontal line
     const lineLength = driverWidth;
@@ -60,48 +58,6 @@ class MeasurementLine extends Node {
 
     // Make the whole node draggable
     this.cursor = "ns-resize";
-
-    // Position property for dragging (x is fixed, y changes)
-    const positionProperty = new Property(new Vector2(0, 0));
-
-    // Guard to prevent circular updates between heightProperty and positionProperty
-    const updateGuard = new CircularUpdateGuard();
-
-    // Sync height to position
-    this.heightProperty.link((height: number) => {
-      updateGuard.run(() => {
-        const viewY = modelViewTransform.modelToViewY(-height); // negative because up is positive height
-        positionProperty.value = new Vector2(0, viewY);
-      });
-    });
-
-    // Sync position back to height
-    positionProperty.lazyLink((position: Vector2) => {
-      updateGuard.run(() => {
-        const modelY = modelViewTransform.viewToModelY(position.y);
-        this.heightProperty.value = -modelY; // negative because up is positive height
-      });
-    });
-
-    // Update visual position
-    positionProperty.link((position: Vector2) => {
-      this.y = position.y;
-    });
-
-    // Create drag bounds in view coordinates
-    const viewDragBounds = new Bounds2(
-      0,
-      modelViewTransform.modelToViewY(-dragBounds.maxY),
-      0,
-      modelViewTransform.modelToViewY(-dragBounds.minY),
-    );
-
-    const dragListener = new DragListener({
-      targetNode: this,
-      positionProperty: positionProperty,
-      dragBoundsProperty: new Property(viewDragBounds),
-    });
-    this.addInputListener(dragListener);
   }
 
   public reset(): void {
@@ -125,56 +81,54 @@ export class MeasurementLinesNode extends Node {
   ) {
     super();
 
-    // Calculate drag bounds based on full screen height
-    // Convert screen bounds to model coordinates for height above driver
-    const screenTopModelY = modelViewTransform.viewToModelY(layoutBounds.minY);
-    const screenBottomModelY = modelViewTransform.viewToModelY(layoutBounds.maxY);
-    
-    // Height is measured upward from driver plate (negative y in model = up)
-    // Allow lines to go from just above driver to the top of the screen
-    const minHeight = 0.01; // 1cm minimum (just above plate)
-    const maxHeight = Math.abs(screenTopModelY - screenBottomModelY); // Full screen height
+    // Calculate height range in model coordinates (meters)
+    // Height is measured upward from driver plate
+    const minHeight = 0.01; // 1cm minimum above plate
+    // Convert screen top to view delta from driver plate, then to model height
+    const screenHeightView = driverTopY - layoutBounds.minY;
+    const maxHeight = Math.abs(modelViewTransform.viewToModelDeltaY(screenHeightView));
 
-    const dragBounds = new Bounds2(0, minHeight, 0, maxHeight);
+    // Height bounds in model coordinates (meters above driver plate)
+    const heightBounds = new Bounds2(0, minHeight, 0, maxHeight);
 
     // Create two measurement lines at 20cm and 40cm
-    this.line1 = new MeasurementLine(
-      20,
-      driverWidth,
-      modelViewTransform,
-      dragBounds,
-    );
-    this.line2 = new MeasurementLine(
-      40,
-      driverWidth,
-      modelViewTransform,
-      dragBounds,
-    );
+    this.line1 = new MeasurementLine(20, driverWidth, heightBounds);
+    this.line2 = new MeasurementLine(40, driverWidth, heightBounds);
 
     // Position lines horizontally centered on driver
     this.line1.x = driverCenterX;
     this.line2.x = driverCenterX;
 
-    // Offset Y positions relative to driver top
-    // The line positions are set via heightProperty, but we need to offset
-    // based on the actual driver plate position
-    const updateLinePositions = () => {
-      // The lines' y positions are in absolute view coordinates from heightProperty
-      // We need to offset them relative to current driver top
-      this.line1.y =
-        driverTopY -
-        Math.abs(
-          modelViewTransform.modelToViewDeltaY(this.line1.heightProperty.value),
-        );
-      this.line2.y =
-        driverTopY -
-        Math.abs(
-          modelViewTransform.modelToViewDeltaY(this.line2.heightProperty.value),
-        );
+    // Helper to set up drag and position for a measurement line
+    const setupLine = (line: MeasurementLine) => {
+      // Update visual Y position when height changes
+      line.heightProperty.link((height: number) => {
+        // Height is positive upward, but view Y increases downward
+        const viewDeltaY = Math.abs(modelViewTransform.modelToViewDeltaY(height));
+        line.y = driverTopY - viewDeltaY;
+      });
+
+      // Set up drag listener
+      const dragListener = new DragListener({
+        targetNode: line,
+        start: () => {
+          // Nothing special on start
+        },
+        drag: (event, listener) => {
+          // Convert drag delta to height change
+          const viewDeltaY = listener.modelDelta.y;
+          const modelDeltaHeight = modelViewTransform.viewToModelDeltaY(viewDeltaY);
+          // Dragging down (positive viewDeltaY) decreases height
+          const newHeight = line.heightProperty.value - modelDeltaHeight;
+          // Clamp to bounds
+          line.heightProperty.value = Math.max(minHeight, Math.min(maxHeight, newHeight));
+        },
+      });
+      line.addInputListener(dragListener);
     };
 
-    this.line1.heightProperty.link(updateLinePositions);
-    this.line2.heightProperty.link(updateLinePositions);
+    setupLine(this.line1);
+    setupLine(this.line2);
 
     this.addChild(this.line1);
     this.addChild(this.line2);
