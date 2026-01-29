@@ -114,17 +114,6 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);
 
-    // ===== RULER =====
-    // Added after control panel so it appears on top when dragged over it
-    this.rulerNode = this.createRulerNode();
-    this.addChild(this.rulerNode);
-
-    // Update ruler and measurement lines visibility from the shared property
-    this.rulerVisibleProperty.link((visible: boolean) => {
-      this.rulerNode.visible = visible;
-      this.measurementLinesNode.visible = visible;
-    });
-
     // ===== RESET ALL BUTTON =====
     const resetAllButton = new ResetAllButton({
       listener: () => {
@@ -142,6 +131,17 @@ export class SimScreenView extends ScreenView {
     // ===== PLAYBACK CONTROLS =====
     const playbackControls = new PlaybackControlNode(model, this.layoutBounds);
     this.addChild(playbackControls);
+
+    // ===== RULER =====
+    // Added last so it appears on top of control panel and playback controls when dragged
+    this.rulerNode = this.createRulerNode();
+    this.addChild(this.rulerNode);
+
+    // Update ruler and measurement lines visibility from the shared property
+    this.rulerVisibleProperty.link((visible: boolean) => {
+      this.rulerNode.visible = visible;
+      this.measurementLinesNode.visible = visible;
+    });
 
     // Initial spring/mass update
     this.updateSpringAndMass();
