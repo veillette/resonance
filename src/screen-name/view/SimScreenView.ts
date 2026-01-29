@@ -264,6 +264,7 @@ export class SimScreenView extends ScreenView {
       modelViewTransform: this.modelViewTransform,
       layoutBounds: this.layoutBounds,
       driverPlate: this.driverPlate,
+      selectedResonatorIndexProperty: this.model.selectedResonatorIndexProperty,
     };
 
     const result = ResonatorNodeBuilder.buildResonators(

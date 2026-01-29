@@ -13,7 +13,7 @@ import ResonanceConstants from "../../../common/ResonanceConstants.js";
 import { Bounds2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Rectangle } from "scenerystack/scenery";
-import { Property } from "scenerystack/axon";
+import { Property, NumberProperty } from "scenerystack/axon";
 
 // Mock preferences model for testing
 function createMockPreferences() {
@@ -158,6 +158,7 @@ describe("ResonatorNodeBuilder", () => {
       modelViewTransform: ModelViewTransform2;
       layoutBounds: Bounds2;
       driverPlate: Rectangle;
+      selectedResonatorIndexProperty: NumberProperty;
     };
 
     beforeEach(() => {
@@ -176,6 +177,7 @@ describe("ResonatorNodeBuilder", () => {
         modelViewTransform,
         layoutBounds: viewBounds,
         driverPlate,
+        selectedResonatorIndexProperty: new NumberProperty(0),
       };
     });
 
@@ -281,6 +283,7 @@ describe("ResonatorNodeBuilder", () => {
       modelViewTransform: ModelViewTransform2;
       layoutBounds: Bounds2;
       driverPlate: Rectangle;
+      selectedResonatorIndexProperty: NumberProperty;
     };
 
     beforeEach(() => {
@@ -303,6 +306,7 @@ describe("ResonatorNodeBuilder", () => {
         modelViewTransform,
         layoutBounds: viewBounds,
         driverPlate,
+        selectedResonatorIndexProperty: new NumberProperty(0),
       };
     });
 

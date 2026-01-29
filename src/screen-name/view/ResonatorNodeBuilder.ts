@@ -8,7 +8,7 @@ import { DragListener } from "scenerystack/scenery";
 import { ParametricSpringNode, PhetFont } from "scenerystack/scenery-phet";
 import { Vector2Property } from "scenerystack/dot";
 import { Vector2, Bounds2 } from "scenerystack/dot";
-import { Property } from "scenerystack/axon";
+import { Property, NumberProperty } from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { ResonanceModel } from "../../common/model/index.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
@@ -22,6 +22,7 @@ export interface ResonatorBuildContext {
   modelViewTransform: ModelViewTransform2;
   layoutBounds: Bounds2;
   driverPlate: Rectangle;
+  selectedResonatorIndexProperty: NumberProperty;
 }
 
 /**
@@ -119,7 +120,7 @@ export class ResonatorNodeBuilder {
     count: number,
     context: ResonatorBuildContext,
   ): MassNodeResult {
-    const { modelViewTransform, layoutBounds, driverPlate } = context;
+    const { modelViewTransform, layoutBounds, driverPlate, selectedResonatorIndexProperty } = context;
 
     const massNode = new Node();
     const initialMassSize = ResonatorNodeBuilder.calculateMassSize(
@@ -226,6 +227,8 @@ export class ResonatorNodeBuilder {
       start: () => {
         // Mark this resonator as being dragged - simulation will skip updating it
         resonatorModel.isDraggingProperty.value = true;
+        // Select this resonator in the control panel
+        selectedResonatorIndexProperty.value = index;
       },
       end: () => {
         // Release the resonator back to simulation control
