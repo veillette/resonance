@@ -153,6 +153,14 @@ export class ResonatorNodeBuilder {
     };
     resonatorModel.massProperty.link(massListener);
 
+    // Change label color when dragging to indicate selection
+    const draggingListener = (isDragging: boolean) => {
+      massLabel.fill = isDragging
+        ? ResonanceColors.massLabelDraggingProperty
+        : ResonanceColors.massLabelProperty;
+    };
+    resonatorModel.isDraggingProperty.link(draggingListener);
+
     // Add vertical drag listener using positionProperty
     massNode.cursor = "ns-resize";
 
@@ -228,6 +236,7 @@ export class ResonatorNodeBuilder {
 
     const cleanup = () => {
       resonatorModel.massProperty.unlink(massListener);
+      resonatorModel.isDraggingProperty.unlink(draggingListener);
       resonatorModel.positionProperty.unlink(positionListener);
       massPositionProperty.unlink(viewPositionListener);
       massNode.removeInputListener(dragListener);

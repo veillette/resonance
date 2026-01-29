@@ -56,6 +56,16 @@ const ResonanceColors = {
     projector: new Color(255, 255, 255),
   }),
 
+  // Mass label color when being dragged (yellow for visibility)
+  massLabelDraggingProperty: new ProfileColorProperty(
+    resonance,
+    "massLabelDragging",
+    {
+      default: new Color(255, 255, 0), // Bright yellow
+      projector: new Color(255, 255, 100),
+    },
+  ),
+
   equilibriumProperty: new ProfileColorProperty(resonance, "equilibrium", {
     default: new Color(76, 175, 80),
     projector: new Color(120, 255, 120),
