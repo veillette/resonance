@@ -121,13 +121,19 @@ export class MeasurementLinesNode extends Node {
     driverTopY: number,
     driverWidth: number,
     modelViewTransform: ModelViewTransform2,
+    layoutBounds: Bounds2,
   ) {
     super();
 
-    // Drag bounds: from just above driver plate to near top of screen
-    // Height range: 0 to 60cm above plate
+    // Calculate drag bounds based on full screen height
+    // Convert screen bounds to model coordinates for height above driver
+    const screenTopModelY = modelViewTransform.viewToModelY(layoutBounds.minY);
+    const screenBottomModelY = modelViewTransform.viewToModelY(layoutBounds.maxY);
+    
+    // Height is measured upward from driver plate (negative y in model = up)
+    // Allow lines to go from just above driver to the top of the screen
     const minHeight = 0.01; // 1cm minimum (just above plate)
-    const maxHeight = 0.6; // 60cm maximum
+    const maxHeight = Math.abs(screenTopModelY - screenBottomModelY); // Full screen height
 
     const dragBounds = new Bounds2(0, minHeight, 0, maxHeight);
 

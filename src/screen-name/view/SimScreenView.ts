@@ -88,6 +88,7 @@ export class SimScreenView extends ScreenView {
       this.driverPlate.top,
       ResonanceConstants.DRIVER_BOX_WIDTH,
       this.modelViewTransform,
+      this.layoutBounds,
     );
     this.measurementLinesNode.visible = false;
     simulationArea.addChild(this.measurementLinesNode);
