@@ -8,6 +8,7 @@ import { DragListener } from "scenerystack/scenery";
 import { Vector2, Bounds2 } from "scenerystack/dot";
 import { NumberProperty, Property } from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import { CircularUpdateGuard } from "../../common/util/index.js";
 
 // Note: Bounds2 is used in MeasurementLine class
 
@@ -63,16 +64,23 @@ class MeasurementLine extends Node {
     // Position property for dragging (x is fixed, y changes)
     const positionProperty = new Property(new Vector2(0, 0));
 
+    // Guard to prevent circular updates between heightProperty and positionProperty
+    const updateGuard = new CircularUpdateGuard();
+
     // Sync height to position
     this.heightProperty.link((height: number) => {
-      const viewY = modelViewTransform.modelToViewY(-height); // negative because up is positive height
-      positionProperty.value = new Vector2(0, viewY);
+      updateGuard.run(() => {
+        const viewY = modelViewTransform.modelToViewY(-height); // negative because up is positive height
+        positionProperty.value = new Vector2(0, viewY);
+      });
     });
 
     // Sync position back to height
     positionProperty.lazyLink((position: Vector2) => {
-      const modelY = modelViewTransform.viewToModelY(position.y);
-      this.heightProperty.value = -modelY; // negative because up is positive height
+      updateGuard.run(() => {
+        const modelY = modelViewTransform.viewToModelY(position.y);
+        this.heightProperty.value = -modelY; // negative because up is positive height
+      });
     });
 
     // Update visual position
