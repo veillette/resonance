@@ -1,26 +1,38 @@
 /**
  * MeasurementLineModel - Model for a single measurement line.
- * Stores the height (position) in model coordinates with a constrained range.
+ * Stores the position in model coordinates with constrained bounds.
  */
 
-import { NumberProperty } from "scenerystack/axon";
-import { Range } from "scenerystack/dot";
+import { Property } from "scenerystack/axon";
+import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Vector2Property } from "scenerystack/dot";
 
 export class MeasurementLineModel {
-  public readonly heightProperty: NumberProperty;
+  // Position in model coordinates (x is fixed, y represents height above driver)
+  public readonly positionProperty: Vector2Property;
+  public readonly dragBoundsProperty: Property<Bounds2>;
+
+  private readonly initialPosition: Vector2;
 
   /**
-   * @param initialHeight - Initial height in meters
-   * @param heightRange - Allowed range of heights in meters
+   * @param initialHeight - Initial height in meters above driver plate
+   * @param dragBounds - Allowed bounds for dragging in model coordinates
    */
-  public constructor(initialHeight: number, heightRange: Range) {
-    this.heightProperty = new NumberProperty(initialHeight, {
-      range: heightRange,
-    });
+  public constructor(initialHeight: number, dragBounds: Bounds2) {
+    this.initialPosition = new Vector2(0, -initialHeight);
+    this.positionProperty = new Vector2Property(this.initialPosition);
+    this.dragBoundsProperty = new Property(dragBounds);
+  }
+
+  /**
+   * Get the height above driver plate (positive = up).
+   */
+  public get height(): number {
+    return -this.positionProperty.value.y;
   }
 
   public reset(): void {
-    this.heightProperty.reset();
+    this.positionProperty.reset();
   }
 }
 
@@ -30,7 +42,7 @@ export class MeasurementLineModel {
 export class MeasurementLinesModel {
   public readonly line1: MeasurementLineModel;
   public readonly line2: MeasurementLineModel;
-  public readonly heightRange: Range;
+  public readonly dragBounds: Bounds2;
 
   /**
    * @param minHeight - Minimum allowed height in meters
@@ -44,9 +56,13 @@ export class MeasurementLinesModel {
     initialHeight1: number = 0.2,
     initialHeight2: number = 0.4,
   ) {
-    this.heightRange = new Range(minHeight, maxHeight);
-    this.line1 = new MeasurementLineModel(initialHeight1, this.heightRange);
-    this.line2 = new MeasurementLineModel(initialHeight2, this.heightRange);
+    // Drag bounds in model coordinates
+    // y is negative because height is measured upward (negative y = up)
+    // x is fixed at 0
+    this.dragBounds = new Bounds2(0, -maxHeight, 0, -minHeight);
+
+    this.line1 = new MeasurementLineModel(initialHeight1, this.dragBounds);
+    this.line2 = new MeasurementLineModel(initialHeight2, this.dragBounds);
   }
 
   public reset(): void {

@@ -20,7 +20,7 @@ class MeasurementLineNode extends Node {
   public constructor(
     model: MeasurementLineModel,
     driverWidth: number,
-    driverTopY: number,
+    driverCenterX: number,
     modelViewTransform: ModelViewTransform2,
   ) {
     super();
@@ -54,27 +54,21 @@ class MeasurementLineNode extends Node {
     handle.left = line.left - handleWidth / 2 - 5;
     this.addChild(handle);
 
-    // Make the whole node draggable
     this.cursor = "ns-resize";
 
-    // Update visual Y position when model height changes
-    model.heightProperty.link((height: number) => {
-      // Height is positive upward, but view Y increases downward
-      const viewDeltaY = Math.abs(modelViewTransform.modelToViewDeltaY(height));
-      this.y = driverTopY - viewDeltaY;
+    // Position the node based on model position using modelViewTransform
+    model.positionProperty.link((position) => {
+      const viewPosition = modelViewTransform.modelToViewPosition(position);
+      this.x = driverCenterX;
+      this.y = viewPosition.y;
     });
 
-    // Set up drag listener - updates model, which has range constraints
+    // DragListener uses model's positionProperty directly with transform and bounds
     const dragListener = new DragListener({
       targetNode: this,
-      drag: (event, listener) => {
-        // Convert drag delta to height change
-        const viewDeltaY = listener.modelDelta.y;
-        const modelDeltaHeight = modelViewTransform.viewToModelDeltaY(viewDeltaY);
-        // Dragging down (positive viewDeltaY) decreases height
-        // Setting the property will auto-clamp to the model's range
-        model.heightProperty.value = model.heightProperty.value - modelDeltaHeight;
-      },
+      positionProperty: model.positionProperty,
+      transform: modelViewTransform,
+      dragBoundsProperty: model.dragBoundsProperty,
     });
     this.addInputListener(dragListener);
   }
@@ -98,9 +92,7 @@ export class MeasurementLinesNode extends Node {
     super();
 
     // Calculate height range in model coordinates (meters)
-    // Height is measured upward from driver plate
     const minHeight = 0.01; // 1cm minimum above plate
-    // Convert screen top to view delta from driver plate, then to model height
     const screenHeightView = driverTopY - layoutBounds.minY;
     const maxHeight = Math.abs(
       modelViewTransform.viewToModelDeltaY(screenHeightView),
@@ -113,19 +105,15 @@ export class MeasurementLinesNode extends Node {
     this.line1Node = new MeasurementLineNode(
       this.model.line1,
       driverWidth,
-      driverTopY,
+      driverCenterX,
       modelViewTransform,
     );
     this.line2Node = new MeasurementLineNode(
       this.model.line2,
       driverWidth,
-      driverTopY,
+      driverCenterX,
       modelViewTransform,
     );
-
-    // Position lines horizontally centered on driver
-    this.line1Node.x = driverCenterX;
-    this.line2Node.x = driverCenterX;
 
     this.addChild(this.line1Node);
     this.addChild(this.line2Node);
