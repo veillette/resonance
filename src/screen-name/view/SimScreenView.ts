@@ -85,16 +85,12 @@ export class SimScreenView extends ScreenView {
     simulationArea.addChild(this.resonatorsContainer);
     this.rebuildResonators(1);
 
-    model.resonatorCountProperty.link((count: number) => {
-      this.rebuildResonators(count);
-      this.updateSpringAndMass();
-    });
-
     // ===== RULER =====
     this.rulerNode = this.createRulerNode();
     simulationArea.addChild(this.rulerNode);
 
     // ===== MEASUREMENT LINES =====
+    // Must be created before resonatorCountProperty.link() since that calls updateSpringAndMass()
     this.measurementLinesNode = new MeasurementLinesNode(
       this.driverPlate.centerX,
       this.driverPlate.top,
@@ -103,6 +99,12 @@ export class SimScreenView extends ScreenView {
     );
     this.measurementLinesNode.visible = false;
     simulationArea.addChild(this.measurementLinesNode);
+
+    // Link resonator count changes - fires immediately, so measurement lines must exist first
+    model.resonatorCountProperty.link((count: number) => {
+      this.rebuildResonators(count);
+      this.updateSpringAndMass();
+    });
 
     this.addChild(simulationArea);
 
