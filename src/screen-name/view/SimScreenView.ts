@@ -80,17 +80,9 @@ export class SimScreenView extends ScreenView {
     // ===== DRIVER PLATE & CONNECTION ROD =====
     this.createDriverPlateAndRod(simulationArea);
 
-    // ===== RESONATORS (springs + masses) =====
-    this.resonatorsContainer = new Node();
-    simulationArea.addChild(this.resonatorsContainer);
-    this.rebuildResonators(1);
-
-    // ===== RULER =====
-    this.rulerNode = this.createRulerNode();
-    simulationArea.addChild(this.rulerNode);
-
     // ===== MEASUREMENT LINES =====
     // Must be created before resonatorCountProperty.link() since that calls updateSpringAndMass()
+    // Added early in z-order so they appear behind resonators
     this.measurementLinesNode = new MeasurementLinesNode(
       this.driverPlate.centerX,
       this.driverPlate.top,
@@ -99,6 +91,15 @@ export class SimScreenView extends ScreenView {
     );
     this.measurementLinesNode.visible = false;
     simulationArea.addChild(this.measurementLinesNode);
+
+    // ===== RESONATORS (springs + masses) =====
+    this.resonatorsContainer = new Node();
+    simulationArea.addChild(this.resonatorsContainer);
+    this.rebuildResonators(1);
+
+    // ===== RULER =====
+    this.rulerNode = this.createRulerNode();
+    simulationArea.addChild(this.rulerNode);
 
     // Link resonator count changes - fires immediately, so measurement lines must exist first
     model.resonatorCountProperty.link((count: number) => {
@@ -395,13 +396,17 @@ export class SimScreenView extends ScreenView {
       const springEndY = junctionY;
       const springLength = Math.abs(springEndY - springStartY);
 
+      const springNode = this.springNodes[i];
+      // Use the actual radius from this spring node (varies with spring constant)
+      const springRadius = springNode.radiusProperty.value;
+      const loopsTimesRadius =
+        ResonanceConstants.SPRING_LOOPS * springRadius;
+
       const xScale = Math.max(
         ResonanceConstants.MIN_SPRING_XSCALE,
-        (springLength - endLengths - 2 * ResonanceConstants.SPRING_RADIUS) /
-          loopsTimesRadius,
+        (springLength - endLengths - 2 * springRadius) / loopsTimesRadius,
       );
 
-      const springNode = this.springNodes[i];
       springNode.xScaleProperty.value = xScale;
       springNode.rotation =
         springEndY < springStartY ? -Math.PI / 2 : Math.PI / 2;
