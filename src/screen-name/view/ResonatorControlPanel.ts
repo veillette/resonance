@@ -83,7 +83,7 @@ export class ResonatorControlPanel extends Panel {
     // Measure configBox size to create matching strut for layout preservation
     // Add to temporary container to force layout calculation
     const tempContainer = new VBox({ children: [configBox] });
-    tempContainer.localBounds; // Force layout
+    void tempContainer.localBounds; // Force layout calculation
     const configBoxHeight = configBox.height || configBox.localBounds.height;
     const configBoxStrut = new VStrut(configBoxHeight);
     tempContainer.removeChild(configBox); // Remove from temp container
