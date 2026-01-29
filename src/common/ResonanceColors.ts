@@ -106,6 +106,21 @@ const ResonanceColors = {
     },
   ),
 
+  // Sub-panel colors (for mass/spring/resonator/frequency sub-panel)
+  subPanelFillProperty: new ProfileColorProperty(resonance, "subPanelFill", {
+    default: new Color(200, 230, 255), // Light blue
+    projector: new Color(30, 60, 100), // Dark blue for projector
+  }),
+
+  subPanelStrokeProperty: new ProfileColorProperty(
+    resonance,
+    "subPanelStroke",
+    {
+      default: new Color(100, 150, 200), // Medium blue
+      projector: new Color(80, 130, 200), // Lighter blue for projector
+    },
+  ),
+
   // Energy colors
   kineticEnergyProperty: new ProfileColorProperty(resonance, "kineticEnergy", {
     default: new Color(255, 152, 0),

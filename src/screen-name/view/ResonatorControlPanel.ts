@@ -11,7 +11,7 @@
  * - Ruler visibility checkbox
  */
 
-import { Node, Text, Line, VBox, HBox, AlignBox } from "scenerystack/scenery";
+import { Node, Text, Line, VBox, HBox, AlignBox, VStrut } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
 import {
   Panel,
@@ -52,9 +52,11 @@ export class ResonatorControlPanel extends Panel {
   // Controls that need enabled state updates
   private readonly massControl: NumberControl;
   private readonly springConstantControl: NumberControl;
+  private readonly resonatorCountControl: NumberControl;
 
   // UI containers that toggle visibility
   private readonly configBox: VBox;
+  private readonly configBoxStrut: VStrut;
   private readonly resonatorSelectionBox: HBox;
 
   // Natural frequency text element
@@ -77,6 +79,25 @@ export class ResonatorControlPanel extends Panel {
 
     const { configBox, comboBoxListParent } =
       ResonatorControlPanel.createConfigurationControls(tempModel);
+
+    // Measure configBox size to create matching strut for layout preservation
+    // Add to temporary container to force layout calculation
+    const tempContainer = new VBox({ children: [configBox] });
+    tempContainer.localBounds; // Force layout
+    const configBoxHeight = configBox.height || configBox.localBounds.height;
+    const configBoxStrut = new VStrut(configBoxHeight);
+    tempContainer.removeChild(configBox); // Remove from temp container
+
+    // Container that holds both configBox and strut, swapping visibility
+    // Use VBox so both participate in layout, but only one is visible at a time
+    // The container will size to whichever child is visible
+    const configBoxContainer = new VBox({
+      children: [configBox, configBoxStrut],
+      spacing: 0,
+    });
+    // Initially show configBox if count > 1, otherwise show strut
+    configBox.visible = tempModel.resonatorCountProperty.value > 1;
+    configBoxStrut.visible = !configBox.visible;
 
     const { resonatorSelectionBox, displayResonatorNumberProperty } =
       ResonatorControlPanel.createResonatorSelectionControls(tempModel);
@@ -101,19 +122,39 @@ export class ResonatorControlPanel extends Panel {
     const rulerCheckbox =
       ResonatorControlPanel.createRulerCheckbox(rulerVisibleProperty);
 
+    // --- Create sub-panel for mass/spring/resonator/frequency controls ---
+    // Use a light blue color to contrast with the green main panel
+    const massSpringResonatorSubPanel = new Panel(
+      new VBox({
+        children: [
+          resonatorSelectionBox,
+          massControl,
+          springConstantControl,
+          naturalFrequencyBox,
+        ],
+        spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
+        align: "left",
+      }),
+      {
+        fill: ResonanceColors.subPanelFillProperty,
+        stroke: ResonanceColors.subPanelStrokeProperty,
+        lineWidth: ResonanceConstants.CONTROL_PANEL_LINE_WIDTH,
+        cornerRadius: ResonanceConstants.CONTROL_PANEL_CORNER_RADIUS,
+        xMargin: ResonanceConstants.CONTROL_PANEL_X_MARGIN,
+        yMargin: ResonanceConstants.CONTROL_PANEL_Y_MARGIN,
+      },
+    );
+
     // --- Assemble panel content ---
     const controlPanelContent = new VBox({
       children: [
         resonatorCountControl,
-        configBox,
+        configBoxContainer, // Container that swaps between configBox and strut
         new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
           stroke: ResonanceColors.textProperty,
           lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
         }),
-        resonatorSelectionBox,
-        massControl,
-        springConstantControl,
-        naturalFrequencyBox,
+        massSpringResonatorSubPanel,
         dampingControl,
         new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
           stroke: ResonanceColors.textProperty,
@@ -147,7 +188,9 @@ export class ResonatorControlPanel extends Panel {
     this.displaySpringConstantProperty = displaySpringConstantProperty;
     this.massControl = massControl;
     this.springConstantControl = springConstantControl;
+    this.resonatorCountControl = resonatorCountControl;
     this.configBox = configBox;
+    this.configBoxStrut = configBoxStrut;
     this.resonatorSelectionBox = resonatorSelectionBox;
     this.naturalFrequencyText = naturalFrequencyText;
 
@@ -314,17 +357,9 @@ export class ResonatorControlPanel extends Panel {
       },
     );
 
-    const resonatorLabel = new Text("", {
+    const resonatorLabel = new Text("Resonator", {
       font: ResonanceConstants.TITLE_FONT,
       fill: ResonanceColors.textProperty,
-    });
-
-    displayResonatorNumberProperty.link((num: number) => {
-      resonatorLabel.string =
-        ResonanceStrings.controls.resonatorPatternStringProperty.value.replace(
-          "{{number}}",
-          String(num),
-        );
     });
 
     const resonatorSelectionBox = new HBox({
@@ -360,7 +395,7 @@ export class ResonatorControlPanel extends Panel {
         delta: 0.01,
         numberDisplayOptions: {
           valuePattern: ResonanceStrings.units.kgPatternStringProperty,
-          decimalPlaces: 4,
+          decimalPlaces: 2,
         },
         sliderOptions: {
           trackSize: new Dimension2(150, 3),
@@ -498,19 +533,17 @@ export class ResonatorControlPanel extends Panel {
    * Sets up listeners that control visibility of UI elements based on resonator count.
    */
   private setupVisibilityListeners(): void {
-    // Hide configuration combo box when there's only one resonator
-    this.listenerTracker.link(
-      this.model.resonatorCountProperty,
-      (count: number) => {
-        this.configBox.visible = count > 1;
-      },
-    );
+    // Ensure resonator selector is always visible
+    this.resonatorSelectionBox.visible = true;
 
-    // Hide resonator selection when there's only one resonator
+    // Swap visibility between configBox and strut based on resonator count
+    // This preserves panel size regardless of combo box visibility
     this.listenerTracker.link(
       this.model.resonatorCountProperty,
       (count: number) => {
-        this.resonatorSelectionBox.visible = count > 1;
+        const shouldShowComboBox = count > 1;
+        this.configBox.visible = shouldShowComboBox;
+        this.configBoxStrut.visible = !shouldShowComboBox;
       },
     );
   }
