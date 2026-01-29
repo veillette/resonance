@@ -1,31 +1,29 @@
 /**
- * MeasurementLinesNode - Two horizontal dashed lines that span the driver width.
+ * MeasurementLinesNode - View for two horizontal dashed lines that span the driver width.
  * Each line is vertically draggable for measuring heights above the driver plate.
+ * Uses MeasurementLinesModel for the underlying model state.
  */
 
 import { Node, Line, Rectangle } from "scenerystack/scenery";
 import { DragListener } from "scenerystack/scenery";
-import { Bounds2, Range } from "scenerystack/dot";
-import { NumberProperty } from "scenerystack/axon";
+import { Bounds2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import {
+  MeasurementLineModel,
+  MeasurementLinesModel,
+} from "../model/MeasurementLineModel.js";
 
 /**
- * A single draggable measurement line with a handle.
+ * View for a single draggable measurement line with a handle.
  */
-class MeasurementLine extends Node {
-  public readonly heightProperty: NumberProperty;
-
+class MeasurementLineNode extends Node {
   public constructor(
-    initialHeightCm: number,
+    model: MeasurementLineModel,
     driverWidth: number,
-    modelDragBounds: Bounds2,
+    driverTopY: number,
+    modelViewTransform: ModelViewTransform2,
   ) {
     super();
-
-    // Height in model coordinates (meters) - positive = up from driver plate
-    this.heightProperty = new NumberProperty(initialHeightCm / 100, {
-      range: new Range(modelDragBounds.minY, modelDragBounds.maxY),
-    });
 
     // Create the dashed horizontal line
     const lineLength = driverWidth;
@@ -58,19 +56,37 @@ class MeasurementLine extends Node {
 
     // Make the whole node draggable
     this.cursor = "ns-resize";
-  }
 
-  public reset(): void {
-    this.heightProperty.reset();
+    // Update visual Y position when model height changes
+    model.heightProperty.link((height: number) => {
+      // Height is positive upward, but view Y increases downward
+      const viewDeltaY = Math.abs(modelViewTransform.modelToViewDeltaY(height));
+      this.y = driverTopY - viewDeltaY;
+    });
+
+    // Set up drag listener - updates model, which has range constraints
+    const dragListener = new DragListener({
+      targetNode: this,
+      drag: (event, listener) => {
+        // Convert drag delta to height change
+        const viewDeltaY = listener.modelDelta.y;
+        const modelDeltaHeight = modelViewTransform.viewToModelDeltaY(viewDeltaY);
+        // Dragging down (positive viewDeltaY) decreases height
+        // Setting the property will auto-clamp to the model's range
+        model.heightProperty.value = model.heightProperty.value - modelDeltaHeight;
+      },
+    });
+    this.addInputListener(dragListener);
   }
 }
 
 /**
- * Container for the two measurement lines.
+ * Container view for the two measurement lines.
  */
 export class MeasurementLinesNode extends Node {
-  private readonly line1: MeasurementLine;
-  private readonly line2: MeasurementLine;
+  private readonly line1Node: MeasurementLineNode;
+  private readonly line2Node: MeasurementLineNode;
+  public readonly model: MeasurementLinesModel;
 
   public constructor(
     driverCenterX: number,
@@ -86,56 +102,36 @@ export class MeasurementLinesNode extends Node {
     const minHeight = 0.01; // 1cm minimum above plate
     // Convert screen top to view delta from driver plate, then to model height
     const screenHeightView = driverTopY - layoutBounds.minY;
-    const maxHeight = Math.abs(modelViewTransform.viewToModelDeltaY(screenHeightView));
+    const maxHeight = Math.abs(
+      modelViewTransform.viewToModelDeltaY(screenHeightView),
+    );
 
-    // Height bounds in model coordinates (meters above driver plate)
-    const heightBounds = new Bounds2(0, minHeight, 0, maxHeight);
+    // Create the model with height bounds
+    this.model = new MeasurementLinesModel(minHeight, maxHeight, 0.2, 0.4);
 
-    // Create two measurement lines at 20cm and 40cm
-    this.line1 = new MeasurementLine(20, driverWidth, heightBounds);
-    this.line2 = new MeasurementLine(40, driverWidth, heightBounds);
+    // Create view nodes for each line
+    this.line1Node = new MeasurementLineNode(
+      this.model.line1,
+      driverWidth,
+      driverTopY,
+      modelViewTransform,
+    );
+    this.line2Node = new MeasurementLineNode(
+      this.model.line2,
+      driverWidth,
+      driverTopY,
+      modelViewTransform,
+    );
 
     // Position lines horizontally centered on driver
-    this.line1.x = driverCenterX;
-    this.line2.x = driverCenterX;
+    this.line1Node.x = driverCenterX;
+    this.line2Node.x = driverCenterX;
 
-    // Helper to set up drag and position for a measurement line
-    const setupLine = (line: MeasurementLine) => {
-      // Update visual Y position when height changes
-      line.heightProperty.link((height: number) => {
-        // Height is positive upward, but view Y increases downward
-        const viewDeltaY = Math.abs(modelViewTransform.modelToViewDeltaY(height));
-        line.y = driverTopY - viewDeltaY;
-      });
-
-      // Set up drag listener
-      const dragListener = new DragListener({
-        targetNode: line,
-        start: () => {
-          // Nothing special on start
-        },
-        drag: (event, listener) => {
-          // Convert drag delta to height change
-          const viewDeltaY = listener.modelDelta.y;
-          const modelDeltaHeight = modelViewTransform.viewToModelDeltaY(viewDeltaY);
-          // Dragging down (positive viewDeltaY) decreases height
-          const newHeight = line.heightProperty.value - modelDeltaHeight;
-          // Clamp to bounds
-          line.heightProperty.value = Math.max(minHeight, Math.min(maxHeight, newHeight));
-        },
-      });
-      line.addInputListener(dragListener);
-    };
-
-    setupLine(this.line1);
-    setupLine(this.line2);
-
-    this.addChild(this.line1);
-    this.addChild(this.line2);
+    this.addChild(this.line1Node);
+    this.addChild(this.line2Node);
   }
 
   public reset(): void {
-    this.line1.reset();
-    this.line2.reset();
+    this.model.reset();
   }
 }
