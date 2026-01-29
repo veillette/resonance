@@ -236,6 +236,86 @@ describe("SimModel", () => {
       expect(model.getMass(1)).toBe(customMass);
       expect(model.getSpringConstant(1)).toBe(customK);
     });
+
+    it("should allow independent custom values on each resonator", () => {
+      // Set different values on each resonator
+      model.resonatorModels[0].massProperty.value = 1.0;
+      model.resonatorModels[0].springConstantProperty.value = 100;
+      model.resonatorModels[1].massProperty.value = 2.0;
+      model.resonatorModels[1].springConstantProperty.value = 200;
+      model.resonatorModels[2].massProperty.value = 3.0;
+      model.resonatorModels[2].springConstantProperty.value = 300;
+
+      // Verify each has its own values
+      expect(model.getMass(0)).toBe(1.0);
+      expect(model.getSpringConstant(0)).toBe(100);
+      expect(model.getMass(1)).toBe(2.0);
+      expect(model.getSpringConstant(1)).toBe(200);
+      expect(model.getMass(2)).toBe(3.0);
+      expect(model.getSpringConstant(2)).toBe(300);
+
+      // Verify frequencies are different (based on different m and k)
+      const freq0 = model.getNaturalFrequencyHz(0);
+      const freq1 = model.getNaturalFrequencyHz(1);
+      const freq2 = model.getNaturalFrequencyHz(2);
+
+      // f = (1/2π) * sqrt(k/m), so:
+      // freq0 = sqrt(100/1) / 2π ≈ 1.59 Hz
+      // freq1 = sqrt(200/2) / 2π = sqrt(100) / 2π ≈ 1.59 Hz (same ratio)
+      // freq2 = sqrt(300/3) / 2π = sqrt(100) / 2π ≈ 1.59 Hz (same ratio)
+      expect(freq0).toBeCloseTo(freq1, 2);
+      expect(freq1).toBeCloseTo(freq2, 2);
+    });
+
+    it("should preserve custom values when resonator count changes", () => {
+      // Set custom values
+      model.resonatorModels[1].massProperty.value = 5.5;
+      model.resonatorModels[1].springConstantProperty.value = 275;
+
+      // Increase count
+      model.resonatorCountProperty.value = 5;
+
+      // Custom values should be preserved
+      expect(model.getMass(1)).toBe(5.5);
+      expect(model.getSpringConstant(1)).toBe(275);
+    });
+
+    it("should allow creating unique frequency distributions", () => {
+      model.resonatorCountProperty.value = 4;
+
+      // Set custom values for a non-uniform frequency distribution
+      const frequencies = [1.0, 2.0, 4.0, 8.0]; // Exponential distribution
+
+      for (let i = 0; i < 4; i++) {
+        const targetFreq = frequencies[i];
+        const omega = 2 * Math.PI * targetFreq;
+        // Keep mass constant at 1, vary k
+        model.resonatorModels[i].massProperty.value = 1.0;
+        model.resonatorModels[i].springConstantProperty.value = omega * omega;
+      }
+
+      // Verify the frequencies match what we set
+      for (let i = 0; i < 4; i++) {
+        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(frequencies[i], 1);
+      }
+    });
+
+    it("should not recalculate values when switching to CUSTOM mode", () => {
+      // Start in SAME_MASS mode
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+      model.resonatorCountProperty.value = 3;
+
+      // Record current values
+      const mass1 = model.getMass(1);
+      const k1 = model.getSpringConstant(1);
+
+      // Switch to CUSTOM mode
+      model.resonatorConfigProperty.value = ResonatorConfigMode.CUSTOM;
+
+      // Values should remain the same (CUSTOM doesn't recalculate)
+      expect(model.getMass(1)).toBe(mass1);
+      expect(model.getSpringConstant(1)).toBe(k1);
+    });
   });
 
   describe("parameter synchronization", () => {
@@ -481,6 +561,245 @@ describe("SimModel", () => {
       const expectedFreqs = [1.0, 2.125, 3.25, 4.375, 5.5];
       for (let i = 0; i < 5; i++) {
         expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(expectedFreqs[i], 1);
+      }
+    });
+  });
+
+  describe("config mode switching", () => {
+    it("should recalculate parameters when switching from SAME_MASS to SAME_SPRING_CONSTANT", () => {
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+      model.resonatorCountProperty.value = 3;
+
+      // In SAME_MASS mode, masses should be equal
+      const massBefore = model.getMass(1);
+      expect(model.getMass(0)).toBe(massBefore);
+      expect(model.getMass(1)).toBe(massBefore);
+
+      // Switch to SAME_SPRING_CONSTANT
+      model.resonatorConfigProperty.value =
+        ResonatorConfigMode.SAME_SPRING_CONSTANT;
+
+      // Now spring constants should be equal
+      const kAfter = model.getSpringConstant(0);
+      expect(model.getSpringConstant(1)).toBe(kAfter);
+      expect(model.getSpringConstant(2)).toBe(kAfter);
+
+      // But masses should differ (to achieve different frequencies)
+      expect(model.getMass(1)).not.toBe(model.getMass(0));
+    });
+
+    it("should preserve frequency distribution when switching between modes", () => {
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+      model.resonatorCountProperty.value = 5;
+
+      // Get frequencies in SAME_MASS mode
+      const freqsSameMass = [];
+      for (let i = 0; i < 5; i++) {
+        freqsSameMass.push(model.getNaturalFrequencyHz(i));
+      }
+
+      // Switch to SAME_SPRING_CONSTANT
+      model.resonatorConfigProperty.value =
+        ResonatorConfigMode.SAME_SPRING_CONSTANT;
+
+      // Frequencies should still follow the same distribution pattern
+      // (1 Hz to 5.5 Hz evenly distributed)
+      for (let i = 0; i < 5; i++) {
+        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(freqsSameMass[i], 0);
+      }
+    });
+
+    it("should update parameters when switching from CUSTOM to preset mode", () => {
+      // Start in CUSTOM mode with arbitrary values
+      model.resonatorConfigProperty.value = ResonatorConfigMode.CUSTOM;
+      model.resonatorCountProperty.value = 3;
+      model.resonatorModels[1].massProperty.value = 999;
+      model.resonatorModels[1].springConstantProperty.value = 888;
+
+      // Switch to SAME_MASS mode
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+
+      // Values should be recalculated (no longer 999/888)
+      expect(model.getMass(1)).not.toBe(999);
+      // Mass should match base mass in SAME_MASS mode
+      expect(model.getMass(1)).toBe(model.getMass(0));
+    });
+
+    it("should switch from MIXED to SAME_MASS correctly", () => {
+      model.resonatorConfigProperty.value = ResonatorConfigMode.MIXED;
+      model.resonatorCountProperty.value = 4;
+
+      // In MIXED mode, all frequencies should be equal
+      const baseFreq = model.getNaturalFrequencyHz(0);
+      for (let i = 1; i < 4; i++) {
+        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(baseFreq, 2);
+      }
+
+      // Switch to SAME_MASS mode
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+
+      // Now frequencies should be distributed from 1 Hz to 5.5 Hz
+      expect(model.getNaturalFrequencyHz(0)).toBeCloseTo(1.0, 1);
+      expect(model.getNaturalFrequencyHz(3)).toBeCloseTo(5.5, 1);
+    });
+  });
+
+  describe("edge cases and boundary conditions", () => {
+    it("should handle MAX_RESONATORS correctly", () => {
+      model.resonatorCountProperty.value = SimModel.MAX_RESONATORS;
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+
+      // All 10 resonators should have valid parameters
+      for (let i = 0; i < SimModel.MAX_RESONATORS; i++) {
+        expect(model.getMass(i)).toBeGreaterThan(0);
+        expect(model.getSpringConstant(i)).toBeGreaterThan(0);
+        expect(model.getNaturalFrequencyHz(i)).toBeGreaterThan(0);
+        expect(model.getNaturalFrequencyHz(i)).toBeLessThan(Infinity);
+      }
+    });
+
+    it("should correctly distribute frequencies across MAX_RESONATORS", () => {
+      model.resonatorCountProperty.value = SimModel.MAX_RESONATORS;
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+
+      // First should be 1 Hz, last should be 5.5 Hz
+      expect(model.getNaturalFrequencyHz(0)).toBeCloseTo(1.0, 1);
+      expect(
+        model.getNaturalFrequencyHz(SimModel.MAX_RESONATORS - 1),
+      ).toBeCloseTo(5.5, 1);
+
+      // Frequencies should be monotonically increasing
+      for (let i = 1; i < SimModel.MAX_RESONATORS; i++) {
+        expect(model.getNaturalFrequencyHz(i)).toBeGreaterThan(
+          model.getNaturalFrequencyHz(i - 1),
+        );
+      }
+    });
+
+    it("should clamp selected index to 0 when count becomes 1", () => {
+      model.resonatorCountProperty.value = 5;
+      model.selectedResonatorIndexProperty.value = 4;
+
+      model.resonatorCountProperty.value = 1;
+
+      expect(model.selectedResonatorIndexProperty.value).toBe(0);
+    });
+
+    it("should handle rapid mode changes without errors", () => {
+      model.resonatorCountProperty.value = 5;
+
+      // Rapidly switch between modes
+      expect(() => {
+        for (let i = 0; i < 10; i++) {
+          model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+          model.resonatorConfigProperty.value =
+            ResonatorConfigMode.SAME_SPRING_CONSTANT;
+          model.resonatorConfigProperty.value = ResonatorConfigMode.MIXED;
+          model.resonatorConfigProperty.value =
+            ResonatorConfigMode.SAME_FREQUENCY;
+          model.resonatorConfigProperty.value = ResonatorConfigMode.CUSTOM;
+        }
+      }).not.toThrow();
+
+      // Model should still be in valid state
+      expect(model.getMass(0)).toBeGreaterThan(0);
+    });
+
+    it("should handle simultaneous count and mode changes", () => {
+      // Change both at once
+      model.resonatorCountProperty.value = 7;
+      model.resonatorConfigProperty.value =
+        ResonatorConfigMode.SAME_SPRING_CONSTANT;
+
+      // Should be valid
+      for (let i = 0; i < 7; i++) {
+        expect(model.getSpringConstant(i)).toBe(model.getSpringConstant(0));
+      }
+    });
+
+    it("should maintain valid state after reset", () => {
+      // Modify everything
+      model.resonatorCountProperty.value = 8;
+      model.resonatorConfigProperty.value = ResonatorConfigMode.CUSTOM;
+      model.selectedResonatorIndexProperty.value = 5;
+      model.resonatorModels[3].massProperty.value = 123;
+
+      model.reset();
+
+      // Check all defaults are restored
+      expect(model.resonatorCountProperty.value).toBe(1);
+      expect(model.resonatorConfigProperty.value).toBe(
+        ResonatorConfigMode.SAME_MASS,
+      );
+      expect(model.selectedResonatorIndexProperty.value).toBe(0);
+
+      // Base resonator should have default values
+      expect(model.resonanceModel.massProperty.value).toBe(0.25);
+      expect(model.resonanceModel.springConstantProperty.value).toBe(100);
+    });
+  });
+
+  describe("physics relationship verification", () => {
+    it("should satisfy f = (1/2π) * sqrt(k/m) for all resonators in SAME_MASS mode", () => {
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+      model.resonatorCountProperty.value = 5;
+
+      for (let i = 0; i < 5; i++) {
+        const m = model.getMass(i);
+        const k = model.getSpringConstant(i);
+        const expectedFreq = (1 / (2 * Math.PI)) * Math.sqrt(k / m);
+        const actualFreq = model.getNaturalFrequencyHz(i);
+
+        expect(actualFreq).toBeCloseTo(expectedFreq, 5);
+      }
+    });
+
+    it("should satisfy f = (1/2π) * sqrt(k/m) for all resonators in SAME_SPRING_CONSTANT mode", () => {
+      model.resonatorConfigProperty.value =
+        ResonatorConfigMode.SAME_SPRING_CONSTANT;
+      model.resonatorCountProperty.value = 5;
+
+      for (let i = 0; i < 5; i++) {
+        const m = model.getMass(i);
+        const k = model.getSpringConstant(i);
+        const expectedFreq = (1 / (2 * Math.PI)) * Math.sqrt(k / m);
+        const actualFreq = model.getNaturalFrequencyHz(i);
+
+        expect(actualFreq).toBeCloseTo(expectedFreq, 5);
+      }
+    });
+
+    it("should maintain constant k/m ratio in MIXED mode", () => {
+      model.resonatorConfigProperty.value = ResonatorConfigMode.MIXED;
+      model.resonatorCountProperty.value = 5;
+
+      const baseRatio =
+        model.getSpringConstant(0) / model.getMass(0);
+
+      for (let i = 1; i < 5; i++) {
+        const ratio = model.getSpringConstant(i) / model.getMass(i);
+        expect(ratio).toBeCloseTo(baseRatio, 5);
+      }
+    });
+
+    it("should have increasing spring constants in SAME_MASS mode", () => {
+      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
+      model.resonatorCountProperty.value = 5;
+
+      for (let i = 1; i < 5; i++) {
+        expect(model.getSpringConstant(i)).toBeGreaterThan(
+          model.getSpringConstant(i - 1),
+        );
+      }
+    });
+
+    it("should have decreasing masses in SAME_SPRING_CONSTANT mode", () => {
+      model.resonatorConfigProperty.value =
+        ResonatorConfigMode.SAME_SPRING_CONSTANT;
+      model.resonatorCountProperty.value = 5;
+
+      for (let i = 1; i < 5; i++) {
+        expect(model.getMass(i)).toBeLessThan(model.getMass(i - 1));
       }
     });
   });
