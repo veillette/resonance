@@ -18,6 +18,7 @@ import { ResonatorControlPanel } from "./ResonatorControlPanel.js";
 import { PlaybackControlNode } from "./PlaybackControlNode.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ResonatorNodeBuilder } from "./ResonatorNodeBuilder.js";
+import { MeasurementLinesNode } from "./MeasurementLinesNode.js";
 
 export class SimScreenView extends ScreenView {
   private readonly model: SimModel;
@@ -29,6 +30,7 @@ export class SimScreenView extends ScreenView {
   private readonly rulerNode: RulerNode;
   private readonly rulerVisibleProperty: Property<boolean>;
   private readonly rulerPositionProperty: Vector2Property;
+  private readonly measurementLinesNode: MeasurementLinesNode;
   private readonly controlPanel: ResonatorControlPanel;
   private readonly driverNode: DriverControlNode;
   private driverPlate!: Rectangle;
@@ -92,6 +94,16 @@ export class SimScreenView extends ScreenView {
     this.rulerNode = this.createRulerNode();
     simulationArea.addChild(this.rulerNode);
 
+    // ===== MEASUREMENT LINES =====
+    this.measurementLinesNode = new MeasurementLinesNode(
+      this.driverPlate.centerX,
+      this.driverPlate.top,
+      ResonanceConstants.DRIVER_BOX_WIDTH,
+      this.modelViewTransform,
+    );
+    this.measurementLinesNode.visible = false;
+    simulationArea.addChild(this.measurementLinesNode);
+
     this.addChild(simulationArea);
 
     // ===== CONTROL PANEL (right side) =====
@@ -103,9 +115,10 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);
 
-    // Update ruler visibility from the shared property
+    // Update ruler and measurement lines visibility from the shared property
     this.rulerVisibleProperty.link((visible: boolean) => {
       this.rulerNode.visible = visible;
+      this.measurementLinesNode.visible = visible;
     });
 
     // ===== RESET ALL BUTTON =====
@@ -176,25 +189,27 @@ export class SimScreenView extends ScreenView {
 
   /**
    * Create and configure the ruler node with drag handling.
+   * The ruler uses model-based dimensions converted to view coordinates.
    */
   private createRulerNode(): RulerNode {
-    const rulerLabels = [
-      "0",
-      "5",
-      "10",
-      "15",
-      "20",
-      "25",
-      "30",
-      "35",
-      "40",
-      "45",
-      "50",
-    ];
+    // Generate labels: 0, 5, 10, 15, ..., 50 (cm)
+    const rulerLabels: string[] = [];
+    for (let i = 0; i < ResonanceConstants.RULER_NUM_MAJOR_TICKS; i++) {
+      rulerLabels.push(String(i * 5));
+    }
+
+    // Convert ruler length from model (meters) to view pixels
+    const rulerLengthView = Math.abs(
+      this.modelViewTransform.modelToViewDeltaY(ResonanceConstants.RULER_LENGTH_MODEL)
+    );
+
+    // Major tick spacing: ruler length / (num ticks - 1)
+    const majorTickWidth = rulerLengthView / (ResonanceConstants.RULER_NUM_MAJOR_TICKS - 1);
+
     const rulerNode = new RulerNode(
-      ResonanceConstants.RULER_WIDTH,
-      ResonanceConstants.RULER_HEIGHT,
-      ResonanceConstants.RULER_MAJOR_TICK_WIDTH,
+      rulerLengthView,
+      ResonanceConstants.RULER_THICKNESS_VIEW,
+      majorTickWidth,
       rulerLabels,
       ResonanceStrings.units.cmStringProperty.value,
       {
@@ -215,30 +230,28 @@ export class SimScreenView extends ScreenView {
 
     rulerNode.visible = false;
 
-    // Drag handling
-    const rulerModelBounds = this.modelViewTransform.viewToModelBounds(
-      this.layoutBounds,
-    );
-    const rulerWidthModel = this.modelViewTransform.viewToModelDeltaX(
-      ResonanceConstants.RULER_HEIGHT,
-    );
-    const rulerHeightModel = Math.abs(
-      this.modelViewTransform.viewToModelDeltaY(ResonanceConstants.RULER_WIDTH),
-    );
+    // Drag handling - keep ruler within visible bounds so it's always grabbable
+    // The ruler is rotated, so its "width" in view is actually its thickness,
+    // and its "height" in view is its length
+    const margin = 20; // Keep at least this many pixels visible on each edge
+    const rulerThickness = ResonanceConstants.RULER_THICKNESS_VIEW;
 
     const dragBounds = new Bounds2(
-      rulerModelBounds.minX,
-      rulerModelBounds.minY + rulerHeightModel / 2,
-      rulerModelBounds.maxX - rulerWidthModel,
-      rulerModelBounds.maxY,
+      this.layoutBounds.minX + margin,
+      this.layoutBounds.minY + rulerLengthView / 2 + margin,
+      this.layoutBounds.maxX - rulerThickness - margin,
+      this.layoutBounds.maxY - rulerLengthView / 2 - margin,
     );
+
+    // Convert to model bounds for the drag listener
+    const dragBoundsModel = this.modelViewTransform.viewToModelBounds(dragBounds);
 
     const dragListener = new DragListener({
       targetNode: rulerNode,
       positionProperty: this.rulerPositionProperty,
       transform: this.modelViewTransform,
       useParentOffset: true,
-      dragBoundsProperty: new Property(dragBounds),
+      dragBoundsProperty: new Property(dragBoundsModel),
     });
     rulerNode.addInputListener(dragListener);
     rulerNode.cursor = "move";
@@ -334,6 +347,12 @@ export class SimScreenView extends ScreenView {
       this.connectionRod.bottom = this.driverNode.top;
     }
 
+    // Update measurement lines position relative to driver plate
+    this.measurementLinesNode.updateDriverPosition(
+      this.driverPlate.top,
+      this.modelViewTransform,
+    );
+
     // Position springs and masses
     const driverTopY = this.driverPlate.top;
     const driverCenterX = this.driverPlate.centerX;
@@ -389,6 +408,7 @@ export class SimScreenView extends ScreenView {
   public reset(): void {
     this.rulerVisibleProperty.reset();
     this.rulerPositionProperty.reset();
+    this.measurementLinesNode.reset();
     this.controlPanel.reset();
   }
 

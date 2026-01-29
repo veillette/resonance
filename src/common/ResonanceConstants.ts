@@ -81,9 +81,9 @@ const MIN_SPRING_XSCALE = 0.3;
 
 // ===== RULER =====
 
-const RULER_WIDTH = 500; // 50 cm total length
-const RULER_HEIGHT = 40;
-const RULER_MAJOR_TICK_WIDTH = 50; // 5 cm per major tick
+const RULER_LENGTH_MODEL = 0.5; // 50 cm in model units (meters)
+const RULER_THICKNESS_VIEW = 40; // thickness in view pixels
+const RULER_NUM_MAJOR_TICKS = 11; // 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
 const RULER_MINOR_TICKS_PER_MAJOR = 4; // 1 cm per minor tick
 const RULER_INSETS_WIDTH = 10;
 const RULER_LEFT_MARGIN = 80;
@@ -195,9 +195,9 @@ const ResonanceConstants = {
   MIN_SPRING_XSCALE,
 
   // Ruler
-  RULER_WIDTH,
-  RULER_HEIGHT,
-  RULER_MAJOR_TICK_WIDTH,
+  RULER_LENGTH_MODEL,
+  RULER_THICKNESS_VIEW,
+  RULER_NUM_MAJOR_TICKS,
   RULER_MINOR_TICKS_PER_MAJOR,
   RULER_INSETS_WIDTH,
   RULER_LEFT_MARGIN,
