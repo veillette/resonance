@@ -5,6 +5,17 @@
 
 import { vi } from "vitest";
 
+// Mock global phet object with version for scenerystack/joist
+// @ts-expect-error - Mock global phet object
+global.phet = {
+  chipper: {
+    packageObject: {
+      version: "1.0.0",
+    },
+    buildTimestamp: "2024-01-01 00:00:00 UTC",
+  },
+};
+
 // Mock AudioParam for Web Audio API
 function createMockAudioParam(initialValue = 0) {
   return {
