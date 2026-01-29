@@ -200,11 +200,14 @@ export class SimScreenView extends ScreenView {
 
     // Convert ruler length from model (meters) to view pixels
     const rulerLengthView = Math.abs(
-      this.modelViewTransform.modelToViewDeltaY(ResonanceConstants.RULER_LENGTH_MODEL)
+      this.modelViewTransform.modelToViewDeltaY(
+        ResonanceConstants.RULER_LENGTH_MODEL,
+      ),
     );
 
     // Major tick spacing: ruler length / (num ticks - 1)
-    const majorTickWidth = rulerLengthView / (ResonanceConstants.RULER_NUM_MAJOR_TICKS - 1);
+    const majorTickWidth =
+      rulerLengthView / (ResonanceConstants.RULER_NUM_MAJOR_TICKS - 1);
 
     const rulerNode = new RulerNode(
       rulerLengthView,
@@ -244,7 +247,8 @@ export class SimScreenView extends ScreenView {
     );
 
     // Convert to model bounds for the drag listener
-    const dragBoundsModel = this.modelViewTransform.viewToModelBounds(dragBounds);
+    const dragBoundsModel =
+      this.modelViewTransform.viewToModelBounds(dragBounds);
 
     const dragListener = new DragListener({
       targetNode: rulerNode,

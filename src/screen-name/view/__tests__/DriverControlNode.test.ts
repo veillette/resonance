@@ -32,10 +32,10 @@ describe("DriverControlNode", () => {
     it("should have bounds matching driver box dimensions", () => {
       // The node should contain the driver box
       expect(driverNode.width).toBeGreaterThanOrEqual(
-        ResonanceConstants.DRIVER_BOX_WIDTH
+        ResonanceConstants.DRIVER_BOX_WIDTH,
       );
       expect(driverNode.height).toBeGreaterThanOrEqual(
-        ResonanceConstants.DRIVER_BOX_HEIGHT
+        ResonanceConstants.DRIVER_BOX_HEIGHT,
       );
     });
   });
@@ -61,10 +61,10 @@ describe("DriverControlNode", () => {
     it("should have frequency in valid range", () => {
       const frequency = model.resonanceModel.drivingFrequencyProperty.value;
       expect(frequency).toBeGreaterThanOrEqual(
-        ResonanceConstants.FREQUENCY_RANGE.min
+        ResonanceConstants.FREQUENCY_RANGE.min,
       );
       expect(frequency).toBeLessThanOrEqual(
-        ResonanceConstants.FREQUENCY_RANGE.max
+        ResonanceConstants.FREQUENCY_RANGE.max,
       );
     });
 
@@ -72,7 +72,7 @@ describe("DriverControlNode", () => {
       model.resonanceModel.drivingFrequencyProperty.value =
         ResonanceConstants.FREQUENCY_RANGE.min;
       expect(model.resonanceModel.drivingFrequencyProperty.value).toBe(
-        ResonanceConstants.FREQUENCY_RANGE.min
+        ResonanceConstants.FREQUENCY_RANGE.min,
       );
     });
 
@@ -80,7 +80,7 @@ describe("DriverControlNode", () => {
       model.resonanceModel.drivingFrequencyProperty.value =
         ResonanceConstants.FREQUENCY_RANGE.max;
       expect(model.resonanceModel.drivingFrequencyProperty.value).toBe(
-        ResonanceConstants.FREQUENCY_RANGE.max
+        ResonanceConstants.FREQUENCY_RANGE.max,
       );
     });
 
@@ -91,7 +91,7 @@ describe("DriverControlNode", () => {
         2;
       model.resonanceModel.drivingFrequencyProperty.value = middleFreq;
       expect(model.resonanceModel.drivingFrequencyProperty.value).toBe(
-        middleFreq
+        middleFreq,
       );
     });
   });
@@ -100,10 +100,10 @@ describe("DriverControlNode", () => {
     it("should have amplitude in valid range", () => {
       const amplitude = model.resonanceModel.drivingAmplitudeProperty.value;
       expect(amplitude).toBeGreaterThanOrEqual(
-        ResonanceConstants.AMPLITUDE_RANGE.min
+        ResonanceConstants.AMPLITUDE_RANGE.min,
       );
       expect(amplitude).toBeLessThanOrEqual(
-        ResonanceConstants.AMPLITUDE_RANGE.max
+        ResonanceConstants.AMPLITUDE_RANGE.max,
       );
     });
 
@@ -111,7 +111,7 @@ describe("DriverControlNode", () => {
       model.resonanceModel.drivingAmplitudeProperty.value =
         ResonanceConstants.AMPLITUDE_RANGE.min;
       expect(model.resonanceModel.drivingAmplitudeProperty.value).toBe(
-        ResonanceConstants.AMPLITUDE_RANGE.min
+        ResonanceConstants.AMPLITUDE_RANGE.min,
       );
     });
 
@@ -119,7 +119,7 @@ describe("DriverControlNode", () => {
       model.resonanceModel.drivingAmplitudeProperty.value =
         ResonanceConstants.AMPLITUDE_RANGE.max;
       expect(model.resonanceModel.drivingAmplitudeProperty.value).toBe(
-        ResonanceConstants.AMPLITUDE_RANGE.max
+        ResonanceConstants.AMPLITUDE_RANGE.max,
       );
     });
 
@@ -149,18 +149,20 @@ describe("DriverControlNode", () => {
     it("should not affect model on construction", () => {
       // Create a fresh model and node
       const freshModel = new SimModel(new ResonancePreferencesModel());
-      const initialFreq = freshModel.resonanceModel.drivingFrequencyProperty.value;
-      const initialAmp = freshModel.resonanceModel.drivingAmplitudeProperty.value;
+      const initialFreq =
+        freshModel.resonanceModel.drivingFrequencyProperty.value;
+      const initialAmp =
+        freshModel.resonanceModel.drivingAmplitudeProperty.value;
 
       // Create node
       new DriverControlNode(freshModel);
 
       // Model values should not change from construction
       expect(freshModel.resonanceModel.drivingFrequencyProperty.value).toBe(
-        initialFreq
+        initialFreq,
       );
       expect(freshModel.resonanceModel.drivingAmplitudeProperty.value).toBe(
-        initialAmp
+        initialAmp,
       );
     });
 

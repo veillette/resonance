@@ -41,13 +41,19 @@ class MeasurementLine extends Node {
     // Create a small handle on the left side for dragging
     const handleWidth = 12;
     const handleHeight = 20;
-    const handle = new Rectangle(-handleWidth / 2, -handleHeight / 2, handleWidth, handleHeight, {
-      fill: "rgba(100, 100, 100, 0.8)",
-      stroke: "black",
-      lineWidth: 1,
-      cornerRadius: 3,
-      cursor: "ns-resize",
-    });
+    const handle = new Rectangle(
+      -handleWidth / 2,
+      -handleHeight / 2,
+      handleWidth,
+      handleHeight,
+      {
+        fill: "rgba(100, 100, 100, 0.8)",
+        stroke: "black",
+        lineWidth: 1,
+        cornerRadius: 3,
+        cursor: "ns-resize",
+      },
+    );
     handle.left = line.left - handleWidth / 2 - 5;
     this.addChild(handle);
 
@@ -118,8 +124,18 @@ export class MeasurementLinesNode extends Node {
     const dragBounds = new Bounds2(0, minHeight, 0, maxHeight);
 
     // Create two measurement lines at 20cm and 40cm
-    this.line1 = new MeasurementLine(20, driverWidth, modelViewTransform, dragBounds);
-    this.line2 = new MeasurementLine(40, driverWidth, modelViewTransform, dragBounds);
+    this.line1 = new MeasurementLine(
+      20,
+      driverWidth,
+      modelViewTransform,
+      dragBounds,
+    );
+    this.line2 = new MeasurementLine(
+      40,
+      driverWidth,
+      modelViewTransform,
+      dragBounds,
+    );
 
     // Position lines horizontally centered on driver
     this.line1.x = driverCenterX;
@@ -131,12 +147,16 @@ export class MeasurementLinesNode extends Node {
     const updateLinePositions = () => {
       // The lines' y positions are in absolute view coordinates from heightProperty
       // We need to offset them relative to current driver top
-      this.line1.y = driverTopY - Math.abs(
-        modelViewTransform.modelToViewDeltaY(this.line1.heightProperty.value)
-      );
-      this.line2.y = driverTopY - Math.abs(
-        modelViewTransform.modelToViewDeltaY(this.line2.heightProperty.value)
-      );
+      this.line1.y =
+        driverTopY -
+        Math.abs(
+          modelViewTransform.modelToViewDeltaY(this.line1.heightProperty.value),
+        );
+      this.line2.y =
+        driverTopY -
+        Math.abs(
+          modelViewTransform.modelToViewDeltaY(this.line2.heightProperty.value),
+        );
     };
 
     this.line1.heightProperty.link(updateLinePositions);
@@ -149,13 +169,20 @@ export class MeasurementLinesNode extends Node {
   /**
    * Update line positions when driver plate moves.
    */
-  public updateDriverPosition(driverTopY: number, modelViewTransform: ModelViewTransform2): void {
-    this.line1.y = driverTopY - Math.abs(
-      modelViewTransform.modelToViewDeltaY(this.line1.heightProperty.value)
-    );
-    this.line2.y = driverTopY - Math.abs(
-      modelViewTransform.modelToViewDeltaY(this.line2.heightProperty.value)
-    );
+  public updateDriverPosition(
+    driverTopY: number,
+    modelViewTransform: ModelViewTransform2,
+  ): void {
+    this.line1.y =
+      driverTopY -
+      Math.abs(
+        modelViewTransform.modelToViewDeltaY(this.line1.heightProperty.value),
+      );
+    this.line2.y =
+      driverTopY -
+      Math.abs(
+        modelViewTransform.modelToViewDeltaY(this.line2.heightProperty.value),
+      );
   }
 
   public reset(): void {

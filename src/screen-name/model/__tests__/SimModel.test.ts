@@ -773,8 +773,7 @@ describe("SimModel", () => {
       model.resonatorConfigProperty.value = ResonatorConfigMode.MIXED;
       model.resonatorCountProperty.value = 5;
 
-      const baseRatio =
-        model.getSpringConstant(0) / model.getMass(0);
+      const baseRatio = model.getSpringConstant(0) / model.getMass(0);
 
       for (let i = 1; i < 5; i++) {
         const ratio = model.getSpringConstant(i) / model.getMass(i);

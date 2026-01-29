@@ -38,7 +38,9 @@ describe("ResonatorNodeBuilder", () => {
 
     it("should return size between min and max for middle mass", () => {
       const middleMass =
-        (ResonanceConstants.MASS_RANGE.min + ResonanceConstants.MASS_RANGE.max) / 2;
+        (ResonanceConstants.MASS_RANGE.min +
+          ResonanceConstants.MASS_RANGE.max) /
+        2;
       const size = ResonatorNodeBuilder.calculateMassSize(middleMass);
       expect(size).toBeGreaterThan(ResonanceConstants.MIN_MASS_SIZE);
       expect(size).toBeLessThan(ResonanceConstants.MAX_MASS_SIZE);
@@ -97,10 +99,14 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
       const springNode = result.node;
 
-      expect(springNode.loopsProperty.value).toBe(ResonanceConstants.SPRING_LOOPS);
-      expect(springNode.radiusProperty.value).toBe(ResonanceConstants.SPRING_RADIUS);
+      expect(springNode.loopsProperty.value).toBe(
+        ResonanceConstants.SPRING_LOOPS,
+      );
+      expect(springNode.radiusProperty.value).toBe(
+        ResonanceConstants.SPRING_RADIUS,
+      );
       expect(springNode.aspectRatioProperty.value).toBe(
-        ResonanceConstants.SPRING_ASPECT_RATIO
+        ResonanceConstants.SPRING_ASPECT_RATIO,
       );
     });
 
@@ -124,7 +130,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
 
       expect(result.node.lineWidthProperty.value).toBe(
-        ResonanceConstants.SPRING_LINE_WIDTH_MIN
+        ResonanceConstants.SPRING_LINE_WIDTH_MIN,
       );
     });
 
@@ -134,7 +140,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
 
       expect(result.node.lineWidthProperty.value).toBe(
-        ResonanceConstants.SPRING_LINE_WIDTH_MAX
+        ResonanceConstants.SPRING_LINE_WIDTH_MAX,
       );
     });
 
@@ -166,8 +172,10 @@ describe("ResonatorNodeBuilder", () => {
 
       const viewBounds = new Bounds2(0, 0, 1024, 768);
       const modelBounds = new Bounds2(-0.5, -0.5, 0.5, 0.5);
-      const modelViewTransform =
-        ModelViewTransform2.createRectangleMapping(modelBounds, viewBounds);
+      const modelViewTransform = ModelViewTransform2.createRectangleMapping(
+        modelBounds,
+        viewBounds,
+      );
 
       const driverPlate = new Rectangle(0, 0, 600, 20);
       driverPlate.centerX = 512;
@@ -186,7 +194,7 @@ describe("ResonatorNodeBuilder", () => {
         resonatorModel,
         0,
         1,
-        context
+        context,
       );
 
       expect(result).toBeDefined();
@@ -200,7 +208,7 @@ describe("ResonatorNodeBuilder", () => {
         resonatorModel,
         2,
         5,
-        context
+        context,
       );
 
       // The label should show index + 1 (1-based)
@@ -214,7 +222,7 @@ describe("ResonatorNodeBuilder", () => {
         resonatorModel,
         0,
         1,
-        context
+        context,
       );
       expect(result.node.cursor).toBe("ns-resize");
     });
@@ -224,7 +232,7 @@ describe("ResonatorNodeBuilder", () => {
         resonatorModel,
         0,
         1,
-        context
+        context,
       );
 
       // Get initial bounds
@@ -243,7 +251,7 @@ describe("ResonatorNodeBuilder", () => {
         resonatorModel,
         0,
         1,
-        context
+        context,
       );
 
       // Call cleanup
@@ -262,7 +270,7 @@ describe("ResonatorNodeBuilder", () => {
       const results = [];
       for (let i = 0; i < 5; i++) {
         results.push(
-          ResonatorNodeBuilder.createMassNode(resonatorModel, i, 5, context)
+          ResonatorNodeBuilder.createMassNode(resonatorModel, i, 5, context),
         );
       }
 
@@ -295,8 +303,10 @@ describe("ResonatorNodeBuilder", () => {
 
       const viewBounds = new Bounds2(0, 0, 1024, 768);
       const modelBounds = new Bounds2(-0.5, -0.5, 0.5, 0.5);
-      const modelViewTransform =
-        ModelViewTransform2.createRectangleMapping(modelBounds, viewBounds);
+      const modelViewTransform = ModelViewTransform2.createRectangleMapping(
+        modelBounds,
+        viewBounds,
+      );
 
       const driverPlate = new Rectangle(0, 0, 600, 20);
       driverPlate.centerX = 512;
@@ -315,7 +325,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         count,
-        context
+        context,
       );
 
       expect(result.springNodes.length).toBe(count);
@@ -326,7 +336,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         count,
-        context
+        context,
       );
 
       expect(result.massNodes.length).toBe(count);
@@ -337,7 +347,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         count,
-        context
+        context,
       );
 
       // Should have cleanup for each spring and each mass (2 per resonator)
@@ -348,7 +358,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         1,
-        context
+        context,
       );
 
       expect(result.springNodes.length).toBe(1);
@@ -360,7 +370,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         10,
-        context
+        context,
       );
 
       expect(result.springNodes.length).toBe(10);
@@ -372,7 +382,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         5,
-        context
+        context,
       );
 
       expect(() => {
@@ -384,12 +394,12 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         3,
-        context
+        context,
       );
 
       result.springNodes.forEach((springNode) => {
         expect(springNode.loopsProperty.value).toBe(
-          ResonanceConstants.SPRING_LOOPS
+          ResonanceConstants.SPRING_LOOPS,
         );
       });
     });
@@ -398,7 +408,7 @@ describe("ResonatorNodeBuilder", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
         3,
-        context
+        context,
       );
 
       result.massNodes.forEach((massNode) => {

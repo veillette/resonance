@@ -27,7 +27,7 @@ describe("ResonatorControlPanel", () => {
     controlPanel = new ResonatorControlPanel(
       model,
       layoutBounds,
-      rulerVisibleProperty
+      rulerVisibleProperty,
     );
   });
 
@@ -89,35 +89,36 @@ describe("ResonatorControlPanel", () => {
   describe("configuration mode", () => {
     it("should start with SAME_MASS mode", () => {
       expect(model.resonatorConfigProperty.value).toBe(
-        ResonatorConfigMode.SAME_MASS
+        ResonatorConfigMode.SAME_MASS,
       );
     });
 
     it("should allow setting SAME_SPRING_CONSTANT mode", () => {
-      model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_SPRING_CONSTANT;
+      model.resonatorConfigProperty.value =
+        ResonatorConfigMode.SAME_SPRING_CONSTANT;
       expect(model.resonatorConfigProperty.value).toBe(
-        ResonatorConfigMode.SAME_SPRING_CONSTANT
+        ResonatorConfigMode.SAME_SPRING_CONSTANT,
       );
     });
 
     it("should allow setting MIXED mode", () => {
       model.resonatorConfigProperty.value = ResonatorConfigMode.MIXED;
       expect(model.resonatorConfigProperty.value).toBe(
-        ResonatorConfigMode.MIXED
+        ResonatorConfigMode.MIXED,
       );
     });
 
     it("should allow setting SAME_FREQUENCY mode", () => {
       model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_FREQUENCY;
       expect(model.resonatorConfigProperty.value).toBe(
-        ResonatorConfigMode.SAME_FREQUENCY
+        ResonatorConfigMode.SAME_FREQUENCY,
       );
     });
 
     it("should allow setting CUSTOM mode", () => {
       model.resonatorConfigProperty.value = ResonatorConfigMode.CUSTOM;
       expect(model.resonatorConfigProperty.value).toBe(
-        ResonatorConfigMode.CUSTOM
+        ResonatorConfigMode.CUSTOM,
       );
     });
 
@@ -145,16 +146,18 @@ describe("ResonatorControlPanel", () => {
     });
 
     it("should allow setting minimum mass", () => {
-      model.resonanceModel.massProperty.value = ResonanceConstants.MASS_RANGE.min;
+      model.resonanceModel.massProperty.value =
+        ResonanceConstants.MASS_RANGE.min;
       expect(model.resonanceModel.massProperty.value).toBe(
-        ResonanceConstants.MASS_RANGE.min
+        ResonanceConstants.MASS_RANGE.min,
       );
     });
 
     it("should allow setting maximum mass", () => {
-      model.resonanceModel.massProperty.value = ResonanceConstants.MASS_RANGE.max;
+      model.resonanceModel.massProperty.value =
+        ResonanceConstants.MASS_RANGE.max;
       expect(model.resonanceModel.massProperty.value).toBe(
-        ResonanceConstants.MASS_RANGE.max
+        ResonanceConstants.MASS_RANGE.max,
       );
     });
   });
@@ -163,10 +166,10 @@ describe("ResonatorControlPanel", () => {
     it("should have spring constant in valid range", () => {
       const k = model.resonanceModel.springConstantProperty.value;
       expect(k).toBeGreaterThanOrEqual(
-        ResonanceConstants.SPRING_CONSTANT_RANGE.min
+        ResonanceConstants.SPRING_CONSTANT_RANGE.min,
       );
       expect(k).toBeLessThanOrEqual(
-        ResonanceConstants.SPRING_CONSTANT_RANGE.max
+        ResonanceConstants.SPRING_CONSTANT_RANGE.max,
       );
     });
 
@@ -174,7 +177,7 @@ describe("ResonatorControlPanel", () => {
       model.resonanceModel.springConstantProperty.value =
         ResonanceConstants.SPRING_CONSTANT_RANGE.min;
       expect(model.resonanceModel.springConstantProperty.value).toBe(
-        ResonanceConstants.SPRING_CONSTANT_RANGE.min
+        ResonanceConstants.SPRING_CONSTANT_RANGE.min,
       );
     });
 
@@ -182,7 +185,7 @@ describe("ResonatorControlPanel", () => {
       model.resonanceModel.springConstantProperty.value =
         ResonanceConstants.SPRING_CONSTANT_RANGE.max;
       expect(model.resonanceModel.springConstantProperty.value).toBe(
-        ResonanceConstants.SPRING_CONSTANT_RANGE.max
+        ResonanceConstants.SPRING_CONSTANT_RANGE.max,
       );
     });
   });
@@ -191,7 +194,7 @@ describe("ResonatorControlPanel", () => {
     it("should have damping in valid range", () => {
       const damping = model.resonanceModel.dampingProperty.value;
       expect(damping).toBeGreaterThanOrEqual(
-        ResonanceConstants.DAMPING_RANGE.min
+        ResonanceConstants.DAMPING_RANGE.min,
       );
       expect(damping).toBeLessThanOrEqual(ResonanceConstants.DAMPING_RANGE.max);
     });
@@ -200,7 +203,7 @@ describe("ResonatorControlPanel", () => {
       model.resonanceModel.dampingProperty.value =
         ResonanceConstants.DAMPING_RANGE.min;
       expect(model.resonanceModel.dampingProperty.value).toBe(
-        ResonanceConstants.DAMPING_RANGE.min
+        ResonanceConstants.DAMPING_RANGE.min,
       );
     });
 
@@ -208,7 +211,7 @@ describe("ResonatorControlPanel", () => {
       model.resonanceModel.dampingProperty.value =
         ResonanceConstants.DAMPING_RANGE.max;
       expect(model.resonanceModel.dampingProperty.value).toBe(
-        ResonanceConstants.DAMPING_RANGE.max
+        ResonanceConstants.DAMPING_RANGE.max,
       );
     });
   });
@@ -222,7 +225,7 @@ describe("ResonatorControlPanel", () => {
     it("should enable gravity via gravityEnabledProperty", () => {
       controlPanel.gravityEnabledProperty.value = true;
       expect(model.resonanceModel.gravityProperty.value).toBe(
-        ResonanceConstants.GRAVITY_ACCELERATION
+        ResonanceConstants.GRAVITY_ACCELERATION,
       );
     });
 
@@ -285,7 +288,7 @@ describe("ResonatorControlPanel", () => {
       const panel = new ResonatorControlPanel(
         model,
         layoutBounds,
-        new Property(false)
+        new Property(false),
       );
       expect(() => panel.dispose()).not.toThrow();
     });
@@ -294,7 +297,7 @@ describe("ResonatorControlPanel", () => {
       const panel = new ResonatorControlPanel(
         model,
         layoutBounds,
-        new Property(false)
+        new Property(false),
       );
       expect(() => {
         panel.dispose();
@@ -354,7 +357,7 @@ describe("ResonatorControlPanel", () => {
       const panel = new ResonatorControlPanel(
         model,
         smallBounds,
-        new Property(false)
+        new Property(false),
       );
       expect(panel.right).toBeLessThanOrEqual(smallBounds.maxX);
       panel.dispose();

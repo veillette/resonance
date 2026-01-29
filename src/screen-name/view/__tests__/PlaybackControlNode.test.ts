@@ -43,7 +43,9 @@ describe("PlaybackControlNode", () => {
   describe("play/pause functionality", () => {
     it("should have isPlayingProperty defined", () => {
       expect(model.resonanceModel.isPlayingProperty).toBeDefined();
-      expect(typeof model.resonanceModel.isPlayingProperty.value).toBe("boolean");
+      expect(typeof model.resonanceModel.isPlayingProperty.value).toBe(
+        "boolean",
+      );
     });
 
     it("should allow playing", () => {
@@ -117,7 +119,7 @@ describe("PlaybackControlNode", () => {
 
       // Get initial times
       const initialTimes = model.resonatorModels.map(
-        (r) => r.timeProperty.value
+        (r) => r.timeProperty.value,
       );
 
       // Step all forward

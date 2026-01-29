@@ -62,7 +62,9 @@ describe("StringManager", () => {
     it("should have spring constant label", () => {
       const controls = stringManager.getControlLabels();
       expect(controls.springConstantStringProperty).toBeDefined();
-      expect(controls.springConstantStringProperty.value.length).toBeGreaterThan(0);
+      expect(
+        controls.springConstantStringProperty.value.length,
+      ).toBeGreaterThan(0);
     });
 
     it("should have damping coefficient label", () => {
@@ -216,9 +218,15 @@ describe("StringManager", () => {
     it("should have non-empty solver names", () => {
       const solvers = stringManager.getSolverNames();
       expect(solvers.rk4StringProperty.value.length).toBeGreaterThan(0);
-      expect(solvers.adaptiveRK45StringProperty.value.length).toBeGreaterThan(0);
-      expect(solvers.adaptiveEulerStringProperty.value.length).toBeGreaterThan(0);
-      expect(solvers.modifiedMidpointStringProperty.value.length).toBeGreaterThan(0);
+      expect(solvers.adaptiveRK45StringProperty.value.length).toBeGreaterThan(
+        0,
+      );
+      expect(solvers.adaptiveEulerStringProperty.value.length).toBeGreaterThan(
+        0,
+      );
+      expect(
+        solvers.modifiedMidpointStringProperty.value.length,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -229,7 +237,9 @@ describe("StringManager", () => {
       expect(descriptions.rk4DescriptionStringProperty).toBeDefined();
       expect(descriptions.adaptiveRK45DescriptionStringProperty).toBeDefined();
       expect(descriptions.adaptiveEulerDescriptionStringProperty).toBeDefined();
-      expect(descriptions.modifiedMidpointDescriptionStringProperty).toBeDefined();
+      expect(
+        descriptions.modifiedMidpointDescriptionStringProperty,
+      ).toBeDefined();
     });
   });
 
@@ -264,8 +274,12 @@ describe("StringManager", () => {
 
     it("should have non-empty preset names", () => {
       const presets = stringManager.getPresetNames();
-      expect(presets.lightAndBouncyStringProperty.value.length).toBeGreaterThan(0);
-      expect(presets.resonanceDemoStringProperty.value.length).toBeGreaterThan(0);
+      expect(presets.lightAndBouncyStringProperty.value.length).toBeGreaterThan(
+        0,
+      );
+      expect(presets.resonanceDemoStringProperty.value.length).toBeGreaterThan(
+        0,
+      );
     });
   });
 

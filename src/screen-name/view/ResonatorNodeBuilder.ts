@@ -120,7 +120,12 @@ export class ResonatorNodeBuilder {
     count: number,
     context: ResonatorBuildContext,
   ): MassNodeResult {
-    const { modelViewTransform, layoutBounds, driverPlate, selectedResonatorIndexProperty } = context;
+    const {
+      modelViewTransform,
+      layoutBounds,
+      driverPlate,
+      selectedResonatorIndexProperty,
+    } = context;
 
     const massNode = new Node();
     const initialMassSize = ResonatorNodeBuilder.calculateMassSize(
