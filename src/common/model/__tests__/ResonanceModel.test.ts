@@ -312,18 +312,20 @@ describe("ResonanceModel", () => {
     });
 
     it("should calculate driving force correctly when enabled", () => {
-      model.springConstantProperty.value = 0;
+      // For displacement-driven oscillator: F_drive = k * A * sin(phase)
+      model.springConstantProperty.value = 1.0; // k = 1 N/m
       model.dampingProperty.value = 0;
       model.gravityProperty.value = 0;
       model.drivingEnabledProperty.value = true;
-      model.drivingAmplitudeProperty.value = 1.0;
+      model.drivingAmplitudeProperty.value = 1.0; // A = 1 m
       model.drivingFrequencyProperty.value = 1.0;
 
       // At phase = pi/2, sin(phase) = 1
       const state = [0, 0, Math.PI / 2];
       const derivatives = model.getDerivatives(0, state);
 
-      // a = F0/m = 1.0/0.25 = 4 m/s^2
+      // F_drive = k * A * sin(phase) = 1 * 1 * 1 = 1 N
+      // a = F_drive / m = 1 / 0.25 = 4 m/s^2
       expect(derivatives[1]).toBeCloseTo(4, 5);
     });
 

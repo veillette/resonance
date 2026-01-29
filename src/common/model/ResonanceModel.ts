@@ -1,15 +1,16 @@
 /**
- * ResonanceModel - Spring-mass system with damping and driving force
+ * ResonanceModel - Spring-mass system with damping and displacement-driven base
  *
- * This model simulates a mass attached to a vertical spring with:
- * - Spring restoring force (Hooke's Law): F_spring = -k*x
+ * This model simulates a mass attached to a vertical spring with a moving base:
+ * - Driver base position: y_driver = A*sin(ω*t)
+ * - Spring restoring force (Hooke's Law): F_spring = -k*(x - y_driver)
  * - Damping force (linear): F_damping = -b*v
  * - Gravitational force: F_gravity = m*g
- * - Driving force (sinusoidal): F_drive = F0*sin(ω*t)
  *
  * Equation of motion:
- * m*a = -k*x - b*v + m*g + F0*sin(ω*t)
+ * m*a = -k*x - b*v + m*g + k*A*sin(ω*t)
  *
+ * The effective driving force is k*A*sin(ω*t) where A is the driver amplitude.
  * This model is designed to explore resonance phenomena by varying
  * the driving frequency relative to the natural frequency.
  */
@@ -43,7 +44,7 @@ export class ResonanceModel extends BaseModel {
   public readonly naturalLengthProperty: NumberProperty; // natural length of spring (m)
 
   // Driving force parameters
-  public readonly drivingAmplitudeProperty: NumberProperty; // driving force amplitude (N)
+  public readonly drivingAmplitudeProperty: NumberProperty; // driving displacement amplitude (m)
   public readonly drivingFrequencyProperty: NumberProperty; // driving frequency (Hz)
   public readonly drivingEnabledProperty: Property<boolean>; // whether driving force is enabled
   public readonly drivingPhaseProperty: NumberProperty; // accumulated phase (radians) for phase-continuous frequency changes
@@ -178,16 +179,20 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the derivatives [dx/dt, dv/dt, dphase/dt] for the ODE solver
    *
+   * For a displacement-driven oscillator where the driver base moves sinusoidally:
+   * - Driver position: y_driver = A * sin(phase)
+   * - Spring extension: (x - y_driver)
+   * - Spring force: F_spring = -k * (x - y_driver) = -k*x + k*A*sin(phase)
+   *
    * Equation of motion:
    * dx/dt = v
-   * dv/dt = (-k*x - b*v + m*g + F_drive) / m
+   * dv/dt = (-k*x - b*v + m*g + k*A*sin(phase)) / m
    * dphase/dt = ω (angular frequency of driving force)
    *
-   * where F_drive = F0*sin(phase) if enabled, 0 otherwise
    * Using phase instead of time ensures smooth frequency changes
    */
   public override getDerivatives(t: number, state: number[]): number[] {
-    const x = state[0]; // position
+    const x = state[0]; // position (displacement from equilibrium)
     const v = state[1]; // velocity
     const phase = state[2]; // driving phase
 
@@ -197,12 +202,14 @@ export class ResonanceModel extends BaseModel {
     const g = this.gravityProperty.value;
 
     // Calculate driving force using phase for smooth frequency changes
+    // For displacement-driven oscillator: F_drive = k * A * sin(phase)
+    // where A is the driver amplitude (displacement in meters)
     let F_drive = 0;
     let phaseDerivative = 0;
     if (this.drivingEnabledProperty.value) {
-      const F0 = this.drivingAmplitudeProperty.value;
+      const A = this.drivingAmplitudeProperty.value; // Driver amplitude in meters
       const omega = this.drivingFrequencyProperty.value * 2 * Math.PI; // Convert Hz to rad/s
-      F_drive = F0 * Math.sin(phase);
+      F_drive = k * A * Math.sin(phase); // Effective force from moving base
       phaseDerivative = omega; // dphase/dt = ω
     }
 
@@ -252,7 +259,7 @@ export class ResonanceModel extends BaseModel {
     this.dampingProperty.value = preset.damping;
     this.positionProperty.value = preset.initialPosition;
     this.velocityProperty.value = preset.initialVelocity ?? 0;
-    this.drivingAmplitudeProperty.value = preset.drivingAmplitude ?? 5.0;
+    this.drivingAmplitudeProperty.value = preset.drivingAmplitude ?? 0.01; // Default 1 cm
     this.drivingFrequencyProperty.value = preset.drivingFrequency ?? 0.5;
   }
 }
@@ -273,7 +280,7 @@ export type ResonancePreset = {
   damping: number; // N·s/m
   initialPosition: number; // m
   initialVelocity?: number; // m/s
-  drivingAmplitude?: number; // N
+  drivingAmplitude?: number; // m (displacement amplitude)
   drivingFrequency?: number; // Hz
 };
 
@@ -298,7 +305,7 @@ export const ResonancePresets: ResonancePreset[] = [
     springConstant: 50,
     damping: 0.1,
     initialPosition: 1.0,
-    drivingAmplitude: 5.0,
+    drivingAmplitude: 0.01, // 1 cm displacement
     drivingFrequency: 1.6, // Near natural frequency ~1.59 Hz
   },
   {
@@ -307,7 +314,7 @@ export const ResonancePresets: ResonancePreset[] = [
     springConstant: 5,
     damping: 0.5,
     initialPosition: 1.0,
-    drivingAmplitude: 10.0,
+    drivingAmplitude: 0.015, // 1.5 cm displacement
     drivingFrequency: 0.16, // Near natural frequency ~0.159 Hz
   },
   {
@@ -316,7 +323,7 @@ export const ResonancePresets: ResonancePreset[] = [
     springConstant: 25,
     damping: 2.0, // ζ = 0.2 (underdamped)
     initialPosition: 1.0,
-    drivingAmplitude: 5.0,
+    drivingAmplitude: 0.01, // 1 cm displacement
     drivingFrequency: 0.8, // Near natural frequency ~0.796 Hz
   },
   {
@@ -325,7 +332,7 @@ export const ResonancePresets: ResonancePreset[] = [
     springConstant: 25,
     damping: 10.0, // ζ = 1.0 (critical damping = 2√(mk))
     initialPosition: 1.0,
-    drivingAmplitude: 5.0,
+    drivingAmplitude: 0.01, // 1 cm displacement
     drivingFrequency: 0.8,
   },
   {
@@ -334,7 +341,7 @@ export const ResonancePresets: ResonancePreset[] = [
     springConstant: 25,
     damping: 20.0, // ζ = 2.0 (overdamped)
     initialPosition: 1.0,
-    drivingAmplitude: 5.0,
+    drivingAmplitude: 0.01, // 1 cm displacement
     drivingFrequency: 0.8,
   },
   {
@@ -343,7 +350,7 @@ export const ResonancePresets: ResonancePreset[] = [
     springConstant: 10.0,
     damping: 0.3, // Light damping for clear resonance
     initialPosition: 0.5,
-    drivingAmplitude: 3.0,
+    drivingAmplitude: 0.01, // 1 cm displacement
     drivingFrequency: 0.503, // Exactly at natural frequency √(10/1)/(2π) ≈ 0.503 Hz
   },
 ];
