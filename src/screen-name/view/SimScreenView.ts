@@ -353,11 +353,8 @@ export class SimScreenView extends ScreenView {
       this.connectionRod.bottom = this.driverNode.top;
     }
 
-    // Update measurement lines position relative to driver plate
-    this.measurementLinesNode.updateDriverPosition(
-      this.driverPlate.top,
-      this.modelViewTransform,
-    );
+    // Note: Measurement lines stay fixed relative to driver plate rest position
+    // They do not move with the oscillating driver plate
 
     // Position springs and masses
     const driverTopY = this.driverPlate.top;

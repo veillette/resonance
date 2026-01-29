@@ -166,25 +166,6 @@ export class MeasurementLinesNode extends Node {
     this.addChild(this.line2);
   }
 
-  /**
-   * Update line positions when driver plate moves.
-   */
-  public updateDriverPosition(
-    driverTopY: number,
-    modelViewTransform: ModelViewTransform2,
-  ): void {
-    this.line1.y =
-      driverTopY -
-      Math.abs(
-        modelViewTransform.modelToViewDeltaY(this.line1.heightProperty.value),
-      );
-    this.line2.y =
-      driverTopY -
-      Math.abs(
-        modelViewTransform.modelToViewDeltaY(this.line2.heightProperty.value),
-      );
-  }
-
   public reset(): void {
     this.line1.reset();
     this.line2.reset();
