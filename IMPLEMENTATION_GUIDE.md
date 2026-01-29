@@ -795,39 +795,20 @@ Possible additions to the model:
 ### Physics Enhancements
 
 1. **Nonlinear springs**: Add x³ term for large displacements (anharmonic oscillator)
-2. **Coupling between oscillators**: Springs connecting masses (coupled oscillators)
-3. **Frequency sweep mode**: Automatically vary driving frequency over time
-4. **Variable damping**: Velocity-dependent or position-dependent damping models
+2. **Frequency sweep mode**: Automatically vary driving frequency over time
 
 ### Visualization Enhancements
 
-5. **Position vs Time graphs**: Real-time plotting for each oscillator
-6. **Phase space diagrams**: Plot velocity vs position (phase portrait)
-7. **Amplitude response curves**: Plot steady-state amplitude vs driving frequency
-8. **Energy visualization**: Bar charts showing KE, PE, and total energy for each oscillator
-9. **Phase relationship indicator**: Visual cue showing phase lag relative to driver
+3. **Position vs Time graphs**: Real-time plotting for each oscillator
+4. **Phase space diagrams**: Plot velocity vs position (phase portrait)
+5. **Amplitude response curves**: Plot steady-state amplitude vs driving frequency
+6. **Energy visualization**: Bar charts showing KE, PE, and total energy for each oscillator
+7. **Phase relationship indicator**: Visual cue showing phase lag relative to driver
 
 ### Analysis Tools
 
-10. **Transient analysis**: Measure and display rise time, settling time, overshoot
-11. **Quality factor display**: Show Q = ω₀/Δω for each oscillator
-12. **Fourier analysis**: Show frequency spectrum of oscillation
-13. **Data export**: Export position/velocity data for external analysis
+8. **Quality factor display**: Show Q = ω₀/Δω for each oscillator
+9. **Fourier analysis**: Show frequency spectrum of oscillation
 
-### Educational Features
-
-14. **Guided scenarios**: Step-by-step exploration of resonance concepts
-15. **Interactive tutorials**: Overlay explaining what to observe
-16. **Prediction mode**: Hide motion, ask user to predict, then reveal
-17. **Comparison mode**: Side-by-side comparison of two configurations
-
-## References
-
-- **Original implementation**: https://github.com/veillette/classicalMechanicsSimulations/
-- **Spring Model Reference**: See `SPRING_MODEL_REFERENCE.md`
-- **Theory**: Classical Mechanics, Goldstein et al.
-- **Numerical Methods**: Numerical Recipes, Press et al.
 
 ---
-
-_This implementation guide was created on 2025-11-02 and updated on 2026-01-27 to reflect the current oscillating plate driver model, multiple oscillator system, and visual representation details._
