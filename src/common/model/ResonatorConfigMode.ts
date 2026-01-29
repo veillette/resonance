@@ -9,11 +9,12 @@
  * - CUSTOM: Each resonator can be independently configured
  */
 export const ResonatorConfigMode = {
-  SAME_MASS: 'sameMass',
-  SAME_SPRING_CONSTANT: 'sameSpringConstant',
-  MIXED: 'mixed',
-  SAME_FREQUENCY: 'sameFrequency',
-  CUSTOM: 'custom'
+  SAME_MASS: "sameMass",
+  SAME_SPRING_CONSTANT: "sameSpringConstant",
+  MIXED: "mixed",
+  SAME_FREQUENCY: "sameFrequency",
+  CUSTOM: "custom",
 } as const;
 
-export type ResonatorConfigModeType = typeof ResonatorConfigMode[keyof typeof ResonatorConfigMode];
+export type ResonatorConfigModeType =
+  (typeof ResonatorConfigMode)[keyof typeof ResonatorConfigMode];

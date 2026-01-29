@@ -5,12 +5,12 @@
  * These tests verify that solvers produce correct results for known problems.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ODEModel, ODESolver } from '../ODESolver.js';
-import { RungeKuttaSolver } from '../RungeKuttaSolver.js';
-import { AdaptiveRK45Solver } from '../AdaptiveRK45Solver.js';
-import { AdaptiveEulerSolver } from '../AdaptiveEulerSolver.js';
-import { ModifiedMidpointSolver } from '../ModifiedMidpointSolver.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { ODEModel, ODESolver } from "../ODESolver.js";
+import { RungeKuttaSolver } from "../RungeKuttaSolver.js";
+import { AdaptiveRK45Solver } from "../AdaptiveRK45Solver.js";
+import { AdaptiveEulerSolver } from "../AdaptiveEulerSolver.js";
+import { ModifiedMidpointSolver } from "../ModifiedMidpointSolver.js";
 
 /**
  * Simple harmonic oscillator model for testing
@@ -22,7 +22,11 @@ class SimpleHarmonicOscillator implements ODEModel {
   private state: number[];
   public readonly omega: number;
 
-  constructor(omega: number = 1, initialPosition: number = 1, initialVelocity: number = 0) {
+  constructor(
+    omega: number = 1,
+    initialPosition: number = 1,
+    initialVelocity: number = 0,
+  ) {
     this.omega = omega;
     this.state = [initialPosition, initialVelocity];
   }
@@ -39,57 +43,26 @@ class SimpleHarmonicOscillator implements ODEModel {
     const [x, v] = state;
     return [
       v, // dx/dt = v
-      -this.omega * this.omega * x // dv/dt = -omega^2 * x
+      -this.omega * this.omega * x, // dv/dt = -omega^2 * x
     ];
   }
 
   // Analytical solution: x(t) = x0*cos(omega*t) + (v0/omega)*sin(omega*t)
   analyticalPosition(t: number, x0: number, v0: number): number {
-    return x0 * Math.cos(this.omega * t) + (v0 / this.omega) * Math.sin(this.omega * t);
+    return (
+      x0 * Math.cos(this.omega * t) +
+      (v0 / this.omega) * Math.sin(this.omega * t)
+    );
   }
 
   analyticalVelocity(t: number, x0: number, v0: number): number {
-    return -x0 * this.omega * Math.sin(this.omega * t) + v0 * Math.cos(this.omega * t);
+    return (
+      -x0 * this.omega * Math.sin(this.omega * t) +
+      v0 * Math.cos(this.omega * t)
+    );
   }
 
   // Total energy: E = 0.5*v^2 + 0.5*omega^2*x^2
-  totalEnergy(): number {
-    const [x, v] = this.state;
-    return 0.5 * v * v + 0.5 * this.omega * this.omega * x * x;
-  }
-}
-
-/**
- * Damped harmonic oscillator for testing energy dissipation
- * x'' = -omega^2 * x - 2*zeta*omega*v
- */
-class DampedOscillator implements ODEModel {
-  private state: number[];
-  public readonly omega: number;
-  public readonly zeta: number;
-
-  constructor(omega: number = 1, zeta: number = 0.1, initialPosition: number = 1, initialVelocity: number = 0) {
-    this.omega = omega;
-    this.zeta = zeta;
-    this.state = [initialPosition, initialVelocity];
-  }
-
-  getState(): number[] {
-    return [...this.state];
-  }
-
-  setState(state: number[]): void {
-    this.state = [...state];
-  }
-
-  getDerivatives(_t: number, state: number[]): number[] {
-    const [x, v] = state;
-    return [
-      v,
-      -this.omega * this.omega * x - 2 * this.zeta * this.omega * v
-    ];
-  }
-
   totalEnergy(): number {
     const [x, v] = this.state;
     return 0.5 * v * v + 0.5 * this.omega * this.omega * x * x;
@@ -120,15 +93,15 @@ class ExponentialModel implements ODEModel {
   }
 }
 
-describe('RungeKuttaSolver', () => {
+describe("RungeKuttaSolver", () => {
   let solver: RungeKuttaSolver;
 
   beforeEach(() => {
     solver = new RungeKuttaSolver(0.001);
   });
 
-  describe('basic functionality', () => {
-    it('should integrate state forward in time', () => {
+  describe("basic functionality", () => {
+    it("should integrate state forward in time", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
       const initialState = model.getState();
 
@@ -138,7 +111,7 @@ describe('RungeKuttaSolver', () => {
       expect(newState).not.toEqual(initialState);
     });
 
-    it('should handle zero timestep', () => {
+    it("should handle zero timestep", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
       const initialState = model.getState();
 
@@ -150,8 +123,8 @@ describe('RungeKuttaSolver', () => {
     });
   });
 
-  describe('accuracy', () => {
-    it('should match analytical solution for simple harmonic oscillator', () => {
+  describe("accuracy", () => {
+    it("should match analytical solution for simple harmonic oscillator", () => {
       const omega = 2.0;
       const x0 = 1.0;
       const v0 = 0.0;
@@ -181,7 +154,7 @@ describe('RungeKuttaSolver', () => {
       }
     });
 
-    it('should be fourth-order accurate (error scales as dt^4)', () => {
+    it("should be fourth-order accurate (error scales as dt^4)", () => {
       const model1 = new ExponentialModel(1);
       const model2 = new ExponentialModel(1);
       const solver1 = new RungeKuttaSolver(0.01);
@@ -212,13 +185,13 @@ describe('RungeKuttaSolver', () => {
     });
   });
 
-  describe('energy conservation', () => {
-    it('should conserve energy for undamped oscillator', () => {
+  describe("energy conservation", () => {
+    it("should conserve energy for undamped oscillator", () => {
       const model = new SimpleHarmonicOscillator(2.0, 1.0, 0.5);
       const initialEnergy = model.totalEnergy();
 
       // Simulate for 10 periods
-      const period = 2 * Math.PI / model.omega;
+      const period = (2 * Math.PI) / model.omega;
       const totalTime = 10 * period;
       const numSteps = 10000;
       const dt = totalTime / numSteps;
@@ -230,11 +203,12 @@ describe('RungeKuttaSolver', () => {
       const finalEnergy = model.totalEnergy();
 
       // Energy should be conserved within 0.1%
-      const relativeError = Math.abs(finalEnergy - initialEnergy) / initialEnergy;
+      const relativeError =
+        Math.abs(finalEnergy - initialEnergy) / initialEnergy;
       expect(relativeError).toBeLessThan(0.001);
     });
 
-    it('should maintain amplitude for undamped oscillator', () => {
+    it("should maintain amplitude for undamped oscillator", () => {
       const x0 = 1.0;
       const model = new SimpleHarmonicOscillator(1.0, x0, 0);
 
@@ -256,8 +230,8 @@ describe('RungeKuttaSolver', () => {
     });
   });
 
-  describe('timestep subdivision', () => {
-    it('should handle large timesteps by subdividing', () => {
+  describe("timestep subdivision", () => {
+    it("should handle large timesteps by subdividing", () => {
       const x0 = 1.0;
       const v0 = 0.0;
       const omega = 1.0;
@@ -283,8 +257,8 @@ describe('RungeKuttaSolver', () => {
     });
   });
 
-  describe('setFixedTimestep', () => {
-    it('should allow changing the fixed timestep', () => {
+  describe("setFixedTimestep", () => {
+    it("should allow changing the fixed timestep", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
 
       solver.setFixedTimestep(0.01);
@@ -302,15 +276,15 @@ describe('RungeKuttaSolver', () => {
   });
 });
 
-describe('AdaptiveRK45Solver', () => {
+describe("AdaptiveRK45Solver", () => {
   let solver: AdaptiveRK45Solver;
 
   beforeEach(() => {
     solver = new AdaptiveRK45Solver();
   });
 
-  describe('basic functionality', () => {
-    it('should integrate state forward in time', () => {
+  describe("basic functionality", () => {
+    it("should integrate state forward in time", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
       const initialState = model.getState();
 
@@ -321,8 +295,8 @@ describe('AdaptiveRK45Solver', () => {
     });
   });
 
-  describe('accuracy', () => {
-    it('should match analytical solution for simple harmonic oscillator', () => {
+  describe("accuracy", () => {
+    it("should match analytical solution for simple harmonic oscillator", () => {
       const omega = 2.0;
       const x0 = 1.0;
       const v0 = 0.0;
@@ -346,7 +320,7 @@ describe('AdaptiveRK45Solver', () => {
       }
     });
 
-    it('should handle exponential growth accurately', () => {
+    it("should handle exponential growth accurately", () => {
       const model = new ExponentialModel(1);
       const targetTime = 2.0;
       const exactSolution = Math.exp(targetTime);
@@ -361,13 +335,13 @@ describe('AdaptiveRK45Solver', () => {
     });
   });
 
-  describe('energy conservation', () => {
-    it('should conserve energy for undamped oscillator', () => {
+  describe("energy conservation", () => {
+    it("should conserve energy for undamped oscillator", () => {
       const model = new SimpleHarmonicOscillator(2.0, 1.0, 0.5);
       const initialEnergy = model.totalEnergy();
 
       // Simulate for 10 periods
-      const period = 2 * Math.PI / model.omega;
+      const period = (2 * Math.PI) / model.omega;
       const totalTime = 10 * period;
 
       solver.step(totalTime, model);
@@ -375,13 +349,14 @@ describe('AdaptiveRK45Solver', () => {
       const finalEnergy = model.totalEnergy();
 
       // Energy should be conserved within 0.1%
-      const relativeError = Math.abs(finalEnergy - initialEnergy) / initialEnergy;
+      const relativeError =
+        Math.abs(finalEnergy - initialEnergy) / initialEnergy;
       expect(relativeError).toBeLessThan(0.001);
     });
   });
 
-  describe('adaptive behavior', () => {
-    it('should handle stiff-like problems without crashing', () => {
+  describe("adaptive behavior", () => {
+    it("should handle stiff-like problems without crashing", () => {
       // High frequency oscillator
       const model = new SimpleHarmonicOscillator(100, 1, 0);
 
@@ -392,7 +367,7 @@ describe('AdaptiveRK45Solver', () => {
       expect(Math.abs(state[0])).toBeLessThan(2); // Bounded
     });
 
-    it('should produce similar results for different total times', () => {
+    it("should produce similar results for different total times", () => {
       const model1 = new SimpleHarmonicOscillator(1, 1, 0);
       const model2 = new SimpleHarmonicOscillator(1, 1, 0);
 
@@ -413,15 +388,15 @@ describe('AdaptiveRK45Solver', () => {
   });
 });
 
-describe('AdaptiveEulerSolver', () => {
+describe("AdaptiveEulerSolver", () => {
   let solver: AdaptiveEulerSolver;
 
   beforeEach(() => {
     solver = new AdaptiveEulerSolver();
   });
 
-  describe('basic functionality', () => {
-    it('should integrate state forward in time', () => {
+  describe("basic functionality", () => {
+    it("should integrate state forward in time", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
       const initialState = model.getState();
 
@@ -431,7 +406,7 @@ describe('AdaptiveEulerSolver', () => {
       expect(newState).not.toEqual(initialState);
     });
 
-    it('should handle zero timestep gracefully', () => {
+    it("should handle zero timestep gracefully", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
       const initialState = model.getState();
 
@@ -443,8 +418,8 @@ describe('AdaptiveEulerSolver', () => {
     });
   });
 
-  describe('accuracy', () => {
-    it('should match analytical solution for simple harmonic oscillator', () => {
+  describe("accuracy", () => {
+    it("should match analytical solution for simple harmonic oscillator", () => {
       const omega = 2.0;
       const x0 = 1.0;
       const v0 = 0.0;
@@ -473,7 +448,7 @@ describe('AdaptiveEulerSolver', () => {
       }
     });
 
-    it('should handle exponential growth', () => {
+    it("should handle exponential growth", () => {
       const model = new ExponentialModel(1);
       const targetTime = 1.0;
       const exactSolution = Math.exp(targetTime);
@@ -493,13 +468,13 @@ describe('AdaptiveEulerSolver', () => {
     });
   });
 
-  describe('energy conservation', () => {
-    it('should approximately conserve energy for undamped oscillator', () => {
+  describe("energy conservation", () => {
+    it("should approximately conserve energy for undamped oscillator", () => {
       const model = new SimpleHarmonicOscillator(2.0, 1.0, 0.5);
       const initialEnergy = model.totalEnergy();
 
       // Simulate for several periods
-      const period = 2 * Math.PI / model.omega;
+      const period = (2 * Math.PI) / model.omega;
       const totalTime = 5 * period;
       const numSteps = 5000;
       const dt = totalTime / numSteps;
@@ -512,13 +487,14 @@ describe('AdaptiveEulerSolver', () => {
 
       // Euler is much less accurate at energy conservation, allow 15%
       // This is expected for first-order methods
-      const relativeError = Math.abs(finalEnergy - initialEnergy) / initialEnergy;
+      const relativeError =
+        Math.abs(finalEnergy - initialEnergy) / initialEnergy;
       expect(relativeError).toBeLessThan(0.15);
     });
   });
 
-  describe('adaptive behavior', () => {
-    it('should adapt timestep based on error', () => {
+  describe("adaptive behavior", () => {
+    it("should adapt timestep based on error", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
 
       // Should complete without throwing
@@ -529,7 +505,7 @@ describe('AdaptiveEulerSolver', () => {
       expect(Math.abs(state[0])).toBeLessThan(2);
     });
 
-    it('should handle high frequency oscillator', () => {
+    it("should handle high frequency oscillator", () => {
       const model = new SimpleHarmonicOscillator(50, 1, 0);
 
       expect(() => solver.step(0.5, model)).not.toThrow();
@@ -540,15 +516,15 @@ describe('AdaptiveEulerSolver', () => {
   });
 });
 
-describe('ModifiedMidpointSolver', () => {
+describe("ModifiedMidpointSolver", () => {
   let solver: ModifiedMidpointSolver;
 
   beforeEach(() => {
     solver = new ModifiedMidpointSolver(0.001, 4);
   });
 
-  describe('basic functionality', () => {
-    it('should integrate state forward in time', () => {
+  describe("basic functionality", () => {
+    it("should integrate state forward in time", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
       const initialState = model.getState();
 
@@ -558,7 +534,7 @@ describe('ModifiedMidpointSolver', () => {
       expect(newState).not.toEqual(initialState);
     });
 
-    it('should handle zero timestep', () => {
+    it("should handle zero timestep", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
       const initialState = model.getState();
 
@@ -570,8 +546,8 @@ describe('ModifiedMidpointSolver', () => {
     });
   });
 
-  describe('accuracy', () => {
-    it('should match analytical solution for simple harmonic oscillator', () => {
+  describe("accuracy", () => {
+    it("should match analytical solution for simple harmonic oscillator", () => {
       const omega = 2.0;
       const x0 = 1.0;
       const v0 = 0.0;
@@ -599,7 +575,7 @@ describe('ModifiedMidpointSolver', () => {
       }
     });
 
-    it('should handle exponential growth accurately', () => {
+    it("should handle exponential growth accurately", () => {
       const model = new ExponentialModel(1);
       const targetTime = 2.0;
       const exactSolution = Math.exp(targetTime);
@@ -618,13 +594,13 @@ describe('ModifiedMidpointSolver', () => {
     });
   });
 
-  describe('energy conservation', () => {
-    it('should conserve energy for undamped oscillator', () => {
+  describe("energy conservation", () => {
+    it("should conserve energy for undamped oscillator", () => {
       const model = new SimpleHarmonicOscillator(2.0, 1.0, 0.5);
       const initialEnergy = model.totalEnergy();
 
       // Simulate for 10 periods
-      const period = 2 * Math.PI / model.omega;
+      const period = (2 * Math.PI) / model.omega;
       const totalTime = 10 * period;
       const numSteps = 10000;
       const dt = totalTime / numSteps;
@@ -636,11 +612,12 @@ describe('ModifiedMidpointSolver', () => {
       const finalEnergy = model.totalEnergy();
 
       // Energy should be conserved within 1%
-      const relativeError = Math.abs(finalEnergy - initialEnergy) / initialEnergy;
+      const relativeError =
+        Math.abs(finalEnergy - initialEnergy) / initialEnergy;
       expect(relativeError).toBeLessThan(0.01);
     });
 
-    it('should maintain amplitude for undamped oscillator', () => {
+    it("should maintain amplitude for undamped oscillator", () => {
       const x0 = 1.0;
       const model = new SimpleHarmonicOscillator(1.0, x0, 0);
 
@@ -658,8 +635,8 @@ describe('ModifiedMidpointSolver', () => {
     });
   });
 
-  describe('timestep subdivision', () => {
-    it('should handle large timesteps by subdividing', () => {
+  describe("timestep subdivision", () => {
+    it("should handle large timesteps by subdividing", () => {
       const x0 = 1.0;
       const v0 = 0.0;
       const omega = 1.0;
@@ -684,8 +661,8 @@ describe('ModifiedMidpointSolver', () => {
     });
   });
 
-  describe('setFixedTimestep', () => {
-    it('should allow changing the fixed timestep', () => {
+  describe("setFixedTimestep", () => {
+    it("should allow changing the fixed timestep", () => {
       const model = new SimpleHarmonicOscillator(1, 1, 0);
 
       solver.setFixedTimestep(0.01);
@@ -702,8 +679,8 @@ describe('ModifiedMidpointSolver', () => {
     });
   });
 
-  describe('substeps configuration', () => {
-    it('should work with different substep counts', () => {
+  describe("substeps configuration", () => {
+    it("should work with different substep counts", () => {
       const omega = 2.0;
       const x0 = 1.0;
       const v0 = 0.0;
@@ -727,14 +704,17 @@ describe('ModifiedMidpointSolver', () => {
   });
 });
 
-describe('Solver comparison', () => {
-  it('should produce similar results for same problem (high-order solvers)', () => {
+describe("Solver comparison", () => {
+  it("should produce similar results for same problem (high-order solvers)", () => {
     // Compare only higher-order solvers that should be accurate
     // AdaptiveEulerSolver is first-order and much less accurate
     const solvers: { name: string; solver: ODESolver }[] = [
-      { name: 'RungeKutta', solver: new RungeKuttaSolver(0.001) },
-      { name: 'AdaptiveRK45', solver: new AdaptiveRK45Solver() },
-      { name: 'ModifiedMidpoint', solver: new ModifiedMidpointSolver(0.001, 4) },
+      { name: "RungeKutta", solver: new RungeKuttaSolver(0.001) },
+      { name: "AdaptiveRK45", solver: new AdaptiveRK45Solver() },
+      {
+        name: "ModifiedMidpoint",
+        solver: new ModifiedMidpointSolver(0.001, 4),
+      },
     ];
 
     const x0 = 1.0;
@@ -762,13 +742,13 @@ describe('Solver comparison', () => {
     const referencePosition = results[0].position;
     const referenceVelocity = results[0].velocity;
 
-    for (const { name, position, velocity } of results) {
+    for (const { position, velocity } of results) {
       expect(position).toBeCloseTo(referencePosition, 2);
       expect(velocity).toBeCloseTo(referenceVelocity, 2);
     }
   });
 
-  it('should produce bounded results for AdaptiveEulerSolver', () => {
+  it("should produce bounded results for AdaptiveEulerSolver", () => {
     // Euler solver is first-order, so it won't match higher-order solvers
     // but it should still produce bounded, reasonable results
     const solver = new AdaptiveEulerSolver();
@@ -792,16 +772,16 @@ describe('Solver comparison', () => {
     expect(Math.abs(state[1])).toBeLessThan(5);
   });
 
-  it('should all produce correct frequency for oscillator', () => {
+  it("should all produce correct frequency for oscillator", () => {
     const solvers: { name: string; solver: ODESolver }[] = [
-      { name: 'RungeKutta', solver: new RungeKuttaSolver(0.001) },
-      { name: 'AdaptiveRK45', solver: new AdaptiveRK45Solver() },
+      { name: "RungeKutta", solver: new RungeKuttaSolver(0.001) },
+      { name: "AdaptiveRK45", solver: new AdaptiveRK45Solver() },
     ];
 
     const omega = 2.0;
-    const expectedPeriod = 2 * Math.PI / omega;
+    const expectedPeriod = (2 * Math.PI) / omega;
 
-    for (const { name, solver } of solvers) {
+    for (const { solver } of solvers) {
       const model = new SimpleHarmonicOscillator(omega, 1, 0);
 
       // Find when position returns to initial value (one period)
@@ -827,7 +807,7 @@ describe('Solver comparison', () => {
         if (prevX < 0 && x >= 0 && v > 0) {
           // Measure time to complete one more full cycle
           const startTime = time;
-          let cycleCount = 0;
+          const cycleCount = 0;
           let cycleStartX = x;
 
           while (cycleCount < 1 && time < 3 * expectedPeriod) {
@@ -852,7 +832,8 @@ describe('Solver comparison', () => {
 
       if (foundPeriod) {
         // Measured period should match expected within 1%
-        const periodError = Math.abs(measuredPeriod - expectedPeriod) / expectedPeriod;
+        const periodError =
+          Math.abs(measuredPeriod - expectedPeriod) / expectedPeriod;
         expect(periodError).toBeLessThan(0.01);
       }
     }

@@ -39,7 +39,9 @@ export class AdaptiveEulerSolver extends ODESolver {
 
       // Safety check to prevent infinite loops
       if (currentTimestep < this.minTimestep) {
-        console.warn("AdaptiveEulerSolver: Timestep became too small, forcing step");
+        console.warn(
+          "AdaptiveEulerSolver: Timestep became too small, forcing step",
+        );
         this.forceStep(remainingTime, model);
         break;
       }
@@ -74,7 +76,8 @@ export class AdaptiveEulerSolver extends ODESolver {
     const secondHalfDerivatives = model.getDerivatives(halfDt, halfStepState);
     const twoHalfStepsState = new Array(n);
     for (let i = 0; i < n; i++) {
-      twoHalfStepsState[i] = halfStepState[i] + secondHalfDerivatives[i] * halfDt;
+      twoHalfStepsState[i] =
+        halfStepState[i] + secondHalfDerivatives[i] * halfDt;
     }
 
     // Calculate error

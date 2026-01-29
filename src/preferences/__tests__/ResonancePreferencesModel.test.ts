@@ -4,11 +4,11 @@
  * P2 Priority: User preferences with localStorage persistence.
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { ResonancePreferencesModel } from '../ResonancePreferencesModel.js';
-import { SolverType } from '../../common/model/SolverType.js';
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { ResonancePreferencesModel } from "../ResonancePreferencesModel.js";
+import { SolverType } from "../../common/model/SolverType.js";
 
-describe('ResonancePreferencesModel', () => {
+describe("ResonancePreferencesModel", () => {
   let mockStorage: Record<string, string>;
   let getItemSpy: ReturnType<typeof vi.spyOn>;
   let setItemSpy: ReturnType<typeof vi.spyOn>;
@@ -19,83 +19,87 @@ describe('ResonancePreferencesModel', () => {
     mockStorage = {};
 
     // Spy on localStorage methods
-    getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key: string) => {
-      return mockStorage[key] ?? null;
-    });
+    getItemSpy = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation((key: string) => {
+        return mockStorage[key] ?? null;
+      });
 
-    setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key: string, value: string) => {
-      mockStorage[key] = value;
-    });
+    setItemSpy = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation((key: string, value: string) => {
+        mockStorage[key] = value;
+      });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  describe('default values', () => {
-    it('should have correct default for showEnergy', () => {
+  describe("default values", () => {
+    it("should have correct default for showEnergy", () => {
       const model = new ResonancePreferencesModel();
       expect(model.showEnergyProperty.value).toBe(true);
     });
 
-    it('should have correct default for showVectors', () => {
+    it("should have correct default for showVectors", () => {
       const model = new ResonancePreferencesModel();
       expect(model.showVectorsProperty.value).toBe(false);
     });
 
-    it('should have correct default for showPhase', () => {
+    it("should have correct default for showPhase", () => {
       const model = new ResonancePreferencesModel();
       expect(model.showPhaseProperty.value).toBe(true);
     });
 
-    it('should have correct default for solverType', () => {
+    it("should have correct default for solverType", () => {
       const model = new ResonancePreferencesModel();
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
   });
 
-  describe('persistence save', () => {
-    it('should save showEnergy changes to localStorage', () => {
+  describe("persistence save", () => {
+    it("should save showEnergy changes to localStorage", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
 
-      expect(mockStorage['resonance-preferences']).toBeDefined();
-      const saved = JSON.parse(mockStorage['resonance-preferences']);
+      expect(mockStorage["resonance-preferences"]).toBeDefined();
+      const saved = JSON.parse(mockStorage["resonance-preferences"]);
       expect(saved.showEnergy).toBe(false);
     });
 
-    it('should save showVectors changes to localStorage', () => {
+    it("should save showVectors changes to localStorage", () => {
       const model = new ResonancePreferencesModel();
       model.showVectorsProperty.value = true;
 
-      const saved = JSON.parse(mockStorage['resonance-preferences']);
+      const saved = JSON.parse(mockStorage["resonance-preferences"]);
       expect(saved.showVectors).toBe(true);
     });
 
-    it('should save showPhase changes to localStorage', () => {
+    it("should save showPhase changes to localStorage", () => {
       const model = new ResonancePreferencesModel();
       model.showPhaseProperty.value = false;
 
-      const saved = JSON.parse(mockStorage['resonance-preferences']);
+      const saved = JSON.parse(mockStorage["resonance-preferences"]);
       expect(saved.showPhase).toBe(false);
     });
 
-    it('should save solverType changes to localStorage', () => {
+    it("should save solverType changes to localStorage", () => {
       const model = new ResonancePreferencesModel();
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
-      const saved = JSON.parse(mockStorage['resonance-preferences']);
+      const saved = JSON.parse(mockStorage["resonance-preferences"]);
       expect(saved.solverType).toBe(SolverType.ADAPTIVE_RK45);
     });
 
-    it('should save all preferences together', () => {
+    it("should save all preferences together", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
       model.showVectorsProperty.value = true;
       model.showPhaseProperty.value = false;
       model.solverTypeProperty.value = SolverType.MODIFIED_MIDPOINT;
 
-      const saved = JSON.parse(mockStorage['resonance-preferences']);
+      const saved = JSON.parse(mockStorage["resonance-preferences"]);
       expect(saved).toEqual({
         showEnergy: false,
         showVectors: true,
@@ -104,23 +108,23 @@ describe('ResonancePreferencesModel', () => {
       });
     });
 
-    it('should call localStorage.setItem when saving', () => {
+    it("should call localStorage.setItem when saving", () => {
       const model = new ResonancePreferencesModel();
       const initialCallCount = setItemSpy.mock.calls.length;
 
       model.showEnergyProperty.value = false;
 
       expect(setItemSpy).toHaveBeenCalledWith(
-        'resonance-preferences',
-        expect.any(String)
+        "resonance-preferences",
+        expect.any(String),
       );
       expect(setItemSpy.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
   });
 
-  describe('persistence load', () => {
-    it('should load showEnergy from localStorage', () => {
-      mockStorage['resonance-preferences'] = JSON.stringify({
+  describe("persistence load", () => {
+    it("should load showEnergy from localStorage", () => {
+      mockStorage["resonance-preferences"] = JSON.stringify({
         showEnergy: false,
       });
 
@@ -128,8 +132,8 @@ describe('ResonancePreferencesModel', () => {
       expect(model.showEnergyProperty.value).toBe(false);
     });
 
-    it('should load showVectors from localStorage', () => {
-      mockStorage['resonance-preferences'] = JSON.stringify({
+    it("should load showVectors from localStorage", () => {
+      mockStorage["resonance-preferences"] = JSON.stringify({
         showVectors: true,
       });
 
@@ -137,8 +141,8 @@ describe('ResonancePreferencesModel', () => {
       expect(model.showVectorsProperty.value).toBe(true);
     });
 
-    it('should load showPhase from localStorage', () => {
-      mockStorage['resonance-preferences'] = JSON.stringify({
+    it("should load showPhase from localStorage", () => {
+      mockStorage["resonance-preferences"] = JSON.stringify({
         showPhase: false,
       });
 
@@ -146,8 +150,8 @@ describe('ResonancePreferencesModel', () => {
       expect(model.showPhaseProperty.value).toBe(false);
     });
 
-    it('should load solverType from localStorage', () => {
-      mockStorage['resonance-preferences'] = JSON.stringify({
+    it("should load solverType from localStorage", () => {
+      mockStorage["resonance-preferences"] = JSON.stringify({
         solverType: SolverType.ADAPTIVE_EULER,
       });
 
@@ -155,8 +159,8 @@ describe('ResonancePreferencesModel', () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.ADAPTIVE_EULER);
     });
 
-    it('should load all saved preferences', () => {
-      mockStorage['resonance-preferences'] = JSON.stringify({
+    it("should load all saved preferences", () => {
+      mockStorage["resonance-preferences"] = JSON.stringify({
         showEnergy: false,
         showVectors: true,
         showPhase: false,
@@ -171,16 +175,16 @@ describe('ResonancePreferencesModel', () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.MODIFIED_MIDPOINT);
     });
 
-    it('should call localStorage.getItem when loading', () => {
+    it("should call localStorage.getItem when loading", () => {
       new ResonancePreferencesModel();
 
-      expect(getItemSpy).toHaveBeenCalledWith('resonance-preferences');
+      expect(getItemSpy).toHaveBeenCalledWith("resonance-preferences");
     });
   });
 
-  describe('invalid storage data', () => {
-    it('should use defaults for invalid JSON', () => {
-      mockStorage['resonance-preferences'] = 'not valid json';
+  describe("invalid storage data", () => {
+    it("should use defaults for invalid JSON", () => {
+      mockStorage["resonance-preferences"] = "not valid json";
 
       // Should not throw, should use defaults
       const model = new ResonancePreferencesModel();
@@ -191,7 +195,7 @@ describe('ResonancePreferencesModel', () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
 
-    it('should use defaults when localStorage is empty', () => {
+    it("should use defaults when localStorage is empty", () => {
       // mockStorage is empty by default
 
       const model = new ResonancePreferencesModel();
@@ -202,8 +206,8 @@ describe('ResonancePreferencesModel', () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
 
-    it('should handle partial saved data gracefully', () => {
-      mockStorage['resonance-preferences'] = JSON.stringify({
+    it("should handle partial saved data gracefully", () => {
+      mockStorage["resonance-preferences"] = JSON.stringify({
         showEnergy: false,
         // Missing other fields
       });
@@ -217,8 +221,8 @@ describe('ResonancePreferencesModel', () => {
     });
   });
 
-  describe('reset functionality', () => {
-    it('should reset showEnergy to default', () => {
+  describe("reset functionality", () => {
+    it("should reset showEnergy to default", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
 
@@ -227,7 +231,7 @@ describe('ResonancePreferencesModel', () => {
       expect(model.showEnergyProperty.value).toBe(true);
     });
 
-    it('should reset showVectors to default', () => {
+    it("should reset showVectors to default", () => {
       const model = new ResonancePreferencesModel();
       model.showVectorsProperty.value = true;
 
@@ -236,7 +240,7 @@ describe('ResonancePreferencesModel', () => {
       expect(model.showVectorsProperty.value).toBe(false);
     });
 
-    it('should reset showPhase to default', () => {
+    it("should reset showPhase to default", () => {
       const model = new ResonancePreferencesModel();
       model.showPhaseProperty.value = false;
 
@@ -245,7 +249,7 @@ describe('ResonancePreferencesModel', () => {
       expect(model.showPhaseProperty.value).toBe(true);
     });
 
-    it('should reset solverType to default', () => {
+    it("should reset solverType to default", () => {
       const model = new ResonancePreferencesModel();
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
@@ -254,7 +258,7 @@ describe('ResonancePreferencesModel', () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
 
-    it('should reset all properties at once', () => {
+    it("should reset all properties at once", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
       model.showVectorsProperty.value = true;
@@ -269,7 +273,7 @@ describe('ResonancePreferencesModel', () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
 
-    it('should trigger save after reset', () => {
+    it("should trigger save after reset", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
       const countBeforeReset = setItemSpy.mock.calls.length;
@@ -281,10 +285,10 @@ describe('ResonancePreferencesModel', () => {
     });
   });
 
-  describe('localStorage error handling', () => {
-    it('should handle localStorage.getItem throwing', () => {
+  describe("localStorage error handling", () => {
+    it("should handle localStorage.getItem throwing", () => {
       getItemSpy.mockImplementation(() => {
-        throw new Error('Storage error');
+        throw new Error("Storage error");
       });
 
       // Should not throw, should use defaults
@@ -293,9 +297,9 @@ describe('ResonancePreferencesModel', () => {
       expect(model.showEnergyProperty.value).toBe(true);
     });
 
-    it('should handle localStorage.setItem throwing', () => {
+    it("should handle localStorage.setItem throwing", () => {
       setItemSpy.mockImplementation(() => {
-        throw new Error('Storage quota exceeded');
+        throw new Error("Storage quota exceeded");
       });
 
       // Should not throw when saving
@@ -306,8 +310,8 @@ describe('ResonancePreferencesModel', () => {
     });
   });
 
-  describe('property change triggers save', () => {
-    it('should save on every property change', () => {
+  describe("property change triggers save", () => {
+    it("should save on every property change", () => {
       const model = new ResonancePreferencesModel();
       const initialCount = setItemSpy.mock.calls.length;
 
@@ -320,12 +324,12 @@ describe('ResonancePreferencesModel', () => {
       expect(setItemSpy.mock.calls.length).toBe(initialCount + 4);
     });
 
-    it('should save with correct key', () => {
+    it("should save with correct key", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
 
       const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
-      expect(lastCall[0]).toBe('resonance-preferences');
+      expect(lastCall[0]).toBe("resonance-preferences");
     });
   });
 });

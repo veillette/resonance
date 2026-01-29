@@ -23,7 +23,8 @@ export const ResonanceStrings = {
 
   // Preferences
   preferences: {
-    titleStringProperty: resonanceStringManager.getPreferencesLabels().titleStringProperty,
+    titleStringProperty:
+      resonanceStringManager.getPreferencesLabels().titleStringProperty,
 
     visual: resonanceStringManager.getVisualPreferencesLabels(),
 

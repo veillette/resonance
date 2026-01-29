@@ -14,7 +14,13 @@
  * the driving frequency relative to the natural frequency.
  */
 
-import { NumberProperty, Property, DerivedProperty, TReadOnlyProperty, ReadOnlyProperty } from "scenerystack/axon";
+import {
+  NumberProperty,
+  Property,
+  DerivedProperty,
+  TReadOnlyProperty,
+  ReadOnlyProperty,
+} from "scenerystack/axon";
 import { BaseModel } from "./BaseModel.js";
 import { SolverType } from "./SolverType.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
@@ -50,7 +56,9 @@ export class ResonanceModel extends BaseModel {
   // Phase relationship (angle between displacement and driving force)
   public readonly phaseAngleProperty: TReadOnlyProperty<number>; // radians
 
-  public constructor(preferencesModel: { solverTypeProperty: Property<SolverType> }) {
+  public constructor(preferencesModel: {
+    solverTypeProperty: Property<SolverType>;
+  }) {
     super(preferencesModel.solverTypeProperty);
 
     // Initialize state variables
@@ -73,38 +81,44 @@ export class ResonanceModel extends BaseModel {
     // Compute natural frequency: ω₀ = √(k/m)
     this.naturalFrequencyProperty = new DerivedProperty(
       [this.springConstantProperty, this.massProperty],
-      (k: number, m: number) => Math.sqrt(k / m)
+      (k: number, m: number) => Math.sqrt(k / m),
     );
 
     // Compute natural frequency in Hz: f₀ = ω₀/(2π)
     this.naturalFrequencyHzProperty = new DerivedProperty(
       [this.naturalFrequencyProperty],
-      (omega0: number) => omega0 / (2 * Math.PI)
+      (omega0: number) => omega0 / (2 * Math.PI),
     );
 
     // Compute damping ratio: ζ = b/(2√(mk))
     this.dampingRatioProperty = new DerivedProperty(
       [this.dampingProperty, this.massProperty, this.springConstantProperty],
-      (b: number, m: number, k: number) => b / (2 * Math.sqrt(m * k))
+      (b: number, m: number, k: number) => b / (2 * Math.sqrt(m * k)),
     );
 
     // Compute kinetic energy: KE = ½mv²
     this.kineticEnergyProperty = new DerivedProperty(
       [this.massProperty, this.velocityProperty],
-      (m: number, v: number) => 0.5 * m * v * v
+      (m: number, v: number) => 0.5 * m * v * v,
     );
 
     // Compute potential energy: PE = ½kx² - mgx
     // (Spring potential + gravitational potential with reference at natural length)
     this.potentialEnergyProperty = new DerivedProperty(
-      [this.springConstantProperty, this.positionProperty, this.massProperty, this.gravityProperty],
-      (k: number, x: number, m: number, g: number) => 0.5 * k * x * x - m * g * x
+      [
+        this.springConstantProperty,
+        this.positionProperty,
+        this.massProperty,
+        this.gravityProperty,
+      ],
+      (k: number, x: number, m: number, g: number) =>
+        0.5 * k * x * x - m * g * x,
     );
 
     // Compute total energy: E = KE + PE
     this.totalEnergyProperty = new DerivedProperty(
       [this.kineticEnergyProperty, this.potentialEnergyProperty],
-      (ke: number, pe: number) => ke + pe
+      (ke: number, pe: number) => ke + pe,
     );
 
     // Compute phase angle between displacement and driving force
@@ -131,7 +145,7 @@ export class ResonanceModel extends BaseModel {
         }
 
         return Math.atan(numerator / denominator);
-      }
+      },
     );
   }
 
@@ -142,7 +156,7 @@ export class ResonanceModel extends BaseModel {
     return [
       this.positionProperty.value,
       this.velocityProperty.value,
-      this.drivingPhaseProperty.value
+      this.drivingPhaseProperty.value,
     ];
   }
 
@@ -193,7 +207,7 @@ export class ResonanceModel extends BaseModel {
     return [
       v, // dx/dt = v
       acceleration, // dv/dt = a
-      phaseDerivative // dphase/dt = ω
+      phaseDerivative, // dphase/dt = ω
     ];
   }
 
@@ -240,7 +254,13 @@ export class ResonanceModel extends BaseModel {
  * Configuration preset for the resonance model
  */
 export type ResonancePreset = {
-  nameKey: "lightAndBouncy" | "heavyAndSlow" | "underdamped" | "criticallyDamped" | "overdamped" | "resonanceDemo"; // Key for localized name
+  nameKey:
+    | "lightAndBouncy"
+    | "heavyAndSlow"
+    | "underdamped"
+    | "criticallyDamped"
+    | "overdamped"
+    | "resonanceDemo"; // Key for localized name
   mass: number; // kg
   springConstant: number; // N/m
   damping: number; // N·s/m
@@ -253,8 +273,11 @@ export type ResonancePreset = {
 /**
  * Get the localized name for a preset
  */
-export function getPresetName(preset: ResonancePreset): ReadOnlyProperty<string> {
-  const propertyName = `${preset.nameKey}StringProperty` as keyof typeof ResonanceStrings.presets;
+export function getPresetName(
+  preset: ResonancePreset,
+): ReadOnlyProperty<string> {
+  const propertyName =
+    `${preset.nameKey}StringProperty` as keyof typeof ResonanceStrings.presets;
   return ResonanceStrings.presets[propertyName] as ReadOnlyProperty<string>;
 }
 

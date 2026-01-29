@@ -8,8 +8,8 @@ import { PhetFont } from "scenerystack/scenery-phet";
 
 // ===== FONTS =====
 
-const LABEL_FONT = new PhetFont({ size: 14, weight: 'bold' });
-const TITLE_FONT = new PhetFont({ size: 16, weight: 'bold' });
+const LABEL_FONT = new PhetFont({ size: 14, weight: "bold" });
+const TITLE_FONT = new PhetFont({ size: 16, weight: "bold" });
 const TICK_LABEL_FONT = new PhetFont({ size: 12 });
 const CONTROL_FONT = new PhetFont({ size: 14 });
 
@@ -44,17 +44,17 @@ const AMPLITUDE_CONTROL_BOTTOM_MARGIN = 40;
 
 // ===== PHYSICS RANGES =====
 
-const FREQUENCY_RANGE = new Range( 0.1, 5 );
-const AMPLITUDE_RANGE = new Range( 0.002, 0.02 ); // 0.2 cm to 2 cm (in meters)
-const RESONATOR_COUNT_RANGE = new Range( 1, 10 );
-const MASS_RANGE = new Range( 0.1, 5.0 );
-const SPRING_CONSTANT_RANGE = new Range( 10, 1200 );
-const DAMPING_RANGE = new Range( 0.1, 5 );
+const FREQUENCY_RANGE = new Range(0.1, 5);
+const AMPLITUDE_RANGE = new Range(0.002, 0.02); // 0.2 cm to 2 cm (in meters)
+const RESONATOR_COUNT_RANGE = new Range(1, 10);
+const MASS_RANGE = new Range(0.1, 5.0);
+const SPRING_CONSTANT_RANGE = new Range(10, 1200);
+const DAMPING_RANGE = new Range(0.1, 5);
 
 // ===== MODEL-VIEW TRANSFORM =====
 
 const MODEL_BOUNDS_MIN = -0.5; // meters (symmetric: -0.5 m to +0.5 m = 1 m total)
-const MODEL_BOUNDS_MAX = 0.5;  // meters
+const MODEL_BOUNDS_MAX = 0.5; // meters
 
 // ===== SPRING AND MASS RENDERING =====
 
@@ -64,7 +64,7 @@ const MAX_MASS_SIZE = 50; // pixels (width and height of square)
 const MIN_MASS_SIZE = 20; // pixels
 const MASS_STROKE_LINE_WIDTH = 3;
 const MASS_LABEL_FONT_SIZE_BASE = 24; // base font size
-const MASS_LABEL_FONT_SIZE_MIN = 10;  // minimum font size
+const MASS_LABEL_FONT_SIZE_MIN = 10; // minimum font size
 const MASS_CENTER_OFFSET = 5; // pixels - offset of mass center above junction point
 
 // ParametricSpringNode configuration
@@ -237,7 +237,7 @@ const ResonanceConstants = {
   PLAYBACK_CONTROLS_SPACING,
   SPEED_CONTROL_SPACING,
   SPEED_RADIO_BUTTON_RADIUS,
-  PLAYBACK_BOTTOM_MARGIN
+  PLAYBACK_BOTTOM_MARGIN,
 };
 
 export default ResonanceConstants;

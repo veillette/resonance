@@ -12,60 +12,73 @@ import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 export class PlaybackControlNode extends HBox {
-
-  public constructor( model: SimModel, layoutBounds: Bounds2 ) {
-
+  public constructor(model: SimModel, layoutBounds: Bounds2) {
     // Speed radio buttons
     const speedButtons = [
-      { value: 'slow', createNode: () => new Text( ResonanceStrings.controls.slowStringProperty, { font: ResonanceConstants.CONTROL_FONT } ) },
-      { value: 'normal', createNode: () => new Text( ResonanceStrings.controls.normalStringProperty, { font: ResonanceConstants.CONTROL_FONT } ) }
+      {
+        value: "slow",
+        createNode: () =>
+          new Text(ResonanceStrings.controls.slowStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
+      },
+      {
+        value: "normal",
+        createNode: () =>
+          new Text(ResonanceStrings.controls.normalStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
+      },
     ];
 
     const speedControl = new AquaRadioButtonGroup(
       model.resonanceModel.timeSpeedProperty,
       speedButtons,
       {
-        orientation: 'horizontal',
+        orientation: "horizontal",
         spacing: ResonanceConstants.SPEED_CONTROL_SPACING,
         radioButtonOptions: {
-          radius: ResonanceConstants.SPEED_RADIO_BUTTON_RADIUS
-        }
-      }
+          radius: ResonanceConstants.SPEED_RADIO_BUTTON_RADIUS,
+        },
+      },
     );
 
     // Play/Pause/Step buttons
-    const playPauseStepButtonGroup = new PlayPauseStepButtonGroup( model.resonanceModel.isPlayingProperty, {
-      playPauseButtonOptions: {
-        scale: ResonanceConstants.PLAY_PAUSE_SCALE
+    const playPauseStepButtonGroup = new PlayPauseStepButtonGroup(
+      model.resonanceModel.isPlayingProperty,
+      {
+        playPauseButtonOptions: {
+          scale: ResonanceConstants.PLAY_PAUSE_SCALE,
+        },
+        includeStepForwardButton: true,
+        includeStepBackwardButton: true,
+        stepForwardButtonOptions: {
+          listener: () => {
+            model.resonanceModel.step(ResonanceConstants.STEP_DT, true);
+            const count = model.resonatorCountProperty.value;
+            for (let i = 1; i < count; i++) {
+              model.resonatorModels[i].step(ResonanceConstants.STEP_DT, true);
+            }
+          },
+        },
+        stepBackwardButtonOptions: {
+          listener: () => {
+            model.resonanceModel.step(-ResonanceConstants.STEP_DT, true);
+            const count = model.resonatorCountProperty.value;
+            for (let i = 1; i < count; i++) {
+              model.resonatorModels[i].step(-ResonanceConstants.STEP_DT, true);
+            }
+          },
+        },
       },
-      includeStepForwardButton: true,
-      includeStepBackwardButton: true,
-      stepForwardButtonOptions: {
-        listener: () => {
-          model.resonanceModel.step( ResonanceConstants.STEP_DT, true );
-          const count = model.resonatorCountProperty.value;
-          for ( let i = 1; i < count; i++ ) {
-            model.resonatorModels[ i ].step( ResonanceConstants.STEP_DT, true );
-          }
-        }
-      },
-      stepBackwardButtonOptions: {
-        listener: () => {
-          model.resonanceModel.step( -ResonanceConstants.STEP_DT, true );
-          const count = model.resonatorCountProperty.value;
-          for ( let i = 1; i < count; i++ ) {
-            model.resonatorModels[ i ].step( -ResonanceConstants.STEP_DT, true );
-          }
-        }
-      }
-    } );
+    );
 
-    super( {
-      children: [ speedControl, playPauseStepButtonGroup ],
+    super({
+      children: [speedControl, playPauseStepButtonGroup],
       spacing: ResonanceConstants.PLAYBACK_CONTROLS_SPACING,
-      align: 'center',
+      align: "center",
       centerX: layoutBounds.centerX + ResonanceConstants.DRIVER_CENTER_X_OFFSET,
-      bottom: layoutBounds.bottom - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN
-    } );
+      bottom: layoutBounds.bottom - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN,
+    });
   }
 }

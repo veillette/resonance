@@ -3,7 +3,7 @@
  * Configures canvas and Web Audio API support for jsdom environment
  */
 
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock AudioParam for Web Audio API
 function createMockAudioParam(initialValue = 0) {
@@ -26,15 +26,15 @@ function createMockAudioParam(initialValue = 0) {
 class MockAudioContext {
   destination = {
     channelCount: 2,
-    channelCountMode: 'explicit',
-    channelInterpretation: 'speakers',
+    channelCountMode: "explicit",
+    channelInterpretation: "speakers",
     maxChannelCount: 2,
     numberOfInputs: 1,
     numberOfOutputs: 0,
   };
   sampleRate = 44100;
   currentTime = 0;
-  state = 'running';
+  state = "running";
   listener = {
     positionX: createMockAudioParam(),
     positionY: createMockAudioParam(),
@@ -56,14 +56,14 @@ class MockAudioContext {
       numberOfInputs: 1,
       numberOfOutputs: 1,
       channelCount: 2,
-      channelCountMode: 'max',
-      channelInterpretation: 'speakers',
+      channelCountMode: "max",
+      channelInterpretation: "speakers",
     };
   }
 
   createOscillator() {
     return {
-      type: 'sine',
+      type: "sine",
       frequency: createMockAudioParam(440),
       detune: createMockAudioParam(0),
       connect: vi.fn().mockReturnThis(),
@@ -120,7 +120,7 @@ class MockAudioContext {
 
   createBiquadFilter() {
     return {
-      type: 'lowpass',
+      type: "lowpass",
       frequency: createMockAudioParam(350),
       detune: createMockAudioParam(0),
       Q: createMockAudioParam(1),
@@ -143,8 +143,11 @@ class MockAudioContext {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   decodeAudioData(audioData: ArrayBuffer): Promise<AudioBuffer> {
-    return Promise.resolve(this.createBuffer(2, 44100, 44100) as unknown as AudioBuffer);
+    return Promise.resolve(
+      this.createBuffer(2, 44100, 44100) as unknown as AudioBuffer,
+    );
   }
 
   resume() {
@@ -168,17 +171,17 @@ global.webkitAudioContext = MockAudioContext;
 // Mock HTMLCanvasElement.getContext to use node-canvas
 const originalGetContext = HTMLCanvasElement.prototype.getContext;
 
-HTMLCanvasElement.prototype.getContext = function(
+HTMLCanvasElement.prototype.getContext = function (
   contextId: string,
-  options?: CanvasRenderingContext2DSettings
+  options?: CanvasRenderingContext2DSettings,
 ): RenderingContext | null {
-  if (contextId === '2d') {
+  if (contextId === "2d") {
     try {
       // Try to use node-canvas
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { createCanvas } = require('canvas');
+      const { createCanvas } = require("canvas");
       const canvas = createCanvas(this.width || 300, this.height || 150);
-      return canvas.getContext('2d');
+      return canvas.getContext("2d");
     } catch {
       // Fallback to mock if canvas is not available
       return {
@@ -232,39 +235,46 @@ const mockBBox = {
 };
 
 // Add getBBox to SVGElement prototype
-if (typeof SVGElement !== 'undefined') {
+if (typeof SVGElement !== "undefined") {
   // @ts-expect-error - Adding mock method
-  SVGElement.prototype.getBBox = function() {
+  SVGElement.prototype.getBBox = function () {
     return { ...mockBBox };
   };
 
   // @ts-expect-error - Adding mock method
-  SVGElement.prototype.getComputedTextLength = function() {
+  SVGElement.prototype.getComputedTextLength = function () {
     return 100;
   };
 
   // @ts-expect-error - Adding mock method
-  SVGElement.prototype.getSubStringLength = function() {
+  SVGElement.prototype.getSubStringLength = function () {
     return 10;
   };
 }
 
 // Mock createElementNS for SVG elements
 const originalCreateElementNS = document.createElementNS;
-document.createElementNS = function(namespaceURI: string | null, qualifiedName: string) {
-  const element = originalCreateElementNS.call(document, namespaceURI, qualifiedName);
+document.createElementNS = function (
+  namespaceURI: string | null,
+  qualifiedName: string,
+) {
+  const element = originalCreateElementNS.call(
+    document,
+    namespaceURI,
+    qualifiedName,
+  );
 
-  if (namespaceURI === 'http://www.w3.org/2000/svg') {
+  if (namespaceURI === "http://www.w3.org/2000/svg") {
     // @ts-expect-error - Adding mock method
-    element.getBBox = function() {
+    element.getBBox = function () {
       return { ...mockBBox };
     };
     // @ts-expect-error - Adding mock method
-    element.getComputedTextLength = function() {
+    element.getComputedTextLength = function () {
       return 100;
     };
     // @ts-expect-error - Adding mock method
-    element.getSubStringLength = function() {
+    element.getSubStringLength = function () {
       return 10;
     };
   }
@@ -273,9 +283,9 @@ document.createElementNS = function(namespaceURI: string | null, qualifiedName: 
 };
 
 // Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,

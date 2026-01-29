@@ -15,79 +15,97 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { CircularUpdateGuard } from "../../common/util/index.js";
 
 export class DriverControlNode extends Node {
-
-  public constructor( model: SimModel ) {
+  public constructor(model: SimModel) {
     super();
 
     // Grey driver box
-    const driverBox = new Rectangle( 0, 0,
+    const driverBox = new Rectangle(
+      0,
+      0,
       ResonanceConstants.DRIVER_BOX_WIDTH,
       ResonanceConstants.DRIVER_BOX_HEIGHT,
       ResonanceConstants.DRIVER_BOX_CORNER_RADIUS,
-      ResonanceConstants.DRIVER_BOX_CORNER_RADIUS, {
+      ResonanceConstants.DRIVER_BOX_CORNER_RADIUS,
+      {
         fill: ResonanceColors.driverFillProperty,
         stroke: ResonanceColors.driverStrokeProperty,
-        lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH
-      } );
-    this.addChild( driverBox );
+        lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
+      },
+    );
+    this.addChild(driverBox);
 
     // Power Toggle
-    const powerToggleLabel = new Text( ResonanceStrings.controls.onStringProperty, {
-      font: ResonanceConstants.LABEL_FONT,
-      fill: ResonanceColors.driverTextProperty
-    } );
-    const powerToggleSwitch = new ToggleSwitch( model.resonanceModel.drivingEnabledProperty, false, true, {
-      trackFillLeft: ResonanceColors.toggleTrackOffProperty,
-      trackFillRight: ResonanceColors.toggleTrackOnProperty,
-      thumbFill: 'white',
-      scale: 0.7
-    } );
-    const powerToggleBox = new VBox( {
-      children: [ powerToggleLabel, powerToggleSwitch ],
+    const powerToggleLabel = new Text(
+      ResonanceStrings.controls.onStringProperty,
+      {
+        font: ResonanceConstants.LABEL_FONT,
+        fill: ResonanceColors.driverTextProperty,
+      },
+    );
+    const powerToggleSwitch = new ToggleSwitch(
+      model.resonanceModel.drivingEnabledProperty,
+      false,
+      true,
+      {
+        trackFillLeft: ResonanceColors.toggleTrackOffProperty,
+        trackFillRight: ResonanceColors.toggleTrackOnProperty,
+        thumbFill: "white",
+        scale: 0.7,
+      },
+    );
+    const powerToggleBox = new VBox({
+      children: [powerToggleLabel, powerToggleSwitch],
       spacing: ResonanceConstants.POWER_TOGGLE_SPACING,
-      align: 'center'
-    } );
+      align: "center",
+    });
 
     // Frequency Control
-    const frequencyControl = new NumberControl( ResonanceStrings.controls.frequencyStringProperty, model.resonanceModel.drivingFrequencyProperty, ResonanceConstants.FREQUENCY_RANGE, {
-      delta: 0.1,
-      numberDisplayOptions: {
-        valuePattern: ResonanceStrings.units.hertzPatternStringProperty,
-        decimalPlaces: 1,
-        textOptions: {
-          font: ResonanceConstants.LABEL_FONT
-        }
+    const frequencyControl = new NumberControl(
+      ResonanceStrings.controls.frequencyStringProperty,
+      model.resonanceModel.drivingFrequencyProperty,
+      ResonanceConstants.FREQUENCY_RANGE,
+      {
+        delta: 0.1,
+        numberDisplayOptions: {
+          valuePattern: ResonanceStrings.units.hertzPatternStringProperty,
+          decimalPlaces: 1,
+          textOptions: {
+            font: ResonanceConstants.LABEL_FONT,
+          },
+        },
+        titleNodeOptions: {
+          font: ResonanceConstants.LABEL_FONT,
+        },
+        sliderOptions: {
+          trackFillEnabled: ResonanceColors.frequencyTrackProperty,
+          trackSize: new Dimension2(120, 3),
+          minorTickSpacing: 0.5,
+        },
       },
-      titleNodeOptions: {
-        font: ResonanceConstants.LABEL_FONT
-      },
-      sliderOptions: {
-        trackFillEnabled: ResonanceColors.frequencyTrackProperty,
-        trackSize: new Dimension2( 120, 3 ),
-        minorTickSpacing: 0.5
-      }
-    } );
-    frequencyControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE );
+    );
+    frequencyControl.setScaleMagnitude(ResonanceConstants.CONTROL_SCALE);
 
     // Amplitude Control (display in cm, model in meters)
-    const amplitudeCmProperty = new NumberProperty( model.resonanceModel.drivingAmplitudeProperty.value * 100 );
+    const amplitudeCmProperty = new NumberProperty(
+      model.resonanceModel.drivingAmplitudeProperty.value * 100,
+    );
 
     // Bidirectional sync: cm <-> meters
     const amplitudeGuard = new CircularUpdateGuard();
-    amplitudeCmProperty.link( ( cm: number ) => {
-      amplitudeGuard.run( () => {
+    amplitudeCmProperty.link((cm: number) => {
+      amplitudeGuard.run(() => {
         model.resonanceModel.drivingAmplitudeProperty.value = cm / 100;
-      } );
-    } );
-    model.resonanceModel.drivingAmplitudeProperty.link( ( meters: number ) => {
-      amplitudeGuard.run( () => {
+      });
+    });
+    model.resonanceModel.drivingAmplitudeProperty.link((meters: number) => {
+      amplitudeGuard.run(() => {
         amplitudeCmProperty.value = meters * 100;
-      } );
-    } );
+      });
+    });
 
     const amplitudeRangeCm = new Range(
       ResonanceConstants.AMPLITUDE_RANGE.min * 100,
-      ResonanceConstants.AMPLITUDE_RANGE.max * 100
+      ResonanceConstants.AMPLITUDE_RANGE.max * 100,
     );
 
     const amplitudeControl = new NumberControl(
@@ -100,28 +118,28 @@ export class DriverControlNode extends Node {
           valuePattern: ResonanceStrings.units.cmPatternStringProperty,
           decimalPlaces: 2,
           textOptions: {
-            font: ResonanceConstants.LABEL_FONT
-          }
+            font: ResonanceConstants.LABEL_FONT,
+          },
         },
         titleNodeOptions: {
-          font: ResonanceConstants.LABEL_FONT
+          font: ResonanceConstants.LABEL_FONT,
         },
         sliderOptions: {
           trackFillEnabled: ResonanceColors.amplitudeTrackProperty,
-          trackSize: new Dimension2( 120, 3 ),
-          minorTickSpacing: 0.2
-        }
-      }
+          trackSize: new Dimension2(120, 3),
+          minorTickSpacing: 0.2,
+        },
+      },
     );
-    amplitudeControl.setScaleMagnitude( ResonanceConstants.CONTROL_SCALE );
+    amplitudeControl.setScaleMagnitude(ResonanceConstants.CONTROL_SCALE);
 
     // Container for all three controls in a row
-    const controlsBox = new HBox( {
-      children: [ powerToggleBox, frequencyControl, amplitudeControl ],
+    const controlsBox = new HBox({
+      children: [powerToggleBox, frequencyControl, amplitudeControl],
       spacing: 25,
-      align: 'center'
-    } );
+      align: "center",
+    });
     controlsBox.center = driverBox.center;
-    this.addChild( controlsBox );
+    this.addChild(controlsBox);
   }
 }

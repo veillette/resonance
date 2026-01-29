@@ -21,7 +21,9 @@ export class ResonancePreferencesModel {
     this.showEnergyProperty = new BooleanProperty(true);
     this.showVectorsProperty = new BooleanProperty(false);
     this.showPhaseProperty = new BooleanProperty(true);
-    this.solverTypeProperty = new Property<SolverType>(SolverType.RUNGE_KUTTA_4);
+    this.solverTypeProperty = new Property<SolverType>(
+      SolverType.RUNGE_KUTTA_4,
+    );
 
     // Set up persistence
     this.setupPersistence();
@@ -65,7 +67,10 @@ export class ResonancePreferencesModel {
         showPhase: this.showPhaseProperty.value,
         solverType: this.solverTypeProperty.value,
       };
-      localStorage.setItem("resonance-preferences", JSON.stringify(preferences));
+      localStorage.setItem(
+        "resonance-preferences",
+        JSON.stringify(preferences),
+      );
     } catch (error) {
       console.warn("Failed to save preferences:", error);
     }

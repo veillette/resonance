@@ -39,36 +39,48 @@ onReadyToLaunch(() => {
                 align: "left",
                 spacing: 8,
                 children: [
-                  new Text(ResonanceStrings.preferences.simulation.displayOptionsStringProperty, {
-                    font: new PhetFont({ size: 16, weight: "bold" }),
-                    fill: ResonanceColors.textProperty,
-                  }),
+                  new Text(
+                    ResonanceStrings.preferences.simulation.displayOptionsStringProperty,
+                    {
+                      font: new PhetFont({ size: 16, weight: "bold" }),
+                      fill: ResonanceColors.textProperty,
+                    },
+                  ),
                   new Checkbox(
                     resonancePreferences.showEnergyProperty,
-                    new Text(ResonanceStrings.preferences.simulation.showEnergyStringProperty, {
-                      font: new PhetFont(16),
-                      fill: ResonanceColors.textProperty,
-                    }),
+                    new Text(
+                      ResonanceStrings.preferences.simulation.showEnergyStringProperty,
+                      {
+                        font: new PhetFont(16),
+                        fill: ResonanceColors.textProperty,
+                      },
+                    ),
                     {
                       boxWidth: 16,
                     },
                   ),
                   new Checkbox(
                     resonancePreferences.showVectorsProperty,
-                    new Text(ResonanceStrings.preferences.simulation.showVectorsStringProperty, {
-                      font: new PhetFont(16),
-                      fill: ResonanceColors.textProperty,
-                    }),
+                    new Text(
+                      ResonanceStrings.preferences.simulation.showVectorsStringProperty,
+                      {
+                        font: new PhetFont(16),
+                        fill: ResonanceColors.textProperty,
+                      },
+                    ),
                     {
                       boxWidth: 16,
                     },
                   ),
                   new Checkbox(
                     resonancePreferences.showPhaseProperty,
-                    new Text(ResonanceStrings.preferences.simulation.showPhaseStringProperty, {
-                      font: new PhetFont(16),
-                      fill: ResonanceColors.textProperty,
-                    }),
+                    new Text(
+                      ResonanceStrings.preferences.simulation.showPhaseStringProperty,
+                      {
+                        font: new PhetFont(16),
+                        fill: ResonanceColors.textProperty,
+                      },
+                    ),
                     {
                       boxWidth: 16,
                     },
@@ -82,78 +94,106 @@ onReadyToLaunch(() => {
                 [
                   {
                     value: SolverType.RUNGE_KUTTA_4,
-                    createNode: () => new VBox({
-                      align: "left",
-                      spacing: 4,
-                      children: [
-                        new Text(ResonanceStrings.preferences.solvers.rk4StringProperty, {
-                          font: new PhetFont(14),
-                          fill: ResonanceColors.textProperty,
-                        }),
-                        new Text(ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty, {
-                          font: new PhetFont(11),
-                          fill: ResonanceColors.textSecondaryProperty,
-                          maxWidth: 550,
-                        }),
-                      ],
-                    }),
+                    createNode: () =>
+                      new VBox({
+                        align: "left",
+                        spacing: 4,
+                        children: [
+                          new Text(
+                            ResonanceStrings.preferences.solvers.rk4StringProperty,
+                            {
+                              font: new PhetFont(14),
+                              fill: ResonanceColors.textProperty,
+                            },
+                          ),
+                          new Text(
+                            ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty,
+                            {
+                              font: new PhetFont(11),
+                              fill: ResonanceColors.textSecondaryProperty,
+                              maxWidth: 550,
+                            },
+                          ),
+                        ],
+                      }),
                     tandemName: "rk4RadioButton",
                   },
                   {
                     value: SolverType.ADAPTIVE_RK45,
-                    createNode: () => new VBox({
-                      align: "left",
-                      spacing: 4,
-                      children: [
-                        new Text(ResonanceStrings.preferences.solvers.adaptiveRK45StringProperty, {
-                          font: new PhetFont(14),
-                          fill: ResonanceColors.textProperty,
-                        }),
-                        new Text(ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty, {
-                          font: new PhetFont(11),
-                          fill: ResonanceColors.textSecondaryProperty,
-                          maxWidth: 550,
-                        }),
-                      ],
-                    }),
+                    createNode: () =>
+                      new VBox({
+                        align: "left",
+                        spacing: 4,
+                        children: [
+                          new Text(
+                            ResonanceStrings.preferences.solvers.adaptiveRK45StringProperty,
+                            {
+                              font: new PhetFont(14),
+                              fill: ResonanceColors.textProperty,
+                            },
+                          ),
+                          new Text(
+                            ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty,
+                            {
+                              font: new PhetFont(11),
+                              fill: ResonanceColors.textSecondaryProperty,
+                              maxWidth: 550,
+                            },
+                          ),
+                        ],
+                      }),
                     tandemName: "adaptiveRK45RadioButton",
                   },
                   {
                     value: SolverType.ADAPTIVE_EULER,
-                    createNode: () => new VBox({
-                      align: "left",
-                      spacing: 4,
-                      children: [
-                        new Text(ResonanceStrings.preferences.solvers.adaptiveEulerStringProperty, {
-                          font: new PhetFont(14),
-                          fill: ResonanceColors.textProperty,
-                        }),
-                        new Text(ResonanceStrings.preferences.solvers.adaptiveEulerDescriptionStringProperty, {
-                          font: new PhetFont(11),
-                          fill: ResonanceColors.textSecondaryProperty,
-                          maxWidth: 550,
-                        }),
-                      ],
-                    }),
+                    createNode: () =>
+                      new VBox({
+                        align: "left",
+                        spacing: 4,
+                        children: [
+                          new Text(
+                            ResonanceStrings.preferences.solvers.adaptiveEulerStringProperty,
+                            {
+                              font: new PhetFont(14),
+                              fill: ResonanceColors.textProperty,
+                            },
+                          ),
+                          new Text(
+                            ResonanceStrings.preferences.solvers.adaptiveEulerDescriptionStringProperty,
+                            {
+                              font: new PhetFont(11),
+                              fill: ResonanceColors.textSecondaryProperty,
+                              maxWidth: 550,
+                            },
+                          ),
+                        ],
+                      }),
                     tandemName: "adaptiveEulerRadioButton",
                   },
                   {
                     value: SolverType.MODIFIED_MIDPOINT,
-                    createNode: () => new VBox({
-                      align: "left",
-                      spacing: 4,
-                      children: [
-                        new Text(ResonanceStrings.preferences.solvers.modifiedMidpointStringProperty, {
-                          font: new PhetFont(14),
-                          fill: ResonanceColors.textProperty,
-                        }),
-                        new Text(ResonanceStrings.preferences.solvers.modifiedMidpointDescriptionStringProperty, {
-                          font: new PhetFont(11),
-                          fill: ResonanceColors.textSecondaryProperty,
-                          maxWidth: 550,
-                        }),
-                      ],
-                    }),
+                    createNode: () =>
+                      new VBox({
+                        align: "left",
+                        spacing: 4,
+                        children: [
+                          new Text(
+                            ResonanceStrings.preferences.solvers.modifiedMidpointStringProperty,
+                            {
+                              font: new PhetFont(14),
+                              fill: ResonanceColors.textProperty,
+                            },
+                          ),
+                          new Text(
+                            ResonanceStrings.preferences.solvers.modifiedMidpointDescriptionStringProperty,
+                            {
+                              font: new PhetFont(11),
+                              fill: ResonanceColors.textSecondaryProperty,
+                              maxWidth: 550,
+                            },
+                          ),
+                        ],
+                      }),
                     tandemName: "modifiedMidpointRadioButton",
                   },
                 ],
@@ -169,15 +209,21 @@ onReadyToLaunch(() => {
                 align: "left",
                 spacing: 12,
                 children: [
-                  new Text(ResonanceStrings.preferences.simulation.solverMethodStringProperty, {
-                    font: new PhetFont({ size: 16, weight: "bold" }),
-                    fill: "black",
-                  }),
-                  new Text(ResonanceStrings.preferences.simulation.solverDescriptionStringProperty, {
-                    font: new PhetFont(12),
-                    fill: "black",
-                    maxWidth: 600,
-                  }),
+                  new Text(
+                    ResonanceStrings.preferences.simulation.solverMethodStringProperty,
+                    {
+                      font: new PhetFont({ size: 16, weight: "bold" }),
+                      fill: "black",
+                    },
+                  ),
+                  new Text(
+                    ResonanceStrings.preferences.simulation.solverDescriptionStringProperty,
+                    {
+                      font: new PhetFont(12),
+                      fill: "black",
+                      maxWidth: 600,
+                    },
+                  ),
                   solverRadioButtonGroup,
                 ],
               });
@@ -205,7 +251,11 @@ onReadyToLaunch(() => {
   ];
 
   // Create the simulation
-  const sim = new Sim(ResonanceStrings.titleStringProperty, screens, simOptions);
+  const sim = new Sim(
+    ResonanceStrings.titleStringProperty,
+    screens,
+    simOptions,
+  );
 
   sim.start();
 });

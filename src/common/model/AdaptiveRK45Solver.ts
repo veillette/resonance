@@ -29,11 +29,25 @@ export class AdaptiveRK45Solver extends ODESolver {
   ];
 
   // 5th order solution coefficients
-  private readonly c5 = [35 / 384, 0, 500 / 1113, 125 / 192, -2187 / 6784, 11 / 84, 0];
+  private readonly c5 = [
+    35 / 384,
+    0,
+    500 / 1113,
+    125 / 192,
+    -2187 / 6784,
+    11 / 84,
+    0,
+  ];
 
   // 4th order solution coefficients (for error estimation)
   private readonly c4 = [
-    5179 / 57600, 0, 7571 / 16695, 393 / 640, -92097 / 339200, 187 / 2100, 1 / 40,
+    5179 / 57600,
+    0,
+    7571 / 16695,
+    393 / 640,
+    -92097 / 339200,
+    187 / 2100,
+    1 / 40,
   ];
 
   /**
@@ -56,7 +70,9 @@ export class AdaptiveRK45Solver extends ODESolver {
 
       // Safety check
       if (currentTimestep < this.minTimestep) {
-        console.warn("AdaptiveRK45Solver: Timestep became too small, forcing step");
+        console.warn(
+          "AdaptiveRK45Solver: Timestep became too small, forcing step",
+        );
         this.forceStep(remainingTime, model);
         break;
       }
@@ -68,7 +84,7 @@ export class AdaptiveRK45Solver extends ODESolver {
    */
   private tryStep(
     dt: number,
-    model: ODEModel
+    model: ODEModel,
   ): { success: boolean; nextTimestep: number } {
     const state = model.getState();
     const n = state.length;
@@ -140,7 +156,10 @@ export class AdaptiveRK45Solver extends ODESolver {
       // Standard timestep adjustment formula
       const ratio = this.errorTolerance / maxError;
       const factor = this.safetyFactor * Math.pow(ratio, 0.2);
-      nextTimestep = Math.min(Math.max(dt * factor, this.minTimestep), this.maxTimestep);
+      nextTimestep = Math.min(
+        Math.max(dt * factor, this.minTimestep),
+        this.maxTimestep,
+      );
     }
 
     // Accept or reject the step
@@ -182,7 +201,8 @@ export class AdaptiveRK45Solver extends ODESolver {
 
     const newState = new Array(n);
     for (let i = 0; i < n; i++) {
-      newState[i] = state[i] + (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) * dt / 6;
+      newState[i] =
+        state[i] + ((k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) * dt) / 6;
     }
 
     model.setState(newState);
