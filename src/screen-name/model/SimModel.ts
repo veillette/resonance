@@ -281,10 +281,15 @@ export class SimModel {
 
   public step(dt: number): void {
     const count = this.resonatorCountProperty.value;
-    // Step all active resonator models. Since isPlayingProperty and
-    // timeSpeedProperty are synced, they will all advance the same amount.
+    // Step all active resonator models that are not being dragged.
+    // Since isPlayingProperty and timeSpeedProperty are synced,
+    // they will all advance the same amount.
     for (let i = 0; i < count; i++) {
-      this.resonatorModels[i].step(dt);
+      const model = this.resonatorModels[i];
+      // Skip stepping if this resonator is being dragged by the user
+      if (!model.isDraggingProperty.value) {
+        model.step(dt);
+      }
     }
   }
 }

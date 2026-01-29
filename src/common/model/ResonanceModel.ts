@@ -17,6 +17,7 @@
 import {
   NumberProperty,
   Property,
+  BooleanProperty,
   DerivedProperty,
   TReadOnlyProperty,
   ReadOnlyProperty,
@@ -29,6 +30,10 @@ export class ResonanceModel extends BaseModel {
   // State variables
   public readonly positionProperty: NumberProperty; // displacement from natural length (m, positive = downward)
   public readonly velocityProperty: NumberProperty; // velocity (m/s, positive = downward)
+
+  // Drag state - when true, this resonator is being dragged by the user
+  // and should not be updated by the physics simulation
+  public readonly isDraggingProperty: BooleanProperty;
 
   // Physical parameters
   public readonly massProperty: NumberProperty; // mass (kg)
@@ -64,6 +69,7 @@ export class ResonanceModel extends BaseModel {
     // Initialize state variables
     this.positionProperty = new NumberProperty(0.0); // Start at equilibrium (natural length)
     this.velocityProperty = new NumberProperty(0.0); // Start at rest
+    this.isDraggingProperty = new BooleanProperty(false); // Not being dragged initially
 
     // Initialize physical parameters with reasonable defaults
     this.massProperty = new NumberProperty(0.25); // 0.25 kg - reasonable for small oscillator
@@ -218,6 +224,7 @@ export class ResonanceModel extends BaseModel {
     // Reset state
     this.positionProperty.reset();
     this.velocityProperty.reset();
+    this.isDraggingProperty.reset();
 
     // Reset physical parameters
     this.massProperty.reset();

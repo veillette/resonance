@@ -163,7 +163,12 @@ export class ResonatorNodeBuilder {
     const positionGuard = new CircularUpdateGuard();
 
     // Bidirectional sync: model position -> view position
+    // Only update view from model when NOT dragging
     const positionListener = (modelPosition: number) => {
+      // Skip model->view updates while dragging (user controls position)
+      if (resonatorModel.isDraggingProperty.value) {
+        return;
+      }
       positionGuard.run(() => {
         const naturalLength = resonatorModel.naturalLengthProperty.value;
         const naturalLengthView = Math.abs(
@@ -184,7 +189,7 @@ export class ResonatorNodeBuilder {
     };
     resonatorModel.positionProperty.link(positionListener);
 
-    // View position -> model position
+    // View position -> model position (only active during drag)
     const viewPositionListener = (viewPosition: Vector2) => {
       positionGuard.run(() => {
         const massCenterY = viewPosition.y;
@@ -201,7 +206,7 @@ export class ResonatorNodeBuilder {
 
         resonatorModel.positionProperty.value = modelPosition;
         resonatorModel.velocityProperty.value = 0;
-        resonatorModel.isPlayingProperty.value = false;
+        // Note: Don't stop the simulation - only this resonator is frozen while dragging
       });
     };
     massPositionProperty.lazyLink(viewPositionListener);
@@ -210,6 +215,14 @@ export class ResonatorNodeBuilder {
       targetNode: massNode,
       positionProperty: massPositionProperty,
       dragBoundsProperty: new Property(layoutBounds),
+      start: () => {
+        // Mark this resonator as being dragged - simulation will skip updating it
+        resonatorModel.isDraggingProperty.value = true;
+      },
+      end: () => {
+        // Release the resonator back to simulation control
+        resonatorModel.isDraggingProperty.value = false;
+      },
     });
     massNode.addInputListener(dragListener);
 
