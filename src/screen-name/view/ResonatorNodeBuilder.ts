@@ -69,11 +69,31 @@ export class ResonatorNodeBuilder {
   }
 
   /**
-   * Creates a spring node for a resonator with line width varying by spring constant.
+   * Creates a spring node for a resonator with line width (stroke) varying by spring constant only.
+   * The coil stroke width depends ONLY on spring constant, NOT on mass or any other property.
    */
   public static createSpringNode(
     resonatorModel: ResonanceModel,
   ): SpringNodeResult {
+    // Calculate line width based ONLY on spring constant (not mass or other properties)
+    // Uses square root scaling to prevent stroke from growing too large at high spring constants
+    const calculateLineWidth = (springConstant: number): number => {
+      const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
+      const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
+      // Clamp spring constant to valid range
+      const clampedK = Math.max(minK, Math.min(maxK, springConstant));
+      // Normalize to [0, 1]
+      const normalizedK = (clampedK - minK) / (maxK - minK);
+      // Use square root to compress high values - stroke grows slower at high spring constants
+      const sqrtNormalizedK = Math.sqrt(normalizedK);
+      return (
+        ResonanceConstants.SPRING_LINE_WIDTH_MIN +
+        sqrtNormalizedK *
+          (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
+            ResonanceConstants.SPRING_LINE_WIDTH_MIN)
+      );
+    };
+
     const springNode = new ParametricSpringNode({
       frontColor: ResonanceColors.springProperty,
       middleColor: ResonanceColors.springProperty,
@@ -82,24 +102,17 @@ export class ResonatorNodeBuilder {
       radius: ResonanceConstants.SPRING_RADIUS,
       aspectRatio: ResonanceConstants.SPRING_ASPECT_RATIO,
       pointsPerLoop: ResonanceConstants.SPRING_POINTS_PER_LOOP,
-      lineWidth: ResonanceConstants.SPRING_LINE_WIDTH,
+      lineWidth: calculateLineWidth(resonatorModel.springConstantProperty.value),
       leftEndLength: ResonanceConstants.SPRING_LEFT_END_LENGTH,
       rightEndLength: ResonanceConstants.SPRING_RIGHT_END_LENGTH,
       rotation: -Math.PI / 2,
       boundsMethod: "none",
     });
 
-    // Line width varies with spring constant
+    // Line width (stroke) varies ONLY with spring constant - NOT mass or any other property
+    // Only listen to springConstantProperty, not massProperty
     const springConstantListener = (springConstant: number) => {
-      const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
-      const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-      const normalizedK = (springConstant - minK) / (maxK - minK);
-      const lineWidth =
-        ResonanceConstants.SPRING_LINE_WIDTH_MIN +
-        normalizedK *
-          (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
-            ResonanceConstants.SPRING_LINE_WIDTH_MIN);
-      springNode.lineWidthProperty.value = lineWidth;
+      springNode.lineWidthProperty.value = calculateLineWidth(springConstant);
     };
 
     resonatorModel.springConstantProperty.link(springConstantListener);

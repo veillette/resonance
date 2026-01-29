@@ -48,7 +48,7 @@ const FREQUENCY_RANGE = new Range(0.1, 5);
 const AMPLITUDE_RANGE = new Range(0.002, 0.02); // 0.2 cm to 2 cm (in meters)
 const RESONATOR_COUNT_RANGE = new Range(1, 10);
 const MASS_RANGE = new Range(0.1, 5.0);
-const SPRING_CONSTANT_RANGE = new Range(10, 1200);
+const SPRING_CONSTANT_RANGE = new Range(10, 6000); // Extended to support up to ~6000 N/m
 const DAMPING_RANGE = new Range(0.1, 5);
 
 // ===== MODEL-VIEW TRANSFORM =====
