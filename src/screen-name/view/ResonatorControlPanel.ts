@@ -227,6 +227,12 @@ export class ResonatorControlPanel extends Panel {
         delta: 1,
         numberDisplayOptions: {
           decimalPlaces: 0,
+          textOptions: {
+            fill: ResonanceColors.preferencesTextProperty,
+          },
+        },
+        titleNodeOptions: {
+          fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
           trackSize: new Dimension2(150, 3),
@@ -235,16 +241,20 @@ export class ResonatorControlPanel extends Panel {
               value: 1,
               label: new Text("1", {
                 font: ResonanceConstants.TICK_LABEL_FONT,
+                fill: ResonanceColors.textProperty,
               }),
             },
             {
               value: 10,
               label: new Text("10", {
                 font: ResonanceConstants.TICK_LABEL_FONT,
+                fill: ResonanceColors.textProperty,
               }),
             },
           ],
           minorTickSpacing: 1,
+          majorTickStroke: ResonanceColors.textProperty,
+          minorTickStroke: ResonanceColors.textProperty,
         },
       },
     );
@@ -396,9 +406,17 @@ export class ResonatorControlPanel extends Panel {
         numberDisplayOptions: {
           valuePattern: ResonanceStrings.units.kgPatternStringProperty,
           decimalPlaces: 2,
+          textOptions: {
+            fill: ResonanceColors.preferencesTextProperty,
+          },
+        },
+        titleNodeOptions: {
+          fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
           trackSize: new Dimension2(150, 3),
+          majorTickStroke: ResonanceColors.textProperty,
+          minorTickStroke: ResonanceColors.textProperty,
         },
       },
     );
@@ -413,9 +431,17 @@ export class ResonatorControlPanel extends Panel {
           valuePattern:
             ResonanceStrings.units.newtonPerMeterPatternStringProperty,
           decimalPlaces: 0,
+          textOptions: {
+            fill: ResonanceColors.preferencesTextProperty,
+          },
+        },
+        titleNodeOptions: {
+          fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
           trackSize: new Dimension2(150, 3),
+          majorTickStroke: ResonanceColors.textProperty,
+          minorTickStroke: ResonanceColors.textProperty,
         },
       },
     );
@@ -471,9 +497,17 @@ export class ResonatorControlPanel extends Panel {
           valuePattern:
             ResonanceStrings.units.dampingUnitsPatternStringProperty,
           decimalPlaces: 1,
+          textOptions: {
+            fill: ResonanceColors.preferencesTextProperty,
+          },
+        },
+        titleNodeOptions: {
+          fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
           trackSize: new Dimension2(150, 3),
+          majorTickStroke: ResonanceColors.textProperty,
+          minorTickStroke: ResonanceColors.textProperty,
         },
       },
     );

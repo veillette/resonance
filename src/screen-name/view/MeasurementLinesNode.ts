@@ -12,6 +12,7 @@ import {
   MeasurementLineModel,
   MeasurementLinesModel,
 } from "../model/MeasurementLineModel.js";
+import ResonanceColors from "../../common/ResonanceColors.js";
 
 /**
  * View for a single draggable measurement line with a handle.
@@ -28,7 +29,7 @@ class MeasurementLineNode extends Node {
     // Create the dashed horizontal line
     const lineLength = driverWidth;
     const line = new Line(0, 0, lineLength, 0, {
-      stroke: "black",
+      stroke: ResonanceColors.textProperty,
       lineWidth: 2,
       lineDash: [10, 6],
     });
@@ -44,8 +45,8 @@ class MeasurementLineNode extends Node {
       handleWidth,
       handleHeight,
       {
-        fill: "rgba(100, 100, 100, 0.8)",
-        stroke: "black",
+        fill: ResonanceColors.driverFillProperty,
+        stroke: ResonanceColors.textProperty,
         lineWidth: 1,
         cornerRadius: 3,
         cursor: "ns-resize",
@@ -92,7 +93,7 @@ export class MeasurementLinesNode extends Node {
     super();
 
     // Calculate height range in model coordinates (meters)
-    const minHeight = 0.01; // 1cm minimum above plate
+    const minHeight = -0.20; // 20cm minimum below plate
     const screenHeightView = driverTopY - layoutBounds.minY;
     const maxHeight = Math.abs(
       modelViewTransform.viewToModelDeltaY(screenHeightView),
@@ -101,6 +102,7 @@ export class MeasurementLinesNode extends Node {
     // Create the model with height bounds
     this.model = new MeasurementLinesModel(minHeight, maxHeight, 0.2, 0.4);
 
+    //TODO the position of the lines is incorrects
     // Create view nodes for each line
     this.line1Node = new MeasurementLineNode(
       this.model.line1,

@@ -71,15 +71,19 @@ export class DriverControlNode extends Node {
           decimalPlaces: 1,
           textOptions: {
             font: ResonanceConstants.LABEL_FONT,
+            fill: ResonanceColors.preferencesTextProperty,
           },
         },
         titleNodeOptions: {
           font: ResonanceConstants.LABEL_FONT,
+          fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
           trackFillEnabled: ResonanceColors.frequencyTrackProperty,
           trackSize: new Dimension2(120, 3),
           minorTickSpacing: 0.5,
+          majorTickStroke: ResonanceColors.textProperty,
+          minorTickStroke: ResonanceColors.textProperty,
         },
       },
     );
@@ -119,15 +123,19 @@ export class DriverControlNode extends Node {
           decimalPlaces: 2,
           textOptions: {
             font: ResonanceConstants.LABEL_FONT,
+            fill: ResonanceColors.preferencesTextProperty,
           },
         },
         titleNodeOptions: {
           font: ResonanceConstants.LABEL_FONT,
+          fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
           trackFillEnabled: ResonanceColors.amplitudeTrackProperty,
           trackSize: new Dimension2(120, 3),
           minorTickSpacing: 0.2,
+          majorTickStroke: ResonanceColors.textProperty,
+          minorTickStroke: ResonanceColors.textProperty,
         },
       },
     );

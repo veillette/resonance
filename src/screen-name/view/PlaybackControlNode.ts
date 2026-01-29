@@ -10,6 +10,7 @@ import { Bounds2 } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+import ResonanceColors from "../../common/ResonanceColors.js";
 
 export class PlaybackControlNode extends HBox {
   public constructor(model: SimModel, layoutBounds: Bounds2) {
@@ -20,6 +21,7 @@ export class PlaybackControlNode extends HBox {
         createNode: () =>
           new Text(ResonanceStrings.controls.slowStringProperty, {
             font: ResonanceConstants.CONTROL_FONT,
+            fill: ResonanceColors.textProperty,
           }),
       },
       {
@@ -27,6 +29,7 @@ export class PlaybackControlNode extends HBox {
         createNode: () =>
           new Text(ResonanceStrings.controls.normalStringProperty, {
             font: ResonanceConstants.CONTROL_FONT,
+            fill: ResonanceColors.textProperty,
           }),
       },
     ];

@@ -19,7 +19,6 @@ onReadyToLaunch(() => {
 
   const simOptions = {
     webgl: true,
-    backgroundColor: ResonanceColors.backgroundProperty,
     preferencesModel: new PreferencesModel({
       visualOptions: {
         supportsProjectorMode: true,
@@ -43,7 +42,7 @@ onReadyToLaunch(() => {
                     ResonanceStrings.preferences.simulation.displayOptionsStringProperty,
                     {
                       font: new PhetFont({ size: 16, weight: "bold" }),
-                      fill: ResonanceColors.textProperty,
+                      fill: ResonanceColors.preferencesTextProperty,
                     },
                   ),
                   new Checkbox(
@@ -52,7 +51,7 @@ onReadyToLaunch(() => {
                       ResonanceStrings.preferences.simulation.showEnergyStringProperty,
                       {
                         font: new PhetFont(16),
-                        fill: ResonanceColors.textProperty,
+                        fill: ResonanceColors.preferencesTextProperty,
                       },
                     ),
                     {
@@ -65,7 +64,7 @@ onReadyToLaunch(() => {
                       ResonanceStrings.preferences.simulation.showVectorsStringProperty,
                       {
                         font: new PhetFont(16),
-                        fill: ResonanceColors.textProperty,
+                        fill: ResonanceColors.preferencesTextProperty,
                       },
                     ),
                     {
@@ -78,7 +77,7 @@ onReadyToLaunch(() => {
                       ResonanceStrings.preferences.simulation.showPhaseStringProperty,
                       {
                         font: new PhetFont(16),
-                        fill: ResonanceColors.textProperty,
+                        fill: ResonanceColors.preferencesTextProperty,
                       },
                     ),
                     {
@@ -103,14 +102,14 @@ onReadyToLaunch(() => {
                             ResonanceStrings.preferences.solvers.rk4StringProperty,
                             {
                               font: new PhetFont(14),
-                              fill: ResonanceColors.textProperty,
+                              fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
                             ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty,
                             {
                               font: new PhetFont(11),
-                              fill: ResonanceColors.textSecondaryProperty,
+                              fill: ResonanceColors.preferencesTextSecondaryProperty,
                               maxWidth: 550,
                             },
                           ),
@@ -129,14 +128,14 @@ onReadyToLaunch(() => {
                             ResonanceStrings.preferences.solvers.adaptiveRK45StringProperty,
                             {
                               font: new PhetFont(14),
-                              fill: ResonanceColors.textProperty,
+                              fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
                             ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty,
                             {
                               font: new PhetFont(11),
-                              fill: ResonanceColors.textSecondaryProperty,
+                              fill: ResonanceColors.preferencesTextSecondaryProperty,
                               maxWidth: 550,
                             },
                           ),
@@ -155,14 +154,14 @@ onReadyToLaunch(() => {
                             ResonanceStrings.preferences.solvers.adaptiveEulerStringProperty,
                             {
                               font: new PhetFont(14),
-                              fill: ResonanceColors.textProperty,
+                              fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
                             ResonanceStrings.preferences.solvers.adaptiveEulerDescriptionStringProperty,
                             {
                               font: new PhetFont(11),
-                              fill: ResonanceColors.textSecondaryProperty,
+                              fill: ResonanceColors.preferencesTextSecondaryProperty,
                               maxWidth: 550,
                             },
                           ),
@@ -181,14 +180,14 @@ onReadyToLaunch(() => {
                             ResonanceStrings.preferences.solvers.modifiedMidpointStringProperty,
                             {
                               font: new PhetFont(14),
-                              fill: ResonanceColors.textProperty,
+                              fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
                             ResonanceStrings.preferences.solvers.modifiedMidpointDescriptionStringProperty,
                             {
                               font: new PhetFont(11),
-                              fill: ResonanceColors.textSecondaryProperty,
+                              fill: ResonanceColors.preferencesTextSecondaryProperty,
                               maxWidth: 550,
                             },
                           ),
@@ -213,14 +212,14 @@ onReadyToLaunch(() => {
                     ResonanceStrings.preferences.simulation.solverMethodStringProperty,
                     {
                       font: new PhetFont({ size: 16, weight: "bold" }),
-                      fill: "black",
+                      fill: ResonanceColors.preferencesTextProperty,
                     },
                   ),
                   new Text(
                     ResonanceStrings.preferences.simulation.solverDescriptionStringProperty,
                     {
                       font: new PhetFont(12),
-                      fill: "black",
+                      fill: ResonanceColors.preferencesTextProperty,
                       maxWidth: 600,
                     },
                   ),

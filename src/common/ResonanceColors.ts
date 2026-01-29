@@ -35,6 +35,25 @@ const ResonanceColors = {
     projector: new Color(102, 102, 102),
   }),
 
+  // Preferences text - stays black regardless of color profile
+  preferencesTextProperty: new ProfileColorProperty(
+    resonance,
+    "preferencesText",
+    {
+      default: new Color(0, 0, 0),
+      projector: new Color(0, 0, 0),
+    },
+  ),
+
+  preferencesTextSecondaryProperty: new ProfileColorProperty(
+    resonance,
+    "preferencesTextSecondary",
+    {
+      default: new Color(102, 102, 102),
+      projector: new Color(102, 102, 102),
+    },
+  ),
+
   // Spring and mass
   springProperty: new ProfileColorProperty(resonance, "spring", {
     default: new Color(255, 100, 100),

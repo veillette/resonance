@@ -2,6 +2,7 @@ import { Screen, ScreenOptions } from "scenerystack/sim";
 import { SimModel } from "./model/SimModel.js";
 import { SimScreenView } from "./view/SimScreenView.js";
 import { ResonancePreferencesModel } from "../preferences/ResonancePreferencesModel.js";
+import ResonanceColors from "../common/ResonanceColors.js";
 
 export class SimScreen extends Screen<SimModel, SimScreenView> {
   public constructor(
@@ -11,7 +12,10 @@ export class SimScreen extends Screen<SimModel, SimScreenView> {
     super(
       () => new SimModel(preferencesModel),
       (model: SimModel) => new SimScreenView(model),
-      options,
+      {
+        ...options,
+        backgroundColorProperty: ResonanceColors.backgroundProperty,
+      },
     );
   }
 }
