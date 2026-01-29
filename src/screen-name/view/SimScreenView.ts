@@ -97,10 +97,6 @@ export class SimScreenView extends ScreenView {
     simulationArea.addChild(this.resonatorsContainer);
     this.rebuildResonators(1);
 
-    // ===== RULER =====
-    this.rulerNode = this.createRulerNode();
-    simulationArea.addChild(this.rulerNode);
-
     // Link resonator count changes - fires immediately, so measurement lines must exist first
     model.resonatorCountProperty.link((count: number) => {
       this.rebuildResonators(count);
@@ -117,6 +113,11 @@ export class SimScreenView extends ScreenView {
     );
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);
+
+    // ===== RULER =====
+    // Added after control panel so it appears on top when dragged over it
+    this.rulerNode = this.createRulerNode();
+    this.addChild(this.rulerNode);
 
     // Update ruler and measurement lines visibility from the shared property
     this.rulerVisibleProperty.link((visible: boolean) => {
