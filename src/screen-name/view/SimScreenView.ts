@@ -383,7 +383,9 @@ export class SimScreenView extends ScreenView {
       const modelY = resonatorModel.positionProperty.value;
       const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelY);
 
-      const junctionY = equilibriumY - viewYOffset;
+      // Positive position means mass moves "downward" (toward driver, larger Y in view)
+      // So we add the offset to move junction toward driver when position > 0
+      const junctionY = equilibriumY + viewYOffset;
       const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
 
       this.massNodes[i].centerX = xCenter;
