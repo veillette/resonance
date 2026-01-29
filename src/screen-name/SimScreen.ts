@@ -6,7 +6,7 @@ import { ResonancePreferencesModel } from "../preferences/ResonancePreferencesMo
 export class SimScreen extends Screen<SimModel, SimScreenView> {
   public constructor(
     preferencesModel: ResonancePreferencesModel,
-    options: ScreenOptions
+    options: ScreenOptions,
   ) {
     super(
       () => new SimModel(preferencesModel),

@@ -34,16 +34,15 @@ export class CircularUpdateGuard {
    * @param callback - The function to execute
    * @returns true if the callback was executed, false if skipped due to reentrant call
    */
-  public run( callback: () => void ): boolean {
-    if ( this._isUpdating ) {
+  public run(callback: () => void): boolean {
+    if (this._isUpdating) {
       return false;
     }
     this._isUpdating = true;
     try {
       callback();
       return true;
-    }
-    finally {
+    } finally {
       this._isUpdating = false;
     }
   }

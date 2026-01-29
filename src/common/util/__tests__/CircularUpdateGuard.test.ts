@@ -4,12 +4,12 @@
  * P2 Priority: Utility class for preventing circular updates in bidirectional bindings.
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { CircularUpdateGuard } from '../CircularUpdateGuard.js';
+import { describe, it, expect, vi } from "vitest";
+import { CircularUpdateGuard } from "../CircularUpdateGuard.js";
 
-describe('CircularUpdateGuard', () => {
-  describe('single execution', () => {
-    it('should execute callback and return true', () => {
+describe("CircularUpdateGuard", () => {
+  describe("single execution", () => {
+    it("should execute callback and return true", () => {
       const guard = new CircularUpdateGuard();
       const callback = vi.fn();
 
@@ -19,7 +19,7 @@ describe('CircularUpdateGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should execute callback with correct context', () => {
+    it("should execute callback with correct context", () => {
       const guard = new CircularUpdateGuard();
       let value = 0;
 
@@ -31,8 +31,8 @@ describe('CircularUpdateGuard', () => {
     });
   });
 
-  describe('reentrant call prevention', () => {
-    it('should prevent circular updates', () => {
+  describe("reentrant call prevention", () => {
+    it("should prevent circular updates", () => {
       const guard = new CircularUpdateGuard();
       let innerRan = false;
 
@@ -45,7 +45,7 @@ describe('CircularUpdateGuard', () => {
       expect(innerRan).toBe(false);
     });
 
-    it('should return false for reentrant call', () => {
+    it("should return false for reentrant call", () => {
       const guard = new CircularUpdateGuard();
       let innerResult: boolean | undefined;
 
@@ -56,32 +56,32 @@ describe('CircularUpdateGuard', () => {
       expect(innerResult).toBe(false);
     });
 
-    it('should prevent deeply nested circular calls', () => {
+    it("should prevent deeply nested circular calls", () => {
       const guard = new CircularUpdateGuard();
       const executionOrder: string[] = [];
 
       guard.run(() => {
-        executionOrder.push('level1');
+        executionOrder.push("level1");
         guard.run(() => {
-          executionOrder.push('level2');
+          executionOrder.push("level2");
           guard.run(() => {
-            executionOrder.push('level3');
+            executionOrder.push("level3");
           });
         });
       });
 
-      expect(executionOrder).toEqual(['level1']);
+      expect(executionOrder).toEqual(["level1"]);
     });
   });
 
-  describe('isUpdating flag', () => {
-    it('should be false before callback', () => {
+  describe("isUpdating flag", () => {
+    it("should be false before callback", () => {
       const guard = new CircularUpdateGuard();
 
       expect(guard.isUpdating).toBe(false);
     });
 
-    it('should be true during callback', () => {
+    it("should be true during callback", () => {
       const guard = new CircularUpdateGuard();
       let duringCallback = false;
 
@@ -92,7 +92,7 @@ describe('CircularUpdateGuard', () => {
       expect(duringCallback).toBe(true);
     });
 
-    it('should be false after callback', () => {
+    it("should be false after callback", () => {
       const guard = new CircularUpdateGuard();
 
       guard.run(() => {});
@@ -101,27 +101,27 @@ describe('CircularUpdateGuard', () => {
     });
   });
 
-  describe('exception handling', () => {
-    it('should reset flag even if callback throws', () => {
+  describe("exception handling", () => {
+    it("should reset flag even if callback throws", () => {
       const guard = new CircularUpdateGuard();
 
       expect(() => {
         guard.run(() => {
-          throw new Error('Test error');
+          throw new Error("Test error");
         });
-      }).toThrow('Test error');
+      }).toThrow("Test error");
 
       expect(guard.isUpdating).toBe(false);
     });
 
-    it('should allow subsequent calls after exception', () => {
+    it("should allow subsequent calls after exception", () => {
       const guard = new CircularUpdateGuard();
       const callback = vi.fn();
 
       // First call throws
       try {
         guard.run(() => {
-          throw new Error('Test error');
+          throw new Error("Test error");
         });
       } catch {
         // Expected
@@ -135,8 +135,8 @@ describe('CircularUpdateGuard', () => {
     });
   });
 
-  describe('multiple guards', () => {
-    it('should allow independent guards to run simultaneously', () => {
+  describe("multiple guards", () => {
+    it("should allow independent guards to run simultaneously", () => {
       const guard1 = new CircularUpdateGuard();
       const guard2 = new CircularUpdateGuard();
       let guard2Ran = false;
@@ -150,7 +150,7 @@ describe('CircularUpdateGuard', () => {
       expect(guard2Ran).toBe(true);
     });
 
-    it('should not interfere with each other', () => {
+    it("should not interfere with each other", () => {
       const guard1 = new CircularUpdateGuard();
       const guard2 = new CircularUpdateGuard();
 
@@ -161,8 +161,8 @@ describe('CircularUpdateGuard', () => {
     });
   });
 
-  describe('bidirectional binding use case', () => {
-    it('should prevent infinite loops in bidirectional sync', () => {
+  describe("bidirectional binding use case", () => {
+    it("should prevent infinite loops in bidirectional sync", () => {
       const guard = new CircularUpdateGuard();
       let valueA = 0;
       let valueB = 0;
@@ -196,8 +196,8 @@ describe('CircularUpdateGuard', () => {
     });
   });
 
-  describe('sequential calls', () => {
-    it('should allow sequential non-nested calls', () => {
+  describe("sequential calls", () => {
+    it("should allow sequential non-nested calls", () => {
       const guard = new CircularUpdateGuard();
       const results: boolean[] = [];
 
@@ -208,7 +208,7 @@ describe('CircularUpdateGuard', () => {
       expect(results).toEqual([true, true, true]);
     });
 
-    it('should correctly track isUpdating across sequential calls', () => {
+    it("should correctly track isUpdating across sequential calls", () => {
       const guard = new CircularUpdateGuard();
       const states: boolean[] = [];
 

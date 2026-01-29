@@ -95,7 +95,8 @@ export abstract class BaseModel implements ODEModel {
     // Apply time speed multiplier (only when playing automatically)
     let adjustedDt = cappedDt;
     if (!forceStep) {
-      const speedMultiplier = this.timeSpeedMultipliers[this.timeSpeedProperty.value as TimeSpeed];
+      const speedMultiplier =
+        this.timeSpeedMultipliers[this.timeSpeedProperty.value as TimeSpeed];
       adjustedDt = cappedDt * speedMultiplier;
     }
 

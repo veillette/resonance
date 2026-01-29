@@ -90,7 +90,10 @@ export class ModifiedMidpointSolver extends ODESolver {
     const newState = new Array(n);
     for (let i = 0; i < n; i++) {
       newState[i] =
-        0.5 * (z[(this.substeps - 1) * n + i] + z[this.substeps * n + i] + substepSize * fLast[i]);
+        0.5 *
+        (z[(this.substeps - 1) * n + i] +
+          z[this.substeps * n + i] +
+          substepSize * fLast[i]);
     }
 
     model.setState(newState);

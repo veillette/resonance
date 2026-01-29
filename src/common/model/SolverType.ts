@@ -15,8 +15,12 @@ export enum SolverType {
  * Human-readable names for solver types (localized)
  */
 export const SolverTypeName: Record<SolverType, ReadOnlyProperty<string>> = {
-  [SolverType.RUNGE_KUTTA_4]: ResonanceStrings.common.solverNames.solverRK4StringProperty,
-  [SolverType.ADAPTIVE_RK45]: ResonanceStrings.common.solverNames.solverAdaptiveRK45StringProperty,
-  [SolverType.ADAPTIVE_EULER]: ResonanceStrings.common.solverNames.solverAdaptiveEulerStringProperty,
-  [SolverType.MODIFIED_MIDPOINT]: ResonanceStrings.common.solverNames.solverModifiedMidpointStringProperty,
+  [SolverType.RUNGE_KUTTA_4]:
+    ResonanceStrings.common.solverNames.solverRK4StringProperty,
+  [SolverType.ADAPTIVE_RK45]:
+    ResonanceStrings.common.solverNames.solverAdaptiveRK45StringProperty,
+  [SolverType.ADAPTIVE_EULER]:
+    ResonanceStrings.common.solverNames.solverAdaptiveEulerStringProperty,
+  [SolverType.MODIFIED_MIDPOINT]:
+    ResonanceStrings.common.solverNames.solverModifiedMidpointStringProperty,
 };

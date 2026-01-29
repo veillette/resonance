@@ -13,7 +13,13 @@
 
 import { Node, Text, Line, VBox, HBox, AlignBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
-import { Panel, ComboBox, Checkbox, ToggleSwitch, NumberSpinner } from "scenerystack/sun";
+import {
+  Panel,
+  ComboBox,
+  Checkbox,
+  ToggleSwitch,
+  NumberSpinner,
+} from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
 import { Property, NumberProperty } from "scenerystack/axon";
 import { Range, Bounds2, Dimension2 } from "scenerystack/dot";
@@ -26,7 +32,6 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ListenerTracker } from "../../common/util/index.js";
 
 export class ResonatorControlPanel extends Panel {
-
   /**
    * The combo box list parent node. Must be added to the scene graph above the panel
    * so the popup list renders on top.
@@ -55,58 +60,73 @@ export class ResonatorControlPanel extends Panel {
   // Natural frequency text element
   private readonly naturalFrequencyText: Text;
 
-  public constructor( model: SimModel, layoutBounds: Bounds2, rulerVisibleProperty: Property<boolean> ) {
-
+  public constructor(
+    model: SimModel,
+    layoutBounds: Bounds2,
+    rulerVisibleProperty: Property<boolean>,
+  ) {
     // Store model reference for use in methods
     const tempModel = model;
 
     // --- Create all controls using extracted methods ---
-    const gravityEnabledProperty = ResonatorControlPanel.createGravityProperty( tempModel );
+    const gravityEnabledProperty =
+      ResonatorControlPanel.createGravityProperty(tempModel);
 
-    const resonatorCountControl = ResonatorControlPanel.createResonatorCountControl( tempModel );
+    const resonatorCountControl =
+      ResonatorControlPanel.createResonatorCountControl(tempModel);
 
-    const { configBox, comboBoxListParent } = ResonatorControlPanel.createConfigurationControls( tempModel );
+    const { configBox, comboBoxListParent } =
+      ResonatorControlPanel.createConfigurationControls(tempModel);
 
-    const {
-      resonatorSelectionBox,
-      displayResonatorNumberProperty
-    } = ResonatorControlPanel.createResonatorSelectionControls( tempModel );
+    const { resonatorSelectionBox, displayResonatorNumberProperty } =
+      ResonatorControlPanel.createResonatorSelectionControls(tempModel);
 
     const {
       massControl,
       springConstantControl,
       displayMassProperty,
-      displaySpringConstantProperty
-    } = ResonatorControlPanel.createMassSpringControls( tempModel );
+      displaySpringConstantProperty,
+    } = ResonatorControlPanel.createMassSpringControls(tempModel);
 
-    const { naturalFrequencyText, naturalFrequencyBox } = ResonatorControlPanel.createNaturalFrequencyReadout( tempModel );
+    const { naturalFrequencyText, naturalFrequencyBox } =
+      ResonatorControlPanel.createNaturalFrequencyReadout(tempModel);
 
-    const dampingControl = ResonatorControlPanel.createDampingControl( tempModel );
+    const dampingControl =
+      ResonatorControlPanel.createDampingControl(tempModel);
 
-    const gravityBox = ResonatorControlPanel.createGravityToggle( gravityEnabledProperty );
+    const gravityBox = ResonatorControlPanel.createGravityToggle(
+      gravityEnabledProperty,
+    );
 
-    const rulerCheckbox = ResonatorControlPanel.createRulerCheckbox( rulerVisibleProperty );
+    const rulerCheckbox =
+      ResonatorControlPanel.createRulerCheckbox(rulerVisibleProperty);
 
     // --- Assemble panel content ---
-    const controlPanelContent = new VBox( {
+    const controlPanelContent = new VBox({
       children: [
         resonatorCountControl,
         configBox,
-        new Line( 0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, { stroke: ResonanceColors.textProperty, lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH } ),
+        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
+          stroke: ResonanceColors.textProperty,
+          lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
+        }),
         resonatorSelectionBox,
         massControl,
         springConstantControl,
         naturalFrequencyBox,
         dampingControl,
-        new Line( 0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, { stroke: ResonanceColors.textProperty, lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH } ),
+        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
+          stroke: ResonanceColors.textProperty,
+          lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
+        }),
         gravityBox,
-        rulerCheckbox
+        rulerCheckbox,
       ],
       spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
-      align: 'left'
-    } );
+      align: "left",
+    });
 
-    super( controlPanelContent, {
+    super(controlPanelContent, {
       fill: ResonanceColors.controlPanelFillProperty,
       stroke: ResonanceColors.controlPanelStrokeProperty,
       lineWidth: ResonanceConstants.CONTROL_PANEL_LINE_WIDTH,
@@ -114,8 +134,8 @@ export class ResonatorControlPanel extends Panel {
       xMargin: ResonanceConstants.CONTROL_PANEL_X_MARGIN,
       yMargin: ResonanceConstants.CONTROL_PANEL_Y_MARGIN,
       right: layoutBounds.maxX - ResonanceConstants.CONTROL_PANEL_RIGHT_MARGIN,
-      top: layoutBounds.minY + ResonanceConstants.CONTROL_PANEL_TOP_MARGIN
-    } );
+      top: layoutBounds.minY + ResonanceConstants.CONTROL_PANEL_TOP_MARGIN,
+    });
 
     // Store references for instance methods
     this.model = model;
@@ -140,18 +160,22 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the gravity enabled property that syncs with the model.
    */
-  private static createGravityProperty( model: SimModel ): Property<boolean> {
-    const gravityEnabledProperty = new Property<boolean>( model.resonanceModel.gravityProperty.value > 0 );
-    gravityEnabledProperty.link( ( enabled: boolean ) => {
-      model.resonanceModel.gravityProperty.value = enabled ? ResonanceConstants.GRAVITY_ACCELERATION : 0;
-    } );
+  private static createGravityProperty(model: SimModel): Property<boolean> {
+    const gravityEnabledProperty = new Property<boolean>(
+      model.resonanceModel.gravityProperty.value > 0,
+    );
+    gravityEnabledProperty.link((enabled: boolean) => {
+      model.resonanceModel.gravityProperty.value = enabled
+        ? ResonanceConstants.GRAVITY_ACCELERATION
+        : 0;
+    });
     return gravityEnabledProperty;
   }
 
   /**
    * Creates the resonator count slider control.
    */
-  private static createResonatorCountControl( model: SimModel ): NumberControl {
+  private static createResonatorCountControl(model: SimModel): NumberControl {
     return new NumberControl(
       ResonanceStrings.controls.resonatorsStringProperty,
       model.resonatorCountProperty,
@@ -159,60 +183,81 @@ export class ResonatorControlPanel extends Panel {
       {
         delta: 1,
         numberDisplayOptions: {
-          decimalPlaces: 0
+          decimalPlaces: 0,
         },
         sliderOptions: {
-          trackSize: new Dimension2( 150, 3 ),
+          trackSize: new Dimension2(150, 3),
           majorTicks: [
-            { value: 1, label: new Text( '1', { font: ResonanceConstants.TICK_LABEL_FONT } ) },
-            { value: 10, label: new Text( '10', { font: ResonanceConstants.TICK_LABEL_FONT } ) }
+            {
+              value: 1,
+              label: new Text("1", {
+                font: ResonanceConstants.TICK_LABEL_FONT,
+              }),
+            },
+            {
+              value: 10,
+              label: new Text("10", {
+                font: ResonanceConstants.TICK_LABEL_FONT,
+              }),
+            },
           ],
-          minorTickSpacing: 1
-        }
-      }
+          minorTickSpacing: 1,
+        },
+      },
     );
   }
 
   /**
    * Creates the resonator configuration combo box and its container.
    */
-  private static createConfigurationControls( model: SimModel ): { configBox: VBox; comboBoxListParent: Node } {
-    const configLabel = new Text( ResonanceStrings.controls.resonatorConfigStringProperty, {
-      font: ResonanceConstants.LABEL_FONT,
-      fill: ResonanceColors.textProperty
-    } );
+  private static createConfigurationControls(model: SimModel): {
+    configBox: VBox;
+    comboBoxListParent: Node;
+  } {
+    const configLabel = new Text(
+      ResonanceStrings.controls.resonatorConfigStringProperty,
+      {
+        font: ResonanceConstants.LABEL_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
 
     const comboBoxItems: ComboBoxItem<ResonatorConfigModeType>[] = [
       {
         value: ResonatorConfigMode.SAME_SPRING_CONSTANT,
-        createNode: () => new Text( ResonanceStrings.controls.sameSpringConstantStringProperty, {
-          font: ResonanceConstants.CONTROL_FONT
-        } )
+        createNode: () =>
+          new Text(ResonanceStrings.controls.sameSpringConstantStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
       },
       {
         value: ResonatorConfigMode.SAME_MASS,
-        createNode: () => new Text( ResonanceStrings.controls.sameMassStringProperty, {
-          font: ResonanceConstants.CONTROL_FONT
-        } )
+        createNode: () =>
+          new Text(ResonanceStrings.controls.sameMassStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
       },
       {
         value: ResonatorConfigMode.MIXED,
-        createNode: () => new Text( ResonanceStrings.controls.mixedStringProperty, {
-          font: ResonanceConstants.CONTROL_FONT
-        } )
+        createNode: () =>
+          new Text(ResonanceStrings.controls.mixedStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
       },
       {
         value: ResonatorConfigMode.SAME_FREQUENCY,
-        createNode: () => new Text( ResonanceStrings.controls.sameFrequencyStringProperty, {
-          font: ResonanceConstants.CONTROL_FONT
-        } )
+        createNode: () =>
+          new Text(ResonanceStrings.controls.sameFrequencyStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
       },
       {
         value: ResonatorConfigMode.CUSTOM,
-        createNode: () => new Text( ResonanceStrings.controls.customStringProperty, {
-          font: ResonanceConstants.CONTROL_FONT
-        } )
-      }
+        createNode: () =>
+          new Text(ResonanceStrings.controls.customStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
+      },
     ];
 
     const comboBoxListParent = new Node();
@@ -224,15 +269,15 @@ export class ResonatorControlPanel extends Panel {
       {
         xMargin: ResonanceConstants.COMBO_BOX_X_MARGIN,
         yMargin: ResonanceConstants.COMBO_BOX_Y_MARGIN,
-        cornerRadius: ResonanceConstants.COMBO_BOX_CORNER_RADIUS
-      }
+        cornerRadius: ResonanceConstants.COMBO_BOX_CORNER_RADIUS,
+      },
     );
 
-    const configBox = new VBox( {
-      children: [ configLabel, configComboBox ],
+    const configBox = new VBox({
+      children: [configLabel, configComboBox],
       spacing: ResonanceConstants.COMBO_BOX_SPACING,
-      align: 'left'
-    } );
+      align: "left",
+    });
 
     return { configBox, comboBoxListParent };
   }
@@ -240,47 +285,53 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the resonator selection spinner and label.
    */
-  private static createResonatorSelectionControls( model: SimModel ): {
+  private static createResonatorSelectionControls(model: SimModel): {
     resonatorSelectionBox: HBox;
     displayResonatorNumberProperty: NumberProperty;
   } {
-    const displayResonatorNumberProperty = new NumberProperty( 1 );
+    const displayResonatorNumberProperty = new NumberProperty(1);
 
-    displayResonatorNumberProperty.link( ( displayNumber: number ) => {
+    displayResonatorNumberProperty.link((displayNumber: number) => {
       model.selectedResonatorIndexProperty.value = displayNumber - 1;
-    } );
-    model.selectedResonatorIndexProperty.link( ( index: number ) => {
+    });
+    model.selectedResonatorIndexProperty.link((index: number) => {
       displayResonatorNumberProperty.value = index + 1;
-    } );
+    });
 
-    const spinnerRangeProperty = new Property( new Range( 1, model.resonatorCountProperty.value ) );
-    model.resonatorCountProperty.link( ( count: number ) => {
-      spinnerRangeProperty.value = new Range( 1, count );
-    } );
+    const spinnerRangeProperty = new Property(
+      new Range(1, model.resonatorCountProperty.value),
+    );
+    model.resonatorCountProperty.link((count: number) => {
+      spinnerRangeProperty.value = new Range(1, count);
+    });
 
     const resonatorSpinner = new NumberSpinner(
       displayResonatorNumberProperty,
       spinnerRangeProperty,
       {
-        arrowsPosition: 'bothRight',
-        arrowsScale: 0.8
-      }
+        arrowsPosition: "bothRight",
+        arrowsScale: 0.8,
+      },
     );
 
-    const resonatorLabel = new Text( '', {
+    const resonatorLabel = new Text("", {
       font: ResonanceConstants.TITLE_FONT,
-      fill: ResonanceColors.textProperty
-    } );
+      fill: ResonanceColors.textProperty,
+    });
 
-    displayResonatorNumberProperty.link( ( num: number ) => {
-      resonatorLabel.string = ResonanceStrings.controls.resonatorPatternStringProperty.value.replace( '{{number}}', String( num ) );
-    } );
+    displayResonatorNumberProperty.link((num: number) => {
+      resonatorLabel.string =
+        ResonanceStrings.controls.resonatorPatternStringProperty.value.replace(
+          "{{number}}",
+          String(num),
+        );
+    });
 
-    const resonatorSelectionBox = new HBox( {
-      children: [ resonatorLabel, resonatorSpinner ],
+    const resonatorSelectionBox = new HBox({
+      children: [resonatorLabel, resonatorSpinner],
       spacing: 10,
-      align: 'center'
-    } );
+      align: "center",
+    });
 
     return { resonatorSelectionBox, displayResonatorNumberProperty };
   }
@@ -288,14 +339,18 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the mass and spring constant controls.
    */
-  private static createMassSpringControls( model: SimModel ): {
+  private static createMassSpringControls(model: SimModel): {
     massControl: NumberControl;
     springConstantControl: NumberControl;
     displayMassProperty: NumberProperty;
     displaySpringConstantProperty: NumberProperty;
   } {
-    const displayMassProperty = new NumberProperty( model.resonanceModel.massProperty.value );
-    const displaySpringConstantProperty = new NumberProperty( model.resonanceModel.springConstantProperty.value );
+    const displayMassProperty = new NumberProperty(
+      model.resonanceModel.massProperty.value,
+    );
+    const displaySpringConstantProperty = new NumberProperty(
+      model.resonanceModel.springConstantProperty.value,
+    );
 
     const massControl = new NumberControl(
       ResonanceStrings.controls.massSimpleStringProperty,
@@ -305,12 +360,12 @@ export class ResonatorControlPanel extends Panel {
         delta: 0.01,
         numberDisplayOptions: {
           valuePattern: ResonanceStrings.units.kgPatternStringProperty,
-          decimalPlaces: 4
+          decimalPlaces: 4,
         },
         sliderOptions: {
-          trackSize: new Dimension2( 150, 3 )
-        }
-      }
+          trackSize: new Dimension2(150, 3),
+        },
+      },
     );
 
     const springConstantControl = new NumberControl(
@@ -320,39 +375,49 @@ export class ResonatorControlPanel extends Panel {
       {
         delta: 1,
         numberDisplayOptions: {
-          valuePattern: ResonanceStrings.units.newtonPerMeterPatternStringProperty,
-          decimalPlaces: 0
+          valuePattern:
+            ResonanceStrings.units.newtonPerMeterPatternStringProperty,
+          decimalPlaces: 0,
         },
         sliderOptions: {
-          trackSize: new Dimension2( 150, 3 )
-        }
-      }
+          trackSize: new Dimension2(150, 3),
+        },
+      },
     );
 
-    return { massControl, springConstantControl, displayMassProperty, displaySpringConstantProperty };
+    return {
+      massControl,
+      springConstantControl,
+      displayMassProperty,
+      displaySpringConstantProperty,
+    };
   }
 
   /**
    * Creates the natural frequency readout text and container.
    */
-  private static createNaturalFrequencyReadout( model: SimModel ): {
+  private static createNaturalFrequencyReadout(model: SimModel): {
     naturalFrequencyText: Text;
     naturalFrequencyBox: AlignBox;
   } {
-    const naturalFrequencyText = new Text( '', {
+    const naturalFrequencyText = new Text("", {
       font: ResonanceConstants.CONTROL_FONT,
-      fill: ResonanceColors.textProperty
-    } );
+      fill: ResonanceColors.textProperty,
+    });
 
     // Initialize with first resonator's frequency
-    const freq = model.resonatorModels[ 0 ].naturalFrequencyHzProperty.value;
-    const valueWithUnit = ResonanceStrings.units.hertzPatternStringProperty.value.replace( '{{value}}', freq.toFixed( 3 ) );
+    const freq = model.resonatorModels[0].naturalFrequencyHzProperty.value;
+    const valueWithUnit =
+      ResonanceStrings.units.hertzPatternStringProperty.value.replace(
+        "{{value}}",
+        freq.toFixed(3),
+      );
     naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${valueWithUnit}`;
 
-    const naturalFrequencyBox = new AlignBox( naturalFrequencyText, {
-      xAlign: 'center',
-      alignBounds: new Bounds2( 0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0 )
-    } );
+    const naturalFrequencyBox = new AlignBox(naturalFrequencyText, {
+      xAlign: "center",
+      alignBounds: new Bounds2(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0),
+    });
 
     return { naturalFrequencyText, naturalFrequencyBox };
   }
@@ -360,7 +425,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the damping slider control.
    */
-  private static createDampingControl( model: SimModel ): NumberControl {
+  private static createDampingControl(model: SimModel): NumberControl {
     return new NumberControl(
       ResonanceStrings.controls.dampingStringProperty,
       model.resonanceModel.dampingProperty,
@@ -368,51 +433,64 @@ export class ResonatorControlPanel extends Panel {
       {
         delta: 0.1,
         numberDisplayOptions: {
-          valuePattern: ResonanceStrings.units.dampingUnitsPatternStringProperty,
-          decimalPlaces: 1
+          valuePattern:
+            ResonanceStrings.units.dampingUnitsPatternStringProperty,
+          decimalPlaces: 1,
         },
         sliderOptions: {
-          trackSize: new Dimension2( 150, 3 )
-        }
-      }
+          trackSize: new Dimension2(150, 3),
+        },
+      },
     );
   }
 
   /**
    * Creates the gravity toggle switch and label.
    */
-  private static createGravityToggle( gravityEnabledProperty: Property<boolean> ): HBox {
-    const gravityToggleSwitch = new ToggleSwitch( gravityEnabledProperty, false, true, {
-      trackFillLeft: ResonanceColors.gravityToggleOffProperty,
-      trackFillRight: ResonanceColors.gravityToggleOnProperty,
-      scale: 0.7
-    } );
+  private static createGravityToggle(
+    gravityEnabledProperty: Property<boolean>,
+  ): HBox {
+    const gravityToggleSwitch = new ToggleSwitch(
+      gravityEnabledProperty,
+      false,
+      true,
+      {
+        trackFillLeft: ResonanceColors.gravityToggleOffProperty,
+        trackFillRight: ResonanceColors.gravityToggleOnProperty,
+        scale: 0.7,
+      },
+    );
 
-    const gravityLabel = new Text( ResonanceStrings.controls.gravityStringProperty, {
-      font: ResonanceConstants.LABEL_FONT,
-      fill: ResonanceColors.textProperty
-    } );
+    const gravityLabel = new Text(
+      ResonanceStrings.controls.gravityStringProperty,
+      {
+        font: ResonanceConstants.LABEL_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
 
-    return new HBox( {
-      children: [ gravityLabel, gravityToggleSwitch ],
+    return new HBox({
+      children: [gravityLabel, gravityToggleSwitch],
       spacing: ResonanceConstants.GRAVITY_BOX_SPACING,
-      align: 'center'
-    } );
+      align: "center",
+    });
   }
 
   /**
    * Creates the ruler visibility checkbox.
    */
-  private static createRulerCheckbox( rulerVisibleProperty: Property<boolean> ): Checkbox {
+  private static createRulerCheckbox(
+    rulerVisibleProperty: Property<boolean>,
+  ): Checkbox {
     return new Checkbox(
       rulerVisibleProperty,
-      new Text( ResonanceStrings.controls.rulerStringProperty, {
+      new Text(ResonanceStrings.controls.rulerStringProperty, {
         font: ResonanceConstants.CONTROL_FONT,
-        fill: ResonanceColors.textProperty
-      } ),
+        fill: ResonanceColors.textProperty,
+      }),
       {
-        boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH
-      }
+        boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
+      },
     );
   }
 
@@ -421,14 +499,20 @@ export class ResonatorControlPanel extends Panel {
    */
   private setupVisibilityListeners(): void {
     // Hide configuration combo box when there's only one resonator
-    this.listenerTracker.link( this.model.resonatorCountProperty, ( count: number ) => {
-      this.configBox.visible = count > 1;
-    } );
+    this.listenerTracker.link(
+      this.model.resonatorCountProperty,
+      (count: number) => {
+        this.configBox.visible = count > 1;
+      },
+    );
 
     // Hide resonator selection when there's only one resonator
-    this.listenerTracker.link( this.model.resonatorCountProperty, ( count: number ) => {
-      this.resonatorSelectionBox.visible = count > 1;
-    } );
+    this.listenerTracker.link(
+      this.model.resonatorCountProperty,
+      (count: number) => {
+        this.resonatorSelectionBox.visible = count > 1;
+      },
+    );
   }
 
   /**
@@ -437,65 +521,81 @@ export class ResonatorControlPanel extends Panel {
   private setupMassSpringSync(): void {
     const updateControlsEnabledState = () => {
       const index = this.model.selectedResonatorIndexProperty.value;
-      const isCustomMode = this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
-      this.massControl.enabled = ( index === 0 ) || isCustomMode;
-      this.springConstantControl.enabled = ( index === 0 ) || isCustomMode;
+      const isCustomMode =
+        this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
+      this.massControl.enabled = index === 0 || isCustomMode;
+      this.springConstantControl.enabled = index === 0 || isCustomMode;
     };
 
     // Update display properties when selected resonator changes
-    this.listenerTracker.link( this.model.selectedResonatorIndexProperty, ( index: number ) => {
-      const selectedResonator = this.model.resonatorModels[ index ];
-      this.displayMassProperty.value = selectedResonator.massProperty.value;
-      this.displaySpringConstantProperty.value = selectedResonator.springConstantProperty.value;
-      updateControlsEnabledState();
-    } );
+    this.listenerTracker.link(
+      this.model.selectedResonatorIndexProperty,
+      (index: number) => {
+        const selectedResonator = this.model.resonatorModels[index];
+        this.displayMassProperty.value = selectedResonator.massProperty.value;
+        this.displaySpringConstantProperty.value =
+          selectedResonator.springConstantProperty.value;
+        updateControlsEnabledState();
+      },
+    );
 
     // Update enabled state when config mode changes
-    this.listenerTracker.link( this.model.resonatorConfigProperty, () => {
+    this.listenerTracker.link(this.model.resonatorConfigProperty, () => {
       updateControlsEnabledState();
-    } );
+    });
 
     // Flag to prevent circular updates
     let updatingFromModel = false;
 
     // Display -> Model sync
-    this.listenerTracker.link( this.displayMassProperty, ( mass: number ) => {
-      if ( !updatingFromModel ) {
+    this.listenerTracker.link(this.displayMassProperty, (mass: number) => {
+      if (!updatingFromModel) {
         const index = this.model.selectedResonatorIndexProperty.value;
-        const isCustomMode = this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
-        if ( index === 0 || isCustomMode ) {
-          this.model.resonatorModels[ index ].massProperty.value = mass;
+        const isCustomMode =
+          this.model.resonatorConfigProperty.value ===
+          ResonatorConfigMode.CUSTOM;
+        if (index === 0 || isCustomMode) {
+          this.model.resonatorModels[index].massProperty.value = mass;
         }
       }
-    } );
+    });
 
-    this.listenerTracker.link( this.displaySpringConstantProperty, ( springConstant: number ) => {
-      if ( !updatingFromModel ) {
-        const index = this.model.selectedResonatorIndexProperty.value;
-        const isCustomMode = this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
-        if ( index === 0 || isCustomMode ) {
-          this.model.resonatorModels[ index ].springConstantProperty.value = springConstant;
+    this.listenerTracker.link(
+      this.displaySpringConstantProperty,
+      (springConstant: number) => {
+        if (!updatingFromModel) {
+          const index = this.model.selectedResonatorIndexProperty.value;
+          const isCustomMode =
+            this.model.resonatorConfigProperty.value ===
+            ResonatorConfigMode.CUSTOM;
+          if (index === 0 || isCustomMode) {
+            this.model.resonatorModels[index].springConstantProperty.value =
+              springConstant;
+          }
         }
-      }
-    } );
+      },
+    );
 
     // Model -> Display sync (for each resonator)
-    this.model.resonatorModels.forEach( ( resonator, index ) => {
-      this.listenerTracker.link( resonator.massProperty, ( mass: number ) => {
-        if ( this.model.selectedResonatorIndexProperty.value === index ) {
+    this.model.resonatorModels.forEach((resonator, index) => {
+      this.listenerTracker.link(resonator.massProperty, (mass: number) => {
+        if (this.model.selectedResonatorIndexProperty.value === index) {
           updatingFromModel = true;
           this.displayMassProperty.value = mass;
           updatingFromModel = false;
         }
-      } );
-      this.listenerTracker.link( resonator.springConstantProperty, ( springConstant: number ) => {
-        if ( this.model.selectedResonatorIndexProperty.value === index ) {
-          updatingFromModel = true;
-          this.displaySpringConstantProperty.value = springConstant;
-          updatingFromModel = false;
-        }
-      } );
-    } );
+      });
+      this.listenerTracker.link(
+        resonator.springConstantProperty,
+        (springConstant: number) => {
+          if (this.model.selectedResonatorIndexProperty.value === index) {
+            updatingFromModel = true;
+            this.displaySpringConstantProperty.value = springConstant;
+            updatingFromModel = false;
+          }
+        },
+      );
+    });
   }
 
   /**
@@ -504,15 +604,26 @@ export class ResonatorControlPanel extends Panel {
   private setupNaturalFrequencySync(): void {
     const updateNaturalFrequency = () => {
       const index = this.model.selectedResonatorIndexProperty.value;
-      const freq = this.model.resonatorModels[ index ].naturalFrequencyHzProperty.value;
-      const valueWithUnit = ResonanceStrings.units.hertzPatternStringProperty.value.replace( '{{value}}', freq.toFixed( 3 ) );
+      const freq =
+        this.model.resonatorModels[index].naturalFrequencyHzProperty.value;
+      const valueWithUnit =
+        ResonanceStrings.units.hertzPatternStringProperty.value.replace(
+          "{{value}}",
+          freq.toFixed(3),
+        );
       this.naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${valueWithUnit}`;
     };
 
-    this.listenerTracker.link( this.model.selectedResonatorIndexProperty, updateNaturalFrequency );
-    this.model.resonatorModels.forEach( resonator => {
-      this.listenerTracker.link( resonator.naturalFrequencyHzProperty, updateNaturalFrequency );
-    } );
+    this.listenerTracker.link(
+      this.model.selectedResonatorIndexProperty,
+      updateNaturalFrequency,
+    );
+    this.model.resonatorModels.forEach((resonator) => {
+      this.listenerTracker.link(
+        resonator.naturalFrequencyHzProperty,
+        updateNaturalFrequency,
+      );
+    });
   }
 
   public reset(): void {

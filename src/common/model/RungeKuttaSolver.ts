@@ -97,7 +97,8 @@ export class RungeKuttaSolver extends ODESolver {
     const newState = new Array(n);
     for (let i = 0; i < n; i++) {
       newState[i] =
-        state[i] + (this.k1[i] + 2 * this.k2[i] + 2 * this.k3[i] + this.k4[i]) * dt / 6;
+        state[i] +
+        ((this.k1[i] + 2 * this.k2[i] + 2 * this.k3[i] + this.k4[i]) * dt) / 6;
     }
 
     model.setState(newState);

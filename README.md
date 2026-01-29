@@ -9,6 +9,7 @@ This simulation visualizes the behavior of mass-spring systems driven by an osci
 ## Features
 
 ### Core Physics
+
 - **Driven Oscillators**: Multiple spring-mass systems attached to a common oscillating driver plate
 - **Configurable Parameters**:
   - Mass: 0.1 to 5.0 kg
@@ -20,6 +21,7 @@ This simulation visualizes the behavior of mass-spring systems driven by an osci
 - **Natural Length**: Springs have a natural length of 20 cm when at equilibrium
 
 ### Oscillator Configuration Modes
+
 1. **Same Spring Constant**: All oscillators share the same spring constant; masses vary (m, 2m, 3m, ...)
 2. **Same Mass**: All oscillators share the same mass; spring constants vary (k, 2k, 3k, ...)
 3. **Mixed**: Both masses and spring constants vary proportionally
@@ -27,6 +29,7 @@ This simulation visualizes the behavior of mass-spring systems driven by an osci
 5. **Custom**: Each oscillator can be independently configured
 
 ### Interactive Controls
+
 - **Multiple Resonators**: Support for 1-10 oscillators simultaneously
 - **Resonator Selection**: Number spinner to select and view/edit individual oscillators
 - **Real-time Parameter Adjustment**: Fine-grained control with small increments
@@ -39,12 +42,14 @@ This simulation visualizes the behavior of mass-spring systems driven by an osci
 - **Visual Measurements**: Draggable vertical ruler (0-50 cm) for measuring oscillations
 
 ### Visual Features
+
 - **Square Mass Blocks**: Visual representation of masses as labeled squares
 - **Dynamic Springs**: Spring thickness varies with spring constant for visual feedback
 - **Color-Coded Elements**: Distinct colors for driver, springs, and masses
 - **Natural Frequency Display**: Real-time calculation and display of each oscillator's natural frequency
 
 ### Accessibility & Internationalization
+
 - **Color Profiles**: Support for default, projector, and colorblind-friendly color schemes
 - **Multiple Languages**: English, Spanish (Español), and French (Français)
 - **Preferences Menu**: Customizable visual, simulation, and localization settings
@@ -53,6 +58,7 @@ This simulation visualizes the behavior of mass-spring systems driven by an osci
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v16 or higher recommended)
 - npm or yarn
 
@@ -88,45 +94,59 @@ npm run build
 ## Physics Background
 
 ### Natural Frequency
+
 Each oscillator has a natural frequency determined by:
+
 ```
 f₀ = (1/2π) × √(k/m)
 ```
+
 where k is the spring constant and m is the mass.
 
 ### Resonance
+
 Maximum oscillation amplitude occurs when the driving frequency matches (or is close to) the natural frequency of the oscillator. With damping, the resonance peak is:
+
 - **Broader** with higher damping
 - **Sharper** with lower damping
 
 ### Quality Factor
+
 The sharpness of resonance is characterized by the quality factor:
+
 ```
 Q = ω₀m/b = √(km)/b
 ```
+
 where b is the damping coefficient.
 
 ### Driving Force Model
+
 The driver plate oscillates sinusoidally:
+
 ```
 y_plate = A × sin(ω × t)
 ```
+
 This creates a time-varying boundary condition for the springs, where the spring force depends on the displacement relative to the moving plate.
 
 ## Technical Architecture
 
 ### Model-View-Controller Pattern
+
 - **Model** (`src/screen-name/model/`): Physics calculations and state management
 - **View** (`src/screen-name/view/`): Visual representation and UI
 - **Screen** (`src/screen-name/`): Connects model and view
 
 ### Key Technologies
+
 - **SceneryStack**: Physics simulation framework
 - **TypeScript**: Type-safe development
 - **Vite**: Fast development and building
 - **Property System**: Reactive data binding for real-time updates
 
 ### Coordinate System
+
 - **Model coordinates**: Meters, with origin at center
 - **View bounds**: ±0.5 m (1 meter total visible height/width)
 - **Scale**: Physical measurements match visual representation (1 cm model = 1 cm on ruler)
@@ -171,6 +191,7 @@ resonance/
 ## Configuration
 
 ### Default Values
+
 - **Mass**: 0.25 kg
 - **Spring Constant**: 100 N/m (natural frequency ~3.2 Hz)
 - **Damping**: 0.5 N/(m/s)
@@ -180,7 +201,9 @@ resonance/
 - **Natural Length**: 20 cm
 
 ### Physics Ranges
+
 All parameters have carefully chosen ranges for realistic simulation:
+
 - Masses that are too small or too large relative to spring constants can produce extreme behavior
 - Damping values affect how quickly oscillations decay
 - Driving amplitudes are limited to centimeter scale for clear visualization
@@ -188,7 +211,9 @@ All parameters have carefully chosen ranges for realistic simulation:
 ## Contributing
 
 ### Development Guidelines
+
 See `claude.md` for detailed development instructions, including:
+
 - Creating new simulation screens
 - Implementing physics models
 - Adding UI controls
@@ -196,6 +221,7 @@ See `claude.md` for detailed development instructions, including:
 - Color profile implementation
 
 ### Code Style
+
 - TypeScript for type safety
 - Properties for reactive state management
 - Model-View separation
