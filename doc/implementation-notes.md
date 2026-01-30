@@ -508,7 +508,4 @@ When making changes:
 
 ## Additional Resources
 
-- **SceneryStack Documentation**: https://github.com/nicolenoelle/scenerystack
-- **Classical Mechanics References**:
-  - French, A.P. _Vibrations and Waves_
-  - Crawford, Frank S. _Waves (Berkeley Physics Course, Vol. 3)_
+- **SceneryStack Documentation**: https://github.com/scenerystack
