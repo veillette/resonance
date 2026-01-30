@@ -14,6 +14,7 @@ import { Bounds2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Rectangle } from "scenerystack/scenery";
 import { Property, NumberProperty } from "scenerystack/axon";
+import { SimModel } from "../../model/SimModel.js";
 
 // Mock preferences model for testing
 function createMockPreferences() {
@@ -86,18 +87,14 @@ describe("ResonatorNodeBuilder", () => {
       resonatorModel = new ResonanceModel(createMockPreferences());
     });
 
-    it("should create a spring node result with node and cleanup", () => {
-      const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+    it("should create a spring node", () => {
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
 
-      expect(result).toBeDefined();
-      expect(result.node).toBeDefined();
-      expect(result.cleanup).toBeDefined();
-      expect(typeof result.cleanup).toBe("function");
+      expect(springNode).toBeDefined();
     });
 
     it("should create spring node with correct initial properties", () => {
-      const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
-      const springNode = result.node;
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
 
       expect(springNode.loopsProperty.value).toBe(
         ResonanceConstants.SPRING_LOOPS,
@@ -111,8 +108,7 @@ describe("ResonatorNodeBuilder", () => {
     });
 
     it("should update line width when spring constant changes", () => {
-      const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
-      const springNode = result.node;
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
 
       const initialLineWidth = springNode.lineWidthProperty.value;
 
@@ -127,9 +123,9 @@ describe("ResonatorNodeBuilder", () => {
     it("should have minimum line width at minimum spring constant", () => {
       resonatorModel.springConstantProperty.value =
         ResonanceConstants.SPRING_CONSTANT_RANGE.min;
-      const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
 
-      expect(result.node.lineWidthProperty.value).toBe(
+      expect(springNode.lineWidthProperty.value).toBe(
         ResonanceConstants.SPRING_LINE_WIDTH_MIN,
       );
     });
@@ -137,24 +133,11 @@ describe("ResonatorNodeBuilder", () => {
     it("should have maximum line width at maximum spring constant", () => {
       resonatorModel.springConstantProperty.value =
         ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-      const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
 
-      expect(result.node.lineWidthProperty.value).toBe(
+      expect(springNode.lineWidthProperty.value).toBe(
         ResonanceConstants.SPRING_LINE_WIDTH_MAX,
       );
-    });
-
-    it("cleanup should unlink spring constant listener", () => {
-      const result = ResonatorNodeBuilder.createSpringNode(resonatorModel);
-
-      // Call cleanup
-      result.cleanup();
-
-      // After cleanup, changing spring constant should not throw
-      // (if listener was properly unlinked)
-      expect(() => {
-        resonatorModel.springConstantProperty.value = 500;
-      }).not.toThrow();
     });
   });
 
@@ -189,99 +172,66 @@ describe("ResonatorNodeBuilder", () => {
       };
     });
 
-    it("should create a mass node result with node and cleanup", () => {
-      const result = ResonatorNodeBuilder.createMassNode(
+    it("should create a mass node", () => {
+      const massNode = ResonatorNodeBuilder.createMassNode(
         resonatorModel,
         0,
-        1,
         context,
       );
 
-      expect(result).toBeDefined();
-      expect(result.node).toBeDefined();
-      expect(result.cleanup).toBeDefined();
-      expect(typeof result.cleanup).toBe("function");
+      expect(massNode).toBeDefined();
     });
 
-    it("should create mass node with correct index label", () => {
-      const result = ResonatorNodeBuilder.createMassNode(
+    it("should create mass node with correct structure", () => {
+      const massNode = ResonatorNodeBuilder.createMassNode(
         resonatorModel,
         2,
-        5,
         context,
       );
 
-      // The label should show index + 1 (1-based)
-      const massNode = result.node;
       // Node has children: massBox and massLabel
       expect(massNode.children.length).toBe(2);
     });
 
     it("should set cursor to vertical resize", () => {
-      const result = ResonatorNodeBuilder.createMassNode(
+      const massNode = ResonatorNodeBuilder.createMassNode(
         resonatorModel,
         0,
-        1,
         context,
       );
-      expect(result.node.cursor).toBe("ns-resize");
+      expect(massNode.cursor).toBe("ns-resize");
     });
 
     it("should update mass box size when mass changes", () => {
-      const result = ResonatorNodeBuilder.createMassNode(
+      const massNode = ResonatorNodeBuilder.createMassNode(
         resonatorModel,
         0,
-        1,
         context,
       );
 
       // Get initial bounds
-      const initialWidth = result.node.children[0].width;
+      const initialWidth = massNode.children[0].width;
 
       // Increase mass
       resonatorModel.massProperty.value = ResonanceConstants.MASS_RANGE.max;
 
       // Size should increase
-      const newWidth = result.node.children[0].width;
+      const newWidth = massNode.children[0].width;
       expect(newWidth).toBeGreaterThan(initialWidth);
     });
 
-    it("cleanup should not throw and should unlink listeners", () => {
-      const result = ResonatorNodeBuilder.createMassNode(
-        resonatorModel,
-        0,
-        1,
-        context,
-      );
-
-      // Call cleanup
-      expect(() => {
-        result.cleanup();
-      }).not.toThrow();
-
-      // After cleanup, modifying model properties should not throw
-      expect(() => {
-        resonatorModel.massProperty.value = 2.0;
-        resonatorModel.positionProperty.value = 0.1;
-      }).not.toThrow();
-    });
-
     it("should create nodes for different resonator indices", () => {
-      const results = [];
+      const nodes = [];
       for (let i = 0; i < 5; i++) {
-        results.push(
-          ResonatorNodeBuilder.createMassNode(resonatorModel, i, 5, context),
+        nodes.push(
+          ResonatorNodeBuilder.createMassNode(resonatorModel, i, context),
         );
       }
 
-      expect(results.length).toBe(5);
-      results.forEach((result) => {
-        expect(result.node).toBeDefined();
-        expect(result.cleanup).toBeDefined();
+      expect(nodes.length).toBe(5);
+      nodes.forEach((node) => {
+        expect(node).toBeDefined();
       });
-
-      // Cleanup all
-      results.forEach((result) => result.cleanup());
     });
   });
 
@@ -297,7 +247,7 @@ describe("ResonatorNodeBuilder", () => {
     beforeEach(() => {
       // Create multiple resonator models
       resonatorModels = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < SimModel.MAX_RESONATORS; i++) {
         resonatorModels.push(new ResonanceModel(createMockPreferences()));
       }
 
@@ -320,80 +270,27 @@ describe("ResonatorNodeBuilder", () => {
       };
     });
 
-    it("should build correct number of spring nodes", () => {
-      const count = 5;
+    it("should build MAX_RESONATORS spring nodes", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
-        count,
         context,
       );
 
-      expect(result.springNodes.length).toBe(count);
+      expect(result.springNodes.length).toBe(SimModel.MAX_RESONATORS);
     });
 
-    it("should build correct number of mass nodes", () => {
-      const count = 5;
+    it("should build MAX_RESONATORS mass nodes", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
-        count,
         context,
       );
 
-      expect(result.massNodes.length).toBe(count);
-    });
-
-    it("should return cleanup functions for each node", () => {
-      const count = 3;
-      const result = ResonatorNodeBuilder.buildResonators(
-        resonatorModels,
-        count,
-        context,
-      );
-
-      // Should have cleanup for each spring and each mass (2 per resonator)
-      expect(result.cleanups.length).toBe(count * 2);
-    });
-
-    it("should handle single resonator", () => {
-      const result = ResonatorNodeBuilder.buildResonators(
-        resonatorModels,
-        1,
-        context,
-      );
-
-      expect(result.springNodes.length).toBe(1);
-      expect(result.massNodes.length).toBe(1);
-      expect(result.cleanups.length).toBe(2);
-    });
-
-    it("should handle maximum resonators (10)", () => {
-      const result = ResonatorNodeBuilder.buildResonators(
-        resonatorModels,
-        10,
-        context,
-      );
-
-      expect(result.springNodes.length).toBe(10);
-      expect(result.massNodes.length).toBe(10);
-      expect(result.cleanups.length).toBe(20);
-    });
-
-    it("all cleanup functions should execute without error", () => {
-      const result = ResonatorNodeBuilder.buildResonators(
-        resonatorModels,
-        5,
-        context,
-      );
-
-      expect(() => {
-        result.cleanups.forEach((cleanup) => cleanup());
-      }).not.toThrow();
+      expect(result.massNodes.length).toBe(SimModel.MAX_RESONATORS);
     });
 
     it("should create spring nodes with proper configuration", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
-        3,
         context,
       );
 
@@ -407,7 +304,6 @@ describe("ResonatorNodeBuilder", () => {
     it("should create mass nodes with correct cursor", () => {
       const result = ResonatorNodeBuilder.buildResonators(
         resonatorModels,
-        3,
         context,
       );
 

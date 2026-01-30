@@ -4,15 +4,15 @@
  */
 
 import { Node, Text, Rectangle, HBox, VBox } from "scenerystack/scenery";
-import { NumberControl } from "scenerystack/scenery-phet";
 import { ToggleSwitch } from "scenerystack/sun";
 import { NumberProperty } from "scenerystack/axon";
-import { Range, Dimension2 } from "scenerystack/dot";
+import { Range } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { CircularUpdateGuard } from "../../common/util/index.js";
+import { NumberControlFactory } from "./NumberControlFactory.js";
 
 export class DriverControlNode extends Node {
   public constructor(model: SimModel) {
@@ -60,34 +60,16 @@ export class DriverControlNode extends Node {
     });
 
     // Frequency Control
-    const frequencyControl = new NumberControl(
-      ResonanceStrings.controls.frequencyStringProperty,
-      model.resonanceModel.drivingFrequencyProperty,
-      ResonanceConstants.FREQUENCY_RANGE,
-      {
-        delta: 0.1,
-        numberDisplayOptions: {
-          valuePattern: ResonanceStrings.units.hertzPatternStringProperty,
-          decimalPlaces: 1,
-          textOptions: {
-            font: ResonanceConstants.LABEL_FONT,
-            fill: ResonanceColors.preferencesTextProperty,
-          },
-        },
-        titleNodeOptions: {
-          font: ResonanceConstants.LABEL_FONT,
-          fill: ResonanceColors.textProperty,
-        },
-        sliderOptions: {
-          trackFillEnabled: ResonanceColors.frequencyTrackProperty,
-          trackSize: new Dimension2(120, 3),
-          minorTickSpacing: 0.5,
-          majorTickStroke: ResonanceColors.textProperty,
-          minorTickStroke: ResonanceColors.textProperty,
-        },
-      },
-    );
-    frequencyControl.setScaleMagnitude(ResonanceConstants.CONTROL_SCALE);
+    const frequencyControl = NumberControlFactory.createScaled({
+      titleProperty: ResonanceStrings.controls.frequencyStringProperty,
+      numberProperty: model.resonanceModel.drivingFrequencyProperty,
+      range: ResonanceConstants.FREQUENCY_RANGE,
+      delta: 0.1,
+      decimalPlaces: 1,
+      valuePattern: ResonanceStrings.units.hertzPatternStringProperty,
+      trackFill: ResonanceColors.frequencyTrackProperty,
+      minorTickSpacing: 0.5,
+    });
 
     // Amplitude Control (display in cm, model in meters)
     const amplitudeCmProperty = new NumberProperty(
@@ -112,34 +94,16 @@ export class DriverControlNode extends Node {
       ResonanceConstants.AMPLITUDE_RANGE.max * 100,
     );
 
-    const amplitudeControl = new NumberControl(
-      ResonanceStrings.controls.amplitudeStringProperty,
-      amplitudeCmProperty,
-      amplitudeRangeCm,
-      {
-        delta: 0.01,
-        numberDisplayOptions: {
-          valuePattern: ResonanceStrings.units.cmPatternStringProperty,
-          decimalPlaces: 2,
-          textOptions: {
-            font: ResonanceConstants.LABEL_FONT,
-            fill: ResonanceColors.preferencesTextProperty,
-          },
-        },
-        titleNodeOptions: {
-          font: ResonanceConstants.LABEL_FONT,
-          fill: ResonanceColors.textProperty,
-        },
-        sliderOptions: {
-          trackFillEnabled: ResonanceColors.amplitudeTrackProperty,
-          trackSize: new Dimension2(120, 3),
-          minorTickSpacing: 0.2,
-          majorTickStroke: ResonanceColors.textProperty,
-          minorTickStroke: ResonanceColors.textProperty,
-        },
-      },
-    );
-    amplitudeControl.setScaleMagnitude(ResonanceConstants.CONTROL_SCALE);
+    const amplitudeControl = NumberControlFactory.createScaled({
+      titleProperty: ResonanceStrings.controls.amplitudeStringProperty,
+      numberProperty: amplitudeCmProperty,
+      range: amplitudeRangeCm,
+      delta: 0.01,
+      decimalPlaces: 2,
+      valuePattern: ResonanceStrings.units.cmPatternStringProperty,
+      trackFill: ResonanceColors.amplitudeTrackProperty,
+      minorTickSpacing: 0.2,
+    });
 
     // Container for all three controls in a row
     const controlsBox = new HBox({

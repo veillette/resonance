@@ -1,6 +1,6 @@
 /**
  * ResonatorNodeBuilder creates spring and mass nodes for resonators.
- * Returns cleanup functions to prevent memory leaks when resonators are rebuilt.
+ * All nodes are created once at startup and visibility is controlled by count.
  */
 
 import { Node, Text, Rectangle } from "scenerystack/scenery";
@@ -14,6 +14,7 @@ import { ResonanceModel } from "../../common/model/index.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { CircularUpdateGuard } from "../../common/util/index.js";
+import { SimModel } from "../model/SimModel.js";
 
 /**
  * Context needed to build resonator nodes.
@@ -26,28 +27,11 @@ export interface ResonatorBuildContext {
 }
 
 /**
- * Result from building a spring node.
- */
-export interface SpringNodeResult {
-  node: ParametricSpringNode;
-  cleanup: () => void;
-}
-
-/**
- * Result from building a mass node.
- */
-export interface MassNodeResult {
-  node: Node;
-  cleanup: () => void;
-}
-
-/**
  * Result from building all resonator nodes.
  */
 export interface ResonatorBuildResult {
   springNodes: ParametricSpringNode[];
   massNodes: Node[];
-  cleanups: Array<() => void>;
 }
 
 export class ResonatorNodeBuilder {
@@ -73,7 +57,7 @@ export class ResonatorNodeBuilder {
    */
   public static createSpringNode(
     resonatorModel: ResonanceModel,
-  ): SpringNodeResult {
+  ): ParametricSpringNode {
     const springNode = new ParametricSpringNode({
       frontColor: ResonanceColors.springProperty,
       middleColor: ResonanceColors.springProperty,
@@ -90,7 +74,7 @@ export class ResonatorNodeBuilder {
     });
 
     // Line width varies with spring constant
-    const springConstantListener = (springConstant: number) => {
+    resonatorModel.springConstantProperty.link((springConstant: number) => {
       const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
       const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
       const normalizedK = (springConstant - minK) / (maxK - minK);
@@ -100,15 +84,9 @@ export class ResonatorNodeBuilder {
           (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
             ResonanceConstants.SPRING_LINE_WIDTH_MIN);
       springNode.lineWidthProperty.value = lineWidth;
-    };
+    });
 
-    resonatorModel.springConstantProperty.link(springConstantListener);
-
-    const cleanup = () => {
-      resonatorModel.springConstantProperty.unlink(springConstantListener);
-    };
-
-    return { node: springNode, cleanup };
+    return springNode;
   }
 
   /**
@@ -117,9 +95,8 @@ export class ResonatorNodeBuilder {
   public static createMassNode(
     resonatorModel: ResonanceModel,
     index: number,
-    count: number,
     context: ResonatorBuildContext,
-  ): MassNodeResult {
+  ): Node {
     const {
       modelViewTransform,
       layoutBounds,
@@ -137,11 +114,13 @@ export class ResonatorNodeBuilder {
       lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH,
       cornerRadius: 3,
     });
+    // Use a fixed font size based on max resonators to avoid label size changes
     const massLabel = new Text(`${index + 1}`, {
       font: new PhetFont({
         size: Math.max(
           ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN,
-          ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE - count * 2,
+          ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE -
+            SimModel.MAX_RESONATORS * 2,
         ),
         weight: "bold",
       }),
@@ -152,20 +131,18 @@ export class ResonatorNodeBuilder {
     massNode.addChild(massLabel);
 
     // Update mass box size when mass changes
-    const massListener = (mass: number) => {
+    resonatorModel.massProperty.link((mass: number) => {
       const newSize = ResonatorNodeBuilder.calculateMassSize(mass);
       massBox.setRect(0, 0, newSize, newSize);
       massLabel.center = massBox.center;
-    };
-    resonatorModel.massProperty.link(massListener);
+    });
 
     // Change label color when dragging to indicate selection
-    const draggingListener = (isDragging: boolean) => {
+    resonatorModel.isDraggingProperty.link((isDragging: boolean) => {
       massLabel.fill = isDragging
         ? ResonanceColors.massLabelDraggingProperty
         : ResonanceColors.massLabelProperty;
-    };
-    resonatorModel.isDraggingProperty.link(draggingListener);
+    });
 
     // Add vertical drag listener using positionProperty
     massNode.cursor = "ns-resize";
@@ -178,7 +155,7 @@ export class ResonatorNodeBuilder {
 
     // Bidirectional sync: model position -> view position
     // Only update view from model when NOT dragging
-    const positionListener = (modelPosition: number) => {
+    resonatorModel.positionProperty.link((modelPosition: number) => {
       // Skip model->view updates while dragging (user controls position)
       if (resonatorModel.isDraggingProperty.value) {
         return;
@@ -202,11 +179,10 @@ export class ResonatorNodeBuilder {
           massCenterY,
         );
       });
-    };
-    resonatorModel.positionProperty.link(positionListener);
+    });
 
     // View position -> model position (only active during drag)
-    const viewPositionListener = (viewPosition: Vector2) => {
+    massPositionProperty.lazyLink((viewPosition: Vector2) => {
       positionGuard.run(() => {
         const massCenterY = viewPosition.y;
         const junctionY = massCenterY + ResonanceConstants.MASS_CENTER_OFFSET;
@@ -226,8 +202,7 @@ export class ResonatorNodeBuilder {
         resonatorModel.velocityProperty.value = 0;
         // Note: Don't stop the simulation - only this resonator is frozen while dragging
       });
-    };
-    massPositionProperty.lazyLink(viewPositionListener);
+    });
 
     const dragListener = new DragListener({
       targetNode: massNode,
@@ -267,50 +242,36 @@ export class ResonatorNodeBuilder {
     });
     massNode.addInputListener(keyboardDragListener);
 
-    const cleanup = () => {
-      resonatorModel.massProperty.unlink(massListener);
-      resonatorModel.isDraggingProperty.unlink(draggingListener);
-      resonatorModel.positionProperty.unlink(positionListener);
-      massPositionProperty.unlink(viewPositionListener);
-      massNode.removeInputListener(dragListener);
-      massNode.removeInputListener(keyboardDragListener);
-    };
-
-    return { node: massNode, cleanup };
+    return massNode;
   }
 
   /**
-   * Builds all resonator nodes (springs + masses) for the given resonator models.
+   * Builds all resonator nodes (springs + masses) for MAX_RESONATORS.
+   * Nodes are created once and visibility is controlled separately.
    */
   public static buildResonators(
     resonatorModels: ResonanceModel[],
-    count: number,
     context: ResonatorBuildContext,
   ): ResonatorBuildResult {
     const springNodes: ParametricSpringNode[] = [];
     const massNodes: Node[] = [];
-    const cleanups: Array<() => void> = [];
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < SimModel.MAX_RESONATORS; i++) {
       const resonatorModel = resonatorModels[i];
 
       // Create spring node
-      const springResult =
-        ResonatorNodeBuilder.createSpringNode(resonatorModel);
-      springNodes.push(springResult.node);
-      cleanups.push(springResult.cleanup);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      springNodes.push(springNode);
 
       // Create mass node
-      const massResult = ResonatorNodeBuilder.createMassNode(
+      const massNode = ResonatorNodeBuilder.createMassNode(
         resonatorModel,
         i,
-        count,
         context,
       );
-      massNodes.push(massResult.node);
-      cleanups.push(massResult.cleanup);
+      massNodes.push(massNode);
     }
 
-    return { springNodes, massNodes, cleanups };
+    return { springNodes, massNodes };
   }
 }

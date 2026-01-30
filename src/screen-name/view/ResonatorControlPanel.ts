@@ -30,7 +30,7 @@ import {
 } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
 import { Property, NumberProperty } from "scenerystack/axon";
-import { Range, Bounds2, Dimension2 } from "scenerystack/dot";
+import { Range, Bounds2 } from "scenerystack/dot";
 import { SimModel } from "../model/SimModel.js";
 import { ResonatorConfigMode } from "../../common/model/ResonatorConfigMode.js";
 import type { ResonatorConfigModeType } from "../../common/model/ResonatorConfigMode.js";
@@ -38,6 +38,7 @@ import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ListenerTracker } from "../../common/util/index.js";
+import { NumberControlFactory } from "./NumberControlFactory.js";
 
 export class ResonatorControlPanel extends Panel {
   /**
@@ -227,45 +228,30 @@ export class ResonatorControlPanel extends Panel {
    * Creates the resonator count slider control.
    */
   private static createResonatorCountControl(model: SimModel): NumberControl {
-    return new NumberControl(
-      ResonanceStrings.controls.resonatorsStringProperty,
-      model.resonatorCountProperty,
-      ResonanceConstants.RESONATOR_COUNT_RANGE,
-      {
-        delta: 1,
-        numberDisplayOptions: {
-          decimalPlaces: 0,
-          textOptions: {
-            fill: ResonanceColors.preferencesTextProperty,
-          },
+    return NumberControlFactory.create({
+      titleProperty: ResonanceStrings.controls.resonatorsStringProperty,
+      numberProperty: model.resonatorCountProperty,
+      range: ResonanceConstants.RESONATOR_COUNT_RANGE,
+      delta: 1,
+      decimalPlaces: 0,
+      minorTickSpacing: 1,
+      majorTicks: [
+        {
+          value: 1,
+          label: new Text("1", {
+            font: ResonanceConstants.TICK_LABEL_FONT,
+            fill: ResonanceColors.textProperty,
+          }),
         },
-        titleNodeOptions: {
-          fill: ResonanceColors.textProperty,
+        {
+          value: 10,
+          label: new Text("10", {
+            font: ResonanceConstants.TICK_LABEL_FONT,
+            fill: ResonanceColors.textProperty,
+          }),
         },
-        sliderOptions: {
-          trackSize: new Dimension2(120, 3),
-          majorTicks: [
-            {
-              value: 1,
-              label: new Text("1", {
-                font: ResonanceConstants.TICK_LABEL_FONT,
-                fill: ResonanceColors.textProperty,
-              }),
-            },
-            {
-              value: 10,
-              label: new Text("10", {
-                font: ResonanceConstants.TICK_LABEL_FONT,
-                fill: ResonanceColors.textProperty,
-              }),
-            },
-          ],
-          minorTickSpacing: 1,
-          majorTickStroke: ResonanceColors.textProperty,
-          minorTickStroke: ResonanceColors.textProperty,
-        },
-      },
-    );
+      ],
+    });
   }
 
   /**
@@ -408,54 +394,23 @@ export class ResonatorControlPanel extends Panel {
       model.resonanceModel.springConstantProperty.value,
     );
 
-    const massControl = new NumberControl(
-      ResonanceStrings.controls.massSimpleStringProperty,
-      displayMassProperty,
-      ResonanceConstants.MASS_RANGE,
-      {
-        delta: 0.01,
-        numberDisplayOptions: {
-          valuePattern: ResonanceStrings.units.kgPatternStringProperty,
-          decimalPlaces: 2,
-          textOptions: {
-            fill: ResonanceColors.preferencesTextProperty,
-          },
-        },
-        titleNodeOptions: {
-          fill: ResonanceColors.textProperty,
-        },
-        sliderOptions: {
-          trackSize: new Dimension2(120, 3),
-          majorTickStroke: ResonanceColors.textProperty,
-          minorTickStroke: ResonanceColors.textProperty,
-        },
-      },
-    );
+    const massControl = NumberControlFactory.create({
+      titleProperty: ResonanceStrings.controls.massSimpleStringProperty,
+      numberProperty: displayMassProperty,
+      range: ResonanceConstants.MASS_RANGE,
+      delta: 0.01,
+      decimalPlaces: 2,
+      valuePattern: ResonanceStrings.units.kgPatternStringProperty,
+    });
 
-    const springConstantControl = new NumberControl(
-      ResonanceStrings.controls.springConstantSimpleStringProperty,
-      displaySpringConstantProperty,
-      ResonanceConstants.SPRING_CONSTANT_RANGE,
-      {
-        delta: 1,
-        numberDisplayOptions: {
-          valuePattern:
-            ResonanceStrings.units.newtonPerMeterPatternStringProperty,
-          decimalPlaces: 0,
-          textOptions: {
-            fill: ResonanceColors.preferencesTextProperty,
-          },
-        },
-        titleNodeOptions: {
-          fill: ResonanceColors.textProperty,
-        },
-        sliderOptions: {
-          trackSize: new Dimension2(120, 3),
-          majorTickStroke: ResonanceColors.textProperty,
-          minorTickStroke: ResonanceColors.textProperty,
-        },
-      },
-    );
+    const springConstantControl = NumberControlFactory.create({
+      titleProperty: ResonanceStrings.controls.springConstantSimpleStringProperty,
+      numberProperty: displaySpringConstantProperty,
+      range: ResonanceConstants.SPRING_CONSTANT_RANGE,
+      delta: 1,
+      decimalPlaces: 0,
+      valuePattern: ResonanceStrings.units.newtonPerMeterPatternStringProperty,
+    });
 
     return {
       massControl,
@@ -498,30 +453,14 @@ export class ResonatorControlPanel extends Panel {
    * Creates the damping slider control.
    */
   private static createDampingControl(model: SimModel): NumberControl {
-    return new NumberControl(
-      ResonanceStrings.controls.dampingStringProperty,
-      model.resonanceModel.dampingProperty,
-      ResonanceConstants.DAMPING_RANGE,
-      {
-        delta: 0.1,
-        numberDisplayOptions: {
-          valuePattern:
-            ResonanceStrings.units.dampingUnitsPatternStringProperty,
-          decimalPlaces: 1,
-          textOptions: {
-            fill: ResonanceColors.preferencesTextProperty,
-          },
-        },
-        titleNodeOptions: {
-          fill: ResonanceColors.textProperty,
-        },
-        sliderOptions: {
-          trackSize: new Dimension2(120, 3),
-          majorTickStroke: ResonanceColors.textProperty,
-          minorTickStroke: ResonanceColors.textProperty,
-        },
-      },
-    );
+    return NumberControlFactory.create({
+      titleProperty: ResonanceStrings.controls.dampingStringProperty,
+      numberProperty: model.resonanceModel.dampingProperty,
+      range: ResonanceConstants.DAMPING_RANGE,
+      delta: 0.1,
+      decimalPlaces: 1,
+      valuePattern: ResonanceStrings.units.dampingUnitsPatternStringProperty,
+    });
   }
 
   /**

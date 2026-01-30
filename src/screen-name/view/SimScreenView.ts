@@ -26,7 +26,6 @@ export class SimScreenView extends ScreenView {
   private readonly resonatorsContainer: Node;
   private springNodes: ParametricSpringNode[] = [];
   private massNodes: Node[] = [];
-  private resonatorCleanups: Array<() => void> = [];
   private readonly rulerNode: RulerNode;
   private readonly rulerVisibleProperty: Property<boolean>;
   private readonly rulerPositionProperty: Vector2Property;
@@ -83,8 +82,7 @@ export class SimScreenView extends ScreenView {
     this.createDriverPlateAndRod(simulationArea);
 
     // ===== MEASUREMENT LINES =====
-    // Must be created before resonatorCountProperty.link() since that calls updateSpringAndMass()
-    // Added early in z-order so they appear behind resonators
+    // Must be created before resonators since measurement lines appear behind them
     this.measurementLinesNode = new MeasurementLinesNode(
       this.driverPlate.centerX,
       this.driverPlate.top,
@@ -96,13 +94,14 @@ export class SimScreenView extends ScreenView {
     simulationArea.addChild(this.measurementLinesNode);
 
     // ===== RESONATORS (springs + masses) =====
+    // Create all resonator nodes once - visibility controlled by count
     this.resonatorsContainer = new Node();
     simulationArea.addChild(this.resonatorsContainer);
-    this.rebuildResonators(1);
+    this.createAllResonators();
 
-    // Link resonator count changes - fires immediately, so measurement lines must exist first
+    // Update visibility when resonator count changes
     model.resonatorCountProperty.link((count: number) => {
-      this.rebuildResonators(count);
+      this.updateResonatorVisibility(count);
       this.updateSpringAndMass();
     });
 
@@ -286,19 +285,10 @@ export class SimScreenView extends ScreenView {
   }
 
   /**
-   * Rebuild the visual resonator nodes (springs + masses) for a given count.
-   * Cleans up existing listeners before rebuilding to prevent memory leaks.
+   * Create all resonator nodes (springs + masses) once at startup.
+   * All MAX_RESONATORS are created; visibility is controlled by count.
    */
-  private rebuildResonators(count: number): void {
-    // Clean up existing listeners before rebuilding
-    this.resonatorCleanups.forEach((cleanup) => cleanup());
-    this.resonatorCleanups = [];
-
-    this.resonatorsContainer.removeAllChildren();
-    this.springNodes = [];
-    this.massNodes = [];
-
-    // Build new resonators using the builder
+  private createAllResonators(): void {
     const context = {
       modelViewTransform: this.modelViewTransform,
       layoutBounds: this.layoutBounds,
@@ -308,20 +298,32 @@ export class SimScreenView extends ScreenView {
 
     const result = ResonatorNodeBuilder.buildResonators(
       this.model.resonatorModels,
-      count,
       context,
     );
 
     this.springNodes = result.springNodes;
     this.massNodes = result.massNodes;
-    this.resonatorCleanups = result.cleanups;
 
-    // Add nodes to container
+    // Add all nodes to container
     for (const springNode of this.springNodes) {
       this.resonatorsContainer.addChild(springNode);
     }
     for (const massNode of this.massNodes) {
       this.resonatorsContainer.addChild(massNode);
+    }
+
+    // Set initial visibility based on current count
+    this.updateResonatorVisibility(this.model.resonatorCountProperty.value);
+  }
+
+  /**
+   * Update visibility of resonator nodes based on the current count.
+   */
+  private updateResonatorVisibility(count: number): void {
+    for (let i = 0; i < this.springNodes.length; i++) {
+      const visible = i < count;
+      this.springNodes[i].visible = visible;
+      this.massNodes[i].visible = visible;
     }
   }
 
@@ -329,7 +331,7 @@ export class SimScreenView extends ScreenView {
    * Update spring and mass positions each frame.
    */
   private updateSpringAndMass(): void {
-    const count = this.springNodes.length;
+    const count = this.model.resonatorCountProperty.value;
     if (count === 0) {
       return;
     }
@@ -376,7 +378,7 @@ export class SimScreenView extends ScreenView {
     // Note: Measurement lines stay fixed relative to driver plate rest position
     // They do not move with the oscillating driver plate
 
-    // Position springs and masses
+    // Position springs and masses (only visible ones need positioning)
     const driverTopY = this.driverPlate.top;
     const driverCenterX = this.driverPlate.centerX;
     const spacing = ResonanceConstants.DRIVER_BOX_WIDTH / (count + 1);

@@ -2,57 +2,74 @@
  * ResonanceStrings.ts
  *
  * Provides convenient access to localized strings for the Resonance simulation.
- * This module exports the StringManager singleton for use throughout the application.
+ * Strings are organized by category and accessed as reactive properties.
  */
 
-import { StringManager } from "./StringManager";
+import { getStringProperties, StringManager } from "./StringManager.js";
 
-// Export the StringManager singleton instance
-export const resonanceStringManager = StringManager.getInstance();
+// Get the nested string properties
+const strings = getStringProperties();
 
-// Export commonly used string properties for convenience
+// Convenience aliases for simulation preferences solver strings
+const simulationPrefs = strings.resonance.preferences.simulation;
+
+/**
+ * All localized strings for the Resonance simulation.
+ * Access strings directly: ResonanceStrings.controls.massStringProperty
+ */
 export const ResonanceStrings = {
   // Title
-  titleStringProperty: resonanceStringManager.getTitleStringProperty(),
+  titleStringProperty: strings.resonance.titleStringProperty,
 
   // Screens
-  screens: resonanceStringManager.getScreenNames(),
+  screens: strings.resonance.screens,
 
   // Controls
-  controls: resonanceStringManager.getControlLabels(),
+  controls: strings.resonance.controls,
 
   // Preferences
   preferences: {
-    titleStringProperty:
-      resonanceStringManager.getPreferencesLabels().titleStringProperty,
+    titleStringProperty: strings.resonance.preferences.titleStringProperty,
+    visual: strings.resonance.preferences.visual,
+    simulation: strings.resonance.preferences.simulation,
+    localization: strings.resonance.preferences.localization,
 
-    visual: resonanceStringManager.getVisualPreferencesLabels(),
-
-    simulation: resonanceStringManager.getSimulationPreferencesLabels(),
-
-    localization: resonanceStringManager.getLocalizationPreferencesLabels(),
-
-    // Solver names and descriptions (merged for convenience)
+    // Solver names and descriptions (convenience mapping)
     solvers: {
-      ...resonanceStringManager.getSolverNames(),
-      ...resonanceStringManager.getSolverDescriptions(),
+      rk4StringProperty: simulationPrefs.solverRK4StringProperty,
+      adaptiveRK45StringProperty: simulationPrefs.solverAdaptiveRK45StringProperty,
+      adaptiveEulerStringProperty: simulationPrefs.solverAdaptiveEulerStringProperty,
+      modifiedMidpointStringProperty: simulationPrefs.solverModifiedMidpointStringProperty,
+      rk4DescriptionStringProperty: simulationPrefs.solverRK4DescriptionStringProperty,
+      adaptiveRK45DescriptionStringProperty: simulationPrefs.solverAdaptiveRK45DescriptionStringProperty,
+      adaptiveEulerDescriptionStringProperty: simulationPrefs.solverAdaptiveEulerDescriptionStringProperty,
+      modifiedMidpointDescriptionStringProperty: simulationPrefs.solverModifiedMidpointDescriptionStringProperty,
     },
   },
 
   // Content
-  content: resonanceStringManager.getContentLabels(),
+  content: strings.resonance.content,
 
   // Presets
-  presets: resonanceStringManager.getPresetNames(),
+  presets: strings.resonance.presets,
 
   // Units
-  units: resonanceStringManager.getUnitLabels(),
+  units: strings.resonance.units,
 
-  // Common (for use in model code)
+  // Common solver names (convenience mapping for model code)
   common: {
-    solverNames: resonanceStringManager.getCommonSolverNames(),
+    ...strings.resonance.common,
+    solverNames: {
+      solverRK4StringProperty: strings.resonance.common.solverRK4StringProperty,
+      solverAdaptiveRK45StringProperty: strings.resonance.common.solverAdaptiveRK45StringProperty,
+      solverAdaptiveEulerStringProperty: strings.resonance.common.solverAdaptiveEulerStringProperty,
+      solverModifiedMidpointStringProperty: strings.resonance.common.solverModifiedMidpointStringProperty,
+    },
   },
 };
 
-// Export the StringManager for direct access when needed
+// Export for backward compatibility
+export const resonanceStringManager = StringManager.getInstance();
+
+// Export StringManager for direct access when needed
 export { StringManager };
