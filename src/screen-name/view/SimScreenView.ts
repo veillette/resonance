@@ -50,10 +50,11 @@ export class SimScreenView extends ScreenView {
       ResonanceConstants.MODEL_BOUNDS_MAX,
     );
     const viewBounds = this.layoutBounds;
-    this.modelViewTransform = ModelViewTransform2.createRectangleInvertedYMapping(
-      transformModelBounds,
-      viewBounds,
-    );
+    this.modelViewTransform =
+      ModelViewTransform2.createRectangleInvertedYMapping(
+        transformModelBounds,
+        viewBounds,
+      );
 
     // Initialize ruler properties
     this.rulerVisibleProperty = new Property<boolean>(false);
@@ -415,8 +416,7 @@ export class SimScreenView extends ScreenView {
       const springNode = this.springNodes[i];
       // Use the actual radius from this spring node (varies with spring constant)
       const springRadius = springNode.radiusProperty.value;
-      const loopsTimesRadius =
-        ResonanceConstants.SPRING_LOOPS * springRadius;
+      const loopsTimesRadius = ResonanceConstants.SPRING_LOOPS * springRadius;
 
       const xScale = Math.max(
         ResonanceConstants.MIN_SPRING_XSCALE,

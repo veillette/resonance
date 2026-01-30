@@ -200,7 +200,8 @@ describe("ResonanceStrings", () => {
 
     it("should have non-empty solver names", () => {
       expect(
-        ResonanceStrings.common.solverNames.solverRK4StringProperty.value.length,
+        ResonanceStrings.common.solverNames.solverRK4StringProperty.value
+          .length,
       ).toBeGreaterThan(0);
     });
   });

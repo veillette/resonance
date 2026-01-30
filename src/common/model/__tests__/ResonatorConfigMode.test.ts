@@ -19,7 +19,9 @@ describe("ResonatorConfigMode", () => {
 
     it("should have SAME_SPRING_CONSTANT mode", () => {
       expect(ResonatorConfigMode.SAME_SPRING_CONSTANT).toBeDefined();
-      expect(ResonatorConfigMode.SAME_SPRING_CONSTANT).toBe("sameSpringConstant");
+      expect(ResonatorConfigMode.SAME_SPRING_CONSTANT).toBe(
+        "sameSpringConstant",
+      );
     });
 
     it("should have MIXED mode", () => {

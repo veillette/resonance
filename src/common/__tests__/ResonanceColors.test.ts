@@ -34,7 +34,9 @@ describe("ResonanceColors", () => {
     });
 
     it("should have spring and mass colors", () => {
-      expect(ResonanceColors.springProperty).toBeInstanceOf(ProfileColorProperty);
+      expect(ResonanceColors.springProperty).toBeInstanceOf(
+        ProfileColorProperty,
+      );
       expect(ResonanceColors.massProperty).toBeInstanceOf(ProfileColorProperty);
       expect(ResonanceColors.massStrokeProperty).toBeInstanceOf(
         ProfileColorProperty,
@@ -78,13 +80,21 @@ describe("ResonanceColors", () => {
     });
 
     it("should have plot colors", () => {
-      expect(ResonanceColors.plot1Property).toBeInstanceOf(ProfileColorProperty);
-      expect(ResonanceColors.plot2Property).toBeInstanceOf(ProfileColorProperty);
-      expect(ResonanceColors.plot3Property).toBeInstanceOf(ProfileColorProperty);
+      expect(ResonanceColors.plot1Property).toBeInstanceOf(
+        ProfileColorProperty,
+      );
+      expect(ResonanceColors.plot2Property).toBeInstanceOf(
+        ProfileColorProperty,
+      );
+      expect(ResonanceColors.plot3Property).toBeInstanceOf(
+        ProfileColorProperty,
+      );
     });
 
     it("should have phase colors", () => {
-      expect(ResonanceColors.inPhaseProperty).toBeInstanceOf(ProfileColorProperty);
+      expect(ResonanceColors.inPhaseProperty).toBeInstanceOf(
+        ProfileColorProperty,
+      );
       expect(ResonanceColors.outOfPhaseProperty).toBeInstanceOf(
         ProfileColorProperty,
       );

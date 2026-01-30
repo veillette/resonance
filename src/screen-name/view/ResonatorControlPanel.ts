@@ -11,7 +11,15 @@
  * - Ruler visibility checkbox
  */
 
-import { Node, Text, Line, VBox, HBox, AlignBox, VStrut } from "scenerystack/scenery";
+import {
+  Node,
+  Text,
+  Line,
+  VBox,
+  HBox,
+  AlignBox,
+  VStrut,
+} from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
 import {
   Panel,

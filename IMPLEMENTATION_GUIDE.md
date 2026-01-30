@@ -3,6 +3,7 @@
 This document is the authoritative technical reference for the Resonance simulation's physics model, coordinate system, ODE solvers, and visual representation.
 
 **Related documentation:**
+
 - [README.md](README.md) - User-facing overview, features, and getting started
 - [claude.md](claude.md) - Development patterns, code examples, and SceneryStack API usage
 
@@ -819,6 +820,5 @@ Possible additions to the model:
 
 8. **Quality factor display**: Show Q = ω₀/Δω for each oscillator
 9. **Fourier analysis**: Show frequency spectrum of oscillation
-
 
 ---

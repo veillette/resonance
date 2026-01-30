@@ -109,7 +109,7 @@ export class MeasurementLinesNode extends Node {
     super();
 
     // Calculate height range in model coordinates (meters)
-    const minHeight = -0.20; // 20cm minimum below plate
+    const minHeight = -0.2; // 20cm minimum below plate
     const screenHeightView = driverTopY - layoutBounds.minY;
     const maxHeight = Math.abs(
       modelViewTransform.viewToModelDeltaY(screenHeightView),

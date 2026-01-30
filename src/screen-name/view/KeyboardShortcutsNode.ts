@@ -5,9 +5,6 @@
 
 import {
   TwoColumnKeyboardHelpContent,
-  KeyboardHelpSection,
-  KeyboardHelpSectionRow,
-  TextKeyNode,
   SliderControlsKeyboardHelpSection,
   BasicActionsKeyboardHelpSection,
 } from "scenerystack/scenery-phet";

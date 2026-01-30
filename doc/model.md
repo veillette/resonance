@@ -51,6 +51,7 @@ Expanding each force:
 **m · a = −k · (x − x_plate) − b · v + m · g**
 
 Where:
+
 - **m** = mass of the block (kg)
 - **a** = acceleration of the mass (m/s²)
 - **k** = spring constant (N/m)
@@ -94,6 +95,7 @@ Every mass-spring system has a **natural frequency**—the frequency at which it
 **f₀ = ω₀/(2π) = (1/2π)√(k/m)** (in Hz)
 
 This is determined entirely by the mass and spring constant:
+
 - **Stiffer spring (larger k)** → Higher natural frequency
 - **Heavier mass (larger m)** → Lower natural frequency
 
@@ -104,6 +106,7 @@ The **damping ratio** (ζ, zeta) characterizes how quickly oscillations decay:
 **ζ = b / (2√(m·k))**
 
 Different damping regimes:
+
 - **ζ < 1 (Underdamped)**: System oscillates with decreasing amplitude
 - **ζ = 1 (Critically damped)**: System returns to equilibrium as fast as possible without oscillating
 - **ζ > 1 (Overdamped)**: System returns slowly without oscillating
@@ -111,6 +114,7 @@ Different damping regimes:
 ### Resonance
 
 **Resonance** occurs when the driving frequency matches the natural frequency of the system. At resonance:
+
 - The amplitude of oscillation is **maximum**
 - For lightly damped systems, this amplitude can be much larger than the driving amplitude
 - The mass motion lags behind the driving by 90° (π/2 radians)
@@ -136,11 +140,13 @@ The **phase lag** (φ) describes how the mass motion relates to the driving moti
 The simulation tracks three forms of energy:
 
 ### Kinetic Energy
+
 **KE = ½ · m · v²**
 
 Energy due to the mass's motion. Maximum when passing through equilibrium (v is maximum).
 
 ### Potential Energy
+
 **PE = ½ · k · x²** (spring only)
 
 **PE = ½ · k · x² − m · g · x** (with gravity)
@@ -148,6 +154,7 @@ Energy due to the mass's motion. Maximum when passing through equilibrium (v is 
 Energy stored in the stretched or compressed spring. Maximum at the turning points (x is maximum).
 
 ### Total Mechanical Energy
+
 **E = KE + PE**
 
 In an undamped, undriven system, total energy is conserved. With damping, energy decreases over time (dissipated as heat). With driving, energy is continuously added to the system.
@@ -160,13 +167,13 @@ At steady-state resonance, the energy input from driving equals the energy dissi
 
 The simulation allows students to adjust these parameters:
 
-| Parameter | Minimum | Maximum | Default | Unit |
-|-----------|---------|---------|---------|------|
-| Mass | 0.1 | 5.0 | 0.25 | kg |
-| Spring Constant | 10 | 6000 | 100 | N/m |
-| Damping Coefficient | 0.1 | 5.0 | 0.5 | N·s/m |
-| Driving Amplitude | 0.2 | 2.0 | 1.0 | cm |
-| Driving Frequency | 0.1 | 5.0 | 1.0 | Hz |
+| Parameter           | Minimum | Maximum | Default | Unit  |
+| ------------------- | ------- | ------- | ------- | ----- |
+| Mass                | 0.1     | 5.0     | 0.25    | kg    |
+| Spring Constant     | 10      | 6000    | 100     | N/m   |
+| Damping Coefficient | 0.1     | 5.0     | 0.5     | N·s/m |
+| Driving Amplitude   | 0.2     | 2.0     | 1.0     | cm    |
+| Driving Frequency   | 0.1     | 5.0     | 1.0     | Hz    |
 
 ---
 
@@ -196,31 +203,37 @@ The simulation can display 1 to 10 oscillators simultaneously, each with its own
 The simulation includes presets that demonstrate key concepts:
 
 ### 1. Light and Bouncy
+
 - Mass: 0.5 kg, Spring: 50 N/m, Damping: 0.1 N·s/m
 - Natural frequency: ~1.6 Hz
 - Very light damping—oscillations persist for a long time
 
 ### 2. Heavy and Slow
+
 - Mass: 5.0 kg, Spring: 5 N/m, Damping: 0.5 N·s/m
 - Natural frequency: ~0.16 Hz
 - Demonstrates how heavy masses oscillate slowly
 
 ### 3. Underdamped (ζ = 0.2)
+
 - Mass: 1 kg, Spring: 25 N/m, Damping: 2.0 N·s/m
 - Oscillates with decreasing amplitude
 - Most common real-world case
 
 ### 4. Critically Damped (ζ = 1.0)
+
 - Mass: 1 kg, Spring: 25 N/m, Damping: 10.0 N·s/m
 - Returns to equilibrium without oscillating
 - Used in car shock absorbers, door closers
 
 ### 5. Overdamped (ζ = 2.0)
+
 - Mass: 1 kg, Spring: 25 N/m, Damping: 20.0 N·s/m
 - Slow return without oscillation
 - Too much damping makes response sluggish
 
 ### 6. Resonance Demo
+
 - Mass: 1 kg, Spring: 10 N/m, Damping: 0.3 N·s/m
 - Driving frequency matches natural frequency (~0.5 Hz)
 - Shows large amplitude response at resonance
@@ -290,6 +303,7 @@ Without damping or driving, the solution to the equation of motion is:
 **x(t) = A · cos(ω₀t + φ)**
 
 where:
+
 - A is the amplitude (determined by initial conditions)
 - ω₀ = √(k/m) is the natural angular frequency
 - φ is the phase (determined by initial conditions)
@@ -301,6 +315,7 @@ With damping but no driving, the solution for underdamped motion (ζ < 1) is:
 **x(t) = A · e^(−γt) · cos(ωd·t + φ)**
 
 where:
+
 - γ = b/(2m) is the damping rate
 - ωd = ω₀·√(1 − ζ²) is the damped frequency (slightly lower than ω₀)
 
@@ -355,6 +370,6 @@ This is maximum when ω ≈ ω₀ (resonance).
 
 For further reading on the physics of oscillations and resonance:
 
-- French, A.P. *Vibrations and Waves* (MIT Introductory Physics Series)
-- Crawford, Frank S. *Waves* (Berkeley Physics Course, Volume 3)
-- Feynman, Leighton, and Sands. *The Feynman Lectures on Physics*, Chapter 23
+- French, A.P. _Vibrations and Waves_ (MIT Introductory Physics Series)
+- Crawford, Frank S. _Waves_ (Berkeley Physics Course, Volume 3)
+- Feynman, Leighton, and Sands. _The Feynman Lectures on Physics_, Chapter 23

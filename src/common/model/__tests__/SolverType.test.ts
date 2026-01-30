@@ -5,7 +5,11 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { SolverType, SolverTypeName, SolverTypeDescription } from "../SolverType.js";
+import {
+  SolverType,
+  SolverTypeName,
+  SolverTypeDescription,
+} from "../SolverType.js";
 
 describe("SolverType", () => {
   describe("enum values", () => {

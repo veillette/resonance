@@ -24,11 +24,12 @@ describe("MeasurementLinesNode", () => {
     layoutBounds = new Bounds2(0, 0, 1024, VIEW_HEIGHT);
 
     // Create a simple transform: 1 meter = 400 pixels, y inverted
-    modelViewTransform = ModelViewTransform2.createSinglePointScaleInvertedYMapping(
-      Vector2.ZERO,
-      new Vector2(DRIVER_CENTER_X, DRIVER_TOP_Y),
-      400, // 1 meter = 400 pixels
-    );
+    modelViewTransform =
+      ModelViewTransform2.createSinglePointScaleInvertedYMapping(
+        Vector2.ZERO,
+        new Vector2(DRIVER_CENTER_X, DRIVER_TOP_Y),
+        400, // 1 meter = 400 pixels
+      );
 
     node = new MeasurementLinesNode(
       DRIVER_CENTER_X,

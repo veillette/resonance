@@ -43,6 +43,7 @@ Understanding the domain-specific terminology used throughout the codebase:
 ### Framework and Dependencies
 
 The simulation is built on the **SceneryStack** framework (v3.0.0), which includes:
+
 - **Scenery** - Scene graph and rendering
 - **Axon** - Property-based reactivity and observable patterns
 - **Dot** - Mathematical utilities (Vector2, Range, etc.)
@@ -53,6 +54,7 @@ The simulation is built on the **SceneryStack** framework (v3.0.0), which includ
 ### Coordinate Systems
 
 The simulation uses a physics-based coordinate system:
+
 - **Origin**: Equilibrium position where spring has natural length
 - **+y direction**: Up (springs extend upward from driver plate)
 - **Range**: ±0.5 m (1 meter total visible)
@@ -62,6 +64,7 @@ The ModelViewTransform2 handles conversion to screen coordinates where +y is dow
 ### Object Lifecycle
 
 Most objects are created at startup and persist for the application's lifetime:
+
 - Models are instantiated once per screen
 - Views are created once and reused
 - Properties generally don't need disposal
@@ -70,6 +73,7 @@ Most objects are created at startup and persist for the application's lifetime:
 ### Query Parameters
 
 Several query parameters are available for development and debugging:
+
 - `?ea` - Enable assertions (development mode)
 - `?locale=<code>` - Set language (e.g., `?locale=es` for Spanish)
 
@@ -147,12 +151,14 @@ Location: `src/common/model/BaseModel.ts`
 `BaseModel` is the abstract base class for simulation models. It provides:
 
 **Key Responsibilities**:
+
 - Time management (play/pause, time speed: 0.5x, 1x, 2x)
 - ODE solver creation and management
 - Physics time stepping via Template Method pattern
 - Frame-rate independence (dt capping at 100ms)
 
 **Abstract Methods** (must be implemented by subclasses):
+
 ```typescript
 abstract getState(): number[]
 abstract setState(state: number[]): void
@@ -172,6 +178,7 @@ Models a single driven, damped harmonic oscillator with displacement-based drivi
 **State Variables**: `[position, velocity, drivingPhase]`
 
 **Key Properties**:
+
 - `massProperty: NumberProperty` - Mass in kg (0.1 to 5.0)
 - `springConstantProperty: NumberProperty` - Spring constant k in N/m (10 to 6000)
 - `dampingCoefficientProperty: NumberProperty` - Damping b in N·s/m (0.1 to 5.0)
@@ -181,6 +188,7 @@ Models a single driven, damped harmonic oscillator with displacement-based drivi
 - `velocityProperty: NumberProperty` - Current velocity
 
 **Derived Properties**:
+
 - `naturalFrequencyProperty` - ω₀ = √(k/m) rad/s
 - `naturalFrequencyHzProperty` - f₀ = ω₀/(2π) Hz
 - `dampingRatioProperty` - ζ = b/(2√(mk))
@@ -190,6 +198,7 @@ Models a single driven, damped harmonic oscillator with displacement-based drivi
 - `phaseAngleProperty` - Phase lag between displacement and driving
 
 **Physics Implementation**:
+
 ```typescript
 getDerivatives(t: number, state: number[]): number[] {
   const [x, v, phase] = state;
@@ -214,6 +223,7 @@ getDerivatives(t: number, state: number[]): number[] {
 ```
 
 **Important Design Decision**: The driving is displacement-based (the plate moves), not force-based. This means:
+
 - The effective driving force is `k * A * sin(ωt)`
 - Stiffer springs produce stronger driving at the same amplitude
 - This models realistic mechanical resonance setups
@@ -225,6 +235,7 @@ Location: `src/screen-name/model/SimModel.ts`
 Manages 1-10 independent ResonanceModel instances with configurable parameter distribution.
 
 **Configuration Modes**:
+
 1. **SAME_MASS** - Varying spring constants, same mass
 2. **SAME_SPRING_CONSTANT** - Varying masses, same spring constant
 3. **MIXED** - Both vary proportionally (same natural frequency)
@@ -244,6 +255,7 @@ Location: `src/screen-name/view/SimScreenView.ts`
 The main visualization containing:
 
 **Visual Components**:
+
 - **Driver system**: Control box + connection rod + oscillating plate
 - **Resonators**: Springs + square mass boxes (numbered 1-10)
 - **Measurement tools**: Draggable ruler with 1cm tick marks
@@ -251,6 +263,7 @@ The main visualization containing:
 - **Reset button**: Restores initial state
 
 **Coordinate Transformation**:
+
 ```typescript
 // Model: +y is up, range ±0.5m
 // View: +y is down (screen coordinates)
@@ -258,6 +271,7 @@ const viewY = baseY - modelPosition * scale;
 ```
 
 **Layout Constants** (from ResonanceConstants.ts):
+
 - Mass nodes: 20×20 to 50×50 pixels (squares)
 - Spring loops: 10 with 5-pixel radius
 - Driver plate height: 20 pixels
@@ -266,6 +280,7 @@ const viewY = baseY - modelPosition * scale;
 ### Spring Rendering
 
 Springs are rendered with:
+
 - Variable number of coils based on extension
 - Line width proportional to spring constant (visual feedback for stiffness)
 - Smooth animation during oscillation
@@ -285,31 +300,33 @@ Springs are rendered with:
 Location: `src/common/model/ODESolver.ts`
 
 All ODE solvers implement this interface:
+
 ```typescript
 interface ODESolver {
   step(
     t: number,
     state: number[],
     dt: number,
-    derivativesFunction: (t: number, state: number[]) => number[]
+    derivativesFunction: (t: number, state: number[]) => number[],
   ): number[];
 }
 ```
 
 ### Available Solvers
 
-| Solver | Method | Accuracy | Best For |
-|--------|--------|----------|----------|
-| **RungeKuttaSolver** | RK4 (4th order) | O(h⁴) | **Default**, stable, general-purpose |
-| **AdaptiveRK45Solver** | Dormand-Prince | Adaptive | High accuracy requirements |
-| **AdaptiveEulerSolver** | Adaptive Euler | O(h²) | Educational, simple problems |
-| **ModifiedMidpointSolver** | Modified midpoint | O(h²) | Oscillatory systems |
+| Solver                     | Method            | Accuracy | Best For                             |
+| -------------------------- | ----------------- | -------- | ------------------------------------ |
+| **RungeKuttaSolver**       | RK4 (4th order)   | O(h⁴)    | **Default**, stable, general-purpose |
+| **AdaptiveRK45Solver**     | Dormand-Prince    | Adaptive | High accuracy requirements           |
+| **AdaptiveEulerSolver**    | Adaptive Euler    | O(h²)    | Educational, simple problems         |
+| **ModifiedMidpointSolver** | Modified midpoint | O(h²)    | Oscillatory systems                  |
 
 **Default Configuration**: RK4 with 0.001s fixed timestep, automatic substepping for large frame deltas.
 
 ### Time Step Configuration
 
 The simulation uses substepping to maintain stability:
+
 - Fixed physics timestep: 1ms (0.001s)
 - Maximum frame dt: 100ms (prevents jumps from tab switching)
 - Large frame deltas are broken into multiple physics steps
@@ -323,6 +340,7 @@ The simulation uses substepping to maintain stability:
 When multiple oscillators are active, parameters are distributed based on the configuration mode:
 
 **SAME_MASS mode**:
+
 ```typescript
 oscillator[i].mass = baseMass;
 oscillator[i].springConstant = baseK * (i + 1);
@@ -330,6 +348,7 @@ oscillator[i].springConstant = baseK * (i + 1);
 ```
 
 **SAME_SPRING_CONSTANT mode**:
+
 ```typescript
 oscillator[i].springConstant = baseK;
 oscillator[i].mass = baseMass * (i + 1);
@@ -337,6 +356,7 @@ oscillator[i].mass = baseMass * (i + 1);
 ```
 
 **MIXED mode** (same natural frequency):
+
 ```typescript
 oscillator[i].mass = baseMass * (i + 1);
 oscillator[i].springConstant = baseK * (i + 1);
@@ -347,14 +367,14 @@ oscillator[i].springConstant = baseK * (i + 1);
 
 Six presets demonstrate different damping regimes:
 
-| Preset | Mass | k | b | Damping Ratio | Character |
-|--------|------|---|---|---------------|-----------|
-| Light and Bouncy | 0.5 kg | 50 N/m | 0.1 | ζ ≈ 0.01 | Fast oscillation |
-| Heavy and Slow | 5.0 kg | 5 N/m | 0.5 | ζ ≈ 0.05 | Slow oscillation |
-| Underdamped | 1 kg | 25 N/m | 2.0 | ζ = 0.2 | Oscillates with decay |
-| Critically Damped | 1 kg | 25 N/m | 10.0 | ζ = 1.0 | Fastest return, no overshoot |
-| Overdamped | 1 kg | 25 N/m | 20.0 | ζ = 2.0 | Slow return |
-| Resonance Demo | 1 kg | 10 N/m | 0.3 | ζ ≈ 0.05 | f_drive = f₀ |
+| Preset            | Mass   | k      | b    | Damping Ratio | Character                    |
+| ----------------- | ------ | ------ | ---- | ------------- | ---------------------------- |
+| Light and Bouncy  | 0.5 kg | 50 N/m | 0.1  | ζ ≈ 0.01      | Fast oscillation             |
+| Heavy and Slow    | 5.0 kg | 5 N/m  | 0.5  | ζ ≈ 0.05      | Slow oscillation             |
+| Underdamped       | 1 kg   | 25 N/m | 2.0  | ζ = 0.2       | Oscillates with decay        |
+| Critically Damped | 1 kg   | 25 N/m | 10.0 | ζ = 1.0       | Fastest return, no overshoot |
+| Overdamped        | 1 kg   | 25 N/m | 20.0 | ζ = 2.0       | Slow return                  |
+| Resonance Demo    | 1 kg   | 10 N/m | 0.3  | ζ ≈ 0.05      | f_drive = f₀                 |
 
 ---
 
@@ -365,6 +385,7 @@ Six presets demonstrate different damping regimes:
 Location: `src/common/ResonanceColors.ts`
 
 Three color profiles available:
+
 - **Default**: Standard colors
 - **Projector**: High contrast for projection
 - **Colorblind-friendly**: Adjusted palette
@@ -383,11 +404,13 @@ Three color profiles available:
 Location: `src/i18n/StringManager.ts`
 
 Supported locales:
+
 - English (en)
 - Spanish (es)
 - French (fr)
 
 String categories include:
+
 - Screen names and descriptions
 - Physics parameter labels
 - Preset names
@@ -408,6 +431,7 @@ String categories include:
 ### Frame Rate Independence
 
 The simulation maintains consistent physics regardless of frame rate:
+
 - Large frame deltas are broken into fixed-size physics steps
 - Maximum dt cap prevents instability from tab switching
 - Time scaling (0.5x, 1x, 2x) applied consistently
@@ -436,8 +460,9 @@ npm run test:fuzz     # Fuzz testing
 ### Debugging
 
 Run with `?ea` query parameter to enable assertions:
+
 ```typescript
-assert && assert(mass > 0, 'Mass must be positive');
+assert && assert(mass > 0, "Mass must be positive");
 ```
 
 ---
@@ -485,5 +510,5 @@ When making changes:
 
 - **SceneryStack Documentation**: https://github.com/nicolenoelle/scenerystack
 - **Classical Mechanics References**:
-  - French, A.P. *Vibrations and Waves*
-  - Crawford, Frank S. *Waves (Berkeley Physics Course, Vol. 3)*
+  - French, A.P. _Vibrations and Waves_
+  - Crawford, Frank S. _Waves (Berkeley Physics Course, Vol. 3)_

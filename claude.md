@@ -71,6 +71,7 @@ src/damped-oscillator/
 ### 2. Implement the Model
 
 The model contains:
+
 - **State variables** (Properties from scenerystack/axon)
 - **Physics calculations** (see IMPLEMENTATION_GUIDE.md for equations)
 - **step() method** - Called every frame with dt (delta time in seconds)
@@ -121,6 +122,7 @@ export class DampedOscillatorModel {
 ### 3. Implement the View
 
 The view contains:
+
 - **UI elements** (sliders, buttons, readouts)
 - **Visualizations** (graphs, animations, diagrams)
 - **step() method** - Update visual elements each frame
@@ -137,7 +139,10 @@ export class DampedOscillatorScreenView extends ScreenView {
   private readonly model: DampedOscillatorModel;
   private readonly massNode: Circle;
 
-  public constructor(model: DampedOscillatorModel, options?: ScreenViewOptions) {
+  public constructor(
+    model: DampedOscillatorModel,
+    options?: ScreenViewOptions,
+  ) {
     super(options);
     this.model = model;
 
@@ -156,7 +161,11 @@ export class DampedOscillatorScreenView extends ScreenView {
       left: 20,
       top: 20,
       children: [
-        new NumberControl("Spring Constant", model.springConstantProperty, new Range(10, 1200)),
+        new NumberControl(
+          "Spring Constant",
+          model.springConstantProperty,
+          new Range(10, 1200),
+        ),
         new NumberControl("Damping", model.dampingProperty, new Range(0.1, 5)),
       ],
     });
@@ -180,7 +189,8 @@ export class DampedOscillatorScreenView extends ScreenView {
 
   public step(dt: number): void {
     const scale = 200; // pixels per meter
-    this.massNode.centerY = this.layoutBounds.centerY + this.model.positionProperty.value * scale;
+    this.massNode.centerY =
+      this.layoutBounds.centerY + this.model.positionProperty.value * scale;
   }
 }
 ```
@@ -192,12 +202,15 @@ import { Screen, ScreenOptions } from "scenerystack/sim";
 import { DampedOscillatorModel } from "./model/DampedOscillatorModel.js";
 import { DampedOscillatorScreenView } from "./view/DampedOscillatorScreenView.js";
 
-export class DampedOscillatorScreen extends Screen<DampedOscillatorModel, DampedOscillatorScreenView> {
+export class DampedOscillatorScreen extends Screen<
+  DampedOscillatorModel,
+  DampedOscillatorScreenView
+> {
   public constructor(options: ScreenOptions) {
     super(
       () => new DampedOscillatorModel(),
       (model) => new DampedOscillatorScreenView(model),
-      options
+      options,
     );
   }
 }
@@ -210,7 +223,9 @@ import { DampedOscillatorScreen } from "./damped-oscillator/DampedOscillatorScre
 
 const screens = [
   new SimScreen({ tandem: Tandem.ROOT.createTandem("simScreen") }),
-  new DampedOscillatorScreen({ tandem: Tandem.ROOT.createTandem("dampedOscillatorScreen") }),
+  new DampedOscillatorScreen({
+    tandem: Tandem.ROOT.createTandem("dampedOscillatorScreen"),
+  }),
 ];
 ```
 
@@ -258,7 +273,7 @@ import { ResonanceStrings } from "../i18n/ResonanceStrings";
 const control = new NumberControl(
   ResonanceStrings.controls.springConstantStringProperty,
   model.springConstantProperty,
-  new Range(10, 1200)
+  new Range(10, 1200),
 );
 ```
 
@@ -287,7 +302,12 @@ export class ResonancePreferencesModel extends PreferencesModel {
 ### Properties (scenerystack/axon)
 
 ```typescript
-import { NumberProperty, Property, BooleanProperty, DerivedProperty } from "scenerystack/axon";
+import {
+  NumberProperty,
+  Property,
+  BooleanProperty,
+  DerivedProperty,
+} from "scenerystack/axon";
 
 const amplitude = new NumberProperty(1.0);
 const isPlaying = new BooleanProperty(true);
@@ -298,14 +318,22 @@ amplitude.link((value) => console.log(`Amplitude: ${value}`));
 // Derived properties
 const frequency = new DerivedProperty(
   [massProperty, springConstantProperty],
-  (m, k) => Math.sqrt(k / m) / (2 * Math.PI)
+  (m, k) => Math.sqrt(k / m) / (2 * Math.PI),
 );
 ```
 
 ### Scene Graph (scenerystack/scenery)
 
 ```typescript
-import { Circle, Rectangle, Line, Text, Node, VBox, HBox } from "scenerystack/scenery";
+import {
+  Circle,
+  Rectangle,
+  Line,
+  Text,
+  Node,
+  VBox,
+  HBox,
+} from "scenerystack/scenery";
 
 const circle = new Circle(50, { fill: "red", centerX: 100, centerY: 100 });
 const text = new Text("Resonance", { font: "20px sans-serif" });
@@ -315,7 +343,11 @@ const container = new VBox({ children: [circle, text], spacing: 10 });
 ### UI Controls (scenerystack/scenery-phet)
 
 ```typescript
-import { NumberControl, ResetAllButton, PlayPauseButton } from "scenerystack/scenery-phet";
+import {
+  NumberControl,
+  ResetAllButton,
+  PlayPauseButton,
+} from "scenerystack/scenery-phet";
 import { Range } from "scenerystack/dot";
 
 const control = new NumberControl("Label", property, new Range(0, 10));
@@ -344,18 +376,21 @@ npm run lint     # Check code style
 ## Quick Reference Checklist
 
 ### Physics Model
+
 - [ ] Uses stable numerical integration (RK4 preferred)
 - [ ] Implements Hooke's law, damping, and driving forces
 - [ ] Calculates natural frequency correctly
 - [ ] See IMPLEMENTATION_GUIDE.md for detailed equations
 
 ### Required Features
+
 - [ ] All colors use `ProfileColorProperty`
 - [ ] All strings use i18n system
 - [ ] Preferences model implemented
 - [ ] No hardcoded English strings
 
 ### Code Quality
+
 - [ ] Follows MVC pattern
 - [ ] Uses Properties for state
 - [ ] Maintains import order
@@ -363,6 +398,7 @@ npm run lint     # Check code style
 - [ ] Uses tandems for instrumentation
 
 ### Testing
+
 - [ ] Simulation runs without errors
 - [ ] Parameters adjust smoothly
 - [ ] Color profiles work
