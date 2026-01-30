@@ -1,6 +1,16 @@
 # Resonance Model Implementation Guide
 
-This document describes the implementation of the physics model for the Resonance simulation, based on the spring model from veillette's classical mechanics simulations.
+This document is the authoritative technical reference for the Resonance simulation's physics model, coordinate system, ODE solvers, and visual representation.
+
+**Related documentation:**
+- [README.md](README.md) - User-facing overview, features, and getting started
+- [claude.md](claude.md) - Development patterns, code examples, and SceneryStack API usage
+
+---
+
+## Introduction
+
+The implementation is based on the spring model from veillette's classical mechanics simulations, with support for multiple coupled oscillators driven by an oscillating plate.
 
 ## Architecture Overview
 

@@ -2,6 +2,11 @@
 
 This document provides instructions for developing simulations about resonances of oscillators using the SceneryStack framework.
 
+## Quick Reference
+
+- **Technical Details**: See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for physics model, coordinate system, ODE solvers, and visual representation details
+- **User Overview**: See [README.md](README.md) for features and getting started
+
 ## Project Overview
 
 This is a physics simulation focused on demonstrating resonance phenomena in oscillating systems. The project uses:
@@ -10,198 +15,6 @@ This is a physics simulation focused on demonstrating resonance phenomena in osc
 - **TypeScript**: For type-safe development
 - **Vite**: For development and building
 - **Model-View Pattern**: Clean separation of physics logic and visualization
-
-## Current Implementation Status
-
-### Scale and Coordinate System
-
-- **Model bounds**: ±0.5 m (1 meter total visible height and width)
-- **Coordinate system**: Springs extend **upward** from the driver plate
-  - Positive position = mass moves up (spring stretches)
-  - Negative position = mass moves down (spring compresses)
-- **Natural length**: 20 cm (0.2 m) - the spring length at equilibrium (position = 0)
-- **Ruler**: Vertical ruler showing 0-50 cm, draggable throughout simulation area
-
-### Physics Parameters (Current Defaults)
-
-- **Mass**: 0.25 kg (range: 0.1 to 5.0 kg)
-- **Spring Constant**: 100 N/m (range: 10 to 1200 N/m)
-- **Damping**: 0.5 N/(m/s) (range: 0.1 to 5.0 N/(m/s))
-- **Driving Amplitude**: 1.0 cm or 0.01 m (range: 0.2 to 2.0 cm)
-  - **Important**: Amplitude is a **displacement** of the plate, NOT a force
-  - Displayed in centimeters with 0.01 cm increments
-- **Driving Frequency**: 1.0 Hz (range: 0.1 to 5.0 Hz)
-- **Gravity**: OFF by default (can be toggled to 9.8 m/s²)
-- **Initial Position**: 0 m (equilibrium)
-
-### Visual Representation
-
-- **Masses**: Rendered as **square boxes** (not circles)
-  - Size ranges from 20×20 to 50×50 pixels depending on oscillator count
-  - Numbered labels (1, 2, 3, ...) for identification
-  - **Junction point**: The model position corresponds to where the spring connects to the mass (bottom of square)
-  - **Mass center**: Positioned 5 pixels above the junction point for realistic appearance
-- **Springs**:
-  - Rendered as ParametricSpringNode extending upward from driver plate
-  - Line width varies with spring constant (1-5 pixels for visual feedback)
-  - 10 loops, 5 pixel radius
-- **Driver Plate**: Gray oscillating platform with connection rod to control box
-
-### Oscillator Configuration Modes
-
-Five preset modes determine how multiple oscillators' parameters are distributed:
-
-1. **Same Spring Constant (k)**: All share spring constant; masses vary (m, 2m, 3m, ...)
-2. **Same Mass (m)**: All share mass; spring constants vary (k, 2k, 3k, ...)
-3. **Mixed (m and k)**: Both vary proportionally
-4. **Same Frequency**: All have same natural frequency (k/m ratio constant)
-5. **Custom**: User can independently configure each oscillator
-
-### User Interface Features
-
-- **Resonator Count**: 1-10 oscillators
-- **Resonator Selection**: NumberSpinner to select which oscillator to view/edit (1-indexed display)
-  - Only base oscillator (1) is editable in preset modes
-  - All oscillators editable in Custom mode
-- **Fine-grained Controls**: Small increment steps for precise adjustments
-  - Amplitude: 0.01 cm steps
-  - Frequency: 0.01 Hz steps
-  - Mass: 0.01 kg steps
-  - Spring constant: 1 N/m steps
-  - Damping: 0.1 N/(m/s) steps
-- **Playback**: Play/pause, step forward/backward, slow/normal speed
-- **Gravity Toggle**: Enable/disable gravity
-- **Ruler**: Draggable vertical measurement tool (0-50 cm)
-
-### Key Implementation Details
-
-#### Driving Force Model
-
-The driver plate position oscillates sinusoidally:
-
-```typescript
-platePosition = amplitude × sin(ω × t)
-```
-
-The spring force is calculated relative to the moving plate:
-
-```typescript
-springForce = -k × (massPosition - platePosition)
-```
-
-This creates a time-varying boundary condition where the effective equilibrium position oscillates.
-
-#### Model-View Transform
-
-Uses `ModelViewTransform2.createRectangleMapping()` to map:
-
-- Model coordinates: -0.5 to 0.5 meters
-- View coordinates: Full layout bounds (pixels)
-
-The transform ensures:
-
-- Physical measurements match visual representation
-- 1 cm in model space = 1 cm on the ruler
-- Amplitude displacement is physically accurate
-
-#### Position Convention
-
-- **Equilibrium (position = 0)**: Mass is at natural length (20 cm) above driver plate
-- **Positive position**: Mass moves **up** (spring stretches) - smaller Y in screen coordinates
-- **Negative position**: Mass moves **down** (spring compresses) - larger Y in screen coordinates
-- Screen coordinates: Y increases downward, so we subtract position offset when converting to view
-
-## Design References and Requirements
-
-### Physics Model Reference
-
-**The model should be based on the spring model from veillette's classical mechanics simulation on GitHub.**
-
-- Repository: `github.com/veillette/classical-mechanics` (or similar mechanics simulation by veillette)
-- Study the spring-mass system implementation including:
-  - Mass and spring constant handling
-  - Force calculations (Hooke's law, damping, driving forces)
-  - Numerical integration methods
-  - Energy calculations
-  - Initial conditions and reset behavior
-
-### Simulation Design Inspiration
-
-**The simulation should draw from the PhET Resonance simulation:**
-
-- Website: https://phet.colorado.edu/en/simulations/resonance
-- Key features to incorporate:
-  - Multiple driven oscillators with adjustable parameters
-  - Visual representation of phase relationships
-  - Ability to vary driving frequency and amplitude
-  - Damping constant controls
-  - Mass and spring constant adjustments per oscillator
-  - Transient behavior visualization
-  - Phase change observation above/below resonance
-
-### Color Profile Support (REQUIRED)
-
-**The simulation must support color profile modes** like veillette's classical mechanics simulation:
-
-- Implement projector mode for high-contrast projection displays
-- Support colorblind-friendly color schemes
-- Provide light/dark theme options
-- Colors should be configurable via preferences
-- Use SceneryStack's `ProfileColorProperty` for adaptive colors
-- Test with different color vision deficiency simulations
-
-Example implementation pattern:
-
-```typescript
-import { ProfileColorProperty } from "scenerystack/scenery";
-
-// Define colors that adapt to color profiles
-const springColorProperty = new ProfileColorProperty(
-  "mySimulation",
-  "springColor",
-  {
-    default: "#0077cc",
-    projector: "#003366",
-  },
-);
-```
-
-### Internationalization (REQUIRED)
-
-**All strings must be translatable** like veillette's classical mechanics simulation:
-
-- Use SceneryStack's string system for all user-facing text
-- No hardcoded English strings in the code
-- Support locale switching at runtime
-- Follow the pattern from `init.ts` for locale configuration
-
-Example string usage:
-
-```typescript
-import { StringProperty } from "scenerystack/axon";
-
-// Instead of: new Text("Spring Constant")
-// Use translatable strings:
-const springConstantStringProperty = new StringProperty("Spring Constant"); // This should come from a strings file
-```
-
-### Preferences Menu (REQUIRED)
-
-**The preferences menu should be very similar to veillette's classical mechanics simulation:**
-
-- Include visual preferences (color profiles, contrast settings)
-- Include simulation preferences (units, display options)
-- Include sound preferences if audio is used
-- Include localization options
-- Accessible via toolbar or menu button
-- Persist preferences across sessions using SceneryStack's preferences system
-
-The preferences should integrate with SceneryStack's `PreferencesModel` and include:
-
-- Visual preferences panel
-- Simulation preferences panel
-- Localization preferences panel
-- Audio preferences panel (if applicable)
 
 ## Project Structure
 
@@ -213,12 +26,16 @@ resonance/
 │   ├── splash.ts        # Splash screen setup
 │   ├── brand.ts         # Branding configuration
 │   ├── main.ts          # Entry point, creates Sim instance
-│   └── screen-name/     # Each screen represents a different simulation scenario
-│       ├── SimScreen.ts      # Screen controller
-│       ├── model/
-│       │   └── SimModel.ts   # Physics model and state
-│       └── view/
-│           └── SimScreenView.ts  # Visual representation
+│   ├── common/          # Shared code
+│   │   ├── model/       # Physics models and ODE solvers
+│   │   └── ResonanceColors.ts, ResonanceConstants.ts
+│   ├── screen-name/     # Main simulation screen
+│   │   ├── SimScreen.ts
+│   │   ├── model/SimModel.ts
+│   │   └── view/SimScreenView.ts
+│   ├── i18n/            # Internationalization strings
+│   └── preferences/     # User preferences
+├── tests/               # Test files
 ├── package.json
 ├── tsconfig.json
 └── vite.config.js
@@ -251,130 +68,86 @@ src/damped-oscillator/
     └── DampedOscillatorScreenView.ts
 ```
 
-### 2. Implement the Model (`model/[Name]Model.ts`)
+### 2. Implement the Model
 
 The model contains:
-
 - **State variables** (Properties from scenerystack/axon)
-- **Physics calculations**
+- **Physics calculations** (see IMPLEMENTATION_GUIDE.md for equations)
 - **step() method** - Called every frame with dt (delta time in seconds)
 - **reset() method** - Restore initial state
-
-Example for a resonance model:
 
 ```typescript
 import { NumberProperty, Property } from "scenerystack/axon";
 
 export class DampedOscillatorModel {
-  // Physics parameters
-  public readonly mass = 1.0; // kg
-  public readonly springConstant: Property<number>;
-  public readonly dampingCoefficient: Property<number>;
-
-  // State variables
-  public readonly position: Property<number>;
-  public readonly velocity: Property<number>;
-
-  // Driving plate parameters
-  public readonly drivingFrequency: Property<number>;
-  public readonly plateAmplitude: Property<number>;
+  public readonly massProperty: NumberProperty;
+  public readonly springConstantProperty: NumberProperty;
+  public readonly dampingProperty: NumberProperty;
+  public readonly positionProperty: NumberProperty;
+  public readonly velocityProperty: NumberProperty;
 
   public constructor() {
-    this.springConstant = new NumberProperty(10.0); // N/m
-    this.dampingCoefficient = new NumberProperty(0.5); // kg/s
-    this.position = new NumberProperty(0);
-    this.velocity = new NumberProperty(0);
-    this.drivingFrequency = new NumberProperty(3.14); // rad/s
-    this.plateAmplitude = new NumberProperty(0.1); // m (displacement amplitude)
+    this.massProperty = new NumberProperty(0.25);
+    this.springConstantProperty = new NumberProperty(100.0);
+    this.dampingProperty = new NumberProperty(0.5);
+    this.positionProperty = new NumberProperty(0);
+    this.velocityProperty = new NumberProperty(0);
   }
 
   public reset(): void {
-    this.springConstant.reset();
-    this.dampingCoefficient.reset();
-    this.position.reset();
-    this.velocity.reset();
-    this.drivingFrequency.reset();
-    this.plateAmplitude.reset();
+    this.massProperty.reset();
+    this.springConstantProperty.reset();
+    this.dampingProperty.reset();
+    this.positionProperty.reset();
+    this.velocityProperty.reset();
   }
 
   public step(dt: number): void {
-    // Physics simulation using explicit Euler (or RK4 for better accuracy)
-    const k = this.springConstant.value;
-    const b = this.dampingCoefficient.value;
-    const m = this.mass;
-    const t = Date.now() / 1000; // Current time for plate oscillation
+    // Physics integration - see IMPLEMENTATION_GUIDE.md for full equations
+    const k = this.springConstantProperty.value;
+    const b = this.dampingProperty.value;
+    const m = this.massProperty.value;
 
-    // Calculate plate position (oscillating boundary condition)
-    const platePosition =
-      this.plateAmplitude.value * Math.sin(this.drivingFrequency.value * t);
+    const springForce = -k * this.positionProperty.value;
+    const dampingForce = -b * this.velocityProperty.value;
+    const acceleration = (springForce + dampingForce) / m;
 
-    // F = -k(x - x_plate) - bv
-    // Spring force is proportional to displacement relative to the moving plate
-    const springForce = -k * (this.position.value - platePosition);
-    const dampingForce = -b * this.velocity.value;
-
-    const totalForce = springForce + dampingForce;
-    const acceleration = totalForce / m;
-
-    // Update velocity and position
-    this.velocity.value += acceleration * dt;
-    this.position.value += this.velocity.value * dt;
+    this.velocityProperty.value += acceleration * dt;
+    this.positionProperty.value += this.velocityProperty.value * dt;
   }
 }
 ```
 
-### 3. Implement the View (`view/[Name]ScreenView.ts`)
+### 3. Implement the View
 
 The view contains:
-
 - **UI elements** (sliders, buttons, readouts)
 - **Visualizations** (graphs, animations, diagrams)
 - **step() method** - Update visual elements each frame
 - **reset() method** - Reset view state
 
-Example:
-
 ```typescript
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { DampedOscillatorModel } from "../model/DampedOscillatorModel.js";
-import { ResetAllButton } from "scenerystack/scenery-phet";
-import {
-  Circle,
-  Line,
-  Node,
-  Rectangle,
-  Text,
-  VBox,
-} from "scenerystack/scenery";
-import { NumberControl } from "scenerystack/scenery-phet";
+import { ResetAllButton, NumberControl } from "scenerystack/scenery-phet";
+import { Circle, Node, VBox } from "scenerystack/scenery";
 import { Range } from "scenerystack/dot";
 
 export class DampedOscillatorScreenView extends ScreenView {
   private readonly model: DampedOscillatorModel;
-  private readonly oscillatorNode: Node;
   private readonly massNode: Circle;
 
-  public constructor(
-    model: DampedOscillatorModel,
-    options?: ScreenViewOptions,
-  ) {
+  public constructor(model: DampedOscillatorModel, options?: ScreenViewOptions) {
     super(options);
     this.model = model;
 
     // Create visualization
-    const equilibriumY = this.layoutBounds.centerY;
-
-    // Spring and mass visualization
     this.massNode = new Circle(20, {
       fill: "blue",
       centerX: this.layoutBounds.centerX,
-      centerY: equilibriumY,
+      centerY: this.layoutBounds.centerY,
     });
-
-    this.oscillatorNode = new Node({
-      children: [this.massNode],
-    });
-    this.addChild(this.oscillatorNode);
+    this.addChild(this.massNode);
 
     // Controls panel
     const controls = new VBox({
@@ -383,26 +156,8 @@ export class DampedOscillatorScreenView extends ScreenView {
       left: 20,
       top: 20,
       children: [
-        new NumberControl(
-          "Spring Constant (k)",
-          model.springConstant,
-          new Range(1, 20),
-        ),
-        new NumberControl(
-          "Damping (b)",
-          model.dampingCoefficient,
-          new Range(0, 2),
-        ),
-        new NumberControl(
-          "Driving Frequency (ω)",
-          model.drivingFrequency,
-          new Range(0, 10),
-        ),
-        new NumberControl(
-          "Driving Amplitude",
-          model.drivingAmplitude,
-          new Range(0, 5),
-        ),
+        new NumberControl("Spring Constant", model.springConstantProperty, new Range(10, 1200)),
+        new NumberControl("Damping", model.dampingProperty, new Range(0.1, 5)),
       ],
     });
     this.addChild(controls);
@@ -420,37 +175,29 @@ export class DampedOscillatorScreenView extends ScreenView {
   }
 
   public reset(): void {
-    // Reset any view-specific state
+    // Reset view-specific state
   }
 
   public step(dt: number): void {
-    // Update visualization based on model state
-    const centerY = this.layoutBounds.centerY;
-    const scale = 50; // pixels per meter
-
-    this.massNode.centerY = centerY + this.model.position.value * scale;
+    const scale = 200; // pixels per meter
+    this.massNode.centerY = this.layoutBounds.centerY + this.model.positionProperty.value * scale;
   }
 }
 ```
 
-### 4. Implement the Screen (`[Name]Screen.ts`)
-
-The screen connects model and view:
+### 4. Implement the Screen
 
 ```typescript
 import { Screen, ScreenOptions } from "scenerystack/sim";
 import { DampedOscillatorModel } from "./model/DampedOscillatorModel.js";
 import { DampedOscillatorScreenView } from "./view/DampedOscillatorScreenView.js";
 
-export class DampedOscillatorScreen extends Screen<
-  DampedOscillatorModel,
-  DampedOscillatorScreenView
-> {
+export class DampedOscillatorScreen extends Screen<DampedOscillatorModel, DampedOscillatorScreenView> {
   public constructor(options: ScreenOptions) {
     super(
       () => new DampedOscillatorModel(),
       (model) => new DampedOscillatorScreenView(model),
-      options,
+      options
     );
   }
 }
@@ -463,744 +210,161 @@ import { DampedOscillatorScreen } from "./damped-oscillator/DampedOscillatorScre
 
 const screens = [
   new SimScreen({ tandem: Tandem.ROOT.createTandem("simScreen") }),
-  new DampedOscillatorScreen({
-    tandem: Tandem.ROOT.createTandem("dampedOscillatorScreen"),
-  }),
+  new DampedOscillatorScreen({ tandem: Tandem.ROOT.createTandem("dampedOscillatorScreen") }),
 ];
 ```
 
-## Key Concepts for Resonance Simulations
+## Required Features
 
-### Natural Frequency
+### Color Profiles
 
-For a mass-spring system: `ω₀ = √(k/m)`
+All colors must use `ProfileColorProperty` for accessibility:
 
-### Resonance Condition
+```typescript
+import { ProfileColorProperty } from "scenerystack/scenery";
 
-Maximum amplitude occurs when driving frequency matches natural frequency (with damping modifications).
+const Colors = {
+  spring: new ProfileColorProperty("resonance", "spring", {
+    default: "#2196F3",
+    projector: "#0D47A1",
+  }),
+  mass: new ProfileColorProperty("resonance", "mass", {
+    default: "#FF5722",
+    projector: "#BF360C",
+  }),
+};
 
-### Quality Factor (Q)
+// Use in views
+this.massNode = new Circle(20, { fill: Colors.mass });
+```
 
-Measure of resonance sharpness: `Q = ω₀m/b`
+### Internationalization
 
-### Recommended Features
+All strings must be translatable:
 
-1. **Multiple Visualization Modes**
-   - Position vs Time graph
-   - Phase space diagram (position vs velocity)
-   - Amplitude vs Frequency response curve
-   - Energy visualization
+```
+src/i18n/
+├── ResonanceStrings.ts    # Exports string properties
+├── StringManager.ts       # Locale management
+├── strings_en.json        # English
+├── strings_es.json        # Spanish
+└── strings_fr.json        # French
+```
 
-2. **Interactive Controls**
-   - Mass slider
-   - Spring constant slider
-   - Damping coefficient slider
-   - Driving frequency slider
-   - Driving amplitude slider
+```typescript
+import { ResonanceStrings } from "../i18n/ResonanceStrings";
 
-3. **Presets**
-   - Underdamped oscillation
-   - Critically damped
-   - Overdamped
-   - At resonance
-   - Off resonance
+// Use string properties in UI
+const control = new NumberControl(
+  ResonanceStrings.controls.springConstantStringProperty,
+  model.springConstantProperty,
+  new Range(10, 1200)
+);
+```
 
-4. **Measurements**
-   - Display current frequency
-   - Show natural frequency
-   - Calculate and display Q factor
-   - Show energy (kinetic + potential)
+### Preferences
+
+Create a preferences model and panels:
+
+```typescript
+import { PreferencesModel } from "scenerystack/joist";
+import { Property } from "scenerystack/axon";
+
+export class ResonancePreferencesModel extends PreferencesModel {
+  public readonly colorProfileProperty: Property<string>;
+  public readonly showEnergyProperty: Property<boolean>;
+
+  public constructor() {
+    super();
+    this.colorProfileProperty = new Property("default");
+    this.showEnergyProperty = new Property(true);
+  }
+}
+```
 
 ## Common SceneryStack APIs
 
-### Properties (from scenerystack/axon)
+### Properties (scenerystack/axon)
 
 ```typescript
-import { NumberProperty, Property, BooleanProperty } from "scenerystack/axon";
+import { NumberProperty, Property, BooleanProperty, DerivedProperty } from "scenerystack/axon";
 
 const amplitude = new NumberProperty(1.0);
 const isPlaying = new BooleanProperty(true);
 
-// Link to observe changes
+// Observe changes
 amplitude.link((value) => console.log(`Amplitude: ${value}`));
+
+// Derived properties
+const frequency = new DerivedProperty(
+  [massProperty, springConstantProperty],
+  (m, k) => Math.sqrt(k / m) / (2 * Math.PI)
+);
 ```
 
-### Scene Graph Nodes (from scenerystack/scenery)
+### Scene Graph (scenerystack/scenery)
 
 ```typescript
-import {
-  Circle,
-  Rectangle,
-  Line,
-  Path,
-  Text,
-  Node,
-  VBox,
-  HBox,
-} from "scenerystack/scenery";
+import { Circle, Rectangle, Line, Text, Node, VBox, HBox } from "scenerystack/scenery";
 
 const circle = new Circle(50, { fill: "red", centerX: 100, centerY: 100 });
 const text = new Text("Resonance", { font: "20px sans-serif" });
 const container = new VBox({ children: [circle, text], spacing: 10 });
 ```
 
-### UI Controls (from scenerystack/scenery-phet)
+### UI Controls (scenerystack/scenery-phet)
 
 ```typescript
-import {
-  NumberControl,
-  ResetAllButton,
-  PlayPauseButton,
-} from "scenerystack/scenery-phet";
+import { NumberControl, ResetAllButton, PlayPauseButton } from "scenerystack/scenery-phet";
 import { Range } from "scenerystack/dot";
 
 const control = new NumberControl("Label", property, new Range(0, 10));
+const playPause = new PlayPauseButton(isPlayingProperty);
 ```
-
-## Physics Simulation Best Practices
-
-### 1. Use Appropriate Time Integration
-
-- **Explicit Euler**: Simple but can be unstable for stiff systems
-- **RK4**: More accurate and stable for oscillatory systems
-- **Velocity Verlet**: Excellent for energy conservation
-
-### 2. Handle Time Steps
-
-- The `dt` parameter is in seconds
-- Typical values: 0.016 seconds (60 FPS)
-- For stability, may need sub-stepping for fast oscillations
-
-### 3. Scale Units Appropriately
-
-- Keep simulation values in reasonable ranges (0.1 to 100)
-- Use scaling factors when converting to screen coordinates
-
-### 4. Numerical Stability
-
-- Avoid very small or very large parameter values
-- Clamp velocities and positions if needed
-- Reset if values become NaN or Infinity
 
 ## Development Workflow
 
-### Running the Simulation
-
 ```bash
-npm start
+npm start        # Development server at http://localhost:5173
+npm run build    # Production build to dist/
+npm test         # Run tests
+npm run lint     # Check code style
 ```
 
-Opens at http://localhost:5173
-
-### Building for Production
-
-```bash
-npm run build
-```
-
-Creates optimized build in `dist/`
-
-### File Naming Conventions
-
-- Use PascalCase for classes: `DampedOscillatorModel`
-- Use camelCase for files matching class names: `DampedOscillatorModel.ts`
-- Use kebab-case for directory names: `damped-oscillator/`
-
-## Common Patterns
-
-### Listening to Property Changes
-
-```typescript
-model.frequency.link((freq) => {
-  // Update dependent values
-  this.updateResonanceCurve();
-});
-```
-
-### Creating Graphs
-
-```typescript
-import { DynamicSeriesNode } from "scenerystack/griddle";
-
-const graph = new DynamicSeriesNode(
-  model.timeProperty,
-  model.positionProperty,
-  {
-    plotStyle: "line",
-  },
-);
-```
-
-### Adding Play/Pause Control
-
-```typescript
-import { PlayPauseButton } from "scenerystack/scenery-phet";
-
-const playPauseButton = new PlayPauseButton(model.isPlayingProperty, {
-  centerX: this.layoutBounds.centerX,
-  top: 20,
-});
-```
-
-## Implementing Required Features
-
-### Implementing Color Profiles
-
-Color profiles ensure the simulation looks good in different contexts (projectors, colorblind users, etc.).
-
-**Step 1: Define color profiles in your model or a separate colors file**
-
-```typescript
-import { ProfileColorProperty } from "scenerystack/scenery";
-
-// Define adaptive colors that change with color profile
-const Colors = {
-  spring: new ProfileColorProperty("resonance", "spring", {
-    default: "#2196F3", // Blue for normal mode
-    projector: "#0D47A1", // Darker blue for projector mode
-  }),
-  mass: new ProfileColorProperty("resonance", "mass", {
-    default: "#FF5722",
-    projector: "#BF360C",
-  }),
-  equilibrium: new ProfileColorProperty("resonance", "equilibrium", {
-    default: "#4CAF50",
-    projector: "#1B5E20",
-  }),
-};
-```
-
-**Step 2: Use ProfileColorProperty in your views**
-
-```typescript
-// In your view constructor
-this.massNode = new Circle(20, {
-  fill: Colors.mass, // This will automatically adapt to the color profile
-});
-
-// For lines and strokes
-this.springNode = new Line(0, 0, 100, 0, {
-  stroke: Colors.spring,
-  lineWidth: 3,
-});
-```
-
-**Step 3: Add color profile controls to preferences**
-The color profile selection should be available in the Visual preferences panel (see Preferences section below).
-
-### Implementing Internationalization (i18n)
-
-All user-facing text must be translatable and loaded from string files.
-
-**Step 1: Create an i18n directory structure**
-
-```
-src/
-└── i18n/
-    ├── ResonanceStrings.ts    # Exports string properties for use in code
-    ├── StringManager.ts       # Singleton that manages locale switching
-    ├── strings_en.json        # English strings
-    ├── strings_es.json        # Spanish strings
-    └── strings_fr.json        # French strings
-```
-
-**Step 2: Define strings in JSON files**
-
-```json
-// src/i18n/strings_en.json
-{
-  "resonance": {
-    "title": "Resonance",
-    "controls": {
-      "springConstant": "Spring Constant (k)",
-      "dampingCoefficient": "Damping Coefficient (b)",
-      "drivingFrequency": "Driving Frequency (ω)",
-      "mass": "Mass (m)",
-      "reset": "Reset All"
-    }
-  }
-}
-```
-
-**Step 3: Load and use strings in code**
-
-```typescript
-import { ResonanceStrings } from "../i18n/ResonanceStrings";
-
-// Get translatable string properties
-const springConstantStringProperty =
-  ResonanceStrings.controls.springConstantStringProperty;
-const massStringProperty = ResonanceStrings.controls.massStringProperty;
-
-// Use in UI components
-const control = new NumberControl(
-  springConstantStringProperty,
-  model.springConstant,
-  new Range(1, 20),
-);
-```
-
-**Step 4: Configure available locales**
-Ensure `init.ts` lists all supported locales:
-
-```typescript
-init({
-  name: "resonance",
-  version: "1.0.0",
-  brand: "made-with-scenerystack",
-  locale: "en",
-  availableLocales: ["en", "es", "fr"], // Add all supported languages
-  splashDataURI: madeWithSceneryStackSplashDataURI,
-  allowLocaleSwitching: true,
-});
-```
-
-### Implementing Preferences Menu
-
-The preferences menu provides user-configurable options across multiple categories.
-
-**Step 1: Create a PreferencesModel**
-
-```typescript
-// src/preferences/ResonancePreferencesModel.ts
-import { PreferencesModel } from "scenerystack/joist";
-import { Property } from "scenerystack/axon";
-
-export class ResonancePreferencesModel extends PreferencesModel {
-  // Visual preferences
-  public readonly colorProfileProperty: Property<string>;
-  public readonly contrastProperty: Property<number>;
-
-  // Simulation preferences
-  public readonly showEnergyProperty: Property<boolean>;
-  public readonly showVectorsProperty: Property<boolean>;
-  public readonly unitsProperty: Property<string>;
-
-  public constructor() {
-    super();
-
-    this.colorProfileProperty = new Property("default");
-    this.contrastProperty = new Property(1.0);
-    this.showEnergyProperty = new Property(true);
-    this.showVectorsProperty = new Property(false);
-    this.unitsProperty = new Property("metric");
-  }
-}
-```
-
-**Step 2: Create Preferences Panels**
-
-```typescript
-// src/preferences/VisualPreferencesPanel.ts
-import { PreferencesPanel } from "scenerystack/joist";
-import { VBox, Text } from "scenerystack/scenery";
-import { AquaRadioButtonGroup } from "scenerystack/sun";
-
-export class VisualPreferencesPanel extends PreferencesPanel {
-  public constructor(preferencesModel: ResonancePreferencesModel) {
-    const colorProfileControl = new AquaRadioButtonGroup(
-      preferencesModel.colorProfileProperty,
-      [
-        { value: "default", createNode: () => new Text("Default") },
-        { value: "projector", createNode: () => new Text("Projector") },
-        {
-          value: "colorblind",
-          createNode: () => new Text("Colorblind Friendly"),
-        },
-      ],
-      { spacing: 10 },
-    );
-
-    const content = new VBox({
-      align: "left",
-      spacing: 20,
-      children: [
-        new Text("Color Profile", {
-          font: "16px sans-serif",
-          fontWeight: "bold",
-        }),
-        colorProfileControl,
-      ],
-    });
-
-    super(content, {
-      title: "Visual",
-    });
-  }
-}
-```
-
-```typescript
-// src/preferences/SimulationPreferencesPanel.ts
-import { PreferencesPanel } from "scenerystack/joist";
-import { VBox, Text } from "scenerystack/scenery";
-import { Checkbox } from "scenerystack/sun";
-
-export class SimulationPreferencesPanel extends PreferencesPanel {
-  public constructor(preferencesModel: ResonancePreferencesModel) {
-    const content = new VBox({
-      align: "left",
-      spacing: 15,
-      children: [
-        new Text("Display Options", {
-          font: "16px sans-serif",
-          fontWeight: "bold",
-        }),
-        new Checkbox(
-          preferencesModel.showEnergyProperty,
-          new Text("Show Energy"),
-        ),
-        new Checkbox(
-          preferencesModel.showVectorsProperty,
-          new Text("Show Vectors"),
-        ),
-      ],
-    });
-
-    super(content, {
-      title: "Simulation",
-    });
-  }
-}
-```
-
-**Step 3: Register preferences with the Sim**
-
-```typescript
-// In main.ts
-import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
-import { VisualPreferencesPanel } from "./preferences/VisualPreferencesPanel.js";
-import { SimulationPreferencesPanel } from "./preferences/SimulationPreferencesPanel.js";
-
-onReadyToLaunch(() => {
-  const titleStringProperty = new StringProperty("Resonance");
-
-  const screens = [
-    new SimScreen({ tandem: Tandem.ROOT.createTandem("simScreen") }),
-  ];
-
-  // Create preferences model
-  const preferencesModel = new ResonancePreferencesModel();
-
-  // Create sim with preferences
-  const sim = new Sim(titleStringProperty, screens, {
-    preferencesModel: preferencesModel,
-    preferencesConfiguration: {
-      visualPreferencesPanel: new VisualPreferencesPanel(preferencesModel),
-      simulationPreferencesPanel: new SimulationPreferencesPanel(
-        preferencesModel,
-      ),
-    },
-  });
-
-  sim.start();
-});
-```
-
-**Step 4: Use preferences in your simulation**
-
-```typescript
-// In your view or model
-export class DampedOscillatorScreenView extends ScreenView {
-  public constructor(
-    model: DampedOscillatorModel,
-    preferencesModel: ResonancePreferencesModel,
-    options?: ScreenViewOptions,
-  ) {
-    super(options);
-
-    // Listen to preference changes
-    preferencesModel.showEnergyProperty.link((showEnergy) => {
-      this.energyDisplay.visible = showEnergy;
-    });
-
-    preferencesModel.showVectorsProperty.link((showVectors) => {
-      this.vectorDisplay.visible = showVectors;
-    });
-  }
-}
-```
-
-### Preferences Persistence
-
-SceneryStack automatically persists preferences to browser localStorage. To customize:
-
-```typescript
-import { PreferencesStorage } from "scenerystack/joist";
-
-// Preferences are automatically saved/loaded
-// Custom storage keys can be set in PreferencesModel constructor
-export class ResonancePreferencesModel extends PreferencesModel {
-  public constructor() {
-    super({
-      storageKey: "resonance-preferences", // Custom storage key
-    });
-  }
-}
-```
-
-## Resources
-
-- SceneryStack Documentation: Check the scenerystack package for API documentation
-- Example Simulations: Study the existing screen-name implementation
-- Physics References: Classical mechanics texts for resonance equations
-
-## Tips for Claude
-
-When asked to implement resonance features:
-
-1. **Study the reference implementations FIRST**:
-   - Look at veillette's classical mechanics simulation on GitHub for spring model patterns
-   - Review the PhET Resonance simulation (https://phet.colorado.edu/en/simulations/resonance) for feature ideas
-   - Understand how color profiles, preferences, and i18n work in those simulations
-
-2. **Always follow the MVC pattern**: Model for physics, View for visualization, Screen to connect
-
-3. **Use Properties**: Never use plain variables for state that needs to be observed
-
-4. **Remember the import chain**: Don't break init → assert → splash → brand → main
-
-5. **Include reset()**: Always implement proper reset functionality
-
-6. **Implement REQUIRED features from day one**:
-   - Color profiles using `ProfileColorProperty`
-   - Internationalization using string files and `getStringProperty`
-   - Preferences menu with Visual and Simulation panels
-   - NO hardcoded English strings in the code
-
-7. **Use tandems**: Pass tandem objects for instrumentation when creating screens
-
-8. **Test with various parameters**: Ensure stability across wide range of damping/frequency values
-
-9. **Add visual feedback**: Users should see immediate response to parameter changes
-
-10. **Consider performance**: Optimize step() methods as they run 60 times per second
-
-11. **Test accessibility**:
-    - Verify color profiles work (default, projector, colorblind)
-    - Test locale switching between all supported languages
-    - Ensure preferences persist across browser sessions
-
-## Example Resonance Scenarios to Implement
-
-1. **Simple Harmonic Oscillator**: No damping, no driving force
-2. **Damped Oscillator**: With damping, observe decay
-3. **Driven Oscillator**: With periodic driving force
-4. **Resonance Explorer**: Sweep through frequencies to find resonance
-5. **Coupled Oscillators**: Multiple masses and springs
-6. **RLC Circuit**: Electrical analog of mechanical resonance
-7. **Tacoma Narrows Bridge**: Demonstrate destructive resonance
-
----
+## Best Practices
+
+1. **Use Properties**: Never use plain variables for observable state
+2. **Follow MVC**: Model for physics, View for visualization, Screen to connect
+3. **Implement reset()**: Always provide proper reset functionality
+4. **Use tandems**: Pass tandem objects for instrumentation
+5. **Test stability**: Ensure physics works across parameter ranges
+6. **Optimize step()**: These methods run 60 times per second
+7. **No hardcoded strings**: All text must be translatable
 
 ## Quick Reference Checklist
 
-Before considering a resonance simulation complete, verify:
-
 ### Physics Model
+- [ ] Uses stable numerical integration (RK4 preferred)
+- [ ] Implements Hooke's law, damping, and driving forces
+- [ ] Calculates natural frequency correctly
+- [ ] See IMPLEMENTATION_GUIDE.md for detailed equations
 
-- [ ] Based on spring model patterns from veillette's classical mechanics simulation
-- [ ] Implements Hooke's law: F = -kx
-- [ ] Includes damping force: F = -bv
-- [ ] Includes driving force: F = A·sin(ωt)
-- [ ] Uses stable numerical integration (RK4 or Velocity Verlet preferred)
-- [ ] Calculates and displays natural frequency: ω₀ = √(k/m)
-- [ ] Handles transient and steady-state behavior
-
-### Simulation Features (inspired by PhET Resonance)
-
-- [ ] Multiple oscillators with independent parameters
-- [ ] Adjustable driving frequency and amplitude
-- [ ] Adjustable damping coefficient
-- [ ] Adjustable mass and spring constant
-- [ ] Visual representation of phase relationships
-- [ ] Shows resonance effects clearly
-
-### Color Profiles (REQUIRED)
-
+### Required Features
 - [ ] All colors use `ProfileColorProperty`
-- [ ] Default profile defined
-- [ ] Projector profile defined (high contrast)
-- [ ] Colorblind-friendly profile available
-- [ ] Color profile selector in Visual preferences
-
-### Internationalization (REQUIRED)
-
-- [ ] String files created in `src/i18n/` (e.g., strings_en.json, strings_es.json)
-- [ ] At least English (en) locale supported
-- [ ] All UI text uses StringProperty from `ResonanceStrings`
-- [ ] NO hardcoded English strings in code
-- [ ] `availableLocales` configured in `init.ts`
-- [ ] `allowLocaleSwitching: true` in `init.ts`
-
-### Preferences Menu (REQUIRED)
-
-- [ ] `PreferencesModel` class created
-- [ ] Visual preferences panel implemented
-- [ ] Simulation preferences panel implemented
-- [ ] Preferences accessible from UI
-- [ ] Preferences persist across sessions
-- [ ] Preferences affect simulation behavior
+- [ ] All strings use i18n system
+- [ ] Preferences model implemented
+- [ ] No hardcoded English strings
 
 ### Code Quality
-
-- [ ] Follows MVC pattern (Model/View/Screen)
-- [ ] Uses Properties for all observable state
-- [ ] Maintains import order (init → assert → splash → brand → main)
-- [ ] Implements reset() in model and view
+- [ ] Follows MVC pattern
+- [ ] Uses Properties for state
+- [ ] Maintains import order
+- [ ] Implements reset() methods
 - [ ] Uses tandems for instrumentation
-- [ ] Optimized step() methods
-- [ ] No TypeScript errors
-- [ ] Follows naming conventions (PascalCase for classes, camelCase for files)
 
 ### Testing
-
 - [ ] Simulation runs without errors
-- [ ] All parameters can be adjusted smoothly
-- [ ] Resonance behavior is observable
-- [ ] Color profiles switch correctly
+- [ ] Parameters adjust smoothly
+- [ ] Color profiles work
 - [ ] Locale switching works
-- [ ] Preferences save and load correctly
-- [ ] Reset button works properly
-- [ ] Performance is smooth (60 FPS)
-
----
-
-Remember: The goal is to make physics concepts intuitive and interactive. Good resonance simulations show clear cause-and-effect relationships between parameters and behavior.
-
-**Key Design Principles:**
-
-1. Follow veillette's classical mechanics patterns for the physics model
-2. Draw inspiration from PhET Resonance for simulation features
-3. Implement color profiles, i18n, and preferences as core requirements, not afterthoughts
-4. Make the simulation accessible, translatable, and visually adaptable from the start
-
----
-
-## Implementation Notes for Current Resonance Simulation
-
-### Coordinate System and Scale
-
-The simulation uses a **centimeter-scale** coordinate system optimized for resonance phenomena:
-
-- **Model bounds**: ±0.5 m (symmetric, 1 meter total)
-- **Natural length**: 20 cm (springs extend upward from driver plate)
-- **Position = 0**: Equilibrium state at natural length
-- **Positive position**: Mass moves UP (spring stretches) - smaller Y in screen coordinates
-- **View coordinate conversion**: Subtract position offset because screen Y increases downward
-
-### Driving Force Implementation
-
-**IMPORTANT**: The driving amplitude is a **plate displacement**, not a force:
-
-```typescript
-// Driver plate oscillates sinusoidally
-platePosition = amplitude × sin(ω × t)
-
-// Spring force relative to moving plate
-springForce = -k × (massPosition - platePosition)
-```
-
-This creates a **time-varying boundary condition** where the attachment point oscillates.
-
-### Visual Representation Details
-
-#### Mass Boxes (Square, not Circular)
-
-- Masses are rendered as **square boxes** with numbered labels
-- **Junction point** (model position): Where spring attaches to mass (bottom of square)
-- **Mass center**: Positioned 5 pixels above junction for realistic appearance
-- Size varies with oscillator count (20-50 pixels)
-
-#### Springs
-
-- Extend **upward** from driver plate to mass
-- Line width varies with spring constant (1-5 pixels) for visual feedback
-- Rendered using ParametricSpringNode with 10 loops
-
-#### Driver System
-
-- **Control box**: Gray box at bottom with frequency/amplitude controls
-- **Connection rod**: Vertical cylinder connecting box to plate (animates with oscillation)
-- **Driver plate**: Gray horizontal plate where all springs attach (oscillates up/down)
-
-### Multiple Oscillator Management
-
-The `SimModel` manages multiple `ResonanceModel` instances:
-
-- **Base oscillator (index 0)**: User directly edits mass and spring constant
-- **Derived oscillators (index 1+)**: Parameters calculated based on configuration mode
-- **Configuration modes** determine how parameters scale:
-  - Same k: masses vary
-  - Same m: spring constants vary
-  - Mixed: both vary proportionally
-  - Same frequency: k/m ratio constant
-  - Custom: all independently editable
-
-### Resonator Selection System
-
-- **NumberSpinner** for selecting oscillator (1-indexed display, 0-indexed internally)
-- **Dynamic property binding**: Display properties sync with selected oscillator
-- **Conditional editing**: Base oscillator always editable; others editable only in Custom mode
-- **Automatic clamping**: Selected index adjusts when oscillator count decreases
-
-### Unit Conversion for Display
-
-**Amplitude** is displayed in centimeters but stored in meters:
-
-- Separate `amplitudeCmProperty` for display (with bidirectional sync)
-- Range converted: 0.002-0.02 m → 0.2-2.0 cm
-- Prevents circular updates with flag mechanism
-
-### Parameter Ranges and Defaults
-
-| Parameter         | Default | Min | Max  | Increment | Unit            |
-| ----------------- | ------- | --- | ---- | --------- | --------------- |
-| Mass              | 0.25    | 0.1 | 5.0  | 0.01      | kg              |
-| Spring Constant   | 100     | 10  | 1200 | 1         | N/m             |
-| Damping           | 0.5     | 0.1 | 5.0  | 0.1       | N/(m/s)         |
-| Driving Amplitude | 1.0     | 0.2 | 2.0  | 0.01      | cm              |
-| Driving Frequency | 1.0     | 0.1 | 5.0  | 0.01      | Hz              |
-| Gravity           | 0 (OFF) | 0   | 9.8  | toggle    | m/s²            |
-| Natural Length    | 0.2     | -   | -    | -         | m (20 cm)       |
-| Initial Position  | 0       | -   | -    | -         | m (equilibrium) |
-
-**Natural frequency** with defaults: f₀ = √(100/0.25)/(2π) ≈ **3.2 Hz**
-
-### Common Pitfalls and Solutions
-
-1. **Coordinate System Confusion**
-   - Problem: Springs pointing wrong direction
-   - Solution: Remember Y increases downward in screen coordinates, so subtract position offset
-
-2. **Circular Property Updates**
-   - Problem: Infinite loops when syncing properties
-   - Solution: Use flag variables (`updatingFromModel`, `updatingAmplitude`) to prevent circular updates
-
-3. **Mass Box Positioning**
-   - Problem: Spring not connecting to mass correctly
-   - Solution: Junction point is at model position; mass center is offset above by 5 pixels
-
-4. **Scale Mismatch**
-   - Problem: Visual displacement doesn't match ruler measurements
-   - Solution: Use `modelViewTransform.modelToViewDeltaY()` for all position conversions
-
-5. **Initial Values Out of Bounds**
-   - Problem: Masses start off-screen
-   - Solution: Ensure initial position = 0 (equilibrium) and bounds are ±0.5 m
-
-### Performance Considerations
-
-- **60 FPS target**: Step methods called every ~16ms
-- **Multiple oscillators**: Each has own model that steps independently
-- **Spring rendering**: ParametricSpringNode efficiently handles dynamic length changes
-- **Property listeners**: Use lazy evaluation and avoid unnecessary calculations in listeners
-
-### Future Enhancement Ideas
-
-- Add energy visualization (kinetic + potential + elastic)
-- Phase space diagrams (position vs velocity)
-- Frequency response curves (amplitude vs driving frequency)
-- Preset scenarios (at resonance, off resonance, etc.)
-- Export data for analysis
-- Sound synthesis based on oscillation frequency
+- [ ] Reset button works
