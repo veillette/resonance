@@ -4,7 +4,7 @@
  */
 
 import { Node, Text, Rectangle } from "scenerystack/scenery";
-import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
+import { DragListener } from "scenerystack/scenery";
 import { ParametricSpringNode, PhetFont } from "scenerystack/scenery-phet";
 import { Vector2Property } from "scenerystack/dot";
 import { Vector2, Bounds2 } from "scenerystack/dot";
@@ -69,31 +69,11 @@ export class ResonatorNodeBuilder {
   }
 
   /**
-   * Creates a spring node for a resonator with line width (stroke) varying by spring constant only.
-   * The coil stroke width depends ONLY on spring constant, NOT on mass or any other property.
+   * Creates a spring node for a resonator with line width varying by spring constant.
    */
   public static createSpringNode(
     resonatorModel: ResonanceModel,
   ): SpringNodeResult {
-    // Calculate line width based ONLY on spring constant (not mass or other properties)
-    // Uses square root scaling to prevent stroke from growing too large at high spring constants
-    const calculateLineWidth = (springConstant: number): number => {
-      const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
-      const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-      // Clamp spring constant to valid range
-      const clampedK = Math.max(minK, Math.min(maxK, springConstant));
-      // Normalize to [0, 1]
-      const normalizedK = (clampedK - minK) / (maxK - minK);
-      // Use square root to compress high values - stroke grows slower at high spring constants
-      const sqrtNormalizedK = Math.sqrt(normalizedK);
-      return (
-        ResonanceConstants.SPRING_LINE_WIDTH_MIN +
-        sqrtNormalizedK *
-          (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
-            ResonanceConstants.SPRING_LINE_WIDTH_MIN)
-      );
-    };
-
     const springNode = new ParametricSpringNode({
       frontColor: ResonanceColors.springProperty,
       middleColor: ResonanceColors.springProperty,
@@ -102,17 +82,24 @@ export class ResonatorNodeBuilder {
       radius: ResonanceConstants.SPRING_RADIUS,
       aspectRatio: ResonanceConstants.SPRING_ASPECT_RATIO,
       pointsPerLoop: ResonanceConstants.SPRING_POINTS_PER_LOOP,
-      lineWidth: calculateLineWidth(resonatorModel.springConstantProperty.value),
+      lineWidth: ResonanceConstants.SPRING_LINE_WIDTH,
       leftEndLength: ResonanceConstants.SPRING_LEFT_END_LENGTH,
       rightEndLength: ResonanceConstants.SPRING_RIGHT_END_LENGTH,
       rotation: -Math.PI / 2,
       boundsMethod: "none",
     });
 
-    // Line width (stroke) varies ONLY with spring constant - NOT mass or any other property
-    // Only listen to springConstantProperty, not massProperty
+    // Line width varies with spring constant
     const springConstantListener = (springConstant: number) => {
-      springNode.lineWidthProperty.value = calculateLineWidth(springConstant);
+      const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
+      const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
+      const normalizedK = (springConstant - minK) / (maxK - minK);
+      const lineWidth =
+        ResonanceConstants.SPRING_LINE_WIDTH_MIN +
+        normalizedK *
+          (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
+            ResonanceConstants.SPRING_LINE_WIDTH_MIN);
+      springNode.lineWidthProperty.value = lineWidth;
     };
 
     resonatorModel.springConstantProperty.link(springConstantListener);
@@ -204,9 +191,7 @@ export class ResonatorNodeBuilder {
         const driverTopY = driverPlate.top;
         const equilibriumY = driverTopY - naturalLengthView;
         const viewYOffset = modelViewTransform.modelToViewDeltaY(modelPosition);
-        // With inverted Y transform: positive position = upward (spring stretched)
-        // modelToViewDeltaY(positive) returns negative, so junctionY decreases (moves up on screen)
-        const junctionY = equilibriumY + viewYOffset;
+        const junctionY = equilibriumY - viewYOffset;
         const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
 
         // Keep x fixed, only update y
@@ -230,9 +215,7 @@ export class ResonatorNodeBuilder {
         );
         const driverTopY = driverPlate.top;
         const equilibriumY = driverTopY - naturalLengthView;
-        // Inverse of model->view: if junctionY < equilibriumY (mass above), viewYOffset is negative
-        // viewToModelDeltaY(negative) returns positive (upward in model)
-        const viewYOffset = junctionY - equilibriumY;
+        const viewYOffset = equilibriumY - junctionY;
         const modelPosition = modelViewTransform.viewToModelDeltaY(viewYOffset);
 
         resonatorModel.positionProperty.value = modelPosition;
@@ -259,37 +242,12 @@ export class ResonatorNodeBuilder {
     });
     massNode.addInputListener(dragListener);
 
-    // Make focusable for keyboard navigation
-    massNode.tagName = "div";
-    massNode.focusable = true;
-    massNode.accessibleName = `Mass ${index + 1}`;
-
-    // KeyboardDragListener for keyboard navigation (vertical only)
-    const keyboardDragListener = new KeyboardDragListener({
-      positionProperty: massPositionProperty,
-      dragBoundsProperty: new Property(layoutBounds),
-      dragSpeed: 150, // pixels per second
-      shiftDragSpeed: 50, // slower with shift key
-      start: () => {
-        // Mark this resonator as being dragged
-        resonatorModel.isDraggingProperty.value = true;
-        // Select this resonator in the control panel
-        selectedResonatorIndexProperty.value = index;
-      },
-      end: () => {
-        // Release the resonator back to simulation control
-        resonatorModel.isDraggingProperty.value = false;
-      },
-    });
-    massNode.addInputListener(keyboardDragListener);
-
     const cleanup = () => {
       resonatorModel.massProperty.unlink(massListener);
       resonatorModel.isDraggingProperty.unlink(draggingListener);
       resonatorModel.positionProperty.unlink(positionListener);
       massPositionProperty.unlink(viewPositionListener);
       massNode.removeInputListener(dragListener);
-      massNode.removeInputListener(keyboardDragListener);
     };
 
     return { node: massNode, cleanup };
