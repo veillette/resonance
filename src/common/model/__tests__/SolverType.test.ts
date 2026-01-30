@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { SolverType, SolverTypeName } from "../SolverType.js";
+import { SolverType, SolverTypeName, SolverTypeDescription } from "../SolverType.js";
 
 describe("SolverType", () => {
   describe("enum values", () => {
@@ -103,6 +103,79 @@ describe("SolverType", () => {
       );
       const uniqueNames = new Set(names);
       expect(uniqueNames.size).toBe(names.length);
+    });
+  });
+
+  describe("SolverTypeDescription mapping", () => {
+    it("should have description for RUNGE_KUTTA_4", () => {
+      expect(SolverTypeDescription[SolverType.RUNGE_KUTTA_4]).toBeDefined();
+    });
+
+    it("should have description for ADAPTIVE_RK45", () => {
+      expect(SolverTypeDescription[SolverType.ADAPTIVE_RK45]).toBeDefined();
+    });
+
+    it("should have description for ADAPTIVE_EULER", () => {
+      expect(SolverTypeDescription[SolverType.ADAPTIVE_EULER]).toBeDefined();
+    });
+
+    it("should have description for MODIFIED_MIDPOINT", () => {
+      expect(SolverTypeDescription[SolverType.MODIFIED_MIDPOINT]).toBeDefined();
+    });
+
+    it("should have descriptions for all solver types", () => {
+      Object.values(SolverType).forEach((solverType) => {
+        expect(SolverTypeDescription[solverType]).toBeDefined();
+      });
+    });
+  });
+
+  describe("localized description properties", () => {
+    it("should return ReadOnlyProperty for RK4 description", () => {
+      const descProp = SolverTypeDescription[SolverType.RUNGE_KUTTA_4];
+      expect(descProp.value).toBeDefined();
+      expect(typeof descProp.value).toBe("string");
+    });
+
+    it("should return ReadOnlyProperty for Adaptive RK45 description", () => {
+      const descProp = SolverTypeDescription[SolverType.ADAPTIVE_RK45];
+      expect(descProp.value).toBeDefined();
+      expect(typeof descProp.value).toBe("string");
+    });
+
+    it("should return ReadOnlyProperty for Adaptive Euler description", () => {
+      const descProp = SolverTypeDescription[SolverType.ADAPTIVE_EULER];
+      expect(descProp.value).toBeDefined();
+      expect(typeof descProp.value).toBe("string");
+    });
+
+    it("should return ReadOnlyProperty for Modified Midpoint description", () => {
+      const descProp = SolverTypeDescription[SolverType.MODIFIED_MIDPOINT];
+      expect(descProp.value).toBeDefined();
+      expect(typeof descProp.value).toBe("string");
+    });
+
+    it("should have non-empty localized descriptions", () => {
+      Object.values(SolverType).forEach((solverType) => {
+        const description = SolverTypeDescription[solverType].value;
+        expect(description.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("should have unique localized descriptions", () => {
+      const descriptions = Object.values(SolverType).map(
+        (solverType) => SolverTypeDescription[solverType].value,
+      );
+      const uniqueDescriptions = new Set(descriptions);
+      expect(uniqueDescriptions.size).toBe(descriptions.length);
+    });
+
+    it("should have descriptions longer than names", () => {
+      Object.values(SolverType).forEach((solverType) => {
+        const name = SolverTypeName[solverType].value;
+        const description = SolverTypeDescription[solverType].value;
+        expect(description.length).toBeGreaterThan(name.length);
+      });
     });
   });
 
