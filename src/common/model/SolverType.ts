@@ -24,3 +24,17 @@ export const SolverTypeName: Record<SolverType, ReadOnlyProperty<string>> = {
   [SolverType.MODIFIED_MIDPOINT]:
     ResonanceStrings.common.solverNames.solverModifiedMidpointStringProperty,
 };
+
+/**
+ * Human-readable descriptions for solver types (localized)
+ */
+export const SolverTypeDescription: Record<SolverType, ReadOnlyProperty<string>> = {
+  [SolverType.RUNGE_KUTTA_4]:
+    ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty,
+  [SolverType.ADAPTIVE_RK45]:
+    ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty,
+  [SolverType.ADAPTIVE_EULER]:
+    ResonanceStrings.preferences.solvers.adaptiveEulerDescriptionStringProperty,
+  [SolverType.MODIFIED_MIDPOINT]:
+    ResonanceStrings.preferences.solvers.modifiedMidpointDescriptionStringProperty,
+};
