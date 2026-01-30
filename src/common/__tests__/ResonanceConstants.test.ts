@@ -163,8 +163,8 @@ describe("ResonanceConstants", () => {
       expect(maxFreq).toBeGreaterThan(ResonanceConstants.FREQUENCY_RANGE.min);
     });
 
-    it("should have reasonable gravity acceleration", () => {
-      expect(ResonanceConstants.GRAVITY_ACCELERATION).toBeCloseTo(9.8, 1);
+    it("should have Moon's gravity acceleration", () => {
+      expect(ResonanceConstants.GRAVITY_ACCELERATION).toBeCloseTo(1.62, 2);
     });
   });
 

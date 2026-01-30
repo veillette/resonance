@@ -4,7 +4,7 @@
  */
 
 import { Node, Text, Rectangle } from "scenerystack/scenery";
-import { DragListener } from "scenerystack/scenery";
+import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
 import { ParametricSpringNode, PhetFont } from "scenerystack/scenery-phet";
 import { Vector2Property } from "scenerystack/dot";
 import { Vector2, Bounds2 } from "scenerystack/dot";
@@ -255,12 +255,37 @@ export class ResonatorNodeBuilder {
     });
     massNode.addInputListener(dragListener);
 
+    // Make focusable for keyboard navigation
+    massNode.tagName = "div";
+    massNode.focusable = true;
+    massNode.accessibleName = `Mass ${index + 1}`;
+
+    // KeyboardDragListener for keyboard navigation (vertical only)
+    const keyboardDragListener = new KeyboardDragListener({
+      positionProperty: massPositionProperty,
+      dragBoundsProperty: new Property(layoutBounds),
+      dragSpeed: 150, // pixels per second
+      shiftDragSpeed: 50, // slower with shift key
+      start: () => {
+        // Mark this resonator as being dragged
+        resonatorModel.isDraggingProperty.value = true;
+        // Select this resonator in the control panel
+        selectedResonatorIndexProperty.value = index;
+      },
+      end: () => {
+        // Release the resonator back to simulation control
+        resonatorModel.isDraggingProperty.value = false;
+      },
+    });
+    massNode.addInputListener(keyboardDragListener);
+
     const cleanup = () => {
       resonatorModel.massProperty.unlink(massListener);
       resonatorModel.isDraggingProperty.unlink(draggingListener);
       resonatorModel.positionProperty.unlink(positionListener);
       massPositionProperty.unlink(viewPositionListener);
       massNode.removeInputListener(dragListener);
+      massNode.removeInputListener(keyboardDragListener);
     };
 
     return { node: massNode, cleanup };

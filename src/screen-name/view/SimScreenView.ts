@@ -6,7 +6,7 @@ import {
   ParametricSpringNode,
 } from "scenerystack/scenery-phet";
 import { Rectangle, Node } from "scenerystack/scenery";
-import { DragListener } from "scenerystack/scenery";
+import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import { Vector2Property } from "scenerystack/dot";
@@ -264,6 +264,21 @@ export class SimScreenView extends ScreenView {
     });
     rulerNode.addInputListener(dragListener);
     rulerNode.cursor = "move";
+
+    // Make focusable for keyboard navigation
+    rulerNode.tagName = "div";
+    rulerNode.focusable = true;
+    rulerNode.accessibleName = "Ruler";
+
+    // KeyboardDragListener for keyboard navigation
+    const keyboardDragListener = new KeyboardDragListener({
+      positionProperty: this.rulerPositionProperty,
+      transform: this.modelViewTransform,
+      dragBoundsProperty: new Property(dragBoundsModel),
+      dragSpeed: 150, // pixels per second
+      shiftDragSpeed: 50, // slower with shift key
+    });
+    rulerNode.addInputListener(keyboardDragListener);
 
     return rulerNode;
   }

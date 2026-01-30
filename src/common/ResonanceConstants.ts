@@ -110,7 +110,7 @@ const COMBO_BOX_SPACING = 5;
 
 // ===== GRAVITY =====
 
-const GRAVITY_ACCELERATION = 9.8;
+const GRAVITY_ACCELERATION = 1.62; // Moon's gravity (m/s²)
 const GRAVITY_BOX_SPACING = 10;
 
 // ===== RULER CHECKBOX =====

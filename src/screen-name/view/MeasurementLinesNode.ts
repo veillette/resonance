@@ -5,7 +5,7 @@
  */
 
 import { Node, Line, Rectangle } from "scenerystack/scenery";
-import { DragListener } from "scenerystack/scenery";
+import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
 import { Bounds2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import {
@@ -23,6 +23,7 @@ class MeasurementLineNode extends Node {
     driverWidth: number,
     driverCenterX: number,
     modelViewTransform: ModelViewTransform2,
+    lineNumber: number,
   ) {
     super();
 
@@ -57,6 +58,11 @@ class MeasurementLineNode extends Node {
 
     this.cursor = "ns-resize";
 
+    // Make focusable for keyboard navigation
+    this.tagName = "div";
+    this.focusable = true;
+    this.accessibleName = `Measurement Line ${lineNumber}`;
+
     // Position the node based on model position using modelViewTransform
     model.positionProperty.link((position) => {
       const viewPosition = modelViewTransform.modelToViewPosition(position);
@@ -72,6 +78,16 @@ class MeasurementLineNode extends Node {
       dragBoundsProperty: model.dragBoundsProperty,
     });
     this.addInputListener(dragListener);
+
+    // KeyboardDragListener for keyboard navigation (vertical only)
+    const keyboardDragListener = new KeyboardDragListener({
+      positionProperty: model.positionProperty,
+      transform: modelViewTransform,
+      dragBoundsProperty: model.dragBoundsProperty,
+      dragSpeed: 100, // pixels per second
+      shiftDragSpeed: 50, // slower with shift key
+    });
+    this.addInputListener(keyboardDragListener);
   }
 }
 
@@ -109,12 +125,14 @@ export class MeasurementLinesNode extends Node {
       driverWidth,
       driverCenterX,
       modelViewTransform,
+      1,
     );
     this.line2Node = new MeasurementLineNode(
       this.model.line2,
       driverWidth,
       driverCenterX,
       modelViewTransform,
+      2,
     );
 
     this.addChild(this.line1Node);

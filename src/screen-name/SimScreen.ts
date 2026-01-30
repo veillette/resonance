@@ -3,6 +3,7 @@ import { SimModel } from "./model/SimModel.js";
 import { SimScreenView } from "./view/SimScreenView.js";
 import { ResonancePreferencesModel } from "../preferences/ResonancePreferencesModel.js";
 import ResonanceColors from "../common/ResonanceColors.js";
+import { KeyboardShortcutsNode } from "./view/KeyboardShortcutsNode.js";
 
 export class SimScreen extends Screen<SimModel, SimScreenView> {
   public constructor(
@@ -15,6 +16,7 @@ export class SimScreen extends Screen<SimModel, SimScreenView> {
       {
         ...options,
         backgroundColorProperty: ResonanceColors.backgroundProperty,
+        createKeyboardHelpNode: () => new KeyboardShortcutsNode(),
       },
     );
   }

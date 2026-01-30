@@ -28,6 +28,9 @@ onReadyToLaunch(() => {
         supportsVoicing: false,
         supportsSound: true,
       },
+      inputOptions: {
+        supportsGestureControl: true,
+      },
       simulationOptions: {
         customPreferences: [
           {
