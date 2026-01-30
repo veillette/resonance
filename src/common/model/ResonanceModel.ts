@@ -214,8 +214,8 @@ export class ResonanceModel extends BaseModel {
     }
 
     // Calculate acceleration: a = F_total / m
-    // F_total = -k*x (spring) - b*v (damping) + m*g (gravity) + F_drive
-    const acceleration = (-k * x - b * v + m * g + F_drive) / m;
+    // F_total = -k*x (spring) - b*v (damping) - m*g (gravity, downward) + F_drive
+    const acceleration = (-k * x - b * v - m * g + F_drive) / m;
 
     return [
       v, // dx/dt = v
