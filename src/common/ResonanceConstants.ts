@@ -8,10 +8,10 @@ import { PhetFont } from "scenerystack/scenery-phet";
 
 // ===== FONTS =====
 
-const LABEL_FONT = new PhetFont({ size: 14, weight: "bold" });
-const TITLE_FONT = new PhetFont({ size: 16, weight: "bold" });
-const TICK_LABEL_FONT = new PhetFont({ size: 12 });
-const CONTROL_FONT = new PhetFont({ size: 14 });
+const LABEL_FONT = new PhetFont({ size: 13, weight: "bold" });
+const TITLE_FONT = new PhetFont({ size: 15, weight: "bold" });
+const TICK_LABEL_FONT = new PhetFont({ size: 11 });
+const CONTROL_FONT = new PhetFont({ size: 13 });
 
 // ===== DRIVER BOX =====
 
@@ -91,22 +91,22 @@ const RULER_TOP_MARGIN = 300;
 
 // ===== CONTROL PANEL =====
 
-const CONTROL_PANEL_CORNER_RADIUS = 10;
+const CONTROL_PANEL_CORNER_RADIUS = 8;
 const CONTROL_PANEL_LINE_WIDTH = 2;
-const CONTROL_PANEL_X_MARGIN = 15;
-const CONTROL_PANEL_Y_MARGIN = 15;
-const CONTROL_PANEL_SPACING = 15;
-const CONTROL_PANEL_RIGHT_MARGIN = 20;
-const CONTROL_PANEL_TOP_MARGIN = 20;
-const SEPARATOR_WIDTH = 250;
+const CONTROL_PANEL_X_MARGIN = 10;
+const CONTROL_PANEL_Y_MARGIN = 10;
+const CONTROL_PANEL_SPACING = 10;
+const CONTROL_PANEL_RIGHT_MARGIN = 15;
+const CONTROL_PANEL_TOP_MARGIN = 15;
+const SEPARATOR_WIDTH = 200;
 const SEPARATOR_LINE_WIDTH = 1;
 
 // ===== COMBO BOX =====
 
-const COMBO_BOX_X_MARGIN = 10;
-const COMBO_BOX_Y_MARGIN = 6;
-const COMBO_BOX_CORNER_RADIUS = 5;
-const COMBO_BOX_SPACING = 5;
+const COMBO_BOX_X_MARGIN = 8;
+const COMBO_BOX_Y_MARGIN = 4;
+const COMBO_BOX_CORNER_RADIUS = 4;
+const COMBO_BOX_SPACING = 4;
 
 // ===== GRAVITY =====
 
