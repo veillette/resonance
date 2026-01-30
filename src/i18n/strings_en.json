@@ -20,6 +20,7 @@
       "frequency": "Frequency",
       "amplitude": "Amplitude",
       "resonators": "Resonators",
+      "resonator": "Resonator",
       "resonator1": "Resonator 1",
       "resonatorPattern": "Resonator {{number}}",
       "massSimple": "Mass",

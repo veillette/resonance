@@ -367,10 +367,13 @@ export class ResonatorControlPanel extends Panel {
       },
     );
 
-    const resonatorLabel = new Text("Resonator", {
-      font: ResonanceConstants.TITLE_FONT,
-      fill: ResonanceColors.textProperty,
-    });
+    const resonatorLabel = new Text(
+      ResonanceStrings.controls.resonatorStringProperty,
+      {
+        font: ResonanceConstants.TITLE_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
 
     const resonatorSelectionBox = new HBox({
       children: [resonatorLabel, resonatorSpinner],
@@ -691,6 +694,16 @@ export class ResonatorControlPanel extends Panel {
         updateNaturalFrequency,
       );
     });
+
+    // Also update when locale changes (string properties update)
+    this.listenerTracker.link(
+      ResonanceStrings.units.hertzPatternStringProperty,
+      updateNaturalFrequency,
+    );
+    this.listenerTracker.link(
+      ResonanceStrings.controls.frequencyEqualsStringProperty,
+      updateNaturalFrequency,
+    );
   }
 
   public reset(): void {

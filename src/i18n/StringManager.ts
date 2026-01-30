@@ -97,6 +97,8 @@ export class StringManager {
         this.stringProperties.resonance.controls.amplitudeStringProperty,
       resonatorsStringProperty:
         this.stringProperties.resonance.controls.resonatorsStringProperty,
+      resonatorStringProperty:
+        this.stringProperties.resonance.controls.resonatorStringProperty,
       resonator1StringProperty:
         this.stringProperties.resonance.controls.resonator1StringProperty,
       resonatorPatternStringProperty:
