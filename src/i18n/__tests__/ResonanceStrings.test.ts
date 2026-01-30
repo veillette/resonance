@@ -223,14 +223,15 @@ describe("ResonanceStrings", () => {
 
     it("should allow linking to string changes", () => {
       let notifiedValue: string | null = null;
-      const unlink = ResonanceStrings.titleStringProperty.link((value) => {
+      const listener = (value: string) => {
         notifiedValue = value;
-      });
+      };
+      ResonanceStrings.titleStringProperty.link(listener);
 
       expect(notifiedValue).toBe(ResonanceStrings.titleStringProperty.value);
 
       // Clean up
-      ResonanceStrings.titleStringProperty.unlink(unlink as () => void);
+      ResonanceStrings.titleStringProperty.unlink(listener);
     });
   });
 

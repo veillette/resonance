@@ -373,8 +373,6 @@ export class SimScreenView extends ScreenView {
     const endLengths =
       ResonanceConstants.SPRING_LEFT_END_LENGTH +
       ResonanceConstants.SPRING_RIGHT_END_LENGTH;
-    const loopsTimesRadius =
-      ResonanceConstants.SPRING_LOOPS * ResonanceConstants.SPRING_RADIUS;
 
     for (let i = 0; i < count; i++) {
       const xCenter =

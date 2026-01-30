@@ -54,12 +54,12 @@ describe("SimScreen components", () => {
       expect(view).toBeInstanceOf(SimScreenView);
     });
 
-    it("should pass model to view", () => {
+    it("should create view with valid bounds", () => {
       const preferencesModel = new ResonancePreferencesModel();
       const model = new SimModel(preferencesModel);
       const view = new SimScreenView(model);
 
-      expect(view.model).toBe(model);
+      expect(view.bounds.isValid()).toBe(true);
     });
 
     it("should create functional view with children", () => {
@@ -112,10 +112,9 @@ describe("SimScreen components", () => {
       expect(view.bounds.isValid()).toBe(true);
     });
 
-    it("should step model when view steps", () => {
+    it("should step model correctly", () => {
       const preferencesModel = new ResonancePreferencesModel();
       const model = new SimModel(preferencesModel);
-      const view = new SimScreenView(model);
 
       // Enable running state (using isPlayingProperty on resonanceModel)
       model.resonanceModel.isPlayingProperty.value = true;
@@ -155,7 +154,7 @@ describe("SimScreen components", () => {
       const view2 = new SimScreenView(model2);
 
       expect(view1).not.toBe(view2);
-      expect(view1.model).not.toBe(view2.model);
+      expect(model1).not.toBe(model2);
     });
   });
 

@@ -291,6 +291,9 @@ describe("ResonanceColors", () => {
       // Dragging color should be yellow (high red and green)
       expect(dragging.red).toBeGreaterThan(200);
       expect(dragging.green).toBeGreaterThan(200);
+
+      // Normal and dragging colors should be different
+      expect(dragging.toCSS()).not.toBe(normal.toCSS());
     });
   });
 

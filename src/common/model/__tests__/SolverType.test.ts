@@ -222,7 +222,7 @@ describe("SolverType", () => {
       const type3 = SolverType.ADAPTIVE_RK45;
 
       expect(type1 === type2).toBe(true);
-      expect(type1 === type3).toBe(false);
+      expect((type1 as string) === (type3 as string)).toBe(false);
     });
   });
 

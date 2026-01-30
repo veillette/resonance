@@ -127,7 +127,7 @@ describe("ResonatorConfigMode", () => {
       const mode3 = ResonatorConfigMode.CUSTOM;
 
       expect(mode1 === mode2).toBe(true);
-      expect(mode1 === mode3).toBe(false);
+      expect((mode1 as string) === (mode3 as string)).toBe(false);
     });
 
     it("should work with array includes", () => {
