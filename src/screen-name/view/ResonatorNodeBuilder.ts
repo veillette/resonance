@@ -204,7 +204,9 @@ export class ResonatorNodeBuilder {
         const driverTopY = driverPlate.top;
         const equilibriumY = driverTopY - naturalLengthView;
         const viewYOffset = modelViewTransform.modelToViewDeltaY(modelPosition);
-        const junctionY = equilibriumY - viewYOffset;
+        // With inverted Y transform: positive position = upward (spring stretched)
+        // modelToViewDeltaY(positive) returns negative, so junctionY decreases (moves up on screen)
+        const junctionY = equilibriumY + viewYOffset;
         const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
 
         // Keep x fixed, only update y
@@ -228,7 +230,9 @@ export class ResonatorNodeBuilder {
         );
         const driverTopY = driverPlate.top;
         const equilibriumY = driverTopY - naturalLengthView;
-        const viewYOffset = equilibriumY - junctionY;
+        // Inverse of model->view: if junctionY < equilibriumY (mass above), viewYOffset is negative
+        // viewToModelDeltaY(negative) returns positive (upward in model)
+        const viewYOffset = junctionY - equilibriumY;
         const modelPosition = modelViewTransform.viewToModelDeltaY(viewYOffset);
 
         resonatorModel.positionProperty.value = modelPosition;

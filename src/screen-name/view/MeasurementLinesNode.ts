@@ -118,7 +118,6 @@ export class MeasurementLinesNode extends Node {
     // Create the model with height bounds
     this.model = new MeasurementLinesModel(minHeight, maxHeight, 0.2, 0.4);
 
-    //TODO the position of the lines is incorrects
     // Create view nodes for each line
     this.line1Node = new MeasurementLineNode(
       this.model.line1,

@@ -9,6 +9,7 @@ import { Vector2Property } from "scenerystack/dot";
 
 export class MeasurementLineModel {
   // Position in model coordinates (x is fixed, y represents height above driver)
+  // With inverted Y transform: positive y = upward = height above driver
   public readonly positionProperty: Vector2Property;
   public readonly dragBoundsProperty: Property<Bounds2>;
 
@@ -19,7 +20,8 @@ export class MeasurementLineModel {
    * @param dragBounds - Allowed bounds for dragging in model coordinates
    */
   public constructor(initialHeight: number, dragBounds: Bounds2) {
-    this.initialPosition = new Vector2(0, -initialHeight);
+    // Positive Y = upward (with inverted Y transform)
+    this.initialPosition = new Vector2(0, initialHeight);
     this.positionProperty = new Vector2Property(this.initialPosition);
     this.dragBoundsProperty = new Property(dragBounds);
   }
@@ -28,7 +30,7 @@ export class MeasurementLineModel {
    * Get the height above driver plate (positive = up).
    */
   public get height(): number {
-    return -this.positionProperty.value.y;
+    return this.positionProperty.value.y;
   }
 
   public reset(): void {
@@ -57,9 +59,9 @@ export class MeasurementLinesModel {
     initialHeight2: number = 0.4,
   ) {
     // Drag bounds in model coordinates
-    // y is negative because height is measured upward (negative y = up)
+    // With inverted Y transform: positive y = upward
     // x is fixed at 0
-    this.dragBounds = new Bounds2(0, -maxHeight, 0, -minHeight);
+    this.dragBounds = new Bounds2(0, minHeight, 0, maxHeight);
 
     this.line1 = new MeasurementLineModel(initialHeight1, this.dragBounds);
     this.line2 = new MeasurementLineModel(initialHeight2, this.dragBounds);

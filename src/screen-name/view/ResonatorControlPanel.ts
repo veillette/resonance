@@ -235,7 +235,7 @@ export class ResonatorControlPanel extends Panel {
           fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
-          trackSize: new Dimension2(150, 3),
+          trackSize: new Dimension2(120, 3),
           majorTicks: [
             {
               value: 1,
@@ -414,7 +414,7 @@ export class ResonatorControlPanel extends Panel {
           fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
-          trackSize: new Dimension2(150, 3),
+          trackSize: new Dimension2(120, 3),
           majorTickStroke: ResonanceColors.textProperty,
           minorTickStroke: ResonanceColors.textProperty,
         },
@@ -439,7 +439,7 @@ export class ResonatorControlPanel extends Panel {
           fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
-          trackSize: new Dimension2(150, 3),
+          trackSize: new Dimension2(120, 3),
           majorTickStroke: ResonanceColors.textProperty,
           minorTickStroke: ResonanceColors.textProperty,
         },
@@ -505,7 +505,7 @@ export class ResonatorControlPanel extends Panel {
           fill: ResonanceColors.textProperty,
         },
         sliderOptions: {
-          trackSize: new Dimension2(150, 3),
+          trackSize: new Dimension2(120, 3),
           majorTickStroke: ResonanceColors.textProperty,
           minorTickStroke: ResonanceColors.textProperty,
         },

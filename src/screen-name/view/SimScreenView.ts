@@ -41,7 +41,8 @@ export class SimScreenView extends ScreenView {
 
     this.model = model;
 
-    // Initialize ModelViewTransform
+    // Initialize ModelViewTransform with inverted Y axis
+    // This makes positive Y in model = upward on screen (natural physics convention)
     const transformModelBounds = new Bounds2(
       ResonanceConstants.MODEL_BOUNDS_MIN,
       ResonanceConstants.MODEL_BOUNDS_MIN,
@@ -49,7 +50,7 @@ export class SimScreenView extends ScreenView {
       ResonanceConstants.MODEL_BOUNDS_MAX,
     );
     const viewBounds = this.layoutBounds;
-    this.modelViewTransform = ModelViewTransform2.createRectangleMapping(
+    this.modelViewTransform = ModelViewTransform2.createRectangleInvertedYMapping(
       transformModelBounds,
       viewBounds,
     );
@@ -399,8 +400,8 @@ export class SimScreenView extends ScreenView {
       const modelY = resonatorModel.positionProperty.value;
       const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelY);
 
-      // Positive position means mass moves "downward" (toward driver, larger Y in view)
-      // So we add the offset to move junction toward driver when position > 0
+      // With inverted Y transform: positive position = upward (spring stretched)
+      // modelToViewDeltaY(positive) returns negative, so junctionY decreases (moves up on screen)
       const junctionY = equilibriumY + viewYOffset;
       const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
 
