@@ -137,8 +137,8 @@ export class ResonanceCurveNode extends Node {
     });
     this.addChild(this.hzLabel);
 
-    // Create the line plot for resonance curve
-    const dataSet = this.generateDataSet();
+    // Create the line plot for resonance curve using precomputed data
+    const dataSet = this.model.getResonanceCurveData(SAMPLE_COUNT);
     this.linePlot = new LinePlot(this.chartTransform, dataSet, {
       stroke: ResonanceColors.frequencyTrackProperty,
       lineWidth: 2,
@@ -154,20 +154,21 @@ export class ResonanceCurveNode extends Node {
     this.addChild(this.frequencyMarker);
     this.updateFrequencyMarker();
 
-    // Update when frequency or material changes
+    // Update when frequency changes (just update window and marker, data is precomputed)
     model.frequencyProperty.link(() => {
       this.updateWindowRange();
-      this.updateCurve();
+      this.updateCurveFromPrecomputed();
       this.updateFrequencyMarker();
     });
 
+    // Update curve when material or excitation position changes
+    // (model recomputes the full curve, we just need to display the window)
     model.materialProperty.link(() => {
-      this.updateCurve();
+      this.updateCurveFromPrecomputed();
     });
 
-    // Update when excitation position changes (affects resonance peaks)
     model.excitationPositionProperty.link(() => {
-      this.updateCurve();
+      this.updateCurveFromPrecomputed();
     });
   }
 
@@ -205,43 +206,11 @@ export class ResonanceCurveNode extends Node {
   }
 
   /**
-   * Generate the data set for the resonance curve.
+   * Update the resonance curve using precomputed data from the model.
+   * The model precomputes the full frequency range; we just extract the visible window.
    */
-  private generateDataSet(): Vector2[] {
-    const range = this.currentWindowRange;
-    const freqMin = range.min;
-    const freqMax = range.max;
-
-    // Sample the strength function
-    const strengths: number[] = [];
-    let maxStrength = 0;
-
-    for (let i = 0; i < SAMPLE_COUNT; i++) {
-      const freq = freqMin + (i / (SAMPLE_COUNT - 1)) * (freqMax - freqMin);
-      const s = this.model.strength(freq);
-      strengths.push(s);
-      if (s > maxStrength) {
-        maxStrength = s;
-      }
-    }
-
-    // Create normalized data points
-    const dataSet: Vector2[] = [];
-    for (let i = 0; i < SAMPLE_COUNT; i++) {
-      const freq = freqMin + (i / (SAMPLE_COUNT - 1)) * (freqMax - freqMin);
-      const normalized =
-        maxStrength > 0 ? Math.min(strengths[i]! / maxStrength, 1) : 0;
-      dataSet.push(new Vector2(freq, normalized));
-    }
-
-    return dataSet;
-  }
-
-  /**
-   * Redraw the resonance curve.
-   */
-  private updateCurve(): void {
-    const dataSet = this.generateDataSet();
+  private updateCurveFromPrecomputed(): void {
+    const dataSet = this.model.getResonanceCurveData(SAMPLE_COUNT);
     this.linePlot.setDataSet(dataSet);
   }
 
@@ -263,7 +232,7 @@ export class ResonanceCurveNode extends Node {
    */
   public update(): void {
     this.updateWindowRange();
-    this.updateCurve();
+    this.updateCurveFromPrecomputed();
     this.updateFrequencyMarker();
   }
 }

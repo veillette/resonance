@@ -10,7 +10,7 @@ import { Panel, ComboBox, TextPushButton, Checkbox } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
 import { Property } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
-import { ChladniModel } from "../model/ChladniModel.js";
+import { ChladniModel, GrainCountOption, GRAIN_COUNT_OPTIONS } from "../model/ChladniModel.js";
 import { Material, MaterialType, MATERIALS } from "../model/Material.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
@@ -73,6 +73,44 @@ export class ChladniControlPanel extends Panel {
       align: "left",
     });
 
+    // --- Grain Count Selection ---
+    const grainCountLabel = new Text(
+      ResonanceStrings.chladni.grainsStringProperty,
+      {
+        font: ResonanceConstants.LABEL_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
+
+    const grainCountComboBoxItems: ComboBoxItem<GrainCountOption>[] =
+      GRAIN_COUNT_OPTIONS.map((option) => ({
+        value: option,
+        createNode: () => {
+          const stringProperty =
+            ChladniControlPanel.getGrainCountStringProperty(option);
+          return new Text(stringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+          });
+        },
+      }));
+
+    const grainCountComboBox = new ComboBox(
+      model.grainCountProperty,
+      grainCountComboBoxItems,
+      comboBoxListParent,
+      {
+        xMargin: ResonanceConstants.COMBO_BOX_X_MARGIN,
+        yMargin: ResonanceConstants.COMBO_BOX_Y_MARGIN,
+        cornerRadius: ResonanceConstants.COMBO_BOX_CORNER_RADIUS,
+      },
+    );
+
+    const grainCountBox = new VBox({
+      children: [grainCountLabel, grainCountComboBox],
+      spacing: ResonanceConstants.COMBO_BOX_SPACING,
+      align: "left",
+    });
+
     // --- Frequency Slider ---
     // Simple slider covering the full frequency range
     const frequencyControl = NumberControlFactory.create({
@@ -116,6 +154,7 @@ export class ChladniControlPanel extends Panel {
     const controlPanelContent = new VBox({
       children: [
         materialBox,
+        grainCountBox,
         new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
           stroke: ResonanceColors.textProperty,
           lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
@@ -163,6 +202,24 @@ export class ChladniControlPanel extends Panel {
         return ResonanceStrings.chladni.stainlessSteelStringProperty;
       default:
         return ResonanceStrings.chladni.copperStringProperty;
+    }
+  }
+
+  /**
+   * Get the string property for a grain count option.
+   */
+  private static getGrainCountStringProperty(option: GrainCountOption) {
+    switch (option.value) {
+      case 1000:
+        return ResonanceStrings.chladni.grains1000StringProperty;
+      case 5000:
+        return ResonanceStrings.chladni.grains5000StringProperty;
+      case 10000:
+        return ResonanceStrings.chladni.grains10000StringProperty;
+      case 25000:
+        return ResonanceStrings.chladni.grains25000StringProperty;
+      default:
+        return ResonanceStrings.chladni.grains10000StringProperty;
     }
   }
 

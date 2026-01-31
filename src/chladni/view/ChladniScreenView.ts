@@ -3,12 +3,20 @@
  *
  * View for the Chladni plate pattern visualization.
  * Contains the particle visualization, control panel, and playback controls.
+ * Supports resizing the plate via a corner drag handle.
+ *
+ * Coordinate System:
+ * - Model: (0,0) at plate center, x in [-width/2, width/2], y in [-height/2, height/2], +Y up
+ * - View: (0,0) at top-left of visualization, +Y down
+ * - ModelViewTransform2 handles the conversion with Y inversion
  */
 
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
-import { Circle, DragListener, Node, Text, VBox } from "scenerystack/scenery";
+import { Circle, DragListener, Node, Path, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { ResetAllButton, PlayPauseStepButtonGroup } from "scenerystack/scenery-phet";
 import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { ChladniModel } from "../model/ChladniModel.js";
 import { ChladniVisualizationNode } from "./ChladniVisualizationNode.js";
 import { ChladniControlPanel } from "./ChladniControlPanel.js";
@@ -17,35 +25,67 @@ import ResonanceConstants from "../../common/ResonanceConstants.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
-// Size of the Chladni plate visualization
-const VISUALIZATION_SIZE = 450;
+// Base size for the Chladni plate visualization (pixels per meter of plate)
+const PIXELS_PER_METER = 1400;
 
 // Excitation marker properties
 const EXCITATION_MARKER_RADIUS = 12;
 const EXCITATION_MARKER_INNER_RADIUS = 4;
 
+// Resize handle properties
+const RESIZE_HANDLE_SIZE = 16;
+
 export class ChladniScreenView extends ScreenView {
   private readonly model: ChladniModel;
   private readonly visualizationNode: ChladniVisualizationNode;
   private readonly excitationMarker: Node;
+  private readonly resizeHandle: Node;
   private readonly controlPanel: ChladniControlPanel;
   private readonly resonanceCurveNode: ResonanceCurveNode;
   private readonly curveContainer: VBox;
+  private readonly playbackControls: Node;
+
+  // Center position of the visualization in screen coordinates (fixed during resize)
+  private readonly visualizationCenterX: number;
+  private readonly visualizationCenterY: number;
+
+  // Model-View transform for coordinate conversion
+  // Model: (0,0) at center, +Y up; View: (0,0) at top-left of viz, +Y down
+  private modelViewTransform: ModelViewTransform2;
 
   public constructor(model: ChladniModel, options?: ScreenViewOptions) {
     super(options);
     this.model = model;
 
-    // Create the particle visualization
+    // Fixed center position for the visualization
+    this.visualizationCenterX = this.layoutBounds.centerX - 100;
+    this.visualizationCenterY = this.layoutBounds.centerY;
+
+    // Calculate initial visualization dimensions
+    const initialWidth = model.plateWidth * PIXELS_PER_METER;
+    const initialHeight = model.plateHeight * PIXELS_PER_METER;
+
+    // Create the model-view transform
+    // Model: centered coordinates with +Y up
+    // View: top-left origin with +Y down
+    this.modelViewTransform = this.createModelViewTransform(initialWidth, initialHeight);
+
+    // Create the particle visualization with proper dimensions and transform
     this.visualizationNode = new ChladniVisualizationNode(model, {
-      visualizationSize: VISUALIZATION_SIZE,
+      visualizationWidth: initialWidth,
+      visualizationHeight: initialHeight,
     });
 
-    // Center the visualization on the left side of the screen
-    this.visualizationNode.centerX = this.layoutBounds.centerX - 100;
-    this.visualizationNode.centerY = this.layoutBounds.centerY;
+    // Center the visualization
+    this.visualizationNode.centerX = this.visualizationCenterX;
+    this.visualizationNode.centerY = this.visualizationCenterY;
 
     this.addChild(this.visualizationNode);
+
+    // Create the resize handle at the bottom-right corner
+    this.resizeHandle = this.createResizeHandle();
+    this.addChild(this.resizeHandle);
+    this.updateResizeHandlePosition();
 
     // Create the draggable excitation marker
     this.excitationMarker = this.createExcitationMarker();
@@ -81,8 +121,8 @@ export class ChladniScreenView extends ScreenView {
     this.controlPanel.showResonanceCurveProperty.linkAttribute(this.curveContainer, "visible");
 
     // Create playback controls
-    const playbackControls = this.createPlaybackControls();
-    this.addChild(playbackControls);
+    this.playbackControls = this.createPlaybackControls();
+    this.addChild(this.playbackControls);
 
     // Create reset button
     const resetAllButton = new ResetAllButton({
@@ -95,6 +135,142 @@ export class ChladniScreenView extends ScreenView {
         this.layoutBounds.maxY - ResonanceConstants.RESET_ALL_BOTTOM_MARGIN,
     });
     this.addChild(resetAllButton);
+
+    // Listen to plate dimension changes to update the visualization
+    model.plateWidthProperty.link(() => this.updateVisualizationSize());
+    model.plateHeightProperty.link(() => this.updateVisualizationSize());
+  }
+
+  /**
+   * Create a ModelViewTransform2 for converting between model and view coordinates.
+   * Model: (0,0) at center, x in [-w/2, w/2], y in [-h/2, h/2], +Y up
+   * View: (0,0) at top-left, x in [0, viewWidth], y in [0, viewHeight], +Y down
+   */
+  private createModelViewTransform(viewWidth: number, viewHeight: number): ModelViewTransform2 {
+    const plateWidth = this.model.plateWidth;
+    const plateHeight = this.model.plateHeight;
+
+    // Model bounds: centered coordinates
+    const modelBounds = new Bounds2(
+      -plateWidth / 2, -plateHeight / 2,
+      plateWidth / 2, plateHeight / 2
+    );
+
+    // View bounds: (0,0) at top-left
+    const viewBounds = new Bounds2(0, 0, viewWidth, viewHeight);
+
+    // Create transform with Y inversion (model +Y up, view +Y down)
+    return ModelViewTransform2.createRectangleInvertedYMapping(modelBounds, viewBounds);
+  }
+
+  /**
+   * Update the visualization size based on the model's plate dimensions.
+   */
+  private updateVisualizationSize(): void {
+    const newWidth = this.model.plateWidth * PIXELS_PER_METER;
+    const newHeight = this.model.plateHeight * PIXELS_PER_METER;
+
+    // Update the model-view transform
+    this.modelViewTransform = this.createModelViewTransform(newWidth, newHeight);
+
+    // Resize the visualization node
+    this.visualizationNode.resize(newWidth, newHeight);
+
+    // Re-center the visualization (keep center fixed)
+    this.visualizationNode.centerX = this.visualizationCenterX;
+    this.visualizationNode.centerY = this.visualizationCenterY;
+
+    // Update dependent elements
+    this.updateResizeHandlePosition();
+    this.updateExcitationMarkerPosition();
+    this.visualizationNode.update();
+  }
+
+  /**
+   * Create the resize handle for the bottom-right corner.
+   * Dragging this handle resizes the plate while keeping the center fixed.
+   */
+  private createResizeHandle(): Node {
+    // Create a diagonal resize indicator (three diagonal lines)
+    const handleShape = new Shape();
+    for (let i = 0; i < 3; i++) {
+      const offset = i * 4;
+      handleShape.moveTo(RESIZE_HANDLE_SIZE - offset, RESIZE_HANDLE_SIZE);
+      handleShape.lineTo(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE - offset);
+    }
+
+    const handleLines = new Path(handleShape, {
+      stroke: ResonanceColors.textProperty,
+      lineWidth: 2,
+    });
+
+    // Invisible hit area for easier grabbing
+    const hitArea = new Rectangle(0, 0, RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE, {
+      fill: "transparent",
+      cursor: "nwse-resize",
+    });
+
+    const handle = new Node({
+      children: [hitArea, handleLines],
+      cursor: "nwse-resize",
+    });
+
+    // Track the starting position for the drag
+    let dragStartPoint: Vector2 | null = null;
+    let startWidth = 0;
+    let startHeight = 0;
+
+    const dragListener = new DragListener({
+      start: (event) => {
+        dragStartPoint = event.pointer.point.copy();
+        startWidth = this.model.plateWidthProperty.value;
+        startHeight = this.model.plateHeightProperty.value;
+      },
+      drag: (event) => {
+        if (!dragStartPoint) return;
+
+        // Calculate the drag delta
+        const currentPoint = event.pointer.point;
+        const deltaX = currentPoint.x - dragStartPoint.x;
+        const deltaY = currentPoint.y - dragStartPoint.y;
+
+        // Convert pixel delta to physical dimension delta
+        // Since we're dragging the corner, the delta is half the total size change
+        // (because center is fixed, the opposite corner moves by the same amount)
+        const widthDelta = (deltaX * 2) / PIXELS_PER_METER;
+        const heightDelta = (deltaY * 2) / PIXELS_PER_METER;
+
+        // Calculate new dimensions
+        const newWidth = Math.max(
+          this.model.plateWidthProperty.range!.min,
+          Math.min(this.model.plateWidthProperty.range!.max, startWidth + widthDelta)
+        );
+        const newHeight = Math.max(
+          this.model.plateHeightProperty.range!.min,
+          Math.min(this.model.plateHeightProperty.range!.max, startHeight + heightDelta)
+        );
+
+        // Update the model
+        this.model.plateWidthProperty.value = newWidth;
+        this.model.plateHeightProperty.value = newHeight;
+      },
+      end: () => {
+        dragStartPoint = null;
+      },
+    });
+
+    handle.addInputListener(dragListener);
+
+    return handle;
+  }
+
+  /**
+   * Update the position of the resize handle to the bottom-right corner.
+   */
+  private updateResizeHandlePosition(): void {
+    const vizBounds = this.visualizationNode.bounds;
+    this.resizeHandle.right = vizBounds.maxX;
+    this.resizeHandle.bottom = vizBounds.maxY;
   }
 
   /**
@@ -159,15 +335,20 @@ export class ChladniScreenView extends ScreenView {
       dragBoundsProperty: null, // We'll handle bounds manually
       transform: null,
       drag: (event, listener) => {
-        // Get the position in the visualization's local coordinate system
-        const localPoint = this.visualizationNode.globalToLocalPoint(event.pointer.point);
+        // Get the position in the visualization's local coordinate system (view coords)
+        const viewPoint = this.visualizationNode.globalToLocalPoint(event.pointer.point);
 
-        // Convert to normalized coordinates (0-1)
-        const normalizedX = Math.max(0, Math.min(1, localPoint.x / VISUALIZATION_SIZE));
-        const normalizedY = Math.max(0, Math.min(1, localPoint.y / VISUALIZATION_SIZE));
+        // Convert view coordinates to model coordinates using the transform
+        const modelPoint = this.modelViewTransform.viewToModelPosition(viewPoint);
+
+        // Clamp to plate boundaries (centered model coordinates)
+        const halfWidth = this.model.plateWidth / 2;
+        const halfHeight = this.model.plateHeight / 2;
+        const clampedX = Math.max(-halfWidth, Math.min(halfWidth, modelPoint.x));
+        const clampedY = Math.max(-halfHeight, Math.min(halfHeight, modelPoint.y));
 
         // Update the model
-        this.model.excitationPositionProperty.value = new Vector2(normalizedX, normalizedY);
+        this.model.excitationPositionProperty.value = new Vector2(clampedX, clampedY);
       },
       end: () => {
         // Update visualization when drag ends
@@ -191,20 +372,26 @@ export class ChladniScreenView extends ScreenView {
 
   /**
    * Update the excitation marker position based on the model.
+   * Uses ModelViewTransform2 to convert from model to view coordinates.
    */
   private updateExcitationMarkerPosition(): void {
     if (!this.excitationMarker) return;
 
-    const excitation = this.model.excitationPositionProperty.value;
-    const vizBounds = this.visualizationNode.bounds;
+    // Get model position (centered coordinates, +Y up)
+    const modelPosition = this.model.excitationPositionProperty.value;
 
-    // Convert normalized (0-1) to view coordinates
-    this.excitationMarker.centerX = vizBounds.minX + excitation.x * VISUALIZATION_SIZE;
-    this.excitationMarker.centerY = vizBounds.minY + excitation.y * VISUALIZATION_SIZE;
+    // Convert to view coordinates using the transform
+    const viewPosition = this.modelViewTransform.modelToViewPosition(modelPosition);
+
+    // Position relative to visualization bounds
+    const vizBounds = this.visualizationNode.bounds;
+    this.excitationMarker.centerX = vizBounds.minX + viewPosition.x;
+    this.excitationMarker.centerY = vizBounds.minY + viewPosition.y;
   }
 
   public reset(): void {
     this.controlPanel.reset();
+    this.updateVisualizationSize();
     this.visualizationNode.update();
   }
 
