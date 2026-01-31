@@ -23,7 +23,9 @@
       "Bash(npm run check:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Chladni plate visualization screen\n\nImplements Chladni pattern simulation based on modal superposition\nof the inhomogeneous Helmholtz equation solution.\n\nFeatures:\n- Particle visualization \\(10,000 particles\\) using CanvasNode\n- Material selection \\(Copper, Aluminum, Zinc, Stainless Steel\\)\n- Frequency slider \\(50-4000 Hz\\)\n- Resonance curve graph using bamboo charting library\n- Scrolling frequency window that follows current frequency\n\nPhysics based on Tuan et al. \\(Phys. Rev. E 89, 022911, 2014\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(npm run:*)",
+      "Bash(timeout 8 npm start)"
     ],
     "deny": [],
     "ask": []

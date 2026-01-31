@@ -64,7 +64,13 @@
         "solverAdaptiveEulerDescription": "Méthode adaptative simple avec taille de pas variable. Bon pour les tests et le débogage.",
         "solverModifiedMidpoint": "Point Médian Modifié",
         "solverModifiedMidpointDescription": "Méthode à pas fixe avec stabilité améliorée. Bonne alternative à RK4.",
-        "odeSolver": "Solveur EDO"
+        "odeSolver": "Solveur EDO",
+        "renderer": "Rendu",
+        "rendererDescription": "Choisissez la méthode de rendu pour la visualisation des particules.",
+        "rendererCanvas": "Canvas",
+        "rendererCanvasDescription": "Rendu Canvas 2D standard. Bonne compatibilité.",
+        "rendererWebGL": "WebGL",
+        "rendererWebGLDescription": "Rendu accéléré par le matériel. Meilleures performances pour beaucoup de particules."
       },
       "localization": {
         "title": "Localisation",

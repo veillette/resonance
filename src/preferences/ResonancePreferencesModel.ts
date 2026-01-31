@@ -6,12 +6,23 @@
 import { Property, BooleanProperty } from "scenerystack/axon";
 import { SolverType } from "../common/model/SolverType.js";
 
+/**
+ * Renderer types for the Chladni visualization.
+ */
+export const RendererType = {
+  CANVAS: "canvas",
+  WEBGL: "webgl",
+} as const;
+
+export type RendererType = (typeof RendererType)[keyof typeof RendererType];
+
 /** Shape of preferences as stored in localStorage (may be partial) */
 export interface StoredPreferences {
   showEnergy?: boolean;
   showVectors?: boolean;
   showPhase?: boolean;
   solverType?: SolverType;
+  rendererType?: RendererType;
 }
 
 export class ResonancePreferencesModel {
@@ -20,6 +31,9 @@ export class ResonancePreferencesModel {
   public readonly showVectorsProperty: BooleanProperty;
   public readonly showPhaseProperty: BooleanProperty;
   public readonly solverTypeProperty: Property<SolverType>;
+
+  // Rendering preferences
+  public readonly rendererTypeProperty: Property<RendererType>;
 
   // Localization preferences (handled by SceneryStack's locale system)
   // We don't need a separate property for this as it's managed by joist
@@ -32,6 +46,9 @@ export class ResonancePreferencesModel {
     this.solverTypeProperty = new Property<SolverType>(
       SolverType.RUNGE_KUTTA_4,
     );
+
+    // Rendering preferences - default to Canvas
+    this.rendererTypeProperty = new Property<RendererType>(RendererType.CANVAS);
 
     // Set up persistence
     this.setupPersistence();
@@ -58,6 +75,9 @@ export class ResonancePreferencesModel {
         if (preferences.solverType) {
           this.solverTypeProperty.value = preferences.solverType;
         }
+        if (preferences.rendererType) {
+          this.rendererTypeProperty.value = preferences.rendererType;
+        }
       }
     } catch (error) {
       console.warn("Failed to load preferences:", error);
@@ -74,6 +94,7 @@ export class ResonancePreferencesModel {
         showVectors: this.showVectorsProperty.value,
         showPhase: this.showPhaseProperty.value,
         solverType: this.solverTypeProperty.value,
+        rendererType: this.rendererTypeProperty.value,
       };
       localStorage.setItem(
         "resonance-preferences",
@@ -96,6 +117,7 @@ export class ResonancePreferencesModel {
     this.showVectorsProperty.link(() => this.savePreferences());
     this.showPhaseProperty.link(() => this.savePreferences());
     this.solverTypeProperty.link(() => this.savePreferences());
+    this.rendererTypeProperty.link(() => this.savePreferences());
   }
 
   /**
@@ -106,5 +128,6 @@ export class ResonancePreferencesModel {
     this.showVectorsProperty.reset();
     this.showPhaseProperty.reset();
     this.solverTypeProperty.reset();
+    this.rendererTypeProperty.reset();
   }
 }

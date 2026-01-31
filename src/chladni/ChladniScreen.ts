@@ -10,12 +10,9 @@ export class ChladniScreen extends Screen<ChladniModel, ChladniScreenView> {
     preferencesModel: ResonancePreferencesModel,
     options: ScreenOptions,
   ) {
-    // preferencesModel will be used when model implementation is added
-    void preferencesModel;
-
     super(
       () => new ChladniModel(),
-      (model: ChladniModel) => new ChladniScreenView(model),
+      (model: ChladniModel) => new ChladniScreenView(model, preferencesModel),
       {
         ...options,
         name: ResonanceStrings.screens.chladniStringProperty,

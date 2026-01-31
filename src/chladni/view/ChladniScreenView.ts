@@ -24,6 +24,7 @@ import { ResonanceCurveNode } from "./ResonanceCurveNode.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
 
 // Base size for the Chladni plate visualization (pixels per meter of plate)
 const PIXELS_PER_METER = 1400;
@@ -37,6 +38,7 @@ const RESIZE_HANDLE_SIZE = 16;
 
 export class ChladniScreenView extends ScreenView {
   private readonly model: ChladniModel;
+  private readonly preferencesModel: ResonancePreferencesModel;
   private readonly visualizationNode: ChladniVisualizationNode;
   private readonly excitationMarker: Node;
   private readonly resizeHandle: Node;
@@ -53,9 +55,10 @@ export class ChladniScreenView extends ScreenView {
   // Model: (0,0) at center, +Y up; View: (0,0) at top-left of viz, +Y down
   private modelViewTransform: ModelViewTransform2;
 
-  public constructor(model: ChladniModel, options?: ScreenViewOptions) {
+  public constructor(model: ChladniModel, preferencesModel: ResonancePreferencesModel, options?: ScreenViewOptions) {
     super(options);
     this.model = model;
+    this.preferencesModel = preferencesModel;
 
     // Fixed center position for the visualization
     this.visualizationCenterX = this.layoutBounds.centerX - 100;
@@ -71,7 +74,7 @@ export class ChladniScreenView extends ScreenView {
     this.modelViewTransform = this.createModelViewTransform(initialWidth, initialHeight);
 
     // Create the particle visualization with proper dimensions and transform
-    this.visualizationNode = new ChladniVisualizationNode(model, {
+    this.visualizationNode = new ChladniVisualizationNode(model, preferencesModel.rendererTypeProperty, {
       visualizationWidth: initialWidth,
       visualizationHeight: initialHeight,
     });

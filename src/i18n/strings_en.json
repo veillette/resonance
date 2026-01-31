@@ -64,7 +64,13 @@
         "solverAdaptiveEulerDescription": "Simple adaptive method with variable step size. Good for testing and debugging.",
         "solverModifiedMidpoint": "Modified Midpoint",
         "solverModifiedMidpointDescription": "Fixed-step method with improved stability. Good alternative to RK4.",
-        "odeSolver": "ODE Solver"
+        "odeSolver": "ODE Solver",
+        "renderer": "Renderer",
+        "rendererDescription": "Choose the rendering method for particle visualization.",
+        "rendererCanvas": "Canvas",
+        "rendererCanvasDescription": "Standard 2D canvas rendering. Good compatibility.",
+        "rendererWebGL": "WebGL",
+        "rendererWebGLDescription": "Hardware-accelerated rendering. Better performance for many particles."
       },
       "localization": {
         "title": "Localization",

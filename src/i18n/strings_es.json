@@ -64,7 +64,13 @@
         "solverAdaptiveEulerDescription": "Método adaptativo simple con tamaño de paso variable. Bueno para pruebas y depuración.",
         "solverModifiedMidpoint": "Punto Medio Modificado",
         "solverModifiedMidpointDescription": "Método de paso fijo con estabilidad mejorada. Buena alternativa a RK4.",
-        "odeSolver": "Solucionador ODE"
+        "odeSolver": "Solucionador ODE",
+        "renderer": "Renderizador",
+        "rendererDescription": "Elija el método de renderizado para la visualización de partículas.",
+        "rendererCanvas": "Canvas",
+        "rendererCanvasDescription": "Renderizado Canvas 2D estándar. Buena compatibilidad.",
+        "rendererWebGL": "WebGL",
+        "rendererWebGLDescription": "Renderizado acelerado por hardware. Mejor rendimiento para muchas partículas."
       },
       "localization": {
         "title": "Localización",

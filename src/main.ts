@@ -12,6 +12,7 @@ import { ChladniScreen } from "./chladni/ChladniScreen.js";
 import { ResonanceStrings } from "./i18n/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
 import { SolverType } from "./common/model/SolverType.js";
+import { RendererType } from "./preferences/ResonancePreferencesModel.js";
 import ResonanceColors from "./common/ResonanceColors.js";
 
 onReadyToLaunch(() => {
@@ -231,6 +232,94 @@ onReadyToLaunch(() => {
                 ],
               });
 
+              // Renderer preference
+              const rendererRadioButtonGroup = new VerticalAquaRadioButtonGroup(
+                resonancePreferences.rendererTypeProperty,
+                [
+                  {
+                    value: RendererType.CANVAS,
+                    createNode: () =>
+                      new VBox({
+                        align: "left",
+                        spacing: 4,
+                        children: [
+                          new Text(
+                            ResonanceStrings.preferences.simulation.rendererCanvasStringProperty,
+                            {
+                              font: new PhetFont(14),
+                              fill: ResonanceColors.preferencesTextProperty,
+                            },
+                          ),
+                          new Text(
+                            ResonanceStrings.preferences.simulation.rendererCanvasDescriptionStringProperty,
+                            {
+                              font: new PhetFont(11),
+                              fill: ResonanceColors.preferencesTextSecondaryProperty,
+                              maxWidth: 550,
+                            },
+                          ),
+                        ],
+                      }),
+                    tandemName: "canvasRadioButton",
+                  },
+                  {
+                    value: RendererType.WEBGL,
+                    createNode: () =>
+                      new VBox({
+                        align: "left",
+                        spacing: 4,
+                        children: [
+                          new Text(
+                            ResonanceStrings.preferences.simulation.rendererWebGLStringProperty,
+                            {
+                              font: new PhetFont(14),
+                              fill: ResonanceColors.preferencesTextProperty,
+                            },
+                          ),
+                          new Text(
+                            ResonanceStrings.preferences.simulation.rendererWebGLDescriptionStringProperty,
+                            {
+                              font: new PhetFont(11),
+                              fill: ResonanceColors.preferencesTextSecondaryProperty,
+                              maxWidth: 550,
+                            },
+                          ),
+                        ],
+                      }),
+                    tandemName: "webglRadioButton",
+                  },
+                ],
+                {
+                  spacing: 12,
+                  radioButtonOptions: {
+                    radius: 8,
+                  },
+                },
+              );
+
+              const rendererSection = new VBox({
+                align: "left",
+                spacing: 12,
+                children: [
+                  new Text(
+                    ResonanceStrings.preferences.simulation.rendererStringProperty,
+                    {
+                      font: new PhetFont({ size: 16, weight: "bold" }),
+                      fill: ResonanceColors.preferencesTextProperty,
+                    },
+                  ),
+                  new Text(
+                    ResonanceStrings.preferences.simulation.rendererDescriptionStringProperty,
+                    {
+                      font: new PhetFont(12),
+                      fill: ResonanceColors.preferencesTextProperty,
+                      maxWidth: 600,
+                    },
+                  ),
+                  rendererRadioButtonGroup,
+                ],
+              });
+
               return new VBox({
                 align: "left",
                 spacing: 20,
@@ -238,6 +327,7 @@ onReadyToLaunch(() => {
                   displayOptionsSection,
                   new HStrut(650), // Set minimum width
                   solverSection,
+                  rendererSection,
                 ],
               });
             },
