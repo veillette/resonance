@@ -19,10 +19,11 @@ import {
   TickLabelSet,
 } from "scenerystack/bamboo";
 import { Orientation } from "scenerystack/phet-core";
-import { Range, Vector2 } from "scenerystack/dot";
+import { Range } from "scenerystack/dot";
 import { ChladniModel } from "../model/ChladniModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 // Chart dimensions
 const CHART_WIDTH = 220;
@@ -129,7 +130,7 @@ export class ResonanceCurveNode extends Node {
     this.addChild(this.xTickLabels);
 
     // Hz label
-    this.hzLabel = new Text("Hz", {
+    this.hzLabel = new Text(ResonanceStrings.units.hzStringProperty, {
       font: ResonanceConstants.TICK_LABEL_FONT,
       fill: ResonanceColors.textProperty,
       right: CHART_WIDTH,

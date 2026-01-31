@@ -34,7 +34,8 @@ const EXCITATION_MARKER_RADIUS = 12;
 const EXCITATION_MARKER_INNER_RADIUS = 4;
 
 // Resize handle properties
-const RESIZE_HANDLE_SIZE = 16;
+const RESIZE_HANDLE_SIZE = 24;
+const RESIZE_HANDLE_HIT_AREA = 36;
 
 export class ChladniScreenView extends ScreenView {
   private readonly model: ChladniModel;
@@ -194,24 +195,29 @@ export class ChladniScreenView extends ScreenView {
    * Dragging this handle resizes the plate while keeping the center fixed.
    */
   private createResizeHandle(): Node {
+    // Larger invisible hit area for easier grabbing
+    const hitArea = new Rectangle(0, 0, RESIZE_HANDLE_HIT_AREA, RESIZE_HANDLE_HIT_AREA, {
+      fill: "rgba(0,0,0,0.01)", // Nearly invisible but still catches events
+      cursor: "nwse-resize",
+    });
+
     // Create a diagonal resize indicator (three diagonal lines)
     const handleShape = new Shape();
-    for (let i = 0; i < 3; i++) {
-      const offset = i * 4;
+    for (let i = 0; i < 4; i++) {
+      const offset = i * 5;
       handleShape.moveTo(RESIZE_HANDLE_SIZE - offset, RESIZE_HANDLE_SIZE);
       handleShape.lineTo(RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE - offset);
     }
 
     const handleLines = new Path(handleShape, {
       stroke: ResonanceColors.textProperty,
-      lineWidth: 2,
+      lineWidth: 2.5,
+      lineCap: "round",
     });
 
-    // Invisible hit area for easier grabbing
-    const hitArea = new Rectangle(0, 0, RESIZE_HANDLE_SIZE, RESIZE_HANDLE_SIZE, {
-      fill: "transparent",
-      cursor: "nwse-resize",
-    });
+    // Position the visual indicator at the bottom-right of the hit area
+    handleLines.right = RESIZE_HANDLE_HIT_AREA;
+    handleLines.bottom = RESIZE_HANDLE_HIT_AREA;
 
     const handle = new Node({
       children: [hitArea, handleLines],
@@ -244,13 +250,15 @@ export class ChladniScreenView extends ScreenView {
         const heightDelta = (deltaY * 2) / PIXELS_PER_METER;
 
         // Calculate new dimensions
+        const widthRange = this.model.plateWidthProperty.range;
+        const heightRange = this.model.plateHeightProperty.range;
         const newWidth = Math.max(
-          this.model.plateWidthProperty.range!.min,
-          Math.min(this.model.plateWidthProperty.range!.max, startWidth + widthDelta)
+          widthRange.min,
+          Math.min(widthRange.max, startWidth + widthDelta)
         );
         const newHeight = Math.max(
-          this.model.plateHeightProperty.range!.min,
-          Math.min(this.model.plateHeightProperty.range!.max, startHeight + heightDelta)
+          heightRange.min,
+          Math.min(heightRange.max, startHeight + heightDelta)
         );
 
         // Update the model
@@ -323,21 +331,12 @@ export class ChladniScreenView extends ScreenView {
       cursor: "pointer",
     });
 
-    // Calculate drag bounds (within the visualization)
-    const vizBounds = this.visualizationNode.bounds;
-    const dragBounds = new Bounds2(
-      vizBounds.minX,
-      vizBounds.minY,
-      vizBounds.maxX,
-      vizBounds.maxY,
-    );
-
     // Add drag listener
     const dragListener = new DragListener({
       positionProperty: this.model.excitationPositionProperty,
       dragBoundsProperty: null, // We'll handle bounds manually
       transform: null,
-      drag: (event, listener) => {
+      drag: (event) => {
         // Get the position in the visualization's local coordinate system (view coords)
         const viewPoint = this.visualizationNode.globalToLocalPoint(event.pointer.point);
 

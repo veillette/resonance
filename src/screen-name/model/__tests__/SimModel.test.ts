@@ -78,7 +78,7 @@ describe("SimModel", () => {
       const freq = model.getNaturalFrequencyHz(0);
       const k = model.getSpringConstant(0);
 
-      const expectedK = Math.pow(2 * Math.PI * freq!, 2) * mass!;
+      const expectedK = Math.pow(2 * Math.PI * freq, 2) * mass;
       expect(k).toBeCloseTo(expectedK, 2);
     });
 
@@ -91,13 +91,13 @@ describe("SimModel", () => {
       // Check that frequency steps are approximately equal
       const steps = [];
       for (let i = 1; i < frequencies.length; i++) {
-        steps.push(frequencies[i]! - frequencies[i - 1]!);
+        steps.push(frequencies[i] - frequencies[i - 1]);
       }
 
       // All steps should be approximately equal (5.5 - 1.0) / 9 = 0.5 Hz
       const expectedStep = (5.5 - 1.0) / 9;
       for (const step of steps) {
-        expect(step!).toBeCloseTo(expectedStep, 1);
+        expect(step).toBeCloseTo(expectedStep, 1);
       }
     });
   });
@@ -133,7 +133,7 @@ describe("SimModel", () => {
 
       // Masses should decrease (higher frequency = lower mass for same k)
       for (let i = 1; i < masses.length; i++) {
-        expect(masses[i]).toBeLessThan(masses[i - 1]!);
+        expect(masses[i]).toBeLessThan(masses[i - 1]);
       }
     });
 
@@ -142,7 +142,7 @@ describe("SimModel", () => {
       const freq = model.getNaturalFrequencyHz(0);
       const k = model.getSpringConstant(0);
 
-      const expectedMass = k! / Math.pow(2 * Math.PI * freq!, 2);
+      const expectedMass = k / Math.pow(2 * Math.PI * freq, 2);
       expect(mass).toBeCloseTo(expectedMass, 2);
     });
   });

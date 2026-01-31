@@ -78,6 +78,7 @@
       }
     },
     "units": {
+      "hz": "Hz",
       "hertzPattern": "{{value}} Hz",
       "cmPattern": "{{value}} cm",
       "kgPattern": "{{value}} kg",

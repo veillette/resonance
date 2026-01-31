@@ -148,7 +148,7 @@ export class ChladniVisualizationNode extends Node {
 
     // Create border rectangle
     this.borderRect = new Rectangle(0, 0, visualizationWidth, visualizationHeight, {
-      stroke: "#444466",
+      stroke: ResonanceColors.chladniPlateBorderProperty,
       lineWidth: 2,
     });
 
