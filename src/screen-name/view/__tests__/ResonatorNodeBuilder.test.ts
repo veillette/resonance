@@ -210,13 +210,13 @@ describe("ResonatorNodeBuilder", () => {
       );
 
       // Get initial bounds
-      const initialWidth = massNode.children[0].width;
+      const initialWidth = massNode.children[0]!.width;
 
       // Increase mass
       resonatorModel.massProperty.value = ResonanceConstants.MASS_RANGE.max;
 
       // Size should increase
-      const newWidth = massNode.children[0].width;
+      const newWidth = massNode.children[0]!.width;
       expect(newWidth).toBeGreaterThan(initialWidth);
     });
 

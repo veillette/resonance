@@ -125,7 +125,7 @@ export class SimModel {
     const ref = this.resonanceModel;
 
     for (let i = 1; i < this.resonatorModels.length; i++) {
-      const model = this.resonatorModels[i];
+      const model = this.getResonatorModel(i);
 
       // Sync driving parameters
       ref.drivingEnabledProperty.link((enabled: boolean) => {
@@ -200,7 +200,7 @@ export class SimModel {
       const baseK = this.resonanceModel.springConstantProperty.value;
 
       for (let i = 1; i < count; i++) {
-        const model = this.resonatorModels[i];
+        const model = this.getResonatorModel(i);
 
         // Calculate target frequency for this resonator (evenly distributed)
         // f_i = f_min + (i / (count - 1)) × (f_max - f_min)
@@ -250,24 +250,36 @@ export class SimModel {
   }
 
   /**
+   * Get the resonator model at the given index.
+   * Use this instead of resonatorModels[index] for type-safe access with noUncheckedIndexedAccess.
+   */
+  public getResonatorModel(index: number): ResonanceModel {
+    const model = this.resonatorModels[index];
+    if (model === undefined) {
+      throw new Error(`Resonator index ${index} out of range (0-${this.resonatorModels.length - 1})`);
+    }
+    return model;
+  }
+
+  /**
    * Get the mass for a given resonator index.
    */
   public getMass(index: number): number {
-    return this.resonatorModels[index].massProperty.value;
+    return this.getResonatorModel(index).massProperty.value;
   }
 
   /**
    * Get the spring constant for a given resonator index.
    */
   public getSpringConstant(index: number): number {
-    return this.resonatorModels[index].springConstantProperty.value;
+    return this.getResonatorModel(index).springConstantProperty.value;
   }
 
   /**
    * Get the natural frequency (Hz) for a given resonator index.
    */
   public getNaturalFrequencyHz(index: number): number {
-    return this.resonatorModels[index].naturalFrequencyHzProperty.value;
+    return this.getResonatorModel(index).naturalFrequencyHzProperty.value;
   }
 
   public reset(): void {
@@ -285,7 +297,7 @@ export class SimModel {
     // Since isPlayingProperty and timeSpeedProperty are synced,
     // they will all advance the same amount.
     for (let i = 0; i < count; i++) {
-      const model = this.resonatorModels[i];
+      const model = this.getResonatorModel(i);
       // Skip stepping if this resonator is being dragged by the user
       if (!model.isDraggingProperty.value) {
         model.step(dt);

@@ -431,7 +431,7 @@ export class ResonatorControlPanel extends Panel {
     });
 
     // Initialize with first resonator's frequency
-    const freq = model.resonatorModels[0].naturalFrequencyHzProperty.value;
+    const freq = model.getResonatorModel(0).naturalFrequencyHzProperty.value;
     const valueWithUnit =
       ResonanceStrings.units.hertzPatternStringProperty.value.replace(
         "{{value}}",
@@ -544,7 +544,7 @@ export class ResonatorControlPanel extends Panel {
     this.listenerTracker.link(
       this.model.selectedResonatorIndexProperty,
       (index: number) => {
-        const selectedResonator = this.model.resonatorModels[index];
+        const selectedResonator = this.model.getResonatorModel(index);
         this.displayMassProperty.value = selectedResonator.massProperty.value;
         this.displaySpringConstantProperty.value =
           selectedResonator.springConstantProperty.value;
@@ -568,7 +568,7 @@ export class ResonatorControlPanel extends Panel {
           this.model.resonatorConfigProperty.value ===
           ResonatorConfigMode.CUSTOM;
         if (index === 0 || isCustomMode) {
-          this.model.resonatorModels[index].massProperty.value = mass;
+          this.model.getResonatorModel(index).massProperty.value = mass;
         }
       }
     });
@@ -582,7 +582,7 @@ export class ResonatorControlPanel extends Panel {
             this.model.resonatorConfigProperty.value ===
             ResonatorConfigMode.CUSTOM;
           if (index === 0 || isCustomMode) {
-            this.model.resonatorModels[index].springConstantProperty.value =
+            this.model.getResonatorModel(index).springConstantProperty.value =
               springConstant;
           }
         }
@@ -618,7 +618,7 @@ export class ResonatorControlPanel extends Panel {
     const updateNaturalFrequency = () => {
       const index = this.model.selectedResonatorIndexProperty.value;
       const freq =
-        this.model.resonatorModels[index].naturalFrequencyHzProperty.value;
+        this.model.getResonatorModel(index).naturalFrequencyHzProperty.value;
       const valueWithUnit =
         ResonanceStrings.units.hertzPatternStringProperty.value.replace(
           "{{value}}",

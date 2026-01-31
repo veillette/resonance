@@ -371,9 +371,9 @@ describe("ResonatorControlPanel", () => {
 
       // Change mass of second resonator
       model.selectedResonatorIndexProperty.value = 1;
-      model.resonatorModels[1].massProperty.value = 2.5;
+      model.resonatorModels[1]!.massProperty.value = 2.5;
 
-      expect(model.resonatorModels[1].massProperty.value).toBe(2.5);
+      expect(model.resonatorModels[1]!.massProperty.value).toBe(2.5);
     });
 
     it("should allow independent spring constant changes in CUSTOM mode", () => {
@@ -382,9 +382,9 @@ describe("ResonatorControlPanel", () => {
 
       // Change spring constant of second resonator
       model.selectedResonatorIndexProperty.value = 1;
-      model.resonatorModels[1].springConstantProperty.value = 500;
+      model.resonatorModels[1]!.springConstantProperty.value = 500;
 
-      expect(model.resonatorModels[1].springConstantProperty.value).toBe(500);
+      expect(model.resonatorModels[1]!.springConstantProperty.value).toBe(500);
     });
   });
 });

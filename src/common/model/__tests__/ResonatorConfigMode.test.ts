@@ -163,7 +163,7 @@ describe("ResonatorConfigMode", () => {
     it("should have camelCase string values", () => {
       Object.values(ResonatorConfigMode).forEach((value) => {
         // Should be camelCase (starts lowercase, no underscores)
-        expect(value[0]).toBe(value[0].toLowerCase());
+        expect(value[0]).toBe(value[0]!.toLowerCase());
         expect(value).not.toContain("_");
       });
     });
@@ -178,7 +178,7 @@ describe("ResonatorConfigMode", () => {
     it("should be serializable to JSON", () => {
       const mode = ResonatorConfigMode.SAME_FREQUENCY;
       const serialized = JSON.stringify({ mode });
-      const deserialized = JSON.parse(serialized);
+      const deserialized = JSON.parse(serialized) as { mode: string };
 
       expect(deserialized.mode).toBe(ResonatorConfigMode.SAME_FREQUENCY);
     });

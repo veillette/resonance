@@ -255,20 +255,20 @@ describe("MeasurementLinesNode", () => {
   describe("model-view synchronization", () => {
     it("should update view when model position changes", () => {
       // Get initial child y positions
-      const initialLine1Y = node.children[0].y;
+      const initialLine1Y = node.children[0]!.y;
 
       // Change model position (higher = more negative y in model)
       node.model.line1.positionProperty.value = new Vector2(0, -0.5);
 
       // View y should have changed (in view, y increases downward)
-      expect(node.children[0].y).not.toBe(initialLine1Y);
+      expect(node.children[0]!.y).not.toBe(initialLine1Y);
     });
 
     it("should maintain x position at driver center", () => {
       // After position change, x should still be at driver center
       node.model.line1.positionProperty.value = new Vector2(0, -0.5);
 
-      expect(node.children[0].x).toBe(DRIVER_CENTER_X);
+      expect(node.children[0]!.x).toBe(DRIVER_CENTER_X);
     });
   });
 });

@@ -5,8 +5,21 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { ResonancePreferencesModel } from "../ResonancePreferencesModel.js";
+import {
+  ResonancePreferencesModel,
+  StoredPreferences,
+} from "../ResonancePreferencesModel.js";
 import { SolverType } from "../../common/model/SolverType.js";
+
+/** Typed shape for setItem spy when reading .mock or calling .mockImplementation */
+interface SetItemSpyLike {
+  mock: { calls: [string, string][] };
+  mockImplementation: (fn: (key: string, value: string) => void) => void;
+}
+/** Typed shape for getItem spy when calling .mockImplementation */
+interface GetItemSpyLike {
+  mockImplementation: (fn: (key: string) => string | null) => void;
+}
 
 describe("ResonancePreferencesModel", () => {
   let mockStorage: Record<string, string>;
@@ -64,7 +77,9 @@ describe("ResonancePreferencesModel", () => {
       model.showEnergyProperty.value = false;
 
       expect(mockStorage["resonance-preferences"]).toBeDefined();
-      const saved = JSON.parse(mockStorage["resonance-preferences"]);
+      const saved = JSON.parse(
+        mockStorage["resonance-preferences"]!,
+      ) as StoredPreferences;
       expect(saved.showEnergy).toBe(false);
     });
 
@@ -72,7 +87,9 @@ describe("ResonancePreferencesModel", () => {
       const model = new ResonancePreferencesModel();
       model.showVectorsProperty.value = true;
 
-      const saved = JSON.parse(mockStorage["resonance-preferences"]);
+      const saved = JSON.parse(
+        mockStorage["resonance-preferences"]!,
+      ) as StoredPreferences;
       expect(saved.showVectors).toBe(true);
     });
 
@@ -80,7 +97,9 @@ describe("ResonancePreferencesModel", () => {
       const model = new ResonancePreferencesModel();
       model.showPhaseProperty.value = false;
 
-      const saved = JSON.parse(mockStorage["resonance-preferences"]);
+      const saved = JSON.parse(
+        mockStorage["resonance-preferences"]!,
+      ) as StoredPreferences;
       expect(saved.showPhase).toBe(false);
     });
 
@@ -88,7 +107,9 @@ describe("ResonancePreferencesModel", () => {
       const model = new ResonancePreferencesModel();
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
-      const saved = JSON.parse(mockStorage["resonance-preferences"]);
+      const saved = JSON.parse(
+        mockStorage["resonance-preferences"]!,
+      ) as StoredPreferences;
       expect(saved.solverType).toBe(SolverType.ADAPTIVE_RK45);
     });
 
@@ -99,7 +120,9 @@ describe("ResonancePreferencesModel", () => {
       model.showPhaseProperty.value = false;
       model.solverTypeProperty.value = SolverType.MODIFIED_MIDPOINT;
 
-      const saved = JSON.parse(mockStorage["resonance-preferences"]);
+      const saved = JSON.parse(
+        mockStorage["resonance-preferences"]!,
+      ) as StoredPreferences;
       expect(saved).toEqual({
         showEnergy: false,
         showVectors: true,
@@ -110,7 +133,8 @@ describe("ResonancePreferencesModel", () => {
 
     it("should call localStorage.setItem when saving", () => {
       const model = new ResonancePreferencesModel();
-      const initialCallCount = setItemSpy.mock.calls.length;
+      const setItemMock = (setItemSpy as SetItemSpyLike).mock;
+      const initialCallCount = setItemMock.calls.length;
 
       model.showEnergyProperty.value = false;
 
@@ -118,7 +142,7 @@ describe("ResonancePreferencesModel", () => {
         "resonance-preferences",
         expect.any(String),
       );
-      expect(setItemSpy.mock.calls.length).toBeGreaterThan(initialCallCount);
+      expect(setItemMock.calls.length).toBeGreaterThan(initialCallCount);
     });
   });
 
@@ -276,18 +300,21 @@ describe("ResonancePreferencesModel", () => {
     it("should trigger save after reset", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
-      const countBeforeReset = setItemSpy.mock.calls.length;
+      const setItemMock: { calls: [string, string][] } = (
+        setItemSpy as SetItemSpyLike
+      ).mock;
+      const countBeforeReset = setItemMock.calls.length;
 
       model.reset();
 
       // Reset triggers saves for each property that changes
-      expect(setItemSpy.mock.calls.length).toBeGreaterThan(countBeforeReset);
+      expect(setItemMock.calls.length).toBeGreaterThan(countBeforeReset);
     });
   });
 
   describe("localStorage error handling", () => {
     it("should handle localStorage.getItem throwing", () => {
-      getItemSpy.mockImplementation(() => {
+      (getItemSpy as GetItemSpyLike).mockImplementation(() => {
         throw new Error("Storage error");
       });
 
@@ -298,7 +325,7 @@ describe("ResonancePreferencesModel", () => {
     });
 
     it("should handle localStorage.setItem throwing", () => {
-      setItemSpy.mockImplementation(() => {
+      (setItemSpy as SetItemSpyLike).mockImplementation(() => {
         throw new Error("Storage quota exceeded");
       });
 
@@ -313,7 +340,8 @@ describe("ResonancePreferencesModel", () => {
   describe("property change triggers save", () => {
     it("should save on every property change", () => {
       const model = new ResonancePreferencesModel();
-      const initialCount = setItemSpy.mock.calls.length;
+      const setItemMock = (setItemSpy as SetItemSpyLike).mock;
+      const initialCount = setItemMock.calls.length;
 
       model.showEnergyProperty.value = false;
       model.showVectorsProperty.value = true;
@@ -321,15 +349,17 @@ describe("ResonancePreferencesModel", () => {
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
       // Should have called setItem 4 more times (once for each property change)
-      expect(setItemSpy.mock.calls.length).toBe(initialCount + 4);
+      expect(setItemMock.calls.length).toBe(initialCount + 4);
     });
 
     it("should save with correct key", () => {
       const model = new ResonancePreferencesModel();
       model.showEnergyProperty.value = false;
 
-      const lastCall = setItemSpy.mock.calls[setItemSpy.mock.calls.length - 1];
-      expect(lastCall[0]).toBe("resonance-preferences");
+      const setItemMock = (setItemSpy as SetItemSpyLike).mock;
+      const mockCalls = setItemMock.calls;
+      const lastCall = mockCalls[mockCalls.length - 1];
+      expect(lastCall?.[0]).toBe("resonance-preferences");
     });
   });
 });

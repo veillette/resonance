@@ -234,7 +234,7 @@ describe("SolverType", () => {
     it("should have lowercase string values", () => {
       Object.values(SolverType).forEach((value) => {
         // Should be camelCase (starts lowercase)
-        expect(value[0]).toBe(value[0].toLowerCase());
+        expect(value[0]).toBe(value[0]!.toLowerCase());
       });
     });
 

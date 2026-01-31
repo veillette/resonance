@@ -6,6 +6,14 @@
 import { Property, BooleanProperty } from "scenerystack/axon";
 import { SolverType } from "../common/model/SolverType.js";
 
+/** Shape of preferences as stored in localStorage (may be partial) */
+export interface StoredPreferences {
+  showEnergy?: boolean;
+  showVectors?: boolean;
+  showPhase?: boolean;
+  solverType?: SolverType;
+}
+
 export class ResonancePreferencesModel {
   // Simulation preferences
   public readonly showEnergyProperty: BooleanProperty;
@@ -36,7 +44,7 @@ export class ResonancePreferencesModel {
     try {
       const saved = localStorage.getItem("resonance-preferences");
       if (saved) {
-        const preferences = JSON.parse(saved);
+        const preferences = JSON.parse(saved) as StoredPreferences;
 
         if (preferences.showEnergy !== undefined) {
           this.showEnergyProperty.value = preferences.showEnergy;

@@ -222,7 +222,7 @@ describe("SimScreenView", () => {
 
       // Set different positions for each resonator
       for (let i = 0; i < 5; i++) {
-        model.resonatorModels[i].positionProperty.value = 0.1 * (i - 2);
+        model.resonatorModels[i]!.positionProperty.value = 0.1 * (i - 2);
       }
 
       expect(() => view.step(0.016)).not.toThrow();
@@ -232,8 +232,8 @@ describe("SimScreenView", () => {
       model.resonatorCountProperty.value = 3;
 
       // Change mass and spring constant
-      model.resonatorModels[0].massProperty.value = 2.0;
-      model.resonatorModels[0].springConstantProperty.value = 500;
+      model.resonatorModels[0]!.massProperty.value = 2.0;
+      model.resonatorModels[0]!.springConstantProperty.value = 500;
 
       expect(() => view.step(0.016)).not.toThrow();
     });

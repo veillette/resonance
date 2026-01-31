@@ -69,7 +69,7 @@ describe("SimModel", () => {
 
       // Spring constants should increase (higher frequency = higher k for same mass)
       for (let i = 1; i < springConstants.length; i++) {
-        expect(springConstants[i]).toBeGreaterThan(springConstants[i - 1]);
+        expect(springConstants[i]).toBeGreaterThan(springConstants[i - 1]!);
       }
     });
 
@@ -78,7 +78,7 @@ describe("SimModel", () => {
       const freq = model.getNaturalFrequencyHz(0);
       const k = model.getSpringConstant(0);
 
-      const expectedK = Math.pow(2 * Math.PI * freq, 2) * mass;
+      const expectedK = Math.pow(2 * Math.PI * freq!, 2) * mass!;
       expect(k).toBeCloseTo(expectedK, 2);
     });
 
@@ -91,13 +91,13 @@ describe("SimModel", () => {
       // Check that frequency steps are approximately equal
       const steps = [];
       for (let i = 1; i < frequencies.length; i++) {
-        steps.push(frequencies[i] - frequencies[i - 1]);
+        steps.push(frequencies[i]! - frequencies[i - 1]!);
       }
 
       // All steps should be approximately equal (5.5 - 1.0) / 9 = 0.5 Hz
       const expectedStep = (5.5 - 1.0) / 9;
       for (const step of steps) {
-        expect(step).toBeCloseTo(expectedStep, 1);
+        expect(step!).toBeCloseTo(expectedStep, 1);
       }
     });
   });
@@ -133,7 +133,7 @@ describe("SimModel", () => {
 
       // Masses should decrease (higher frequency = lower mass for same k)
       for (let i = 1; i < masses.length; i++) {
-        expect(masses[i]).toBeLessThan(masses[i - 1]);
+        expect(masses[i]).toBeLessThan(masses[i - 1]!);
       }
     });
 
@@ -142,7 +142,7 @@ describe("SimModel", () => {
       const freq = model.getNaturalFrequencyHz(0);
       const k = model.getSpringConstant(0);
 
-      const expectedMass = k / Math.pow(2 * Math.PI * freq, 2);
+      const expectedMass = k! / Math.pow(2 * Math.PI * freq!, 2);
       expect(mass).toBeCloseTo(expectedMass, 2);
     });
   });
@@ -174,7 +174,7 @@ describe("SimModel", () => {
       }
 
       // All frequencies should be approximately equal
-      const baseFreq = frequencies[0];
+      const baseFreq = frequencies[0]!;
       for (const freq of frequencies) {
         expect(freq).toBeCloseTo(baseFreq, 3);
       }
@@ -194,7 +194,7 @@ describe("SimModel", () => {
       }
 
       // All frequencies should be approximately equal
-      const baseFreq = frequencies[0];
+      const baseFreq = frequencies[0]!;
       for (const freq of frequencies) {
         expect(freq).toBeCloseTo(baseFreq, 3);
       }
@@ -225,8 +225,8 @@ describe("SimModel", () => {
       // Set some custom values on resonator 1
       const customMass = 2.5;
       const customK = 150;
-      model.resonatorModels[1].massProperty.value = customMass;
-      model.resonatorModels[1].springConstantProperty.value = customK;
+      model.resonatorModels[1]!.massProperty.value = customMass;
+      model.resonatorModels[1]!.springConstantProperty.value = customK;
 
       // Change base resonator parameters
       model.resonanceModel.massProperty.value = 5.0;
@@ -239,12 +239,12 @@ describe("SimModel", () => {
 
     it("should allow independent custom values on each resonator", () => {
       // Set different values on each resonator
-      model.resonatorModels[0].massProperty.value = 1.0;
-      model.resonatorModels[0].springConstantProperty.value = 100;
-      model.resonatorModels[1].massProperty.value = 2.0;
-      model.resonatorModels[1].springConstantProperty.value = 200;
-      model.resonatorModels[2].massProperty.value = 3.0;
-      model.resonatorModels[2].springConstantProperty.value = 300;
+      model.resonatorModels[0]!.massProperty.value = 1.0;
+      model.resonatorModels[0]!.springConstantProperty.value = 100;
+      model.resonatorModels[1]!.massProperty.value = 2.0;
+      model.resonatorModels[1]!.springConstantProperty.value = 200;
+      model.resonatorModels[2]!.massProperty.value = 3.0;
+      model.resonatorModels[2]!.springConstantProperty.value = 300;
 
       // Verify each has its own values
       expect(model.getMass(0)).toBe(1.0);
@@ -269,8 +269,8 @@ describe("SimModel", () => {
 
     it("should preserve custom values when resonator count changes", () => {
       // Set custom values
-      model.resonatorModels[1].massProperty.value = 5.5;
-      model.resonatorModels[1].springConstantProperty.value = 275;
+      model.resonatorModels[1]!.massProperty.value = 5.5;
+      model.resonatorModels[1]!.springConstantProperty.value = 275;
 
       // Increase count
       model.resonatorCountProperty.value = 5;
@@ -287,16 +287,16 @@ describe("SimModel", () => {
       const frequencies = [1.0, 2.0, 4.0, 8.0]; // Exponential distribution
 
       for (let i = 0; i < 4; i++) {
-        const targetFreq = frequencies[i];
+        const targetFreq = frequencies[i]!;
         const omega = 2 * Math.PI * targetFreq;
         // Keep mass constant at 1, vary k
-        model.resonatorModels[i].massProperty.value = 1.0;
-        model.resonatorModels[i].springConstantProperty.value = omega * omega;
+        model.resonatorModels[i]!.massProperty.value = 1.0;
+        model.resonatorModels[i]!.springConstantProperty.value = omega * omega;
       }
 
       // Verify the frequencies match what we set
       for (let i = 0; i < 4; i++) {
-        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(frequencies[i], 1);
+        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(frequencies[i]!, 1);
       }
     });
 
@@ -327,7 +327,7 @@ describe("SimModel", () => {
       model.resonanceModel.drivingEnabledProperty.value = false;
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].drivingEnabledProperty.value).toBe(
+        expect(model.resonatorModels[i]!.drivingEnabledProperty.value).toBe(
           false,
         );
       }
@@ -335,7 +335,7 @@ describe("SimModel", () => {
       model.resonanceModel.drivingEnabledProperty.value = true;
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].drivingEnabledProperty.value).toBe(
+        expect(model.resonatorModels[i]!.drivingEnabledProperty.value).toBe(
           true,
         );
       }
@@ -346,7 +346,7 @@ describe("SimModel", () => {
       model.resonanceModel.drivingFrequencyProperty.value = testFreq;
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].drivingFrequencyProperty.value).toBe(
+        expect(model.resonatorModels[i]!.drivingFrequencyProperty.value).toBe(
           testFreq,
         );
       }
@@ -357,7 +357,7 @@ describe("SimModel", () => {
       model.resonanceModel.drivingAmplitudeProperty.value = testAmp;
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].drivingAmplitudeProperty.value).toBe(
+        expect(model.resonatorModels[i]!.drivingAmplitudeProperty.value).toBe(
           testAmp,
         );
       }
@@ -368,7 +368,7 @@ describe("SimModel", () => {
       model.resonanceModel.dampingProperty.value = testDamping;
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].dampingProperty.value).toBe(
+        expect(model.resonatorModels[i]!.dampingProperty.value).toBe(
           testDamping,
         );
       }
@@ -379,7 +379,7 @@ describe("SimModel", () => {
       model.resonanceModel.gravityProperty.value = testGravity;
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].gravityProperty.value).toBe(
+        expect(model.resonatorModels[i]!.gravityProperty.value).toBe(
           testGravity,
         );
       }
@@ -389,7 +389,7 @@ describe("SimModel", () => {
       model.resonanceModel.isPlayingProperty.value = false;
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].isPlayingProperty.value).toBe(false);
+        expect(model.resonatorModels[i]!.isPlayingProperty.value).toBe(false);
       }
     });
 
@@ -397,7 +397,7 @@ describe("SimModel", () => {
       model.resonanceModel.timeSpeedProperty.value = "fast";
 
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].timeSpeedProperty.value).toBe("fast");
+        expect(model.resonatorModels[i]!.timeSpeedProperty.value).toBe("fast");
       }
     });
   });
@@ -459,8 +459,8 @@ describe("SimModel", () => {
 
       // Set initial positions
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        model.resonatorModels[i].positionProperty.value = 0.1;
-        model.resonatorModels[i].velocityProperty.value = 0;
+        model.resonatorModels[i]!.positionProperty.value = 0.1;
+        model.resonatorModels[i]!.velocityProperty.value = 0;
       }
 
       const initialTimes = model.resonatorModels
@@ -471,8 +471,8 @@ describe("SimModel", () => {
 
       // All active resonators should have advanced
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
-        expect(model.resonatorModels[i].timeProperty.value).toBeGreaterThan(
-          initialTimes[i],
+        expect(model.resonatorModels[i]!.timeProperty.value).toBeGreaterThan(
+          initialTimes[i]!,
         );
       }
     });
@@ -480,12 +480,12 @@ describe("SimModel", () => {
     it("should not step inactive resonators", () => {
       model.resonatorCountProperty.value = 2;
 
-      const inactiveTime = model.resonatorModels[5].timeProperty.value;
+      const inactiveTime = model.resonatorModels[5]!.timeProperty.value;
 
       model.step(0.1);
 
       // Inactive resonator should not have advanced
-      expect(model.resonatorModels[5].timeProperty.value).toBe(inactiveTime);
+      expect(model.resonatorModels[5]!.timeProperty.value).toBe(inactiveTime);
     });
   });
 
@@ -521,16 +521,16 @@ describe("SimModel", () => {
 
       // Modify some values
       for (let i = 0; i < 3; i++) {
-        model.resonatorModels[i].positionProperty.value = 1.0;
-        model.resonatorModels[i].velocityProperty.value = 2.0;
+        model.resonatorModels[i]!.positionProperty.value = 1.0;
+        model.resonatorModels[i]!.velocityProperty.value = 2.0;
       }
 
       model.reset();
 
       // All positions and velocities should be back to default
       for (let i = 0; i < SimModel.MAX_RESONATORS; i++) {
-        expect(model.resonatorModels[i].positionProperty.value).toBe(0);
-        expect(model.resonatorModels[i].velocityProperty.value).toBe(0);
+        expect(model.resonatorModels[i]!.positionProperty.value).toBe(0);
+        expect(model.resonatorModels[i]!.velocityProperty.value).toBe(0);
       }
     });
   });
@@ -560,7 +560,10 @@ describe("SimModel", () => {
       // Should be evenly distributed: 1.0, 2.125, 3.25, 4.375, 5.5 Hz
       const expectedFreqs = [1.0, 2.125, 3.25, 4.375, 5.5];
       for (let i = 0; i < 5; i++) {
-        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(expectedFreqs[i], 1);
+        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(
+          expectedFreqs[i]!,
+          1,
+        );
       }
     });
   });
@@ -605,7 +608,10 @@ describe("SimModel", () => {
       // Frequencies should still follow the same distribution pattern
       // (1 Hz to 5.5 Hz evenly distributed)
       for (let i = 0; i < 5; i++) {
-        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(freqsSameMass[i], 0);
+        expect(model.getNaturalFrequencyHz(i)).toBeCloseTo(
+          freqsSameMass[i]!,
+          0,
+        );
       }
     });
 
@@ -613,8 +619,8 @@ describe("SimModel", () => {
       // Start in CUSTOM mode with arbitrary values
       model.resonatorConfigProperty.value = ResonatorConfigMode.CUSTOM;
       model.resonatorCountProperty.value = 3;
-      model.resonatorModels[1].massProperty.value = 999;
-      model.resonatorModels[1].springConstantProperty.value = 888;
+      model.resonatorModels[1]!.massProperty.value = 999;
+      model.resonatorModels[1]!.springConstantProperty.value = 888;
 
       // Switch to SAME_MASS mode
       model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
@@ -722,7 +728,7 @@ describe("SimModel", () => {
       model.resonatorCountProperty.value = 8;
       model.resonatorConfigProperty.value = ResonatorConfigMode.CUSTOM;
       model.selectedResonatorIndexProperty.value = 5;
-      model.resonatorModels[3].massProperty.value = 123;
+      model.resonatorModels[3]!.massProperty.value = 123;
 
       model.reset();
 

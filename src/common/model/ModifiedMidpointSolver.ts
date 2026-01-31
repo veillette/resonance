@@ -48,53 +48,54 @@ export class ModifiedMidpointSolver extends ODESolver {
     const substepSize = H / this.substeps;
 
     // Allocate arrays
-    const z = new Array(n * (this.substeps + 1));
-    for (let i = 0; i < n * (this.substeps + 1); i++) {
-      z[i] = 0;
-    }
+    const z: number[] = Array.from(
+      { length: n * (this.substeps + 1) },
+      (_, i) => (i < n ? y0[i]! : 0),
+    );
 
-    // Initialize: z0 = y0
+    // Initialize: z0 = y0 (already done in Array.from for i < n)
     for (let i = 0; i < n; i++) {
-      z[i] = y0[i];
+      z[i] = y0[i]!;
     }
 
     // First substep: z1 = z0 + h * f(z0)
-    const f0 = model.getDerivatives(0, y0);
+    const f0: number[] = model.getDerivatives(0, y0);
     for (let i = 0; i < n; i++) {
-      z[n + i] = z[i] + substepSize * f0[i];
+      z[n + i] = z[i]! + substepSize * f0[i]!;
     }
 
     // Subsequent substeps: z_{m+1} = z_{m-1} + 2h * f(z_m)
     for (let m = 1; m < this.substeps; m++) {
-      const zm = new Array(n);
-      for (let i = 0; i < n; i++) {
-        zm[i] = z[m * n + i];
-      }
+      const zm: number[] = Array.from(
+        { length: n },
+        (_, i) => z[m * n + i]!,
+      );
 
-      const fm = model.getDerivatives(m * substepSize, zm);
+      const fm: number[] = model.getDerivatives(m * substepSize, zm);
 
       for (let i = 0; i < n; i++) {
-        z[(m + 1) * n + i] = z[(m - 1) * n + i] + 2 * substepSize * fm[i];
+        z[(m + 1) * n + i] =
+          z[(m - 1) * n + i]! + 2 * substepSize * fm[i]!;
       }
     }
 
     // Final smoothing step to reduce numerical oscillations
     // y_new = 0.5 * (z_{n-1} + z_n + h * f(z_n))
-    const zLast = new Array(n);
-    for (let i = 0; i < n; i++) {
-      zLast[i] = z[this.substeps * n + i];
-    }
+    const zLast: number[] = Array.from(
+      { length: n },
+      (_, i) => z[this.substeps * n + i]!,
+    );
 
-    const fLast = model.getDerivatives(H, zLast);
+    const fLast: number[] = model.getDerivatives(H, zLast);
 
-    const newState = new Array(n);
-    for (let i = 0; i < n; i++) {
-      newState[i] =
+    const newState: number[] = Array.from(
+      { length: n },
+      (_, i) =>
         0.5 *
-        (z[(this.substeps - 1) * n + i] +
-          z[this.substeps * n + i] +
-          substepSize * fLast[i]);
-    }
+        (z[(this.substeps - 1) * n + i]! +
+          z[this.substeps * n + i]! +
+          substepSize * fLast[i]!),
+    );
 
     model.setState(newState);
   }

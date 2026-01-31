@@ -322,8 +322,8 @@ export class SimScreenView extends ScreenView {
   private updateResonatorVisibility(count: number): void {
     for (let i = 0; i < this.springNodes.length; i++) {
       const visible = i < count;
-      this.springNodes[i].visible = visible;
-      this.massNodes[i].visible = visible;
+      this.springNodes[i]!.visible = visible;
+      this.massNodes[i]!.visible = visible;
     }
   }
 
@@ -399,7 +399,7 @@ export class SimScreenView extends ScreenView {
         ResonanceConstants.DRIVER_BOX_WIDTH / 2 +
         spacing * (i + 1);
 
-      const resonatorModel = this.model.resonatorModels[i];
+      const resonatorModel = this.model.getResonatorModel(i);
       const modelY = resonatorModel.positionProperty.value;
       const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelY);
 
@@ -408,14 +408,14 @@ export class SimScreenView extends ScreenView {
       const junctionY = equilibriumY + viewYOffset;
       const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
 
-      this.massNodes[i].centerX = xCenter;
-      this.massNodes[i].centerY = massCenterY;
+      this.massNodes[i]!.centerX = xCenter;
+      this.massNodes[i]!.centerY = massCenterY;
 
       const springStartY = driverTopY;
       const springEndY = junctionY;
       const springLength = Math.abs(springEndY - springStartY);
 
-      const springNode = this.springNodes[i];
+      const springNode = this.springNodes[i]!;
       // Use the actual radius from this spring node (varies with spring constant)
       const springRadius = springNode.radiusProperty.value;
       const loopsTimesRadius = ResonanceConstants.SPRING_LOOPS * springRadius;

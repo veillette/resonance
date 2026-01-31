@@ -57,33 +57,37 @@ export class AdaptiveEulerSolver extends ODESolver {
 
     // Full step
     const fullStepDerivatives = model.getDerivatives(0, initialState);
-    const fullStepState = new Array(n);
-    for (let i = 0; i < n; i++) {
-      fullStepState[i] = initialState[i] + fullStepDerivatives[i] * dt;
-    }
+    const fullStepState: number[] = Array.from(
+      { length: n },
+      (_, i) => initialState[i]! + fullStepDerivatives[i]! * dt,
+    );
 
     // Two half steps
     const halfDt = dt * 0.5;
 
     // First half step
     const firstHalfDerivatives = model.getDerivatives(0, initialState);
-    const halfStepState = new Array(n);
-    for (let i = 0; i < n; i++) {
-      halfStepState[i] = initialState[i] + firstHalfDerivatives[i] * halfDt;
-    }
+    const halfStepState: number[] = Array.from(
+      { length: n },
+      (_, i) =>
+        initialState[i]! + firstHalfDerivatives[i]! * halfDt,
+    );
 
     // Second half step
-    const secondHalfDerivatives = model.getDerivatives(halfDt, halfStepState);
-    const twoHalfStepsState = new Array(n);
-    for (let i = 0; i < n; i++) {
-      twoHalfStepsState[i] =
-        halfStepState[i] + secondHalfDerivatives[i] * halfDt;
-    }
+    const secondHalfDerivatives: number[] = model.getDerivatives(
+      halfDt,
+      halfStepState,
+    );
+    const twoHalfStepsState: number[] = Array.from(
+      { length: n },
+      (_, i) =>
+        halfStepState[i]! + secondHalfDerivatives[i]! * halfDt,
+    );
 
     // Calculate error
     let maxError = 0;
     for (let i = 0; i < n; i++) {
-      const error = Math.abs(twoHalfStepsState[i] - fullStepState[i]);
+      const error = Math.abs(twoHalfStepsState[i]! - fullStepState[i]!);
       maxError = Math.max(maxError, error);
     }
 
@@ -106,10 +110,10 @@ export class AdaptiveEulerSolver extends ODESolver {
     const derivatives = model.getDerivatives(0, state);
     const n = state.length;
 
-    const newState = new Array(n);
-    for (let i = 0; i < n; i++) {
-      newState[i] = state[i] + derivatives[i] * dt;
-    }
+    const newState: number[] = Array.from(
+      { length: n },
+      (_, i) => state[i]! + derivatives[i]! * dt,
+    );
 
     model.setState(newState);
   }

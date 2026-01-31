@@ -127,7 +127,7 @@ describe("PlaybackControlNode", () => {
 
       // Check times increased
       model.resonatorModels.forEach((r, i) => {
-        expect(r.timeProperty.value).toBeGreaterThan(initialTimes[i]);
+        expect(r.timeProperty.value).toBeGreaterThan(initialTimes[i]!);
       });
     });
   });

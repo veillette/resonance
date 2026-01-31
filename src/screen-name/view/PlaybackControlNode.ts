@@ -56,7 +56,7 @@ export class PlaybackControlNode extends HBox {
             model.resonanceModel.step(ResonanceConstants.STEP_DT, true);
             const count = model.resonatorCountProperty.value;
             for (let i = 1; i < count; i++) {
-              model.resonatorModels[i].step(ResonanceConstants.STEP_DT, true);
+              model.getResonatorModel(i).step(ResonanceConstants.STEP_DT, true);
             }
           },
         },
@@ -65,7 +65,7 @@ export class PlaybackControlNode extends HBox {
             model.resonanceModel.step(-ResonanceConstants.STEP_DT, true);
             const count = model.resonatorCountProperty.value;
             for (let i = 1; i < count; i++) {
-              model.resonatorModels[i].step(-ResonanceConstants.STEP_DT, true);
+              model.getResonatorModel(i).step(-ResonanceConstants.STEP_DT, true);
             }
           },
         },

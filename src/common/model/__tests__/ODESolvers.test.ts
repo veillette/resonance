@@ -40,7 +40,8 @@ class SimpleHarmonicOscillator implements ODEModel {
   }
 
   getDerivatives(_t: number, state: number[]): number[] {
-    const [x, v] = state;
+    const x = state[0]!;
+    const v = state[1]!;
     return [
       v, // dx/dt = v
       -this.omega * this.omega * x, // dv/dt = -omega^2 * x
@@ -64,7 +65,8 @@ class SimpleHarmonicOscillator implements ODEModel {
 
   // Total energy: E = 0.5*v^2 + 0.5*omega^2*x^2
   totalEnergy(): number {
-    const [x, v] = this.state;
+    const x = this.state[0]!;
+    const v = this.state[1]!;
     return 0.5 * v * v + 0.5 * this.omega * this.omega * x * x;
   }
 }
@@ -89,7 +91,7 @@ class ExponentialModel implements ODEModel {
   }
 
   getDerivatives(_t: number, state: number[]): number[] {
-    return [state[0]]; // dy/dt = y
+    return [state[0]!]; // dy/dt = y
   }
 }
 
@@ -118,8 +120,8 @@ describe("RungeKuttaSolver", () => {
       solver.step(0, model);
 
       const newState = model.getState();
-      expect(newState[0]).toBeCloseTo(initialState[0], 10);
-      expect(newState[1]).toBeCloseTo(initialState[1], 10);
+      expect(newState[0]).toBeCloseTo(initialState[0]!, 10);
+      expect(newState[1]).toBeCloseTo(initialState[1]!, 10);
     });
   });
 
@@ -169,7 +171,7 @@ describe("RungeKuttaSolver", () => {
         solver1.step(0.01, model1);
         time += 0.01;
       }
-      const error1 = Math.abs(model1.getState()[0] - exactSolution);
+      const error1 = Math.abs(model1.getState()[0]! - exactSolution);
 
       // Integrate with fine timestep
       time = 0;
@@ -177,7 +179,7 @@ describe("RungeKuttaSolver", () => {
         solver2.step(0.005, model2);
         time += 0.005;
       }
-      const error2 = Math.abs(model2.getState()[0] - exactSolution);
+      const error2 = Math.abs(model2.getState()[0]! - exactSolution);
 
       // For 4th order method, halving dt should reduce error by factor of ~16
       // Allow some tolerance
@@ -222,7 +224,7 @@ describe("RungeKuttaSolver", () => {
 
       for (let t = 0; t < totalTime; t += dt) {
         solver.step(dt, model);
-        maxAmplitude = Math.max(maxAmplitude, Math.abs(model.getState()[0]));
+        maxAmplitude = Math.max(maxAmplitude, Math.abs(model.getState()[0]!));
       }
 
       // Amplitude should stay close to initial
@@ -252,8 +254,8 @@ describe("RungeKuttaSolver", () => {
       const stateL = modelLarge.getState();
       const stateS = modelSmall.getState();
 
-      expect(stateL[0]).toBeCloseTo(stateS[0], 8);
-      expect(stateL[1]).toBeCloseTo(stateS[1], 8);
+      expect(stateL[0]).toBeCloseTo(stateS[0]!, 8);
+      expect(stateL[1]).toBeCloseTo(stateS[1]!, 8);
     });
   });
 
@@ -271,7 +273,7 @@ describe("RungeKuttaSolver", () => {
       const state2 = model.getState();
 
       // Both should be close but not identical due to different discretization
-      expect(state1[0]).toBeCloseTo(state2[0], 2);
+      expect(state1[0]).toBeCloseTo(state2[0]!, 2);
     });
   });
 });
@@ -327,7 +329,7 @@ describe("AdaptiveRK45Solver", () => {
 
       solver.step(targetTime, model);
 
-      const result = model.getState()[0];
+      const result = model.getState()[0]!;
       const relativeError = Math.abs(result - exactSolution) / exactSolution;
 
       // Should be accurate to within 0.01%
@@ -364,7 +366,7 @@ describe("AdaptiveRK45Solver", () => {
 
       // Should still maintain reasonable accuracy
       const state = model.getState();
-      expect(Math.abs(state[0])).toBeLessThan(2); // Bounded
+      expect(Math.abs(state[0]!)).toBeLessThan(2); // Bounded
     });
 
     it("should produce similar results for different total times", () => {
@@ -382,8 +384,8 @@ describe("AdaptiveRK45Solver", () => {
       const state2 = model2.getState();
 
       // Results should be very close
-      expect(state1[0]).toBeCloseTo(state2[0], 4);
-      expect(state1[1]).toBeCloseTo(state2[1], 4);
+      expect(state1[0]).toBeCloseTo(state2[0]!, 4);
+      expect(state1[1]).toBeCloseTo(state2[1]!, 4);
     });
   });
 });
@@ -414,7 +416,7 @@ describe("AdaptiveEulerSolver", () => {
 
       const newState = model.getState();
       // Should be unchanged or very close
-      expect(newState[0]).toBeCloseTo(initialState[0], 5);
+      expect(newState[0]).toBeCloseTo(initialState[0]!, 5);
     });
   });
 
@@ -460,7 +462,7 @@ describe("AdaptiveEulerSolver", () => {
         solver.step(dt, model);
       }
 
-      const result = model.getState()[0];
+      const result = model.getState()[0]!;
       const relativeError = Math.abs(result - exactSolution) / exactSolution;
 
       // Euler is lower order, accept larger error
@@ -502,7 +504,7 @@ describe("AdaptiveEulerSolver", () => {
 
       // Result should be bounded
       const state = model.getState();
-      expect(Math.abs(state[0])).toBeLessThan(2);
+      expect(Math.abs(state[0]!)).toBeLessThan(2);
     });
 
     it("should handle high frequency oscillator", () => {
@@ -511,7 +513,7 @@ describe("AdaptiveEulerSolver", () => {
       expect(() => solver.step(0.5, model)).not.toThrow();
 
       const state = model.getState();
-      expect(Math.abs(state[0])).toBeLessThan(2);
+      expect(Math.abs(state[0]!)).toBeLessThan(2);
     });
   });
 });
@@ -541,8 +543,8 @@ describe("ModifiedMidpointSolver", () => {
       solver.step(0, model);
 
       const newState = model.getState();
-      expect(newState[0]).toBeCloseTo(initialState[0], 10);
-      expect(newState[1]).toBeCloseTo(initialState[1], 10);
+      expect(newState[0]).toBeCloseTo(initialState[0]!, 10);
+      expect(newState[1]).toBeCloseTo(initialState[1]!, 10);
     });
   });
 
@@ -586,7 +588,7 @@ describe("ModifiedMidpointSolver", () => {
         solver.step(dt, model);
       }
 
-      const result = model.getState()[0];
+      const result = model.getState()[0]!;
       const relativeError = Math.abs(result - exactSolution) / exactSolution;
 
       // Should be accurate to within 1%
@@ -627,7 +629,7 @@ describe("ModifiedMidpointSolver", () => {
 
       for (let t = 0; t < totalTime; t += dt) {
         solver.step(dt, model);
-        maxAmplitude = Math.max(maxAmplitude, Math.abs(model.getState()[0]));
+        maxAmplitude = Math.max(maxAmplitude, Math.abs(model.getState()[0]!));
       }
 
       // Amplitude should stay close to initial (within 5%)
@@ -656,8 +658,8 @@ describe("ModifiedMidpointSolver", () => {
       const stateS = modelSmall.getState();
 
       // Results should be close
-      expect(stateL[0]).toBeCloseTo(stateS[0], 4);
-      expect(stateL[1]).toBeCloseTo(stateS[1], 4);
+      expect(stateL[0]).toBeCloseTo(stateS[0]!, 4);
+      expect(stateL[1]).toBeCloseTo(stateS[1]!, 4);
     });
   });
 
@@ -675,7 +677,7 @@ describe("ModifiedMidpointSolver", () => {
       const state2 = model.getState();
 
       // Both should be close
-      expect(state1[0]).toBeCloseTo(state2[0], 1);
+      expect(state1[0]).toBeCloseTo(state2[0]!, 1);
     });
   });
 
@@ -693,12 +695,12 @@ describe("ModifiedMidpointSolver", () => {
         const model = new SimpleHarmonicOscillator(omega, x0, v0);
 
         solver.step(1.0, model);
-        results.push(model.getState()[0]);
+        results.push(model.getState()[0]!);
       }
 
       // All should give similar results
       for (let i = 1; i < results.length; i++) {
-        expect(results[i]).toBeCloseTo(results[0], 1);
+        expect(results[i]).toBeCloseTo(results[0]!, 1);
       }
     });
   });
@@ -735,12 +737,12 @@ describe("Solver comparison", () => {
       }
 
       const state = model.getState();
-      results.push({ name, position: state[0], velocity: state[1] });
+      results.push({ name, position: state[0]!, velocity: state[1]! });
     }
 
     // All high-order solvers should agree within tight tolerance
-    const referencePosition = results[0].position;
-    const referenceVelocity = results[0].velocity;
+    const referencePosition = results[0]!.position;
+    const referenceVelocity = results[0]!.velocity;
 
     for (const { position, velocity } of results) {
       expect(position).toBeCloseTo(referencePosition, 2);
@@ -768,8 +770,8 @@ describe("Solver comparison", () => {
     const state = model.getState();
 
     // Should be bounded (oscillator with initial amplitude ~1.12)
-    expect(Math.abs(state[0])).toBeLessThan(3);
-    expect(Math.abs(state[1])).toBeLessThan(5);
+    expect(Math.abs(state[0]!)).toBeLessThan(3);
+    expect(Math.abs(state[1]!)).toBeLessThan(5);
   });
 
   it("should all produce correct frequency for oscillator", () => {
@@ -797,11 +799,13 @@ describe("Solver comparison", () => {
       }
 
       // Now find the next zero crossing with positive velocity
-      let prevX = model.getState()[0];
+      let prevX = model.getState()[0]!;
       while (time < 3 * expectedPeriod && !foundPeriod) {
         solver.step(dt, model);
         time += dt;
-        const [x, v] = model.getState();
+        const s = model.getState();
+        const x = s[0]!;
+        const v = s[1]!;
 
         // Zero crossing going up (position crosses zero with positive velocity)
         if (prevX < 0 && x >= 0 && v > 0) {
@@ -813,7 +817,9 @@ describe("Solver comparison", () => {
           while (cycleCount < 1 && time < 3 * expectedPeriod) {
             solver.step(dt, model);
             time += dt;
-            const [newX, newV] = model.getState();
+            const newState = model.getState();
+            const newX = newState[0]!;
+            const newV = newState[1]!;
 
             if (cycleStartX > 0 && newX <= 0) {
               // Crossed zero going down

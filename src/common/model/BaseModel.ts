@@ -73,7 +73,7 @@ export abstract class BaseModel implements ODEModel {
         return new ModifiedMidpointSolver(0.001, 4);
 
       default:
-        console.warn(`Unknown solver type: ${solverType}, using RK4`);
+        console.warn(`Unknown solver type: ${String(solverType)}, using RK4`);
         return new RungeKuttaSolver(0.001);
     }
   }
@@ -96,7 +96,7 @@ export abstract class BaseModel implements ODEModel {
     let adjustedDt = cappedDt;
     if (!forceStep) {
       const speedMultiplier =
-        this.timeSpeedMultipliers[this.timeSpeedProperty.value as TimeSpeed];
+        this.timeSpeedMultipliers[this.timeSpeedProperty.value];
       adjustedDt = cappedDt * speedMultiplier;
     }
 

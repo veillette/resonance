@@ -162,10 +162,11 @@ describe("ResonanceColors", () => {
   describe("color contrast", () => {
     function getLuminance(r: number, g: number, b: number): number {
       // Relative luminance formula
-      const [rs, gs, bs] = [r, g, b].map((v) => {
+      const mapped = [r, g, b].map((v) => {
         v /= 255;
         return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
       });
+      const [rs, gs, bs] = [mapped[0]!, mapped[1]!, mapped[2]!];
       return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
     }
 

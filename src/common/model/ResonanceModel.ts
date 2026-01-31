@@ -171,9 +171,9 @@ export class ResonanceModel extends BaseModel {
    * Set the state vector [position, velocity, drivingPhase]
    */
   public override setState(state: number[]): void {
-    this.positionProperty.value = state[0];
-    this.velocityProperty.value = state[1];
-    this.drivingPhaseProperty.value = state[2];
+    this.positionProperty.value = state[0]!;
+    this.velocityProperty.value = state[1]!;
+    this.drivingPhaseProperty.value = state[2]!;
   }
 
   /**
@@ -192,9 +192,9 @@ export class ResonanceModel extends BaseModel {
    * Using phase instead of time ensures smooth frequency changes
    */
   public override getDerivatives(t: number, state: number[]): number[] {
-    const x = state[0]; // position (displacement from equilibrium)
-    const v = state[1]; // velocity
-    const phase = state[2]; // driving phase
+    const x = state[0]!; // position (displacement from equilibrium)
+    const v = state[1]!; // velocity
+    const phase = state[2]!; // driving phase
 
     const m = this.massProperty.value;
     const k = this.springConstantProperty.value;
@@ -291,8 +291,12 @@ export function getPresetName(
   preset: ResonancePreset,
 ): ReadOnlyProperty<string> {
   const propertyName =
-    `${preset.nameKey}StringProperty` as keyof typeof ResonanceStrings.presets;
-  return ResonanceStrings.presets[propertyName] as ReadOnlyProperty<string>;
+    `${preset.nameKey}StringProperty`;
+  const presetsMap = ResonanceStrings.presets as Record<
+    string,
+    ReadOnlyProperty<string>
+  >;
+  return presetsMap[propertyName]!;
 }
 
 /**

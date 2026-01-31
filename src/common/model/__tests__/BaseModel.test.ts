@@ -31,12 +31,13 @@ class TestModel extends BaseModel {
   }
 
   setState(state: number[]): void {
-    this.position = state[0];
-    this.velocity = state[1];
+    this.position = state[0] ?? 0;
+    this.velocity = state[1] ?? 0;
   }
 
   getDerivatives(_t: number, state: number[]): number[] {
-    const [x, v] = state;
+    const x = state[0] ?? 0;
+    const v = state[1] ?? 0;
     return [v, -this.omega * this.omega * x];
   }
 

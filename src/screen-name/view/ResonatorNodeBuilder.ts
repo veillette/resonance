@@ -258,6 +258,9 @@ export class ResonatorNodeBuilder {
 
     for (let i = 0; i < SimModel.MAX_RESONATORS; i++) {
       const resonatorModel = resonatorModels[i];
+      if (resonatorModel === undefined) {
+        throw new Error(`Resonator index ${i} out of range`);
+      }
 
       // Create spring node
       const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);

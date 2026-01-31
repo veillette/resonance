@@ -53,53 +53,58 @@ export class RungeKuttaSolver extends ODESolver {
 
     // Resize temporary arrays if needed
     if (this.k1.length !== n) {
-      this.k1 = new Array(n);
-      this.k2 = new Array(n);
-      this.k3 = new Array(n);
-      this.k4 = new Array(n);
-      this.tempState = new Array(n);
+      this.k1 = Array.from({ length: n }, () => 0);
+      this.k2 = Array.from({ length: n }, () => 0);
+      this.k3 = Array.from({ length: n }, () => 0);
+      this.k4 = Array.from({ length: n }, () => 0);
+      this.tempState = Array.from({ length: n }, () => 0);
     }
 
     // k1 = f(t, y)
-    const k1 = model.getDerivatives(0, state);
+    const k1: number[] = model.getDerivatives(0, state);
     for (let i = 0; i < n; i++) {
-      this.k1[i] = k1[i];
+      this.k1[i] = k1[i]!;
     }
 
     // k2 = f(t + dt/2, y + k1*dt/2)
     for (let i = 0; i < n; i++) {
-      this.tempState[i] = state[i] + this.k1[i] * dt * 0.5;
+      this.tempState[i] = state[i]! + this.k1[i]! * dt * 0.5;
     }
-    const k2 = model.getDerivatives(dt * 0.5, this.tempState);
+    const k2: number[] = model.getDerivatives(dt * 0.5, this.tempState);
     for (let i = 0; i < n; i++) {
-      this.k2[i] = k2[i];
+      this.k2[i] = k2[i]!;
     }
 
     // k3 = f(t + dt/2, y + k2*dt/2)
     for (let i = 0; i < n; i++) {
-      this.tempState[i] = state[i] + this.k2[i] * dt * 0.5;
+      this.tempState[i] = state[i]! + this.k2[i]! * dt * 0.5;
     }
-    const k3 = model.getDerivatives(dt * 0.5, this.tempState);
+    const k3: number[] = model.getDerivatives(dt * 0.5, this.tempState);
     for (let i = 0; i < n; i++) {
-      this.k3[i] = k3[i];
+      this.k3[i] = k3[i]!;
     }
 
     // k4 = f(t + dt, y + k3*dt)
     for (let i = 0; i < n; i++) {
-      this.tempState[i] = state[i] + this.k3[i] * dt;
+      this.tempState[i] = state[i]! + this.k3[i]! * dt;
     }
-    const k4 = model.getDerivatives(dt, this.tempState);
+    const k4: number[] = model.getDerivatives(dt, this.tempState);
     for (let i = 0; i < n; i++) {
-      this.k4[i] = k4[i];
+      this.k4[i] = k4[i]!;
     }
 
     // Update: y_new = y + (k1 + 2*k2 + 2*k3 + k4) * dt/6
-    const newState = new Array(n);
-    for (let i = 0; i < n; i++) {
-      newState[i] =
-        state[i] +
-        ((this.k1[i] + 2 * this.k2[i] + 2 * this.k3[i] + this.k4[i]) * dt) / 6;
-    }
+    const newState: number[] = Array.from(
+      { length: n },
+      (_, i) =>
+        state[i]! +
+        ((this.k1[i]! +
+          2 * this.k2[i]! +
+          2 * this.k3[i]! +
+          this.k4[i]!) *
+          dt) /
+          6,
+    );
 
     model.setState(newState);
   }

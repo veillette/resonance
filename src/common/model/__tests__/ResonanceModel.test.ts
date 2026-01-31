@@ -403,7 +403,7 @@ describe("ResonanceModel", () => {
 
   describe("preset application", () => {
     it("should apply preset values correctly", () => {
-      const preset = ResonancePresets[0]; // Light and Bouncy
+      const preset = ResonancePresets[0]!; // Light and Bouncy
 
       model.setPreset(preset);
 
