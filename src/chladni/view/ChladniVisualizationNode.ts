@@ -31,7 +31,7 @@ import ResonanceColors from "../../common/ResonanceColors.js";
 import { RendererType } from "../../preferences/ResonancePreferencesModel.js";
 
 // Particle rendering size in pixels
-const PARTICLE_SIZE = 3;
+const PARTICLE_SIZE = 2;
 
 export interface ChladniVisualizationNodeOptions extends NodeOptions {
   // Size of the visualization area (deprecated, use visualizationWidth/Height)
@@ -414,6 +414,9 @@ export class ChladniVisualizationNode extends Node {
       this.canvasNode.setCanvasSize(newWidth, newHeight);
       this.canvasNode.setModelViewTransform(this.modelViewTransform);
     }
+
+    // Explicitly set local bounds so they update immediately (even when paused)
+    this.localBounds = new Bounds2(0, 0, newWidth, newHeight);
 
     // Update positions
     this.update();

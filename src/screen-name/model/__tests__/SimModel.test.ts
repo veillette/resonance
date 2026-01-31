@@ -83,15 +83,15 @@ describe("SimModel", () => {
     });
 
     it("should evenly distribute frequencies", () => {
-      const frequencies = [];
+      const frequencies: number[] = [];
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
         frequencies.push(model.getNaturalFrequencyHz(i));
       }
 
       // Check that frequency steps are approximately equal
-      const steps = [];
+      const steps: number[] = [];
       for (let i = 1; i < frequencies.length; i++) {
-        steps.push(frequencies[i] - frequencies[i - 1]);
+        steps.push(frequencies[i]! - frequencies[i - 1]!);
       }
 
       // All steps should be approximately equal (5.5 - 1.0) / 9 = 0.5 Hz
@@ -126,14 +126,14 @@ describe("SimModel", () => {
     });
 
     it("should vary masses to achieve target frequencies", () => {
-      const masses = [];
+      const masses: number[] = [];
       for (let i = 0; i < model.resonatorCountProperty.value; i++) {
         masses.push(model.getMass(i));
       }
 
       // Masses should decrease (higher frequency = lower mass for same k)
       for (let i = 1; i < masses.length; i++) {
-        expect(masses[i]).toBeLessThan(masses[i - 1]);
+        expect(masses[i]!).toBeLessThan(masses[i - 1]!);
       }
     });
 
