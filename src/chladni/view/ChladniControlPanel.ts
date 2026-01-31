@@ -5,12 +5,12 @@
  * Contains controls for material selection and frequency slider.
  */
 
-import { Node, Text, VBox, Line } from "scenerystack/scenery";
-import { Panel, ComboBox, TextPushButton, Checkbox } from "scenerystack/sun";
+import { Node, Text, VBox, HBox, Line } from "scenerystack/scenery";
+import { Panel, ComboBox, TextPushButton, Checkbox, AquaRadioButtonGroup } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
 import { Property } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
-import { ChladniModel, GrainCountOption, GRAIN_COUNT_OPTIONS } from "../model/ChladniModel.js";
+import { ChladniModel, GrainCountOption, GRAIN_COUNT_OPTIONS, BoundaryMode } from "../model/ChladniModel.js";
 import { Material, MaterialType, MATERIALS } from "../model/Material.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
@@ -28,6 +28,16 @@ export class ChladniControlPanel extends Panel {
    * Property controlling the visibility of the resonance curve graph.
    */
   public readonly showResonanceCurveProperty: Property<boolean>;
+
+  /**
+   * Property controlling the visibility of the ruler.
+   */
+  public readonly showRulerProperty: Property<boolean>;
+
+  /**
+   * Property controlling the visibility of the grid.
+   */
+  public readonly showGridProperty: Property<boolean>;
 
   private readonly model: ChladniModel;
 
@@ -137,11 +147,83 @@ export class ChladniControlPanel extends Panel {
       },
     );
 
+    // --- Boundary Mode Radio Buttons ---
+    const boundaryModeLabel = new Text(
+      ResonanceStrings.chladni.boundaryModeStringProperty,
+      {
+        font: ResonanceConstants.LABEL_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
+
+    const boundaryModeItems: { value: BoundaryMode; createNode: () => Node }[] = [
+      {
+        value: "clamp",
+        createNode: () =>
+          new Text(ResonanceStrings.chladni.boundaryClampStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+            fill: ResonanceColors.textProperty,
+          }),
+      },
+      {
+        value: "remove",
+        createNode: () =>
+          new Text(ResonanceStrings.chladni.boundaryRemoveStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+            fill: ResonanceColors.textProperty,
+          }),
+      },
+    ];
+
+    const boundaryModeRadioButtons = new AquaRadioButtonGroup(
+      model.boundaryModeProperty,
+      boundaryModeItems,
+      {
+        orientation: "horizontal",
+        spacing: 15,
+        radioButtonOptions: {
+          radius: 8,
+        },
+      },
+    );
+
+    const boundaryModeBox = new HBox({
+      children: [boundaryModeLabel, boundaryModeRadioButtons],
+      spacing: 10,
+      align: "center",
+    });
+
     // --- Show Resonance Curve Checkbox ---
     const showResonanceCurveProperty = new Property<boolean>(true);
     const showResonanceCurveCheckbox = new Checkbox(
       showResonanceCurveProperty,
       new Text(ResonanceStrings.chladni.resonanceCurveStringProperty, {
+        font: ResonanceConstants.CONTROL_FONT,
+        fill: ResonanceColors.textProperty,
+      }),
+      {
+        boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
+      },
+    );
+
+    // --- Show Ruler Checkbox ---
+    const showRulerProperty = new Property<boolean>(false);
+    const showRulerCheckbox = new Checkbox(
+      showRulerProperty,
+      new Text(ResonanceStrings.chladni.rulerStringProperty, {
+        font: ResonanceConstants.CONTROL_FONT,
+        fill: ResonanceColors.textProperty,
+      }),
+      {
+        boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
+      },
+    );
+
+    // --- Show Grid Checkbox ---
+    const showGridProperty = new Property<boolean>(false);
+    const showGridCheckbox = new Checkbox(
+      showGridProperty,
+      new Text(ResonanceStrings.chladni.gridStringProperty, {
         font: ResonanceConstants.CONTROL_FONT,
         fill: ResonanceColors.textProperty,
       }),
@@ -165,7 +247,10 @@ export class ChladniControlPanel extends Panel {
           lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
         }),
         regenerateButton,
+        boundaryModeBox,
         showResonanceCurveCheckbox,
+        showRulerCheckbox,
+        showGridCheckbox,
       ],
       spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
       align: "left",
@@ -185,6 +270,8 @@ export class ChladniControlPanel extends Panel {
     this.model = model;
     this.comboBoxListParent = comboBoxListParent;
     this.showResonanceCurveProperty = showResonanceCurveProperty;
+    this.showRulerProperty = showRulerProperty;
+    this.showGridProperty = showGridProperty;
   }
 
   /**
@@ -225,5 +312,7 @@ export class ChladniControlPanel extends Panel {
 
   public reset(): void {
     this.showResonanceCurveProperty.reset();
+    this.showRulerProperty.reset();
+    this.showGridProperty.reset();
   }
 }

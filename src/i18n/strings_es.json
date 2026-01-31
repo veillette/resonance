@@ -122,7 +122,12 @@
       "grains10000": "10.000",
       "grains25000": "25.000",
       "regenerate": "Regenerar",
-      "resonanceCurve": "Curva de Resonancia"
+      "resonanceCurve": "Curva de Resonancia",
+      "ruler": "Regla",
+      "grid": "Cuadrícula",
+      "boundaryMode": "Límite",
+      "boundaryClamp": "Limitar",
+      "boundaryRemove": "Eliminar"
     }
   }
 }

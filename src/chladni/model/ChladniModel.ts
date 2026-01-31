@@ -20,6 +20,9 @@ import { Property, NumberProperty, BooleanProperty } from "scenerystack/axon";
 import { Vector2, Range } from "scenerystack/dot";
 import { Material, MaterialType } from "./Material.js";
 
+// Boundary handling mode: how particles behave at plate edges
+export type BoundaryMode = "clamp" | "remove";
+
 // Grain count options for the combo box
 export type GrainCountOption = {
   readonly value: number;
@@ -33,48 +36,87 @@ export const GRAIN_COUNT_OPTIONS: readonly GrainCountOption[] = [
   { value: 25000, name: "25000" },
 ] as const;
 
-// Default grain count
-const DEFAULT_GRAIN_COUNT = GRAIN_COUNT_OPTIONS[2]!; // 10,000
+// ============================================================================
+// MATHEMATICAL CONSTANTS
+// ============================================================================
 
-// Model coordinate system:
-// - (0,0) is at the center of the plate
-// - x ranges from -plateWidth/2 to +plateWidth/2
-// - y ranges from -plateHeight/2 to +plateHeight/2
-// - Positive Y is up (will be inverted in view)
+const TWO_PI = Math.PI * 2;
+
+// ============================================================================
+// PHYSICAL CONSTANTS
+// ============================================================================
 
 // Default physical plate dimensions in meters (from original Chladni simulator)
 // These affect wave number calculations and resonant frequencies
 // For a rectangular plate, width (a) is along x-axis, height (b) is along y-axis
-const DEFAULT_PLATE_WIDTH = 0.32;  // a - dimension along x
-const DEFAULT_PLATE_HEIGHT = 0.32; // b - dimension along y
+const DEFAULT_PLATE_WIDTH = 0.32;  // a - dimension along x (meters)
+const DEFAULT_PLATE_HEIGHT = 0.32; // b - dimension along y (meters)
 
-// Minimum plate size (half of default)
-const MIN_PLATE_WIDTH = DEFAULT_PLATE_WIDTH / 2;
-const MIN_PLATE_HEIGHT = DEFAULT_PLATE_HEIGHT / 2;
+// Plate size constraints
+const MIN_PLATE_SIZE_RATIO = 0.5; // Minimum plate size as fraction of default
+const MIN_PLATE_WIDTH = DEFAULT_PLATE_WIDTH * MIN_PLATE_SIZE_RATIO;
+const MIN_PLATE_HEIGHT = DEFAULT_PLATE_HEIGHT * MIN_PLATE_SIZE_RATIO;
 
-// Particle movement parameters
-const PARTICLE_STEP_SCALE = 5.0;
+// Damping coefficient for the plate vibration (dimensionless)
+// gamma = DAMPING_COEFFICIENT / sqrt(a * b)
 const DAMPING_COEFFICIENT = 0.02;
 
-// Modal calculation parameters
-// Include both even and odd modes for off-center excitation
-const MAX_MODE = 16;
-const MODE_STEP = 1; // Include all modes for off-center excitation
-
-// Threshold for skipping modes with negligible source contribution
-const SOURCE_THRESHOLD = 0.001;
-
-// Default excitation position (center of plate, in model coordinates)
-// Model uses centered coordinates: (0,0) is at plate center
-// x ranges from -width/2 to +width/2
-// y ranges from -height/2 to +height/2 (positive Y is up)
-const DEFAULT_EXCITATION_X = 0;
-const DEFAULT_EXCITATION_Y = 0;
+// ============================================================================
+// FREQUENCY PARAMETERS
+// ============================================================================
 
 // Full frequency range for the simulation (Hz)
 const FREQUENCY_MIN = 50;
 const FREQUENCY_MAX = 4000;
 const FREQUENCY_DEFAULT = 500;
+
+// ============================================================================
+// MODAL CALCULATION PARAMETERS
+// ============================================================================
+
+// Maximum mode number for modal superposition (m, n = 0, 1, 2, ..., MAX_MODE)
+const MAX_MODE = 16;
+
+// Mode step size: 1 = all modes (for off-center excitation), 2 = even modes only
+const MODE_STEP = 1;
+
+// Threshold for skipping modes with negligible source contribution
+const SOURCE_THRESHOLD = 0.001;
+const SOURCE_THRESHOLD_SQUARED = SOURCE_THRESHOLD * SOURCE_THRESHOLD;
+
+// Normalization factor for rectangular plate mode shapes: (2/√(ab))² = 4/(ab)
+const NORMALIZATION_NUMERATOR = 4;
+
+// ============================================================================
+// PARTICLE ANIMATION PARAMETERS
+// ============================================================================
+
+// Scale factor for particle step size, tuned to match Roussel's pixel-based behavior
+// Roussel: 5*psi pixels on ~480px plate ≈ 0.01*psi fraction of plate
+// Here: PARTICLE_STEP_SCALE * psi * STEP_TIME_SCALE meters on 0.32m plate
+const PARTICLE_STEP_SCALE = 0.3;
+
+// Time scaling factor for step size calculation
+const STEP_TIME_SCALE = 0.01;
+
+// Target frame rate for normalizing time-based calculations
+const TARGET_FPS = 60;
+
+// Default boundary handling mode
+const DEFAULT_BOUNDARY_MODE: BoundaryMode = "clamp";
+
+// ============================================================================
+// EXCITATION PARAMETERS
+// ============================================================================
+
+// Default excitation position (center of plate, in model coordinates)
+// Model uses centered coordinates: (0,0) is at plate center
+const DEFAULT_EXCITATION_X = 0;
+const DEFAULT_EXCITATION_Y = 0;
+
+// ============================================================================
+// RESONANCE CURVE GRAPH PARAMETERS
+// ============================================================================
 
 // Width of the visible window in the resonance curve graph (Hz)
 const GRAPH_WINDOW_WIDTH = 500;
@@ -82,6 +124,14 @@ const GRAPH_WINDOW_WIDTH = 500;
 // Precomputed resonance curve resolution (samples per Hz)
 const CURVE_SAMPLES_PER_HZ = 4;
 const TOTAL_CURVE_SAMPLES = (FREQUENCY_MAX - FREQUENCY_MIN) * CURVE_SAMPLES_PER_HZ;
+
+// ============================================================================
+// GRAIN COUNT OPTIONS
+// ============================================================================
+
+// Default grain count index in GRAIN_COUNT_OPTIONS array
+const DEFAULT_GRAIN_COUNT_INDEX = 2; // 10,000
+const DEFAULT_GRAIN_COUNT = GRAIN_COUNT_OPTIONS[DEFAULT_GRAIN_COUNT_INDEX]!;
 
 export class ChladniModel {
   // Material selection
@@ -106,6 +156,9 @@ export class ChladniModel {
   // Plate dimensions (can be resized by the user)
   public readonly plateWidthProperty: NumberProperty;
   public readonly plateHeightProperty: NumberProperty;
+
+  // Boundary handling mode: clamp particles to edges or remove them
+  public readonly boundaryModeProperty: Property<BoundaryMode>;
 
   // Particle positions (normalized 0-1 coordinates)
   public readonly particlePositions: Vector2[];
@@ -148,6 +201,9 @@ export class ChladniModel {
       range: new Range(MIN_PLATE_HEIGHT, DEFAULT_PLATE_HEIGHT),
     });
 
+    // Initialize boundary mode
+    this.boundaryModeProperty = new Property<BoundaryMode>(DEFAULT_BOUNDARY_MODE);
+
     // Initialize particles with random positions
     this.particlePositions = [];
     this.initializeParticles();
@@ -185,12 +241,28 @@ export class ChladniModel {
     this.plateWidthProperty.lazyLink(() => {
       this.cachedDamping = this.calculateDamping();
       this.recomputeResonanceCurve();
+      this.clampParticlesToBounds();
     });
 
     this.plateHeightProperty.lazyLink(() => {
       this.cachedDamping = this.calculateDamping();
       this.recomputeResonanceCurve();
+      this.clampParticlesToBounds();
     });
+  }
+
+  /**
+   * Clamp all particles to current plate bounds.
+   * Called when plate dimensions change to ensure particles stay within bounds.
+   */
+  private clampParticlesToBounds(): void {
+    const halfWidth = this.plateWidthProperty.value / 2;
+    const halfHeight = this.plateHeightProperty.value / 2;
+
+    for (const particle of this.particlePositions) {
+      particle.x = Math.max(-halfWidth, Math.min(halfWidth, particle.x));
+      particle.y = Math.max(-halfHeight, Math.min(halfHeight, particle.y));
+    }
   }
 
   /**
@@ -358,7 +430,7 @@ export class ChladniModel {
     }
 
     // Return magnitude of complex sum, with normalization for rectangular plate
-    const normalization = 4 / (a * b);
+    const normalization = NORMALIZATION_NUMERATOR / (a * b);
     return normalization * Math.sqrt(sumReal * sumReal + sumImag * sumImag);
   }
 
@@ -372,13 +444,15 @@ export class ChladniModel {
       return;
     }
 
-    // Scale factor for reasonable animation speed
-    const timeScale = dt * 60; // Normalize to ~60fps
+    // Scale factor for reasonable animation speed (normalize to target FPS)
+    const timeScale = dt * TARGET_FPS;
 
     const halfWidth = this.plateWidthProperty.value / 2;
     const halfHeight = this.plateHeightProperty.value / 2;
+    const boundaryMode = this.boundaryModeProperty.value;
 
-    for (let i = 0; i < this.particlePositions.length; i++) {
+    // Process particles in reverse order for safe removal
+    for (let i = this.particlePositions.length - 1; i >= 0; i--) {
       const particle = this.particlePositions[i]!;
       const x = particle.x;
       const y = particle.y;
@@ -387,18 +461,27 @@ export class ChladniModel {
       const displacement = Math.abs(this.psi(x, y));
 
       // Random walk with step size proportional to displacement
-      const stepSize = PARTICLE_STEP_SCALE * displacement * timeScale * 0.01;
-      const angle = Math.random() * 2 * Math.PI;
+      const stepSize = PARTICLE_STEP_SCALE * displacement * timeScale * STEP_TIME_SCALE;
+      const angle = Math.random() * TWO_PI;
 
       // Update position
-      let newX = x + stepSize * Math.cos(angle);
-      let newY = y + stepSize * Math.sin(angle);
+      const newX = x + stepSize * Math.cos(angle);
+      const newY = y + stepSize * Math.sin(angle);
 
-      // Clamp to plate boundaries (centered coordinates)
-      newX = Math.max(-halfWidth, Math.min(halfWidth, newX));
-      newY = Math.max(-halfHeight, Math.min(halfHeight, newY));
-
-      particle.setXY(newX, newY);
+      // Handle boundary based on mode
+      if (boundaryMode === "remove") {
+        // Remove particles that leave the plate (Roussel's approach)
+        if (Math.abs(newX) > halfWidth || Math.abs(newY) > halfHeight) {
+          this.particlePositions.splice(i, 1);
+        } else {
+          particle.setXY(newX, newY);
+        }
+      } else {
+        // Clamp to plate boundaries (default behavior)
+        const clampedX = Math.max(-halfWidth, Math.min(halfWidth, newX));
+        const clampedY = Math.max(-halfHeight, Math.min(halfHeight, newY));
+        particle.setXY(clampedX, clampedY);
+      }
     }
   }
 
@@ -413,6 +496,7 @@ export class ChladniModel {
     this.grainCountProperty.reset();
     this.plateWidthProperty.reset();
     this.plateHeightProperty.reset();
+    this.boundaryModeProperty.reset();
     this.initializeParticles();
     this.cachedWaveNumber = this.calculateWaveNumber();
     this.cachedDamping = this.calculateDamping();
@@ -494,10 +578,10 @@ export class ChladniModel {
     let sum = 0;
     const mOverA = Math.PI / a;
     const nOverB = Math.PI / b;
-    const fourGammaKSquared = 4 * gamma * gamma * k * k;
+    const fourGammaKSquared = NORMALIZATION_NUMERATOR * gamma * gamma * k * k;
     const kSquared = k * k;
     // Normalization for rectangular plate: (2/√(ab))² = 4/(ab)
-    const normFactor = 4 / (a * b);
+    const normFactor = NORMALIZATION_NUMERATOR / (a * b);
 
     // Sum over modes m, n = 0, 1, 2, ..., MAX_MODE
     for (let m = 0; m <= MAX_MODE; m += MODE_STEP) {
@@ -513,7 +597,7 @@ export class ChladniModel {
         const phiSquared = normFactor * cosXSquared * cosY * cosY;
 
         // Skip modes with negligible source contribution
-        if (phiSquared < SOURCE_THRESHOLD * SOURCE_THRESHOLD) continue;
+        if (phiSquared < SOURCE_THRESHOLD_SQUARED) continue;
 
         // Modal wave number for rectangular plate: k_{m,n} = π√((m/a)² + (n/b)²)
         const kmn = Math.sqrt((m * mOverA) * (m * mOverA) + (n * nOverB) * (n * nOverB));
