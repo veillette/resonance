@@ -257,6 +257,34 @@ const ResonanceColors = {
       projector: new Color(68, 153, 255), // #4499FF
     },
   ),
+
+  // Chladni plate visualization
+  chladniParticleProperty: new ProfileColorProperty(
+    resonance,
+    "chladniParticle",
+    {
+      default: new Color(255, 255, 255), // White particles on dark background
+      projector: new Color(40, 40, 40), // Dark particles on light background
+    },
+  ),
+
+  chladniBackgroundProperty: new ProfileColorProperty(
+    resonance,
+    "chladniBackground",
+    {
+      default: new Color(26, 26, 46), // Dark blue-ish background
+      projector: new Color(240, 240, 245), // Light background for projector
+    },
+  ),
+
+  chladniPlateBorderProperty: new ProfileColorProperty(
+    resonance,
+    "chladniPlateBorder",
+    {
+      default: new Color(68, 68, 102),
+      projector: new Color(100, 100, 120),
+    },
+  ),
 };
 
 export default ResonanceColors;

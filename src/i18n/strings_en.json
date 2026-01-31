@@ -2,7 +2,8 @@
   "resonance": {
     "title": "Resonance",
     "screens": {
-      "sim": "Simulation"
+      "sim": "Simulation",
+      "chladni": "Chladni"
     },
     "controls": {
       "springConstant": "Spring Constant (k)",
@@ -94,6 +95,22 @@
       "solverAdaptiveRK45": "Adaptive RK45",
       "solverAdaptiveEuler": "Adaptive Euler",
       "solverModifiedMidpoint": "Modified Midpoint"
+    },
+    "chladni": {
+      "material": "Material",
+      "copper": "Copper",
+      "aluminum": "Aluminum",
+      "zinc": "Zinc",
+      "stainlessSteel": "Stainless Steel",
+      "frequencyRange": "Frequency Range",
+      "frequency": "Frequency",
+      "lowRange": "50 - 1000 Hz",
+      "midLowRange": "1000 - 2000 Hz",
+      "midHighRange": "2000 - 3000 Hz",
+      "highRange": "3000 - 4000 Hz",
+      "particles": "Particles",
+      "regenerate": "Regenerate",
+      "resonanceCurve": "Resonance Curve"
     }
   }
 }

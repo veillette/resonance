@@ -8,6 +8,7 @@ import { VBox, Text, HStrut } from "scenerystack/scenery";
 import { Checkbox, VerticalAquaRadioButtonGroup } from "scenerystack/sun";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { SimScreen } from "./screen-name/SimScreen.js";
+import { ChladniScreen } from "./chladni/ChladniScreen.js";
 import { ResonanceStrings } from "./i18n/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
 import { SolverType } from "./common/model/SolverType.js";
@@ -249,6 +250,9 @@ onReadyToLaunch(() => {
   const screens = [
     new SimScreen(resonancePreferences, {
       tandem: Tandem.ROOT.createTandem("simScreen"),
+    }),
+    new ChladniScreen(resonancePreferences, {
+      tandem: Tandem.ROOT.createTandem("chladniScreen"),
     }),
   ];
 

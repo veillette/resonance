@@ -66,6 +66,9 @@ export const ResonanceStrings = {
       solverModifiedMidpointStringProperty: strings.resonance.common.solverModifiedMidpointStringProperty,
     },
   },
+
+  // Chladni screen strings
+  chladni: strings.resonance.chladni,
 };
 
 // Export for backward compatibility

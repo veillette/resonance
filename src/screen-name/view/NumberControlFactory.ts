@@ -34,6 +34,8 @@ export interface NumberControlFactoryOptions {
   majorTicks?: Array<{ value: number; label: Text }>;
   /** Track width (default 120) */
   trackWidth?: number;
+  /** Optional dynamic enabled range property for the slider */
+  enabledRangeProperty?: TReadOnlyProperty<Range>;
 }
 
 /**
@@ -60,6 +62,7 @@ export class NumberControlFactory {
       minorTickSpacing,
       majorTicks,
       trackWidth = 120,
+      enabledRangeProperty,
     } = options;
 
     const trackSize =
@@ -69,6 +72,7 @@ export class NumberControlFactory {
 
     return new NumberControl(titleProperty, numberProperty, range, {
       delta,
+      enabledRangeProperty,
       numberDisplayOptions: {
         valuePattern,
         decimalPlaces,
