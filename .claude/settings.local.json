@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(source ~/.bashrc)",
+      "Bash(claude:*)",
+      "Bash(where:*)",
+      "Bash(npm root:*)",
+      "Bash(npm bin:*)",
+      "Bash(npm prefix:*)",
+      "Bash(npm install:*)",
+      "Bash(cmd //c \"C:\\\\Users\\\\veillettem\\\\AppData\\\\Roaming\\\\npm\\\\claude.cmd --version\")",
+      "mcp__claude_ai_Hugging_Face__hf_doc_search"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -102,7 +102,6 @@ export class ResonatorControlPanel extends Panel {
     // The container will size to whichever child is visible
     const configBoxContainer = new VBox({
       children: [configBox, configBoxStrut],
-      spacing: 0,
     });
     // Initially show configBox if count > 1, otherwise show strut
     configBox.visible = tempModel.resonatorCountProperty.value > 1;
@@ -372,7 +371,6 @@ export class ResonatorControlPanel extends Panel {
     const resonatorSelectionBox = new HBox({
       children: [resonatorLabel, resonatorSpinner],
       spacing: 10,
-      align: "center",
     });
 
     return { resonatorSelectionBox, displayResonatorNumberProperty };
@@ -442,7 +440,6 @@ export class ResonatorControlPanel extends Panel {
     naturalFrequencyText.string = `${ResonanceStrings.controls.frequencyEqualsStringProperty.value} ${valueWithUnit}`;
 
     const naturalFrequencyBox = new AlignBox(naturalFrequencyText, {
-      xAlign: "center",
       alignBounds: new Bounds2(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0),
     });
 
@@ -491,7 +488,6 @@ export class ResonatorControlPanel extends Panel {
     return new HBox({
       children: [gravityLabel, gravityToggleSwitch],
       spacing: ResonanceConstants.GRAVITY_BOX_SPACING,
-      align: "center",
     });
   }
 

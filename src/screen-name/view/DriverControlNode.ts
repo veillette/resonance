@@ -56,7 +56,6 @@ export class DriverControlNode extends Node {
     const powerToggleBox = new VBox({
       children: [powerToggleLabel, powerToggleSwitch],
       spacing: ResonanceConstants.POWER_TOGGLE_SPACING,
-      align: "center",
     });
 
     // Frequency Control
@@ -109,7 +108,6 @@ export class DriverControlNode extends Node {
     const controlsBox = new HBox({
       children: [powerToggleBox, frequencyControl, amplitudeControl],
       spacing: 25,
-      align: "center",
     });
     controlsBox.center = driverBox.center;
     this.addChild(controlsBox);

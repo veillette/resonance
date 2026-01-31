@@ -50,10 +50,6 @@ export class PlaybackControlNode extends HBox {
     const playPauseStepButtonGroup = new PlayPauseStepButtonGroup(
       model.resonanceModel.isPlayingProperty,
       {
-        playPauseButtonOptions: {
-          scale: ResonanceConstants.PLAY_PAUSE_SCALE,
-        },
-        includeStepForwardButton: true,
         includeStepBackwardButton: true,
         stepForwardButtonOptions: {
           listener: () => {
@@ -79,7 +75,6 @@ export class PlaybackControlNode extends HBox {
     super({
       children: [speedControl, playPauseStepButtonGroup],
       spacing: ResonanceConstants.PLAYBACK_CONTROLS_SPACING,
-      align: "center",
       centerX: layoutBounds.centerX + ResonanceConstants.DRIVER_CENTER_X_OFFSET,
       bottom: layoutBounds.bottom - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN,
     });
