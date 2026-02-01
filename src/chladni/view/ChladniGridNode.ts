@@ -3,10 +3,12 @@
  *
  * A grid overlay for the Chladni plate visualization.
  * Shows major and minor grid lines.
+ * Extends ChladniOverlayNode for common overlay functionality.
  */
 
-import { Node, Line } from "scenerystack/scenery";
+import { Line } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
+import { ChladniOverlayNode } from "./ChladniOverlayNode.js";
 
 // Grid configuration
 const MAJOR_GRID_SPACING_CM = 5; // Major grid line every 5 cm
@@ -16,53 +18,33 @@ const MINOR_LINE_WIDTH = 0.5;
 const MAJOR_LINE_OPACITY = 0.4;
 const MINOR_LINE_OPACITY = 0.2;
 
-export class ChladniGridNode extends Node {
-  private visualizationWidth: number;
-  private visualizationHeight: number;
-  private plateWidthMeters: number;
-  private plateHeightMeters: number;
-
+export class ChladniGridNode extends ChladniOverlayNode {
   public constructor(
     visualizationWidth: number,
     visualizationHeight: number,
     plateWidthMeters: number,
     plateHeightMeters: number,
   ) {
-    super();
-
-    this.visualizationWidth = visualizationWidth;
-    this.visualizationHeight = visualizationHeight;
-    this.plateWidthMeters = plateWidthMeters;
-    this.plateHeightMeters = plateHeightMeters;
-
-    this.createGrid();
+    super(
+      visualizationWidth,
+      visualizationHeight,
+      plateWidthMeters,
+      plateHeightMeters,
+    );
   }
 
   /**
    * Create the grid lines.
    */
-  private createGrid(): void {
-    // Clear existing children
-    this.removeAllChildren();
-
-    const plateWidthCm = this.plateWidthMeters * 100;
-    const plateHeightCm = this.plateHeightMeters * 100;
-
-    // Pixels per centimeter
-    const pxPerCmX = this.visualizationWidth / plateWidthCm;
-    const pxPerCmY = this.visualizationHeight / plateHeightCm;
+  protected create(): void {
+    const { widthCm, heightCm } = this.getPlateDimensionsCm();
+    const { x: pxPerCmX, y: pxPerCmY } = this.getPixelsPerCm();
 
     // Create minor grid lines first (so major lines render on top)
-    this.createGridLines(
-      plateWidthCm,
-      plateHeightCm,
-      pxPerCmX,
-      pxPerCmY,
-      false,
-    );
+    this.createGridLines(widthCm, heightCm, pxPerCmX, pxPerCmY, false);
 
     // Create major grid lines
-    this.createGridLines(plateWidthCm, plateHeightCm, pxPerCmX, pxPerCmY, true);
+    this.createGridLines(widthCm, heightCm, pxPerCmX, pxPerCmY, true);
   }
 
   /**
@@ -106,21 +88,5 @@ export class ChladniGridNode extends Node {
       });
       this.addChild(line);
     }
-  }
-
-  /**
-   * Update the grid for new dimensions.
-   */
-  public updateDimensions(
-    visualizationWidth: number,
-    visualizationHeight: number,
-    plateWidthMeters: number,
-    plateHeightMeters: number,
-  ): void {
-    this.visualizationWidth = visualizationWidth;
-    this.visualizationHeight = visualizationHeight;
-    this.plateWidthMeters = plateWidthMeters;
-    this.plateHeightMeters = plateHeightMeters;
-    this.createGrid();
   }
 }

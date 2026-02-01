@@ -80,42 +80,41 @@ describe("MeasurementLinesNode", () => {
     it("should calculate valid drag bounds", () => {
       const bounds = node.model.dragBounds;
 
-      // minY should be negative maxHeight
-      // maxY should be negative minHeight
-      expect(bounds.minY).toBeLessThan(0);
-      expect(bounds.maxY).toBeLessThan(0);
+      // minY is the minimum height (can be negative for below plate)
+      // maxY is the maximum height (positive, calculated from screen height)
       expect(bounds.minY).toBeLessThan(bounds.maxY);
+      expect(bounds.maxY).toBeGreaterThan(0);
     });
   });
 
   describe("height bounds calculation", () => {
-    it("should set minimum height to 1cm (0.01m)", () => {
-      // The minimum height constraint is defined in MeasurementLinesNode
+    it("should allow lines below the plate (minHeight = -0.2m)", () => {
+      // The minimum height allows lines to go 20cm below the plate
       const bounds = node.model.dragBounds;
 
-      // maxY corresponds to minHeight = 0.01
-      expect(bounds.maxY).toBeCloseTo(-0.01, 2);
+      // minY corresponds to minHeight = -0.2 (allows going below plate)
+      expect(bounds.minY).toBeCloseTo(-0.2, 2);
     });
 
     it("should calculate maximum height from layout bounds", () => {
       // Max height depends on view-to-model conversion of screen height above driver
       const bounds = node.model.dragBounds;
 
-      // minY corresponds to maxHeight, which is calculated from screen height
-      // Should be a positive number (negative y)
-      expect(bounds.minY).toBeLessThan(-0.01);
+      // maxY corresponds to maxHeight, which is calculated from screen height
+      // Should be greater than minY
+      expect(bounds.maxY).toBeGreaterThan(bounds.minY);
     });
 
     it("should allow dragging through full height range", () => {
       const bounds = node.model.dragBounds;
 
       // Set line to minimum height
-      node.model.line1.positionProperty.value = new Vector2(0, bounds.maxY);
-      expect(node.model.line1.height).toBeCloseTo(-bounds.maxY, 2);
+      node.model.line1.positionProperty.value = new Vector2(0, bounds.minY);
+      expect(node.model.line1.height).toBeCloseTo(bounds.minY, 2);
 
       // Set line to maximum height
-      node.model.line1.positionProperty.value = new Vector2(0, bounds.minY);
-      expect(node.model.line1.height).toBeCloseTo(-bounds.minY, 2);
+      node.model.line1.positionProperty.value = new Vector2(0, bounds.maxY);
+      expect(node.model.line1.height).toBeCloseTo(bounds.maxY, 2);
     });
   });
 
@@ -123,7 +122,7 @@ describe("MeasurementLinesNode", () => {
     it("should allow moving line1 independently", () => {
       const initialLine2Y = node.model.line2.positionProperty.value.y;
 
-      node.model.line1.positionProperty.value = new Vector2(0, -0.5);
+      node.model.line1.positionProperty.value = new Vector2(0, 0.5);
 
       expect(node.model.line1.height).toBeCloseTo(0.5, 2);
       expect(node.model.line2.positionProperty.value.y).toBe(initialLine2Y);
@@ -132,15 +131,15 @@ describe("MeasurementLinesNode", () => {
     it("should allow moving line2 independently", () => {
       const initialLine1Y = node.model.line1.positionProperty.value.y;
 
-      node.model.line2.positionProperty.value = new Vector2(0, -0.6);
+      node.model.line2.positionProperty.value = new Vector2(0, 0.6);
 
       expect(node.model.line2.height).toBeCloseTo(0.6, 2);
       expect(node.model.line1.positionProperty.value.y).toBe(initialLine1Y);
     });
 
     it("should allow both lines to be at the same height", () => {
-      node.model.line1.positionProperty.value = new Vector2(0, -0.3);
-      node.model.line2.positionProperty.value = new Vector2(0, -0.3);
+      node.model.line1.positionProperty.value = new Vector2(0, 0.3);
+      node.model.line2.positionProperty.value = new Vector2(0, 0.3);
 
       expect(node.model.line1.height).toBeCloseTo(0.3, 2);
       expect(node.model.line2.height).toBeCloseTo(0.3, 2);
@@ -154,8 +153,8 @@ describe("MeasurementLinesNode", () => {
 
     it("should reset both lines to initial positions", () => {
       // Move lines
-      node.model.line1.positionProperty.value = new Vector2(0, -0.8);
-      node.model.line2.positionProperty.value = new Vector2(0, -0.1);
+      node.model.line1.positionProperty.value = new Vector2(0, 0.8);
+      node.model.line2.positionProperty.value = new Vector2(0, 0.1);
 
       // Reset
       node.reset();
@@ -166,7 +165,7 @@ describe("MeasurementLinesNode", () => {
     });
 
     it("should be callable multiple times", () => {
-      node.model.line1.positionProperty.value = new Vector2(0, -0.5);
+      node.model.line1.positionProperty.value = new Vector2(0, 0.5);
 
       node.reset();
       node.reset();
@@ -257,8 +256,8 @@ describe("MeasurementLinesNode", () => {
       // Get initial child y positions
       const initialLine1Y = node.children[0]!.y;
 
-      // Change model position (higher = more negative y in model)
-      node.model.line1.positionProperty.value = new Vector2(0, -0.5);
+      // Change model position (higher = more positive y in model)
+      node.model.line1.positionProperty.value = new Vector2(0, 0.5);
 
       // View y should have changed (in view, y increases downward)
       expect(node.children[0]!.y).not.toBe(initialLine1Y);
@@ -266,7 +265,7 @@ describe("MeasurementLinesNode", () => {
 
     it("should maintain x position at driver center", () => {
       // After position change, x should still be at driver center
-      node.model.line1.positionProperty.value = new Vector2(0, -0.5);
+      node.model.line1.positionProperty.value = new Vector2(0, 0.5);
 
       expect(node.children[0]!.x).toBe(DRIVER_CENTER_X);
     });

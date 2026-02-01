@@ -3,12 +3,14 @@
  *
  * A ruler overlay for the Chladni plate visualization.
  * Shows measurement ticks along the edges of the plate in centimeters.
+ * Extends ChladniOverlayNode for common overlay functionality.
  */
 
-import { Node, Line, Text } from "scenerystack/scenery";
+import { Line, Text } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+import { ChladniOverlayNode } from "./ChladniOverlayNode.js";
 
 // Ruler configuration
 const MAJOR_TICK_LENGTH = 10;
@@ -17,47 +19,33 @@ const TICK_LINE_WIDTH = 1.5;
 const MAJOR_TICK_SPACING_CM = 5; // Major tick every 5 cm
 const MINOR_TICK_SPACING_CM = 1; // Minor tick every 1 cm
 
-export class ChladniRulerNode extends Node {
-  private visualizationWidth: number;
-  private visualizationHeight: number;
-  private plateWidthMeters: number;
-  private plateHeightMeters: number;
-
+export class ChladniRulerNode extends ChladniOverlayNode {
   public constructor(
     visualizationWidth: number,
     visualizationHeight: number,
     plateWidthMeters: number,
     plateHeightMeters: number,
   ) {
-    super();
-
-    this.visualizationWidth = visualizationWidth;
-    this.visualizationHeight = visualizationHeight;
-    this.plateWidthMeters = plateWidthMeters;
-    this.plateHeightMeters = plateHeightMeters;
-
-    this.createRuler();
+    super(
+      visualizationWidth,
+      visualizationHeight,
+      plateWidthMeters,
+      plateHeightMeters,
+    );
   }
 
   /**
    * Create the ruler tick marks and labels.
    */
-  private createRuler(): void {
-    // Clear existing children
-    this.removeAllChildren();
-
-    const plateWidthCm = this.plateWidthMeters * 100;
-    const plateHeightCm = this.plateHeightMeters * 100;
-
-    // Pixels per centimeter
-    const pxPerCmX = this.visualizationWidth / plateWidthCm;
-    const pxPerCmY = this.visualizationHeight / plateHeightCm;
+  protected create(): void {
+    const { widthCm, heightCm } = this.getPlateDimensionsCm();
+    const { x: pxPerCmX, y: pxPerCmY } = this.getPixelsPerCm();
 
     // Create horizontal ruler (bottom edge)
-    this.createHorizontalRuler(plateWidthCm, pxPerCmX);
+    this.createHorizontalRuler(widthCm, pxPerCmX);
 
     // Create vertical ruler (left edge)
-    this.createVerticalRuler(plateHeightCm, pxPerCmY);
+    this.createVerticalRuler(heightCm, pxPerCmY);
 
     // Add "cm" label
     const cmLabel = new Text(ResonanceStrings.units.cmStringProperty, {
@@ -132,21 +120,5 @@ export class ChladniRulerNode extends Node {
         this.addChild(label);
       }
     }
-  }
-
-  /**
-   * Update the ruler for new dimensions.
-   */
-  public updateDimensions(
-    visualizationWidth: number,
-    visualizationHeight: number,
-    plateWidthMeters: number,
-    plateHeightMeters: number,
-  ): void {
-    this.visualizationWidth = visualizationWidth;
-    this.visualizationHeight = visualizationHeight;
-    this.plateWidthMeters = plateWidthMeters;
-    this.plateHeightMeters = plateHeightMeters;
-    this.createRuler();
   }
 }

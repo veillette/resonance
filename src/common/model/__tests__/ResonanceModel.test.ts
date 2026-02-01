@@ -307,8 +307,8 @@ describe("ResonanceModel", () => {
       const state = [0, 0, 0];
       const derivatives = model.getDerivatives(0, state);
 
-      // a = g = 10 m/s^2
-      expect(derivatives[1]).toBeCloseTo(10, 5);
+      // a = -g = -10 m/s^2 (gravity acts downward in negative Y direction)
+      expect(derivatives[1]).toBeCloseTo(-10, 5);
     });
 
     it("should calculate driving force correctly when enabled", () => {
