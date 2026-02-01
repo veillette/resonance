@@ -78,10 +78,12 @@ describe("SimScreenView", () => {
       }).not.toThrow();
     });
 
-    it("should call model.step", () => {
+    it("should not directly call model.step (Screen base class handles that)", () => {
+      // Note: model.step is called by the Screen base class, not by the view's step method
+      // to avoid double-stepping. The view's step method only updates visual representation.
       const stepSpy = vi.spyOn(model, "step");
       view.step(0.016);
-      expect(stepSpy).toHaveBeenCalledWith(0.016);
+      expect(stepSpy).not.toHaveBeenCalled();
     });
   });
 

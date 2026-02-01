@@ -16,9 +16,9 @@ describe("MeasurementLineModel", () => {
   let model: MeasurementLineModel;
 
   beforeEach(() => {
-    // Drag bounds in model coordinates (y is inverted: negative y = up)
-    // Allows heights from 0.1m to 1.0m (y from -0.1 to -1.0)
-    dragBounds = new Bounds2(0, -1.0, 0, -0.1);
+    // Drag bounds in model coordinates (positive y = up)
+    // Allows heights from 0.1m to 1.0m
+    dragBounds = new Bounds2(0, 0.1, 0, 1.0);
     model = new MeasurementLineModel(0.5, dragBounds);
   });
 
@@ -30,7 +30,7 @@ describe("MeasurementLineModel", () => {
     it("should store initial position as Vector2", () => {
       const position = model.positionProperty.value;
       expect(position.x).toBe(0);
-      expect(position.y).toBe(-0.5); // height 0.5 = y -0.5
+      expect(position.y).toBe(0.5); // height 0.5 = y 0.5
     });
 
     it("should store drag bounds", () => {
@@ -52,13 +52,13 @@ describe("MeasurementLineModel", () => {
   });
 
   describe("height property", () => {
-    it("should return positive height from negative y position", () => {
-      model.positionProperty.value = new Vector2(0, -0.3);
+    it("should return height from y position", () => {
+      model.positionProperty.value = new Vector2(0, 0.3);
       expect(model.height).toBeCloseTo(0.3, 5);
     });
 
     it("should update when position changes", () => {
-      model.positionProperty.value = new Vector2(0, -0.7);
+      model.positionProperty.value = new Vector2(0, 0.7);
       expect(model.height).toBeCloseTo(0.7, 5);
     });
 
@@ -76,15 +76,15 @@ describe("MeasurementLineModel", () => {
         notifiedValue = position;
       });
 
-      model.positionProperty.value = new Vector2(0, -0.8);
+      model.positionProperty.value = new Vector2(0, 0.8);
 
       expect(notifiedValue).not.toBeNull();
-      expect(notifiedValue!.y).toBe(-0.8);
+      expect(notifiedValue!.y).toBe(0.8);
     });
 
     it("should allow setting new position", () => {
-      model.positionProperty.value = new Vector2(0, -0.25);
-      expect(model.positionProperty.value.y).toBe(-0.25);
+      model.positionProperty.value = new Vector2(0, 0.25);
+      expect(model.positionProperty.value.y).toBe(0.25);
     });
   });
 
@@ -95,14 +95,14 @@ describe("MeasurementLineModel", () => {
         notifiedBounds = bounds;
       });
 
-      const newBounds = new Bounds2(0, -2.0, 0, -0.05);
+      const newBounds = new Bounds2(0, 0.05, 0, 2.0);
       model.dragBoundsProperty.value = newBounds;
 
       expect(notifiedBounds).toBe(newBounds);
     });
 
     it("should allow updating drag bounds", () => {
-      const newBounds = new Bounds2(0, -1.5, 0, -0.01);
+      const newBounds = new Bounds2(0, 0.01, 0, 1.5);
       model.dragBoundsProperty.value = newBounds;
 
       expect(model.dragBoundsProperty.value).toBe(newBounds);
@@ -111,7 +111,7 @@ describe("MeasurementLineModel", () => {
 
   describe("reset", () => {
     it("should reset position to initial value", () => {
-      model.positionProperty.value = new Vector2(0, -0.9);
+      model.positionProperty.value = new Vector2(0, 0.9);
 
       model.reset();
 
@@ -119,9 +119,9 @@ describe("MeasurementLineModel", () => {
     });
 
     it("should reset after multiple position changes", () => {
-      model.positionProperty.value = new Vector2(0, -0.1);
-      model.positionProperty.value = new Vector2(0, -0.9);
-      model.positionProperty.value = new Vector2(0, -0.3);
+      model.positionProperty.value = new Vector2(0, 0.1);
+      model.positionProperty.value = new Vector2(0, 0.9);
+      model.positionProperty.value = new Vector2(0, 0.3);
 
       model.reset();
 
@@ -129,7 +129,7 @@ describe("MeasurementLineModel", () => {
     });
 
     it("should be callable multiple times", () => {
-      model.positionProperty.value = new Vector2(0, -0.8);
+      model.positionProperty.value = new Vector2(0, 0.8);
       model.reset();
       model.reset();
       model.reset();
@@ -166,13 +166,13 @@ describe("MeasurementLinesModel", () => {
 
     it("should create valid drag bounds", () => {
       // minHeight = 0.01, maxHeight = 1.0
-      // y bounds should be (-maxHeight, -minHeight) = (-1.0, -0.01)
+      // y bounds should be (minHeight, maxHeight) = (0.01, 1.0)
       const bounds = model.dragBounds;
 
       expect(bounds.minX).toBe(0);
       expect(bounds.maxX).toBe(0);
-      expect(bounds.minY).toBe(-1.0); // corresponds to maxHeight
-      expect(bounds.maxY).toBe(-0.01); // corresponds to minHeight
+      expect(bounds.minY).toBe(0.01); // corresponds to minHeight
+      expect(bounds.maxY).toBe(1.0); // corresponds to maxHeight
     });
 
     it("should share drag bounds between both lines", () => {
@@ -186,22 +186,22 @@ describe("MeasurementLinesModel", () => {
       const customModel = new MeasurementLinesModel(0.05, 2.0);
 
       const bounds = customModel.dragBounds;
-      expect(bounds.minY).toBe(-2.0); // maxHeight
-      expect(bounds.maxY).toBe(-0.05); // minHeight
+      expect(bounds.minY).toBe(0.05); // minHeight
+      expect(bounds.maxY).toBe(2.0); // maxHeight
     });
 
     it("should handle small height range", () => {
       const smallRangeModel = new MeasurementLinesModel(0.1, 0.2, 0.1, 0.15);
 
-      expect(smallRangeModel.dragBounds.minY).toBe(-0.2);
-      expect(smallRangeModel.dragBounds.maxY).toBe(-0.1);
+      expect(smallRangeModel.dragBounds.minY).toBe(0.1);
+      expect(smallRangeModel.dragBounds.maxY).toBe(0.2);
     });
 
     it("should handle large height range", () => {
       const largeRangeModel = new MeasurementLinesModel(0.001, 10.0);
 
-      expect(largeRangeModel.dragBounds.minY).toBe(-10.0);
-      expect(largeRangeModel.dragBounds.maxY).toBeCloseTo(-0.001, 5);
+      expect(largeRangeModel.dragBounds.minY).toBeCloseTo(0.001, 5);
+      expect(largeRangeModel.dragBounds.maxY).toBe(10.0);
     });
   });
 
@@ -209,7 +209,7 @@ describe("MeasurementLinesModel", () => {
     it("should allow line1 to move independently", () => {
       const initialLine2Height = model.line2.height;
 
-      model.line1.positionProperty.value = new Vector2(0, -0.8);
+      model.line1.positionProperty.value = new Vector2(0, 0.8);
 
       expect(model.line1.height).toBeCloseTo(0.8, 5);
       expect(model.line2.height).toBeCloseTo(initialLine2Height, 5);
@@ -218,15 +218,15 @@ describe("MeasurementLinesModel", () => {
     it("should allow line2 to move independently", () => {
       const initialLine1Height = model.line1.height;
 
-      model.line2.positionProperty.value = new Vector2(0, -0.6);
+      model.line2.positionProperty.value = new Vector2(0, 0.6);
 
       expect(model.line1.height).toBeCloseTo(initialLine1Height, 5);
       expect(model.line2.height).toBeCloseTo(0.6, 5);
     });
 
     it("should allow both lines to move simultaneously", () => {
-      model.line1.positionProperty.value = new Vector2(0, -0.3);
-      model.line2.positionProperty.value = new Vector2(0, -0.9);
+      model.line1.positionProperty.value = new Vector2(0, 0.3);
+      model.line2.positionProperty.value = new Vector2(0, 0.9);
 
       expect(model.line1.height).toBeCloseTo(0.3, 5);
       expect(model.line2.height).toBeCloseTo(0.9, 5);
@@ -235,8 +235,8 @@ describe("MeasurementLinesModel", () => {
 
   describe("reset", () => {
     it("should reset both lines to initial positions", () => {
-      model.line1.positionProperty.value = new Vector2(0, -0.9);
-      model.line2.positionProperty.value = new Vector2(0, -0.1);
+      model.line1.positionProperty.value = new Vector2(0, 0.9);
+      model.line2.positionProperty.value = new Vector2(0, 0.1);
 
       model.reset();
 
@@ -245,7 +245,7 @@ describe("MeasurementLinesModel", () => {
     });
 
     it("should be callable multiple times", () => {
-      model.line1.positionProperty.value = new Vector2(0, -0.5);
+      model.line1.positionProperty.value = new Vector2(0, 0.5);
 
       model.reset();
       model.reset();
@@ -258,18 +258,18 @@ describe("MeasurementLinesModel", () => {
 
   describe("edge cases", () => {
     it("should handle lines at minimum height", () => {
-      model.line1.positionProperty.value = new Vector2(0, -0.01);
+      model.line1.positionProperty.value = new Vector2(0, 0.01);
       expect(model.line1.height).toBeCloseTo(0.01, 5);
     });
 
     it("should handle lines at maximum height", () => {
-      model.line1.positionProperty.value = new Vector2(0, -1.0);
+      model.line1.positionProperty.value = new Vector2(0, 1.0);
       expect(model.line1.height).toBeCloseTo(1.0, 5);
     });
 
     it("should handle lines at same height", () => {
-      model.line1.positionProperty.value = new Vector2(0, -0.5);
-      model.line2.positionProperty.value = new Vector2(0, -0.5);
+      model.line1.positionProperty.value = new Vector2(0, 0.5);
+      model.line2.positionProperty.value = new Vector2(0, 0.5);
 
       expect(model.line1.height).toBeCloseTo(0.5, 5);
       expect(model.line2.height).toBeCloseTo(0.5, 5);
