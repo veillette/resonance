@@ -66,16 +66,12 @@ export class ModifiedMidpointSolver extends ODESolver {
 
     // Subsequent substeps: z_{m+1} = z_{m-1} + 2h * f(z_m)
     for (let m = 1; m < this.substeps; m++) {
-      const zm: number[] = Array.from(
-        { length: n },
-        (_, i) => z[m * n + i]!,
-      );
+      const zm: number[] = Array.from({ length: n }, (_, i) => z[m * n + i]!);
 
       const fm: number[] = model.getDerivatives(m * substepSize, zm);
 
       for (let i = 0; i < n; i++) {
-        z[(m + 1) * n + i] =
-          z[(m - 1) * n + i]! + 2 * substepSize * fm[i]!;
+        z[(m + 1) * n + i] = z[(m - 1) * n + i]! + 2 * substepSize * fm[i]!;
       }
     }
 

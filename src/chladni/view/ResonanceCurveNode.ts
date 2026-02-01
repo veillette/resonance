@@ -9,7 +9,7 @@
  * revealing resonance peaks as you adjust the frequency slider.
  */
 
-import { Node, Line, Text } from "scenerystack/scenery";
+import { Node, Line, Text, Rectangle } from "scenerystack/scenery";
 import {
   ChartTransform,
   ChartRectangle,
@@ -19,7 +19,8 @@ import {
   TickLabelSet,
 } from "scenerystack/bamboo";
 import { Orientation } from "scenerystack/phet-core";
-import { Range } from "scenerystack/dot";
+import { Range, Bounds2 } from "scenerystack/dot";
+import { Shape } from "scenerystack/kite";
 import { ChladniModel } from "../model/ChladniModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
@@ -28,6 +29,9 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 // Chart dimensions
 const CHART_WIDTH = 220;
 const CHART_HEIGHT = 120;
+
+// Fixed total height including axis labels (prevents layout shifts)
+const TOTAL_HEIGHT = CHART_HEIGHT + 35;
 
 // Number of sample points for the curve
 const SAMPLE_COUNT = 2000;
@@ -48,6 +52,9 @@ export class ResonanceCurveNode extends Node {
   // Hz label
   private readonly hzLabel: Text;
 
+  // Fixed size container to prevent layout shifts
+  private readonly fixedContainer: Node;
+
   // Track current window range
   private currentWindowRange: Range;
 
@@ -67,13 +74,33 @@ export class ResonanceCurveNode extends Node {
       modelYRange: new Range(0, 1), // Normalized amplitude
     });
 
+    // Create a fixed-size container that prevents layout shifts
+    // This ensures the overall node bounds stay constant
+    this.fixedContainer = new Node();
+
+    // Invisible rectangle to establish fixed bounds
+    const boundsRect = new Rectangle(0, 0, CHART_WIDTH, TOTAL_HEIGHT, {
+      fill: null,
+      stroke: null,
+    });
+    this.fixedContainer.addChild(boundsRect);
+
     // Background rectangle
     this.chartRectangle = new ChartRectangle(this.chartTransform, {
       fill: ResonanceColors.chladniBackgroundProperty,
       stroke: ResonanceColors.chladniPlateBorderProperty,
       lineWidth: 1,
     });
-    this.addChild(this.chartRectangle);
+    this.fixedContainer.addChild(this.chartRectangle);
+
+    // Create a clipped container for the chart content (grid, curve, marker)
+    // This prevents the curve and grid from rendering outside the chart area
+    const chartClipArea = Shape.bounds(
+      new Bounds2(0, 0, CHART_WIDTH, CHART_HEIGHT),
+    );
+    const clippedChartContent = new Node({
+      clipArea: chartClipArea,
+    });
 
     // Grid lines
     const gridSpacingX = this.calculateGridSpacing(this.currentWindowRange);
@@ -86,7 +113,7 @@ export class ResonanceCurveNode extends Node {
         lineWidth: 0.5,
       },
     );
-    this.addChild(this.verticalGridLines);
+    clippedChartContent.addChild(this.verticalGridLines);
 
     this.horizontalGridLines = new GridLineSet(
       this.chartTransform,
@@ -97,9 +124,27 @@ export class ResonanceCurveNode extends Node {
         lineWidth: 0.5,
       },
     );
-    this.addChild(this.horizontalGridLines);
+    clippedChartContent.addChild(this.horizontalGridLines);
 
-    // X-axis tick marks
+    // Create the line plot for resonance curve using precomputed data
+    const dataSet = this.model.getResonanceCurveData(SAMPLE_COUNT);
+    this.linePlot = new LinePlot(this.chartTransform, dataSet, {
+      stroke: ResonanceColors.frequencyTrackProperty,
+      lineWidth: 2,
+    });
+    clippedChartContent.addChild(this.linePlot);
+
+    // Current frequency marker (vertical line)
+    this.frequencyMarker = new Line(0, 0, 0, CHART_HEIGHT, {
+      stroke: ResonanceColors.textProperty,
+      lineWidth: 2,
+      lineDash: [4, 4],
+    });
+    clippedChartContent.addChild(this.frequencyMarker);
+
+    this.fixedContainer.addChild(clippedChartContent);
+
+    // X-axis tick marks (outside clip area, at the bottom edge)
     this.xTickMarks = new TickMarkSet(
       this.chartTransform,
       Orientation.HORIZONTAL,
@@ -111,9 +156,9 @@ export class ResonanceCurveNode extends Node {
         extent: 6,
       },
     );
-    this.addChild(this.xTickMarks);
+    this.fixedContainer.addChild(this.xTickMarks);
 
-    // X-axis tick labels
+    // X-axis tick labels with fixed-width formatting to prevent layout shifts
     this.xTickLabels = new TickLabelSet(
       this.chartTransform,
       Orientation.HORIZONTAL,
@@ -124,35 +169,24 @@ export class ResonanceCurveNode extends Node {
           new Text(Math.round(value).toString(), {
             font: ResonanceConstants.TICK_LABEL_FONT,
             fill: ResonanceColors.textProperty,
+            maxWidth: 40, // Fixed max width to prevent layout shifts
           }),
       },
     );
-    this.addChild(this.xTickLabels);
+    this.fixedContainer.addChild(this.xTickLabels);
 
-    // Hz label
+    // Hz label at fixed position
     this.hzLabel = new Text(ResonanceStrings.units.hzStringProperty, {
       font: ResonanceConstants.TICK_LABEL_FONT,
       fill: ResonanceColors.textProperty,
-      right: CHART_WIDTH,
+      left: CHART_WIDTH + 5,
       top: CHART_HEIGHT + 18,
     });
-    this.addChild(this.hzLabel);
+    this.fixedContainer.addChild(this.hzLabel);
 
-    // Create the line plot for resonance curve using precomputed data
-    const dataSet = this.model.getResonanceCurveData(SAMPLE_COUNT);
-    this.linePlot = new LinePlot(this.chartTransform, dataSet, {
-      stroke: ResonanceColors.frequencyTrackProperty,
-      lineWidth: 2,
-    });
-    this.addChild(this.linePlot);
+    // Add the fixed container to this node
+    this.addChild(this.fixedContainer);
 
-    // Current frequency marker (vertical line)
-    this.frequencyMarker = new Line(0, 0, 0, CHART_HEIGHT, {
-      stroke: ResonanceColors.textProperty,
-      lineWidth: 2,
-      lineDash: [4, 4],
-    });
-    this.addChild(this.frequencyMarker);
     this.updateFrequencyMarker();
 
     // Update when frequency changes (just update window and marker, data is precomputed)

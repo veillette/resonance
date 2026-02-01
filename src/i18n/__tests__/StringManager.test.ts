@@ -65,7 +65,9 @@ describe("getStringProperties", () => {
       const strings = getStringProperties();
       expect(strings.resonance.titleStringProperty).toBeDefined();
       expect(typeof strings.resonance.titleStringProperty.value).toBe("string");
-      expect(strings.resonance.titleStringProperty.value.length).toBeGreaterThan(0);
+      expect(
+        strings.resonance.titleStringProperty.value.length,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -73,7 +75,9 @@ describe("getStringProperties", () => {
     it("should have screen name string properties", () => {
       const strings = getStringProperties();
       expect(strings.resonance.screens.simStringProperty).toBeDefined();
-      expect(strings.resonance.screens.simStringProperty.value.length).toBeGreaterThan(0);
+      expect(
+        strings.resonance.screens.simStringProperty.value.length,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -197,8 +201,12 @@ describe("getStringProperties", () => {
 
     it("should have non-empty preset names", () => {
       const presets = getStringProperties().resonance.presets;
-      expect(presets.lightAndBouncyStringProperty.value.length).toBeGreaterThan(0);
-      expect(presets.resonanceDemoStringProperty.value.length).toBeGreaterThan(0);
+      expect(presets.lightAndBouncyStringProperty.value.length).toBeGreaterThan(
+        0,
+      );
+      expect(presets.resonanceDemoStringProperty.value.length).toBeGreaterThan(
+        0,
+      );
     });
   });
 

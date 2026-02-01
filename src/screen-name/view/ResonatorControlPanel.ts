@@ -402,7 +402,8 @@ export class ResonatorControlPanel extends Panel {
     });
 
     const springConstantControl = NumberControlFactory.create({
-      titleProperty: ResonanceStrings.controls.springConstantSimpleStringProperty,
+      titleProperty:
+        ResonanceStrings.controls.springConstantSimpleStringProperty,
       numberProperty: displaySpringConstantProperty,
       range: ResonanceConstants.SPRING_CONSTANT_RANGE,
       delta: 1,

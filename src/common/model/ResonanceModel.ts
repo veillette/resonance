@@ -290,8 +290,7 @@ export type ResonancePreset = {
 export function getPresetName(
   preset: ResonancePreset,
 ): ReadOnlyProperty<string> {
-  const propertyName =
-    `${preset.nameKey}StringProperty`;
+  const propertyName = `${preset.nameKey}StringProperty`;
   const presetsMap = ResonanceStrings.presets as Record<
     string,
     ReadOnlyProperty<string>

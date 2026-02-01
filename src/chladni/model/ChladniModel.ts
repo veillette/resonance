@@ -49,7 +49,7 @@ const TWO_PI = Math.PI * 2;
 // Default physical plate dimensions in meters (from original Chladni simulator)
 // These affect wave number calculations and resonant frequencies
 // For a rectangular plate, width (a) is along x-axis, height (b) is along y-axis
-const DEFAULT_PLATE_WIDTH = 0.32;  // a - dimension along x (meters)
+const DEFAULT_PLATE_WIDTH = 0.32; // a - dimension along x (meters)
 const DEFAULT_PLATE_HEIGHT = 0.32; // b - dimension along y (meters)
 
 // Plate size constraints
@@ -127,7 +127,8 @@ const GRAPH_WINDOW_WIDTH = 500;
 
 // Precomputed resonance curve resolution (samples per Hz)
 const CURVE_SAMPLES_PER_HZ = 4;
-const TOTAL_CURVE_SAMPLES = (FREQUENCY_MAX - FREQUENCY_MIN) * CURVE_SAMPLES_PER_HZ;
+const TOTAL_CURVE_SAMPLES =
+  (FREQUENCY_MAX - FREQUENCY_MIN) * CURVE_SAMPLES_PER_HZ;
 
 // ============================================================================
 // GRAIN COUNT OPTIONS
@@ -201,7 +202,9 @@ export class ChladniModel {
     this.isPlayingProperty = new BooleanProperty(false);
 
     // Initialize grain count to default (10,000)
-    this.grainCountProperty = new Property<GrainCountOption>(DEFAULT_GRAIN_COUNT);
+    this.grainCountProperty = new Property<GrainCountOption>(
+      DEFAULT_GRAIN_COUNT,
+    );
 
     // Initialize plate dimensions
     this.plateWidthProperty = new NumberProperty(DEFAULT_PLATE_WIDTH, {
@@ -212,7 +215,9 @@ export class ChladniModel {
     });
 
     // Initialize boundary mode
-    this.boundaryModeProperty = new Property<BoundaryMode>(DEFAULT_BOUNDARY_MODE);
+    this.boundaryModeProperty = new Property<BoundaryMode>(
+      DEFAULT_BOUNDARY_MODE,
+    );
 
     // Initialize sweep state
     this.isSweepingProperty = new BooleanProperty(false);
@@ -304,8 +309,9 @@ export class ChladniModel {
    * Uses geometric mean of plate dimensions.
    */
   private calculateDamping(): number {
-    return DAMPING_COEFFICIENT / Math.sqrt(
-      this.plateWidthProperty.value * this.plateHeightProperty.value
+    return (
+      DAMPING_COEFFICIENT /
+      Math.sqrt(this.plateWidthProperty.value * this.plateHeightProperty.value)
     );
   }
 
@@ -352,7 +358,10 @@ export class ChladniModel {
 
       // Map frequency to precomputed array index
       const index = Math.round((freq - FREQUENCY_MIN) * CURVE_SAMPLES_PER_HZ);
-      const clampedIndex = Math.max(0, Math.min(TOTAL_CURVE_SAMPLES - 1, index));
+      const clampedIndex = Math.max(
+        0,
+        Math.min(TOTAL_CURVE_SAMPLES - 1, index),
+      );
 
       const strength = this.precomputedStrengths[clampedIndex]!;
       const normalized = Math.min(strength / this.precomputedMaxStrength, 1);
@@ -375,7 +384,7 @@ export class ChladniModel {
     this.particlePositions.length = 0;
     for (let i = 0; i < count; i++) {
       // Random position in centered coordinates
-      const x = (Math.random() - 0.5) * 2 * halfWidth;  // -halfWidth to +halfWidth
+      const x = (Math.random() - 0.5) * 2 * halfWidth; // -halfWidth to +halfWidth
       const y = (Math.random() - 0.5) * 2 * halfHeight; // -halfHeight to +halfHeight
       this.particlePositions.push(new Vector2(x, y));
     }
@@ -431,21 +440,23 @@ export class ChladniModel {
     // Sum over modes m, n = 0, 1, 2, ..., MAX_MODE
     for (let m = 0; m <= MAX_MODE; m += MODE_STEP) {
       // Source term X component: cos(mπx'/a)
-      const sourceX = Math.cos(m * Math.PI * excitX / a);
+      const sourceX = Math.cos((m * Math.PI * excitX) / a);
 
       for (let n = 0; n <= MAX_MODE; n += MODE_STEP) {
         // Skip the (0,0) mode to avoid division issues
         if (m === 0 && n === 0) continue;
 
         // Source term: cos(mπx'/a)cos(nπy'/b)
-        const sourceY = Math.cos(n * Math.PI * excitY / b);
+        const sourceY = Math.cos((n * Math.PI * excitY) / b);
         const sourceTerm = sourceX * sourceY;
 
         // Skip modes with negligible source contribution (optimization)
         if (Math.abs(sourceTerm) < SOURCE_THRESHOLD) continue;
 
         // Modal wave number for rectangular plate: k_{m,n} = π√((m/a)² + (n/b)²)
-        const kmn = Math.sqrt((m * mOverA) * (m * mOverA) + (n * nOverB) * (n * nOverB));
+        const kmn = Math.sqrt(
+          m * mOverA * (m * mOverA) + n * nOverB * (n * nOverB),
+        );
         const kmnSquared = kmn * kmn;
 
         // Complex denominator: (k² - k²ₘₙ) + 2iγk
@@ -454,15 +465,15 @@ export class ChladniModel {
         const denomMagSquared = realPart * realPart + imagPart * imagPart;
 
         // Field term: cos(mπx/a)cos(nπy/b)
-        const fieldX = Math.cos(m * Math.PI * physX / a);
-        const fieldY = Math.cos(n * Math.PI * physY / b);
+        const fieldX = Math.cos((m * Math.PI * physX) / a);
+        const fieldY = Math.cos((n * Math.PI * physY) / b);
         const fieldTerm = fieldX * fieldY;
 
         // Complex division: numerator / (realPart + i*imagPart)
         // = numerator * (realPart - i*imagPart) / |denominator|²
         const numerator = sourceTerm * fieldTerm;
-        sumReal += numerator * realPart / denomMagSquared;
-        sumImag -= numerator * imagPart / denomMagSquared;
+        sumReal += (numerator * realPart) / denomMagSquared;
+        sumImag -= (numerator * imagPart) / denomMagSquared;
       }
     }
 
@@ -509,7 +520,8 @@ export class ChladniModel {
       const displacement = Math.abs(this.psi(x, y));
 
       // Random walk with step size proportional to displacement
-      const stepSize = PARTICLE_STEP_SCALE * displacement * timeScale * STEP_TIME_SCALE;
+      const stepSize =
+        PARTICLE_STEP_SCALE * displacement * timeScale * STEP_TIME_SCALE;
       const angle = Math.random() * TWO_PI;
 
       // Update position
@@ -652,7 +664,7 @@ export class ChladniModel {
 
     // Sum over modes m, n = 0, 1, 2, ..., MAX_MODE
     for (let m = 0; m <= MAX_MODE; m += MODE_STEP) {
-      const cosX = Math.cos(m * Math.PI * excitX / a);
+      const cosX = Math.cos((m * Math.PI * excitX) / a);
       const cosXSquared = cosX * cosX;
 
       for (let n = 0; n <= MAX_MODE; n += MODE_STEP) {
@@ -660,14 +672,16 @@ export class ChladniModel {
         if (m === 0 && n === 0) continue;
 
         // |φₘₙ(x',y')|² = (4/ab) cos²(mπx'/a) cos²(nπy'/b)
-        const cosY = Math.cos(n * Math.PI * excitY / b);
+        const cosY = Math.cos((n * Math.PI * excitY) / b);
         const phiSquared = normFactor * cosXSquared * cosY * cosY;
 
         // Skip modes with negligible source contribution
         if (phiSquared < SOURCE_THRESHOLD_SQUARED) continue;
 
         // Modal wave number for rectangular plate: k_{m,n} = π√((m/a)² + (n/b)²)
-        const kmn = Math.sqrt((m * mOverA) * (m * mOverA) + (n * nOverB) * (n * nOverB));
+        const kmn = Math.sqrt(
+          m * mOverA * (m * mOverA) + n * nOverB * (n * nOverB),
+        );
         const kmnSquared = kmn * kmn;
 
         // Resonance denominator: (k² - kmn²)² + 4(γk)²
