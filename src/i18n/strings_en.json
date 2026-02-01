@@ -126,9 +126,11 @@
       "resonanceCurve": "Resonance Curve",
       "ruler": "Ruler",
       "grid": "Grid",
+      "colormap": "Displacement",
       "boundaryMode": "Boundary",
       "boundaryClamp": "Clamp",
-      "boundaryRemove": "Remove"
+      "boundaryRemove": "Remove",
+      "keyboardHint": "Keyboard: Space=Play/Pause, Arrows=Frequency, R=Reset"
     }
   }
 }

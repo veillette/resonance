@@ -41,6 +41,11 @@ export class ChladniControlPanel extends Panel {
    */
   public readonly showGridProperty: Property<boolean>;
 
+  /**
+   * Property controlling the visibility of the displacement colormap.
+   */
+  public readonly showColormapProperty: Property<boolean>;
+
   private readonly displayOptionsSection: DisplayOptionsSection;
 
   public constructor(model: ChladniModel, layoutBounds: Bounds2) {
@@ -93,6 +98,7 @@ export class ChladniControlPanel extends Panel {
       displayOptionsSection.showResonanceCurveProperty;
     this.showRulerProperty = displayOptionsSection.showRulerProperty;
     this.showGridProperty = displayOptionsSection.showGridProperty;
+    this.showColormapProperty = displayOptionsSection.showColormapProperty;
   }
 
   public reset(): void {

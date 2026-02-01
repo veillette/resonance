@@ -2,7 +2,7 @@
  * DisplayOptionsSection.ts
  *
  * Control panel section for display options in the Chladni plate visualization.
- * Includes checkboxes for resonance curve, ruler, and grid visibility.
+ * Includes checkboxes for resonance curve, ruler, grid, and displacement colormap visibility.
  */
 
 import { Text, VBox } from "scenerystack/scenery";
@@ -28,11 +28,17 @@ export class DisplayOptionsSection extends VBox {
    */
   public readonly showGridProperty: Property<boolean>;
 
+  /**
+   * Property controlling the visibility of the displacement colormap.
+   */
+  public readonly showColormapProperty: Property<boolean>;
+
   public constructor() {
     // Create properties with default values
     const showResonanceCurveProperty = new Property<boolean>(true);
     const showRulerProperty = new Property<boolean>(false);
     const showGridProperty = new Property<boolean>(false);
+    const showColormapProperty = new Property<boolean>(false);
 
     // --- Show Resonance Curve Checkbox ---
     const showResonanceCurveCheckbox = new Checkbox(
@@ -70,11 +76,24 @@ export class DisplayOptionsSection extends VBox {
       },
     );
 
+    // --- Show Displacement Colormap Checkbox ---
+    const showColormapCheckbox = new Checkbox(
+      showColormapProperty,
+      new Text(ResonanceStrings.chladni.colormapStringProperty, {
+        font: ResonanceConstants.CONTROL_FONT,
+        fill: ResonanceColors.textProperty,
+      }),
+      {
+        boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
+      },
+    );
+
     super({
       children: [
         showResonanceCurveCheckbox,
         showRulerCheckbox,
         showGridCheckbox,
+        showColormapCheckbox,
       ],
       spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
       align: "left",
@@ -84,6 +103,7 @@ export class DisplayOptionsSection extends VBox {
     this.showResonanceCurveProperty = showResonanceCurveProperty;
     this.showRulerProperty = showRulerProperty;
     this.showGridProperty = showGridProperty;
+    this.showColormapProperty = showColormapProperty;
   }
 
   /**
@@ -93,5 +113,6 @@ export class DisplayOptionsSection extends VBox {
     this.showResonanceCurveProperty.reset();
     this.showRulerProperty.reset();
     this.showGridProperty.reset();
+    this.showColormapProperty.reset();
   }
 }

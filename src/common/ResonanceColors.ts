@@ -285,6 +285,30 @@ const ResonanceColors = {
       projector: new Color(100, 100, 120),
     },
   ),
+
+  // Displacement colormap colors (blue-white-red gradient)
+  colormapNegativeProperty: new ProfileColorProperty(
+    resonance,
+    "colormapNegative",
+    {
+      default: new Color(0, 100, 255), // Blue for negative displacement
+      projector: new Color(0, 80, 200),
+    },
+  ),
+
+  colormapZeroProperty: new ProfileColorProperty(resonance, "colormapZero", {
+    default: new Color(255, 255, 255), // White for zero (nodal lines)
+    projector: new Color(240, 240, 240),
+  }),
+
+  colormapPositiveProperty: new ProfileColorProperty(
+    resonance,
+    "colormapPositive",
+    {
+      default: new Color(255, 80, 80), // Red for positive displacement
+      projector: new Color(220, 50, 50),
+    },
+  ),
 };
 
 export default ResonanceColors;
