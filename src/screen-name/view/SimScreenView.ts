@@ -441,10 +441,10 @@ export class SimScreenView extends ScreenView {
   }
 
   public step(dt: number): void {
-    // Step the physics model first
-    this.model.step(dt);
+    // Note: model.step(dt) is called by the Screen base class, not here
+    // to avoid double-stepping
 
-    // Then update the visual representation
+    // Update the visual representation
     this.updateSpringAndMass();
   }
 }

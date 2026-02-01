@@ -70,6 +70,10 @@ const FREQUENCY_MIN = 50;
 const FREQUENCY_MAX = 4000;
 const FREQUENCY_DEFAULT = 500;
 
+// Frequency sweep rate (Hz per second)
+// Full range is 3950 Hz (50-4000), so ~66 Hz/s gives ~60 second sweep
+const SWEEP_RATE = 66;
+
 // ============================================================================
 // MODAL CALCULATION PARAMETERS
 // ============================================================================
@@ -160,8 +164,14 @@ export class ChladniModel {
   // Boundary handling mode: clamp particles to edges or remove them
   public readonly boundaryModeProperty: Property<BoundaryMode>;
 
+  // Frequency sweep state
+  public readonly isSweepingProperty: BooleanProperty;
+
   // Particle positions (normalized 0-1 coordinates)
   public readonly particlePositions: Vector2[];
+
+  // Actual particle count (updated when particles are added/removed)
+  public readonly actualParticleCountProperty: NumberProperty;
 
   // Cached values for performance
   private cachedWaveNumber: number;
@@ -204,8 +214,12 @@ export class ChladniModel {
     // Initialize boundary mode
     this.boundaryModeProperty = new Property<BoundaryMode>(DEFAULT_BOUNDARY_MODE);
 
+    // Initialize sweep state
+    this.isSweepingProperty = new BooleanProperty(false);
+
     // Initialize particles with random positions
     this.particlePositions = [];
+    this.actualParticleCountProperty = new NumberProperty(0);
     this.initializeParticles();
 
     // Cache derived values
@@ -242,12 +256,14 @@ export class ChladniModel {
       this.cachedDamping = this.calculateDamping();
       this.recomputeResonanceCurve();
       this.clampParticlesToBounds();
+      this.clampExcitationToBounds();
     });
 
     this.plateHeightProperty.lazyLink(() => {
       this.cachedDamping = this.calculateDamping();
       this.recomputeResonanceCurve();
       this.clampParticlesToBounds();
+      this.clampExcitationToBounds();
     });
   }
 
@@ -262,6 +278,24 @@ export class ChladniModel {
     for (const particle of this.particlePositions) {
       particle.x = Math.max(-halfWidth, Math.min(halfWidth, particle.x));
       particle.y = Math.max(-halfHeight, Math.min(halfHeight, particle.y));
+    }
+  }
+
+  /**
+   * Clamp excitation position to current plate bounds.
+   * Called when plate dimensions change to ensure excitation stays within bounds.
+   */
+  private clampExcitationToBounds(): void {
+    const halfWidth = this.plateWidthProperty.value / 2;
+    const halfHeight = this.plateHeightProperty.value / 2;
+    const pos = this.excitationPositionProperty.value;
+
+    const clampedX = Math.max(-halfWidth, Math.min(halfWidth, pos.x));
+    const clampedY = Math.max(-halfHeight, Math.min(halfHeight, pos.y));
+
+    // Only update if actually changed to avoid unnecessary notifications
+    if (clampedX !== pos.x || clampedY !== pos.y) {
+      this.excitationPositionProperty.value = new Vector2(clampedX, clampedY);
     }
   }
 
@@ -345,6 +379,9 @@ export class ChladniModel {
       const y = (Math.random() - 0.5) * 2 * halfHeight; // -halfHeight to +halfHeight
       this.particlePositions.push(new Vector2(x, y));
     }
+
+    // Update actual particle count
+    this.actualParticleCountProperty.value = this.particlePositions.length;
   }
 
   /**
@@ -440,6 +477,17 @@ export class ChladniModel {
    * is proportional to local displacement magnitude.
    */
   public step(dt: number): void {
+    // Handle frequency sweep if active
+    if (this.isSweepingProperty.value) {
+      const newFreq = this.frequencyProperty.value + SWEEP_RATE * dt;
+      if (newFreq >= this.frequencyRange.max) {
+        this.frequencyProperty.value = this.frequencyRange.max;
+        this.isSweepingProperty.value = false;
+      } else {
+        this.frequencyProperty.value = newFreq;
+      }
+    }
+
     if (!this.isPlayingProperty.value) {
       return;
     }
@@ -483,6 +531,24 @@ export class ChladniModel {
         particle.setXY(clampedX, clampedY);
       }
     }
+
+    // Update actual particle count (may have changed if particles were removed)
+    this.actualParticleCountProperty.value = this.particlePositions.length;
+  }
+
+  /**
+   * Start a frequency sweep from minimum to maximum frequency.
+   */
+  public startSweep(): void {
+    this.frequencyProperty.value = this.frequencyRange.min;
+    this.isSweepingProperty.value = true;
+  }
+
+  /**
+   * Stop an active frequency sweep.
+   */
+  public stopSweep(): void {
+    this.isSweepingProperty.value = false;
   }
 
   /**
@@ -497,6 +563,7 @@ export class ChladniModel {
     this.plateWidthProperty.reset();
     this.plateHeightProperty.reset();
     this.boundaryModeProperty.reset();
+    this.isSweepingProperty.reset();
     this.initializeParticles();
     this.cachedWaveNumber = this.calculateWaveNumber();
     this.cachedDamping = this.calculateDamping();

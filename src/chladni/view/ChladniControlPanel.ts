@@ -8,7 +8,7 @@
 import { Node, Text, VBox, HBox, Line } from "scenerystack/scenery";
 import { Panel, ComboBox, TextPushButton, Checkbox, AquaRadioButtonGroup } from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
-import { Property } from "scenerystack/axon";
+import { DerivedProperty, Property } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
 import { ChladniModel, GrainCountOption, GRAIN_COUNT_OPTIONS, BoundaryMode } from "../model/ChladniModel.js";
 import { Material, MaterialType, MATERIALS } from "../model/Material.js";
@@ -115,8 +115,45 @@ export class ChladniControlPanel extends Panel {
       },
     );
 
+    // --- Actual Grain Count Display ---
+    const actualCountText = new Text("", {
+      font: ResonanceConstants.CONTROL_FONT,
+      fill: ResonanceColors.textProperty,
+    });
+
+    // Update the actual count display when particle count changes
+    model.actualParticleCountProperty.link((count) => {
+      actualCountText.string = `(${count.toLocaleString()})`;
+    });
+
+    // --- Replenish Button ---
+    // Enabled only when actual count differs from target count
+    const replenishEnabledProperty = new DerivedProperty(
+      [model.actualParticleCountProperty, model.grainCountProperty],
+      (actualCount, grainOption) => actualCount !== grainOption.value
+    );
+
+    const replenishButton = new TextPushButton(
+      ResonanceStrings.chladni.replenishStringProperty,
+      {
+        font: ResonanceConstants.CONTROL_FONT,
+        listener: () => {
+          model.regenerateParticles();
+        },
+        baseColor: ResonanceColors.subPanelFillProperty,
+        textFill: ResonanceColors.textProperty,
+        enabledProperty: replenishEnabledProperty,
+      },
+    );
+
+    const grainCountRow = new HBox({
+      children: [grainCountComboBox, actualCountText, replenishButton],
+      spacing: 10,
+      align: "center",
+    });
+
     const grainCountBox = new VBox({
-      children: [grainCountLabel, grainCountComboBox],
+      children: [grainCountLabel, grainCountRow],
       spacing: ResonanceConstants.COMBO_BOX_SPACING,
       align: "left",
     });
@@ -134,16 +171,23 @@ export class ChladniControlPanel extends Panel {
       trackWidth: 150,
     });
 
-    // --- Regenerate Button ---
-    const regenerateButton = new TextPushButton(
-      ResonanceStrings.chladni.regenerateStringProperty,
+    // --- Sweep Button ---
+    // Enabled only when not currently sweeping
+    const sweepEnabledProperty = new DerivedProperty(
+      [model.isSweepingProperty],
+      (isSweeping) => !isSweeping
+    );
+
+    const sweepButton = new TextPushButton(
+      ResonanceStrings.chladni.sweepStringProperty,
       {
         font: ResonanceConstants.CONTROL_FONT,
         listener: () => {
-          model.regenerateParticles();
+          model.startSweep();
         },
         baseColor: ResonanceColors.subPanelFillProperty,
         textFill: ResonanceColors.textProperty,
+        enabledProperty: sweepEnabledProperty,
       },
     );
 
@@ -236,18 +280,18 @@ export class ChladniControlPanel extends Panel {
     const controlPanelContent = new VBox({
       children: [
         materialBox,
-        grainCountBox,
         new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
           stroke: ResonanceColors.textProperty,
           lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
         }),
         frequencyControl,
+        sweepButton,
+        grainCountBox,
+        boundaryModeBox,
         new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
           stroke: ResonanceColors.textProperty,
           lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
         }),
-        regenerateButton,
-        boundaryModeBox,
         showResonanceCurveCheckbox,
         showRulerCheckbox,
         showGridCheckbox,

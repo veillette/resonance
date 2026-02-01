@@ -2,15 +2,11 @@
  * ChladniGridNode.ts
  *
  * A grid overlay for the Chladni plate visualization.
- * Shows grid lines with a double arrow indicator showing the spacing between major lines.
+ * Shows major and minor grid lines.
  */
 
-import { Node, Line, Path, Text } from "scenerystack/scenery";
-import { Shape } from "scenerystack/kite";
+import { Node, Line } from "scenerystack/scenery";
 import ResonanceColors from "../../common/ResonanceColors.js";
-import ResonanceConstants from "../../common/ResonanceConstants.js";
-import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
-import { DerivedProperty, TReadOnlyProperty } from "scenerystack/axon";
 
 // Grid configuration
 const MAJOR_GRID_SPACING_CM = 5; // Major grid line every 5 cm
@@ -20,20 +16,11 @@ const MINOR_LINE_WIDTH = 0.5;
 const MAJOR_LINE_OPACITY = 0.4;
 const MINOR_LINE_OPACITY = 0.2;
 
-// Arrow indicator configuration
-const ARROW_HEAD_SIZE = 6;
-const ARROW_LINE_WIDTH = 2;
-const ARROW_OFFSET_FROM_EDGE = 25;
-
 export class ChladniGridNode extends Node {
   private visualizationWidth: number;
   private visualizationHeight: number;
   private plateWidthMeters: number;
   private plateHeightMeters: number;
-
-  // The spacing indicator arrow and label
-  private readonly spacingIndicator: Node;
-  private readonly spacingLabel: Text;
 
   public constructor(
     visualizationWidth: number,
@@ -48,28 +35,11 @@ export class ChladniGridNode extends Node {
     this.plateWidthMeters = plateWidthMeters;
     this.plateHeightMeters = plateHeightMeters;
 
-    // Create spacing indicator (will be positioned in createGrid)
-    this.spacingIndicator = new Node();
-    this.spacingLabel = new Text(this.createSpacingString(), {
-      font: ResonanceConstants.LABEL_FONT,
-      fill: ResonanceColors.textProperty,
-    });
-
     this.createGrid();
   }
 
   /**
-   * Create a string property for the spacing label (e.g., "5 cm").
-   */
-  private createSpacingString(): TReadOnlyProperty<string> {
-    return new DerivedProperty(
-      [ResonanceStrings.units.cmPatternStringProperty],
-      (pattern) => pattern.replace("{{value}}", MAJOR_GRID_SPACING_CM.toString())
-    );
-  }
-
-  /**
-   * Create the grid lines and spacing indicator.
+   * Create the grid lines.
    */
   private createGrid(): void {
     // Clear existing children
@@ -87,9 +57,6 @@ export class ChladniGridNode extends Node {
 
     // Create major grid lines
     this.createGridLines(plateWidthCm, plateHeightCm, pxPerCmX, pxPerCmY, true);
-
-    // Create spacing indicator
-    this.createSpacingIndicator(pxPerCmX);
   }
 
   /**
@@ -133,54 +100,6 @@ export class ChladniGridNode extends Node {
       });
       this.addChild(line);
     }
-  }
-
-  /**
-   * Create the double arrow spacing indicator.
-   */
-  private createSpacingIndicator(pxPerCmX: number): void {
-    // Clear and recreate the indicator
-    this.spacingIndicator.removeAllChildren();
-
-    const arrowLength = MAJOR_GRID_SPACING_CM * pxPerCmX;
-    const y = -ARROW_OFFSET_FROM_EDGE;
-
-    // Create double-headed arrow shape
-    const arrowShape = new Shape();
-
-    // Horizontal line
-    arrowShape.moveTo(0, 0);
-    arrowShape.lineTo(arrowLength, 0);
-
-    // Left arrowhead
-    arrowShape.moveTo(ARROW_HEAD_SIZE, -ARROW_HEAD_SIZE);
-    arrowShape.lineTo(0, 0);
-    arrowShape.lineTo(ARROW_HEAD_SIZE, ARROW_HEAD_SIZE);
-
-    // Right arrowhead
-    arrowShape.moveTo(arrowLength - ARROW_HEAD_SIZE, -ARROW_HEAD_SIZE);
-    arrowShape.lineTo(arrowLength, 0);
-    arrowShape.lineTo(arrowLength - ARROW_HEAD_SIZE, ARROW_HEAD_SIZE);
-
-    const arrowPath = new Path(arrowShape, {
-      stroke: ResonanceColors.textProperty,
-      lineWidth: ARROW_LINE_WIDTH,
-      lineCap: "round",
-      lineJoin: "round",
-    });
-
-    this.spacingIndicator.addChild(arrowPath);
-
-    // Position the label above the arrow, centered
-    this.spacingLabel.centerX = arrowLength / 2;
-    this.spacingLabel.bottom = -ARROW_HEAD_SIZE - 3;
-    this.spacingIndicator.addChild(this.spacingLabel);
-
-    // Position the indicator at the top center of the visualization
-    this.spacingIndicator.centerX = this.visualizationWidth / 2;
-    this.spacingIndicator.top = y;
-
-    this.addChild(this.spacingIndicator);
   }
 
   /**

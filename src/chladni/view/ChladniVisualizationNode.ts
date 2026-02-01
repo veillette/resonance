@@ -103,6 +103,7 @@ export class ChladniVisualizationNode extends Node {
   // Common elements
   private readonly backgroundRect: Rectangle;
   private readonly borderRect: Rectangle;
+  private readonly innerBorderRect: Rectangle;
 
   // WebGL (Sprites) rendering components
   private spritesNode: Sprites | null = null;
@@ -146,17 +147,36 @@ export class ChladniVisualizationNode extends Node {
     });
     this.addChild(this.backgroundRect);
 
-    // Create border rectangle
+    // Create border rectangle (outer)
     this.borderRect = new Rectangle(0, 0, visualizationWidth, visualizationHeight, {
       stroke: ResonanceColors.chladniPlateBorderProperty,
       lineWidth: 2,
     });
 
+    // Create inner border rectangle (shown only in clamp mode)
+    const innerInset = 4;
+    this.innerBorderRect = new Rectangle(
+      innerInset, innerInset,
+      visualizationWidth - 2 * innerInset,
+      visualizationHeight - 2 * innerInset,
+      {
+        stroke: ResonanceColors.chladniPlateBorderProperty,
+        lineWidth: 1,
+        opacity: 0.6,
+      }
+    );
+
     // Initialize the appropriate renderer
     this.initializeRenderer(this.currentRenderer);
 
-    // Add border on top
+    // Add borders on top
     this.addChild(this.borderRect);
+    this.addChild(this.innerBorderRect);
+
+    // Link inner border visibility to boundary mode
+    model.boundaryModeProperty.link((mode) => {
+      this.innerBorderRect.visible = (mode === "clamp");
+    });
 
     // Listen for renderer type changes
     rendererTypeProperty.link((newRenderer) => {
@@ -403,9 +423,11 @@ export class ChladniVisualizationNode extends Node {
     // Recreate the transform for new dimensions
     this.modelViewTransform = this.createModelViewTransform();
 
-    // Update background and border
+    // Update background and borders
     this.backgroundRect.setRect(0, 0, newWidth, newHeight);
     this.borderRect.setRect(0, 0, newWidth, newHeight);
+    const innerInset = 4;
+    this.innerBorderRect.setRect(innerInset, innerInset, newWidth - 2 * innerInset, newHeight - 2 * innerInset);
 
     // Update renderer-specific elements
     if (this.currentRenderer === RendererType.WEBGL && this.spritesNode) {
