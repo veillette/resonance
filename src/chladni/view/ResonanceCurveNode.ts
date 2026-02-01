@@ -171,6 +171,15 @@ export class ResonanceCurveNode extends Node {
     model.excitationPositionProperty.link(() => {
       this.updateCurveFromPrecomputed();
     });
+
+    // Update curve when plate dimensions change
+    model.plateWidthProperty.link(() => {
+      this.updateCurveFromPrecomputed();
+    });
+
+    model.plateHeightProperty.link(() => {
+      this.updateCurveFromPrecomputed();
+    });
   }
 
   /**

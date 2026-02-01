@@ -21,6 +21,8 @@ import { ChladniModel } from "../model/ChladniModel.js";
 import { ChladniVisualizationNode } from "./ChladniVisualizationNode.js";
 import { ChladniControlPanel } from "./ChladniControlPanel.js";
 import { ResonanceCurveNode } from "./ResonanceCurveNode.js";
+import { ChladniRulerNode } from "./ChladniRulerNode.js";
+import { ChladniGridNode } from "./ChladniGridNode.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
@@ -47,6 +49,8 @@ export class ChladniScreenView extends ScreenView {
   private readonly resonanceCurveNode: ResonanceCurveNode;
   private readonly curveContainer: VBox;
   private readonly playbackControls: Node;
+  private readonly rulerNode: ChladniRulerNode;
+  private readonly gridNode: ChladniGridNode;
 
   // Center position of the visualization in screen coordinates (fixed during resize)
   private readonly visualizationCenterX: number;
@@ -86,6 +90,30 @@ export class ChladniScreenView extends ScreenView {
 
     this.addChild(this.visualizationNode);
 
+    // Create the grid overlay (behind particles, but on visualization)
+    this.gridNode = new ChladniGridNode(
+      initialWidth,
+      initialHeight,
+      model.plateWidth,
+      model.plateHeight,
+    );
+    this.gridNode.visible = false;
+    this.gridNode.x = this.visualizationNode.bounds.minX;
+    this.gridNode.y = this.visualizationNode.bounds.minY;
+    this.addChild(this.gridNode);
+
+    // Create the ruler overlay
+    this.rulerNode = new ChladniRulerNode(
+      initialWidth,
+      initialHeight,
+      model.plateWidth,
+      model.plateHeight,
+    );
+    this.rulerNode.visible = false;
+    this.rulerNode.x = this.visualizationNode.bounds.minX;
+    this.rulerNode.y = this.visualizationNode.bounds.minY;
+    this.addChild(this.rulerNode);
+
     // Create the resize handle at the bottom-right corner
     this.resizeHandle = this.createResizeHandle();
     this.addChild(this.resizeHandle);
@@ -123,6 +151,12 @@ export class ChladniScreenView extends ScreenView {
 
     // Link curve visibility to the checkbox property
     this.controlPanel.showResonanceCurveProperty.linkAttribute(this.curveContainer, "visible");
+
+    // Link ruler visibility to the checkbox property
+    this.controlPanel.showRulerProperty.linkAttribute(this.rulerNode, "visible");
+
+    // Link grid visibility to the checkbox property
+    this.controlPanel.showGridProperty.linkAttribute(this.gridNode, "visible");
 
     // Create playback controls
     this.playbackControls = this.createPlaybackControls();
@@ -187,7 +221,37 @@ export class ChladniScreenView extends ScreenView {
     // Update dependent elements
     this.updateResizeHandlePosition();
     this.updateExcitationMarkerPosition();
+    this.updateRulerAndGrid();
     this.visualizationNode.update();
+  }
+
+  /**
+   * Update the ruler and grid overlays for the current visualization size.
+   */
+  private updateRulerAndGrid(): void {
+    const vizWidth = this.visualizationNode.getVisualizationWidth();
+    const vizHeight = this.visualizationNode.getVisualizationHeight();
+    const vizBounds = this.visualizationNode.bounds;
+
+    // Update dimensions
+    this.rulerNode.updateDimensions(
+      vizWidth,
+      vizHeight,
+      this.model.plateWidth,
+      this.model.plateHeight,
+    );
+    this.gridNode.updateDimensions(
+      vizWidth,
+      vizHeight,
+      this.model.plateWidth,
+      this.model.plateHeight,
+    );
+
+    // Update positions to match visualization bounds
+    this.rulerNode.x = vizBounds.minX;
+    this.rulerNode.y = vizBounds.minY;
+    this.gridNode.x = vizBounds.minX;
+    this.gridNode.y = vizBounds.minY;
   }
 
   /**
