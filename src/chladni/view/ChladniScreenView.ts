@@ -9,12 +9,20 @@
  * - Model: (0,0) at plate center, x in [-width/2, width/2], y in [-height/2, height/2], +Y up
  * - View: (0,0) at top-left of visualization, +Y down
  * - ModelViewTransform2 handles the conversion with Y inversion
+ *
+ * Keyboard Controls:
+ * - Space: Toggle play/pause
+ * - Left/Right arrows: Adjust frequency (10 Hz increments, Shift for 100 Hz)
+ * - Up/Down arrows: Adjust frequency (100 Hz increments, Shift for 500 Hz)
+ * - R: Reset all
+ * - Escape: Stop sweep if running
  */
 
 import { Multilink } from "scenerystack/axon";
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import {
   DragListener,
+  KeyboardUtils,
   Node,
   Path,
   Rectangle,
@@ -34,6 +42,7 @@ import { ChladniControlPanel } from "./ChladniControlPanel.js";
 import { ResonanceCurveNode } from "./ResonanceCurveNode.js";
 import { ChladniRulerNode } from "./ChladniRulerNode.js";
 import { ChladniGridNode } from "./ChladniGridNode.js";
+import { DisplacementColormapNode } from "./DisplacementColormapNode.js";
 import { ExcitationMarkerNode } from "./ExcitationMarkerNode.js";
 import { createChladniTransform } from "./ChladniTransformFactory.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
@@ -48,6 +57,11 @@ const PIXELS_PER_METER = 1400;
 const RESIZE_HANDLE_SIZE = 24;
 const RESIZE_HANDLE_HIT_AREA = 36;
 
+// Keyboard frequency adjustment increments (Hz)
+const FREQUENCY_STEP_SMALL = 10;
+const FREQUENCY_STEP_MEDIUM = 100;
+const FREQUENCY_STEP_LARGE = 500;
+
 export class ChladniScreenView extends ScreenView {
   private readonly model: ChladniModel;
   private readonly visualizationNode: ChladniVisualizationNode;
@@ -59,6 +73,7 @@ export class ChladniScreenView extends ScreenView {
   private readonly playbackControls: Node;
   private readonly rulerNode: ChladniRulerNode;
   private readonly gridNode: ChladniGridNode;
+  private readonly colormapNode: DisplacementColormapNode;
 
   // Center position of the visualization in screen coordinates (fixed during resize)
   private readonly visualizationCenterX: number;
@@ -131,6 +146,21 @@ export class ChladniScreenView extends ScreenView {
     this.rulerNode.y = this.visualizationNode.bounds.minY;
     this.addChild(this.rulerNode);
 
+    // Create the displacement colormap overlay (behind particles)
+    this.colormapNode = new DisplacementColormapNode(
+      initialWidth,
+      initialHeight,
+      model.plateWidth,
+      model.plateHeight,
+      (x: number, y: number) => model.psi(x, y),
+    );
+    this.colormapNode.visible = false;
+    this.colormapNode.x = this.visualizationNode.bounds.minX;
+    this.colormapNode.y = this.visualizationNode.bounds.minY;
+    // Insert behind visualization but in front of background
+    this.addChild(this.colormapNode);
+    this.colormapNode.moveToBack();
+
     // Create the resize handle at the bottom-right corner
     this.resizeHandle = this.createResizeHandle();
     this.addChild(this.resizeHandle);
@@ -190,6 +220,12 @@ export class ChladniScreenView extends ScreenView {
     // Link grid visibility to the checkbox property
     this.controlPanel.showGridProperty.linkAttribute(this.gridNode, "visible");
 
+    // Link colormap visibility to the checkbox property
+    this.controlPanel.showColormapProperty.linkAttribute(
+      this.colormapNode,
+      "visible",
+    );
+
     // Create playback controls
     this.playbackControls = this.createPlaybackControls();
     this.addChild(this.playbackControls);
@@ -211,6 +247,98 @@ export class ChladniScreenView extends ScreenView {
     Multilink.multilink(
       [model.plateWidthProperty, model.plateHeightProperty],
       () => this.updateVisualizationSize(),
+    );
+
+    // Set up keyboard accessibility
+    this.setupKeyboardControls();
+  }
+
+  /**
+   * Set up keyboard controls for accessibility.
+   * - Space: Toggle play/pause
+   * - Left/Right arrows: Adjust frequency (10 Hz, Shift for 100 Hz)
+   * - Up/Down arrows: Adjust frequency (100 Hz, Shift for 500 Hz)
+   * - R: Reset all
+   * - Escape: Stop sweep if running
+   */
+  private setupKeyboardControls(): void {
+    // Use DOM event listener for global keyboard handling
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore if typing in an input field
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const shiftPressed = event.shiftKey;
+
+      if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_SPACE)) {
+        // Toggle play/pause
+        event.preventDefault();
+        this.model.isPlayingProperty.value =
+          !this.model.isPlayingProperty.value;
+      } else if (KeyboardUtils.isArrowKey(event)) {
+        event.preventDefault();
+
+        if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_LEFT_ARROW)) {
+          // Decrease frequency
+          const step = shiftPressed
+            ? FREQUENCY_STEP_MEDIUM
+            : FREQUENCY_STEP_SMALL;
+          this.adjustFrequency(-step);
+        } else if (
+          KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_RIGHT_ARROW)
+        ) {
+          // Increase frequency
+          const step = shiftPressed
+            ? FREQUENCY_STEP_MEDIUM
+            : FREQUENCY_STEP_SMALL;
+          this.adjustFrequency(step);
+        } else if (
+          KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_DOWN_ARROW)
+        ) {
+          // Decrease frequency (larger step)
+          const step = shiftPressed
+            ? FREQUENCY_STEP_LARGE
+            : FREQUENCY_STEP_MEDIUM;
+          this.adjustFrequency(-step);
+        } else if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_UP_ARROW)) {
+          // Increase frequency (larger step)
+          const step = shiftPressed
+            ? FREQUENCY_STEP_LARGE
+            : FREQUENCY_STEP_MEDIUM;
+          this.adjustFrequency(step);
+        }
+      } else if (event.key.toLowerCase() === "r" && !event.ctrlKey) {
+        // Reset all (but not Ctrl+R which is browser refresh)
+        event.preventDefault();
+        this.model.reset();
+        this.reset();
+      } else if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_ESCAPE)) {
+        // Stop sweep if running
+        if (this.model.isSweepingProperty.value) {
+          event.preventDefault();
+          this.model.stopSweep();
+        }
+      }
+    };
+
+    // Add global keyboard listener
+    window.addEventListener("keydown", handleKeyDown);
+  }
+
+  /**
+   * Adjust the frequency by the given delta, clamping to valid range.
+   */
+  private adjustFrequency(delta: number): void {
+    const currentFreq = this.model.frequencyProperty.value;
+    const newFreq = currentFreq + delta;
+    const range = this.model.frequencyRange;
+    this.model.frequencyProperty.value = Math.max(
+      range.min,
+      Math.min(range.max, newFreq),
     );
   }
 
@@ -244,7 +372,7 @@ export class ChladniScreenView extends ScreenView {
   }
 
   /**
-   * Update the ruler and grid overlays for the current visualization size.
+   * Update the ruler, grid, and colormap overlays for the current visualization size.
    */
   private updateRulerAndGrid(): void {
     const vizWidth = this.visualizationNode.getVisualizationWidth();
@@ -264,12 +392,20 @@ export class ChladniScreenView extends ScreenView {
       this.model.plateWidth,
       this.model.plateHeight,
     );
+    this.colormapNode.updateDimensions(
+      vizWidth,
+      vizHeight,
+      this.model.plateWidth,
+      this.model.plateHeight,
+    );
 
     // Update positions to match visualization bounds
     this.rulerNode.x = vizBounds.minX;
     this.rulerNode.y = vizBounds.minY;
     this.gridNode.x = vizBounds.minX;
     this.gridNode.y = vizBounds.minY;
+    this.colormapNode.x = vizBounds.minX;
+    this.colormapNode.y = vizBounds.minY;
   }
 
   /**
@@ -409,5 +545,10 @@ export class ChladniScreenView extends ScreenView {
 
     // Update the visualization
     this.visualizationNode.update();
+
+    // Update colormap if visible (reflects current displacement field)
+    if (this.colormapNode.visible) {
+      this.colormapNode.update();
+    }
   }
 }

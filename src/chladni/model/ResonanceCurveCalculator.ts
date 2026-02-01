@@ -6,6 +6,10 @@
  *
  * The resonance curve shows the amplitude response vs frequency, with peaks at
  * resonant frequencies where modes are strongly excited.
+ *
+ * Performance: Supports progressive computation that spreads work across multiple
+ * frames to avoid blocking the UI thread. Falls back to synchronous computation
+ * when needed for immediate results.
  */
 
 import { Vector2, Range } from "scenerystack/dot";
@@ -26,9 +30,24 @@ export interface ResonanceCurveCalculatorOptions {
 }
 
 /**
+ * Number of samples to compute per chunk in progressive mode.
+ * Tuned to complete in ~2-3ms per chunk (16ms frame budget allows for other work).
+ */
+const PROGRESSIVE_CHUNK_SIZE = 500;
+
+/**
+ * Callback type for progressive computation completion
+ */
+export type ProgressCallback = (progress: number) => void;
+
+/**
  * ResonanceCurveCalculator handles precomputation and retrieval of resonance curve data.
  * It maintains a cache of strength values across the full frequency range for efficient
  * graph rendering.
+ *
+ * Supports two computation modes:
+ * - Synchronous: Blocks until complete (use for initial load or when immediate results needed)
+ * - Progressive: Spreads work across frames (use for real-time updates)
  */
 export class ResonanceCurveCalculator {
   private readonly modalCalculator: ModalCalculator;
@@ -36,6 +55,13 @@ export class ResonanceCurveCalculator {
   // Precomputed resonance curve data
   private readonly precomputedStrengths: Float32Array;
   private precomputedMaxStrength: number;
+
+  // Progressive computation state
+  private progressiveIndex: number = 0;
+  private progressiveMaxStrength: number = 0;
+  private progressiveAnimationId: number | null = null;
+  private isComputationValid: boolean = false;
+  private computationVersion: number = 0;
 
   public constructor(options: ResonanceCurveCalculatorOptions) {
     this.modalCalculator = options.modalCalculator;
@@ -46,10 +72,13 @@ export class ResonanceCurveCalculator {
   }
 
   /**
-   * Recompute the full resonance curve for the entire frequency range.
-   * This should be called when material or excitation position changes.
+   * Recompute the full resonance curve synchronously.
+   * Blocks until complete. Use for initial load or when immediate results needed.
    */
   public recompute(): void {
+    // Cancel any in-progress progressive computation
+    this.cancelProgressiveComputation();
+
     let maxStrength = 0;
 
     for (let i = 0; i < TOTAL_CURVE_SAMPLES; i++) {
@@ -62,6 +91,101 @@ export class ResonanceCurveCalculator {
     }
 
     this.precomputedMaxStrength = maxStrength;
+    this.isComputationValid = true;
+    this.computationVersion++;
+  }
+
+  /**
+   * Start progressive recomputation that spreads work across multiple frames.
+   * Returns a promise that resolves when computation is complete.
+   *
+   * @param onProgress - Optional callback called with progress (0-1) after each chunk
+   * @returns Promise that resolves when computation is complete
+   */
+  public recomputeProgressive(onProgress?: ProgressCallback): Promise<void> {
+    // Cancel any in-progress computation
+    this.cancelProgressiveComputation();
+
+    // Increment version to invalidate any stale callbacks
+    const version = ++this.computationVersion;
+    this.isComputationValid = false;
+
+    // Initialize progressive state
+    this.progressiveIndex = 0;
+    this.progressiveMaxStrength = 0;
+
+    return new Promise<void>((resolve) => {
+      const processChunk = () => {
+        // Check if this computation was superseded
+        if (version !== this.computationVersion) {
+          resolve();
+          return;
+        }
+
+        const endIndex = Math.min(
+          this.progressiveIndex + PROGRESSIVE_CHUNK_SIZE,
+          TOTAL_CURVE_SAMPLES,
+        );
+
+        // Process this chunk
+        for (let i = this.progressiveIndex; i < endIndex; i++) {
+          const freq = FREQUENCY_MIN + i / CURVE_SAMPLES_PER_HZ;
+          const s = this.modalCalculator.strength(freq);
+          this.precomputedStrengths[i] = s;
+          if (s > this.progressiveMaxStrength) {
+            this.progressiveMaxStrength = s;
+          }
+        }
+
+        this.progressiveIndex = endIndex;
+
+        // Report progress
+        if (onProgress) {
+          onProgress(this.progressiveIndex / TOTAL_CURVE_SAMPLES);
+        }
+
+        // Check if complete
+        if (this.progressiveIndex >= TOTAL_CURVE_SAMPLES) {
+          this.precomputedMaxStrength = this.progressiveMaxStrength;
+          this.isComputationValid = true;
+          this.progressiveAnimationId = null;
+          resolve();
+        } else {
+          // Schedule next chunk
+          this.progressiveAnimationId = requestAnimationFrame(processChunk);
+        }
+      };
+
+      // Start processing
+      this.progressiveAnimationId = requestAnimationFrame(processChunk);
+    });
+  }
+
+  /**
+   * Cancel any in-progress progressive computation.
+   */
+  public cancelProgressiveComputation(): void {
+    if (this.progressiveAnimationId !== null) {
+      cancelAnimationFrame(this.progressiveAnimationId);
+      this.progressiveAnimationId = null;
+    }
+  }
+
+  /**
+   * Check if the current computation is valid and complete.
+   */
+  public isValid(): boolean {
+    return this.isComputationValid;
+  }
+
+  /**
+   * Get the progress of the current progressive computation (0-1).
+   */
+  public getProgress(): number {
+    if (this.isComputationValid) {
+      return 1;
+    }
+    return this.progressiveIndex / TOTAL_CURVE_SAMPLES;
   }
 
   /**
