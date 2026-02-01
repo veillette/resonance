@@ -37,13 +37,20 @@ export const ResonanceStrings = {
     // Solver names and descriptions (convenience mapping)
     solvers: {
       rk4StringProperty: simulationPrefs.solverRK4StringProperty,
-      adaptiveRK45StringProperty: simulationPrefs.solverAdaptiveRK45StringProperty,
-      adaptiveEulerStringProperty: simulationPrefs.solverAdaptiveEulerStringProperty,
-      modifiedMidpointStringProperty: simulationPrefs.solverModifiedMidpointStringProperty,
-      rk4DescriptionStringProperty: simulationPrefs.solverRK4DescriptionStringProperty,
-      adaptiveRK45DescriptionStringProperty: simulationPrefs.solverAdaptiveRK45DescriptionStringProperty,
-      adaptiveEulerDescriptionStringProperty: simulationPrefs.solverAdaptiveEulerDescriptionStringProperty,
-      modifiedMidpointDescriptionStringProperty: simulationPrefs.solverModifiedMidpointDescriptionStringProperty,
+      adaptiveRK45StringProperty:
+        simulationPrefs.solverAdaptiveRK45StringProperty,
+      adaptiveEulerStringProperty:
+        simulationPrefs.solverAdaptiveEulerStringProperty,
+      modifiedMidpointStringProperty:
+        simulationPrefs.solverModifiedMidpointStringProperty,
+      rk4DescriptionStringProperty:
+        simulationPrefs.solverRK4DescriptionStringProperty,
+      adaptiveRK45DescriptionStringProperty:
+        simulationPrefs.solverAdaptiveRK45DescriptionStringProperty,
+      adaptiveEulerDescriptionStringProperty:
+        simulationPrefs.solverAdaptiveEulerDescriptionStringProperty,
+      modifiedMidpointDescriptionStringProperty:
+        simulationPrefs.solverModifiedMidpointDescriptionStringProperty,
     },
   },
 
@@ -61,9 +68,12 @@ export const ResonanceStrings = {
     ...strings.resonance.common,
     solverNames: {
       solverRK4StringProperty: strings.resonance.common.solverRK4StringProperty,
-      solverAdaptiveRK45StringProperty: strings.resonance.common.solverAdaptiveRK45StringProperty,
-      solverAdaptiveEulerStringProperty: strings.resonance.common.solverAdaptiveEulerStringProperty,
-      solverModifiedMidpointStringProperty: strings.resonance.common.solverModifiedMidpointStringProperty,
+      solverAdaptiveRK45StringProperty:
+        strings.resonance.common.solverAdaptiveRK45StringProperty,
+      solverAdaptiveEulerStringProperty:
+        strings.resonance.common.solverAdaptiveEulerStringProperty,
+      solverModifiedMidpointStringProperty:
+        strings.resonance.common.solverModifiedMidpointStringProperty,
     },
   },
 

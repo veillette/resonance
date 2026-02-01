@@ -53,7 +53,13 @@ export class ChladniGridNode extends Node {
     const pxPerCmY = this.visualizationHeight / plateHeightCm;
 
     // Create minor grid lines first (so major lines render on top)
-    this.createGridLines(plateWidthCm, plateHeightCm, pxPerCmX, pxPerCmY, false);
+    this.createGridLines(
+      plateWidthCm,
+      plateHeightCm,
+      pxPerCmX,
+      pxPerCmY,
+      false,
+    );
 
     // Create major grid lines
     this.createGridLines(plateWidthCm, plateHeightCm, pxPerCmX, pxPerCmY, true);

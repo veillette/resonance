@@ -6,11 +6,22 @@
  */
 
 import { Node, Text, VBox, HBox, Line } from "scenerystack/scenery";
-import { Panel, ComboBox, TextPushButton, Checkbox, AquaRadioButtonGroup } from "scenerystack/sun";
+import {
+  Panel,
+  ComboBox,
+  TextPushButton,
+  Checkbox,
+  AquaRadioButtonGroup,
+} from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
 import { DerivedProperty, Property } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
-import { ChladniModel, GrainCountOption, GRAIN_COUNT_OPTIONS, BoundaryMode } from "../model/ChladniModel.js";
+import {
+  ChladniModel,
+  GrainCountOption,
+  GRAIN_COUNT_OPTIONS,
+  BoundaryMode,
+} from "../model/ChladniModel.js";
 import { Material, MaterialType, MATERIALS } from "../model/Material.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
@@ -130,7 +141,7 @@ export class ChladniControlPanel extends Panel {
     // Enabled only when actual count differs from target count
     const replenishEnabledProperty = new DerivedProperty(
       [model.actualParticleCountProperty, model.grainCountProperty],
-      (actualCount, grainOption) => actualCount !== grainOption.value
+      (actualCount, grainOption) => actualCount !== grainOption.value,
     );
 
     const replenishButton = new TextPushButton(
@@ -175,7 +186,7 @@ export class ChladniControlPanel extends Panel {
     // Enabled only when not currently sweeping
     const sweepEnabledProperty = new DerivedProperty(
       [model.isSweepingProperty],
-      (isSweeping) => !isSweeping
+      (isSweeping) => !isSweeping,
     );
 
     const sweepButton = new TextPushButton(
@@ -200,24 +211,25 @@ export class ChladniControlPanel extends Panel {
       },
     );
 
-    const boundaryModeItems: { value: BoundaryMode; createNode: () => Node }[] = [
-      {
-        value: "clamp",
-        createNode: () =>
-          new Text(ResonanceStrings.chladni.boundaryClampStringProperty, {
-            font: ResonanceConstants.CONTROL_FONT,
-            fill: ResonanceColors.textProperty,
-          }),
-      },
-      {
-        value: "remove",
-        createNode: () =>
-          new Text(ResonanceStrings.chladni.boundaryRemoveStringProperty, {
-            font: ResonanceConstants.CONTROL_FONT,
-            fill: ResonanceColors.textProperty,
-          }),
-      },
-    ];
+    const boundaryModeItems: { value: BoundaryMode; createNode: () => Node }[] =
+      [
+        {
+          value: "clamp",
+          createNode: () =>
+            new Text(ResonanceStrings.chladni.boundaryClampStringProperty, {
+              font: ResonanceConstants.CONTROL_FONT,
+              fill: ResonanceColors.textProperty,
+            }),
+        },
+        {
+          value: "remove",
+          createNode: () =>
+            new Text(ResonanceStrings.chladni.boundaryRemoveStringProperty, {
+              font: ResonanceConstants.CONTROL_FONT,
+              fill: ResonanceColors.textProperty,
+            }),
+        },
+      ];
 
     const boundaryModeRadioButtons = new AquaRadioButtonGroup(
       model.boundaryModeProperty,

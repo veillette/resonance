@@ -79,10 +79,16 @@ export class ChladniRulerNode extends Node {
       const tickLength = isMajor ? MAJOR_TICK_LENGTH : MINOR_TICK_LENGTH;
 
       // Tick mark extending downward from bottom edge
-      const tick = new Line(x, this.visualizationHeight, x, this.visualizationHeight + tickLength, {
-        stroke: ResonanceColors.textProperty,
-        lineWidth: TICK_LINE_WIDTH,
-      });
+      const tick = new Line(
+        x,
+        this.visualizationHeight,
+        x,
+        this.visualizationHeight + tickLength,
+        {
+          stroke: ResonanceColors.textProperty,
+          lineWidth: TICK_LINE_WIDTH,
+        },
+      );
       this.addChild(tick);
 
       // Label for major ticks

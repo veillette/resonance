@@ -69,8 +69,7 @@ export class AdaptiveEulerSolver extends ODESolver {
     const firstHalfDerivatives = model.getDerivatives(0, initialState);
     const halfStepState: number[] = Array.from(
       { length: n },
-      (_, i) =>
-        initialState[i]! + firstHalfDerivatives[i]! * halfDt,
+      (_, i) => initialState[i]! + firstHalfDerivatives[i]! * halfDt,
     );
 
     // Second half step
@@ -80,8 +79,7 @@ export class AdaptiveEulerSolver extends ODESolver {
     );
     const twoHalfStepsState: number[] = Array.from(
       { length: n },
-      (_, i) =>
-        halfStepState[i]! + secondHalfDerivatives[i]! * halfDt,
+      (_, i) => halfStepState[i]! + secondHalfDerivatives[i]! * halfDt,
     );
 
     // Calculate error

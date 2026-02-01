@@ -256,7 +256,9 @@ export class SimModel {
   public getResonatorModel(index: number): ResonanceModel {
     const model = this.resonatorModels[index];
     if (model === undefined) {
-      throw new Error(`Resonator index ${index} out of range (0-${this.resonatorModels.length - 1})`);
+      throw new Error(
+        `Resonator index ${index} out of range (0-${this.resonatorModels.length - 1})`,
+      );
     }
     return model;
   }

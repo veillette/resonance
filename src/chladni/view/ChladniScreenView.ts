@@ -12,8 +12,19 @@
  */
 
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
-import { Circle, DragListener, Node, Path, Rectangle, Text, VBox } from "scenerystack/scenery";
-import { ResetAllButton, PlayPauseStepButtonGroup } from "scenerystack/scenery-phet";
+import {
+  Circle,
+  DragListener,
+  Node,
+  Path,
+  Rectangle,
+  Text,
+  VBox,
+} from "scenerystack/scenery";
+import {
+  ResetAllButton,
+  PlayPauseStepButtonGroup,
+} from "scenerystack/scenery-phet";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
@@ -60,7 +71,11 @@ export class ChladniScreenView extends ScreenView {
   // Model: (0,0) at center, +Y up; View: (0,0) at top-left of viz, +Y down
   private modelViewTransform: ModelViewTransform2;
 
-  public constructor(model: ChladniModel, preferencesModel: ResonancePreferencesModel, options?: ScreenViewOptions) {
+  public constructor(
+    model: ChladniModel,
+    preferencesModel: ResonancePreferencesModel,
+    options?: ScreenViewOptions,
+  ) {
     super(options);
     this.model = model;
     this.preferencesModel = preferencesModel;
@@ -76,13 +91,20 @@ export class ChladniScreenView extends ScreenView {
     // Create the model-view transform
     // Model: centered coordinates with +Y up
     // View: top-left origin with +Y down
-    this.modelViewTransform = this.createModelViewTransform(initialWidth, initialHeight);
+    this.modelViewTransform = this.createModelViewTransform(
+      initialWidth,
+      initialHeight,
+    );
 
     // Create the particle visualization with proper dimensions and transform
-    this.visualizationNode = new ChladniVisualizationNode(model, preferencesModel.rendererTypeProperty, {
-      visualizationWidth: initialWidth,
-      visualizationHeight: initialHeight,
-    });
+    this.visualizationNode = new ChladniVisualizationNode(
+      model,
+      preferencesModel.rendererTypeProperty,
+      {
+        visualizationWidth: initialWidth,
+        visualizationHeight: initialHeight,
+      },
+    );
 
     // Center the visualization
     this.visualizationNode.centerX = this.visualizationCenterX;
@@ -130,10 +152,13 @@ export class ChladniScreenView extends ScreenView {
     this.addChild(this.controlPanel.comboBoxListParent);
 
     // Create the resonance curve display
-    const curveLabel = new Text(ResonanceStrings.chladni.resonanceCurveStringProperty, {
-      font: ResonanceConstants.LABEL_FONT,
-      fill: ResonanceColors.textProperty,
-    });
+    const curveLabel = new Text(
+      ResonanceStrings.chladni.resonanceCurveStringProperty,
+      {
+        font: ResonanceConstants.LABEL_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
 
     this.resonanceCurveNode = new ResonanceCurveNode(model);
 
@@ -144,16 +169,23 @@ export class ChladniScreenView extends ScreenView {
     });
 
     // Position below the control panel, aligned to right side
-    this.curveContainer.right = this.layoutBounds.maxX - ResonanceConstants.CONTROL_PANEL_RIGHT_MARGIN;
+    this.curveContainer.right =
+      this.layoutBounds.maxX - ResonanceConstants.CONTROL_PANEL_RIGHT_MARGIN;
     this.curveContainer.top = this.controlPanel.bottom + 15;
 
     this.addChild(this.curveContainer);
 
     // Link curve visibility to the checkbox property
-    this.controlPanel.showResonanceCurveProperty.linkAttribute(this.curveContainer, "visible");
+    this.controlPanel.showResonanceCurveProperty.linkAttribute(
+      this.curveContainer,
+      "visible",
+    );
 
     // Link ruler visibility to the checkbox property
-    this.controlPanel.showRulerProperty.linkAttribute(this.rulerNode, "visible");
+    this.controlPanel.showRulerProperty.linkAttribute(
+      this.rulerNode,
+      "visible",
+    );
 
     // Link grid visibility to the checkbox property
     this.controlPanel.showGridProperty.linkAttribute(this.gridNode, "visible");
@@ -184,21 +216,29 @@ export class ChladniScreenView extends ScreenView {
    * Model: (0,0) at center, x in [-w/2, w/2], y in [-h/2, h/2], +Y up
    * View: (0,0) at top-left, x in [0, viewWidth], y in [0, viewHeight], +Y down
    */
-  private createModelViewTransform(viewWidth: number, viewHeight: number): ModelViewTransform2 {
+  private createModelViewTransform(
+    viewWidth: number,
+    viewHeight: number,
+  ): ModelViewTransform2 {
     const plateWidth = this.model.plateWidth;
     const plateHeight = this.model.plateHeight;
 
     // Model bounds: centered coordinates
     const modelBounds = new Bounds2(
-      -plateWidth / 2, -plateHeight / 2,
-      plateWidth / 2, plateHeight / 2
+      -plateWidth / 2,
+      -plateHeight / 2,
+      plateWidth / 2,
+      plateHeight / 2,
     );
 
     // View bounds: (0,0) at top-left
     const viewBounds = new Bounds2(0, 0, viewWidth, viewHeight);
 
     // Create transform with Y inversion (model +Y up, view +Y down)
-    return ModelViewTransform2.createRectangleInvertedYMapping(modelBounds, viewBounds);
+    return ModelViewTransform2.createRectangleInvertedYMapping(
+      modelBounds,
+      viewBounds,
+    );
   }
 
   /**
@@ -209,7 +249,10 @@ export class ChladniScreenView extends ScreenView {
     const newHeight = this.model.plateHeight * PIXELS_PER_METER;
 
     // Update the model-view transform
-    this.modelViewTransform = this.createModelViewTransform(newWidth, newHeight);
+    this.modelViewTransform = this.createModelViewTransform(
+      newWidth,
+      newHeight,
+    );
 
     // Resize the visualization node
     this.visualizationNode.resize(newWidth, newHeight);
@@ -260,10 +303,16 @@ export class ChladniScreenView extends ScreenView {
    */
   private createResizeHandle(): Node {
     // Larger invisible hit area for easier grabbing
-    const hitArea = new Rectangle(0, 0, RESIZE_HANDLE_HIT_AREA, RESIZE_HANDLE_HIT_AREA, {
-      fill: "rgba(0,0,0,0.01)", // Nearly invisible but still catches events
-      cursor: "nwse-resize",
-    });
+    const hitArea = new Rectangle(
+      0,
+      0,
+      RESIZE_HANDLE_HIT_AREA,
+      RESIZE_HANDLE_HIT_AREA,
+      {
+        fill: "rgba(0,0,0,0.01)", // Nearly invisible but still catches events
+        cursor: "nwse-resize",
+      },
+    );
 
     // Create a diagonal resize indicator (three diagonal lines)
     const handleShape = new Shape();
@@ -318,11 +367,11 @@ export class ChladniScreenView extends ScreenView {
         const heightRange = this.model.plateHeightProperty.range;
         const newWidth = Math.max(
           widthRange.min,
-          Math.min(widthRange.max, startWidth + widthDelta)
+          Math.min(widthRange.max, startWidth + widthDelta),
         );
         const newHeight = Math.max(
           heightRange.min,
-          Math.min(heightRange.max, startHeight + heightDelta)
+          Math.min(heightRange.max, startHeight + heightDelta),
         );
 
         // Update the model
@@ -367,7 +416,8 @@ export class ChladniScreenView extends ScreenView {
 
     // Position at the bottom center of the screen
     playPauseStepButtonGroup.centerX = this.visualizationNode.centerX;
-    playPauseStepButtonGroup.bottom = this.layoutBounds.maxY - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN;
+    playPauseStepButtonGroup.bottom =
+      this.layoutBounds.maxY - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN;
 
     return playPauseStepButtonGroup;
   }
@@ -402,19 +452,31 @@ export class ChladniScreenView extends ScreenView {
       transform: null,
       drag: (event) => {
         // Get the position in the visualization's local coordinate system (view coords)
-        const viewPoint = this.visualizationNode.globalToLocalPoint(event.pointer.point);
+        const viewPoint = this.visualizationNode.globalToLocalPoint(
+          event.pointer.point,
+        );
 
         // Convert view coordinates to model coordinates using the transform
-        const modelPoint = this.modelViewTransform.viewToModelPosition(viewPoint);
+        const modelPoint =
+          this.modelViewTransform.viewToModelPosition(viewPoint);
 
         // Clamp to plate boundaries (centered model coordinates)
         const halfWidth = this.model.plateWidth / 2;
         const halfHeight = this.model.plateHeight / 2;
-        const clampedX = Math.max(-halfWidth, Math.min(halfWidth, modelPoint.x));
-        const clampedY = Math.max(-halfHeight, Math.min(halfHeight, modelPoint.y));
+        const clampedX = Math.max(
+          -halfWidth,
+          Math.min(halfWidth, modelPoint.x),
+        );
+        const clampedY = Math.max(
+          -halfHeight,
+          Math.min(halfHeight, modelPoint.y),
+        );
 
         // Update the model
-        this.model.excitationPositionProperty.value = new Vector2(clampedX, clampedY);
+        this.model.excitationPositionProperty.value = new Vector2(
+          clampedX,
+          clampedY,
+        );
       },
       end: () => {
         // Update visualization when drag ends
@@ -447,7 +509,8 @@ export class ChladniScreenView extends ScreenView {
     const modelPosition = this.model.excitationPositionProperty.value;
 
     // Convert to view coordinates using the transform
-    const viewPosition = this.modelViewTransform.modelToViewPosition(modelPosition);
+    const viewPosition =
+      this.modelViewTransform.modelToViewPosition(modelPosition);
 
     // Position relative to visualization bounds
     const vizBounds = this.visualizationNode.bounds;

@@ -125,12 +125,14 @@ export class ChladniVisualizationNode extends Node {
 
     // Support both legacy visualizationSize and new width/height options
     const defaultSize = 400;
-    const visualizationWidth = providedOptions?.visualizationWidth
-      ?? providedOptions?.visualizationSize
-      ?? defaultSize;
-    const visualizationHeight = providedOptions?.visualizationHeight
-      ?? providedOptions?.visualizationSize
-      ?? defaultSize;
+    const visualizationWidth =
+      providedOptions?.visualizationWidth ??
+      providedOptions?.visualizationSize ??
+      defaultSize;
+    const visualizationHeight =
+      providedOptions?.visualizationHeight ??
+      providedOptions?.visualizationSize ??
+      defaultSize;
 
     this.model = model;
     this.rendererTypeProperty = rendererTypeProperty;
@@ -142,28 +144,41 @@ export class ChladniVisualizationNode extends Node {
     this.modelViewTransform = this.createModelViewTransform();
 
     // Create background rectangle
-    this.backgroundRect = new Rectangle(0, 0, visualizationWidth, visualizationHeight, {
-      fill: ResonanceColors.chladniBackgroundProperty,
-    });
+    this.backgroundRect = new Rectangle(
+      0,
+      0,
+      visualizationWidth,
+      visualizationHeight,
+      {
+        fill: ResonanceColors.chladniBackgroundProperty,
+      },
+    );
     this.addChild(this.backgroundRect);
 
     // Create border rectangle (outer)
-    this.borderRect = new Rectangle(0, 0, visualizationWidth, visualizationHeight, {
-      stroke: ResonanceColors.chladniPlateBorderProperty,
-      lineWidth: 2,
-    });
+    this.borderRect = new Rectangle(
+      0,
+      0,
+      visualizationWidth,
+      visualizationHeight,
+      {
+        stroke: ResonanceColors.chladniPlateBorderProperty,
+        lineWidth: 2,
+      },
+    );
 
     // Create inner border rectangle (shown only in clamp mode)
     const innerInset = 4;
     this.innerBorderRect = new Rectangle(
-      innerInset, innerInset,
+      innerInset,
+      innerInset,
       visualizationWidth - 2 * innerInset,
       visualizationHeight - 2 * innerInset,
       {
         stroke: ResonanceColors.chladniPlateBorderProperty,
         lineWidth: 1,
         opacity: 0.6,
-      }
+      },
     );
 
     // Initialize the appropriate renderer
@@ -175,7 +190,7 @@ export class ChladniVisualizationNode extends Node {
 
     // Link inner border visibility to boundary mode
     model.boundaryModeProperty.link((mode) => {
-      this.innerBorderRect.visible = (mode === "clamp");
+      this.innerBorderRect.visible = mode === "clamp";
     });
 
     // Listen for renderer type changes
@@ -189,7 +204,10 @@ export class ChladniVisualizationNode extends Node {
     ResonanceColors.chladniParticleProperty.link(() => {
       if (this.currentRenderer === RendererType.WEBGL && this.spritesNode) {
         this.recreateSpritesNode();
-      } else if (this.currentRenderer === RendererType.CANVAS && this.canvasNode) {
+      } else if (
+        this.currentRenderer === RendererType.CANVAS &&
+        this.canvasNode
+      ) {
         this.canvasNode.invalidatePaint();
       }
     });
@@ -222,7 +240,12 @@ export class ChladniVisualizationNode extends Node {
     this.spritesNode = new Sprites({
       sprites: [this.sprite],
       spriteInstances: this.spriteInstances,
-      canvasBounds: new Bounds2(0, 0, this.visualizationWidth, this.visualizationHeight),
+      canvasBounds: new Bounds2(
+        0,
+        0,
+        this.visualizationWidth,
+        this.visualizationHeight,
+      ),
       hitTestSprites: false,
       renderer: "webgl",
     });
@@ -252,7 +275,10 @@ export class ChladniVisualizationNode extends Node {
       this.spritesNode = null;
       this.sprite = null;
       this.spriteInstances = [];
-    } else if (this.currentRenderer === RendererType.CANVAS && this.canvasNode) {
+    } else if (
+      this.currentRenderer === RendererType.CANVAS &&
+      this.canvasNode
+    ) {
       this.removeChild(this.canvasNode);
       this.canvasNode = null;
     }
@@ -286,7 +312,12 @@ export class ChladniVisualizationNode extends Node {
     this.spritesNode = new Sprites({
       sprites: [this.sprite],
       spriteInstances: this.spriteInstances,
-      canvasBounds: new Bounds2(0, 0, this.visualizationWidth, this.visualizationHeight),
+      canvasBounds: new Bounds2(
+        0,
+        0,
+        this.visualizationWidth,
+        this.visualizationHeight,
+      ),
       hitTestSprites: false,
       renderer: "webgl",
     });
@@ -315,7 +346,10 @@ export class ChladniVisualizationNode extends Node {
     context.fill();
 
     // Create sprite image with center offset
-    const spriteImage = new SpriteImage(canvas, new Vector2(size / 2, size / 2));
+    const spriteImage = new SpriteImage(
+      canvas,
+      new Vector2(size / 2, size / 2),
+    );
     return new Sprite(spriteImage);
   }
 
@@ -350,15 +384,25 @@ export class ChladniVisualizationNode extends Node {
 
     // Model bounds: centered coordinates
     const modelBounds = new Bounds2(
-      -plateWidth / 2, -plateHeight / 2,
-      plateWidth / 2, plateHeight / 2
+      -plateWidth / 2,
+      -plateHeight / 2,
+      plateWidth / 2,
+      plateHeight / 2,
     );
 
     // View bounds: (0,0) at top-left
-    const viewBounds = new Bounds2(0, 0, this.visualizationWidth, this.visualizationHeight);
+    const viewBounds = new Bounds2(
+      0,
+      0,
+      this.visualizationWidth,
+      this.visualizationHeight,
+    );
 
     // Create transform with Y inversion (model +Y up, view +Y down)
-    return ModelViewTransform2.createRectangleInvertedYMapping(modelBounds, viewBounds);
+    return ModelViewTransform2.createRectangleInvertedYMapping(
+      modelBounds,
+      viewBounds,
+    );
   }
 
   /**
@@ -427,12 +471,20 @@ export class ChladniVisualizationNode extends Node {
     this.backgroundRect.setRect(0, 0, newWidth, newHeight);
     this.borderRect.setRect(0, 0, newWidth, newHeight);
     const innerInset = 4;
-    this.innerBorderRect.setRect(innerInset, innerInset, newWidth - 2 * innerInset, newHeight - 2 * innerInset);
+    this.innerBorderRect.setRect(
+      innerInset,
+      innerInset,
+      newWidth - 2 * innerInset,
+      newHeight - 2 * innerInset,
+    );
 
     // Update renderer-specific elements
     if (this.currentRenderer === RendererType.WEBGL && this.spritesNode) {
       this.recreateSpritesNode();
-    } else if (this.currentRenderer === RendererType.CANVAS && this.canvasNode) {
+    } else if (
+      this.currentRenderer === RendererType.CANVAS &&
+      this.canvasNode
+    ) {
       this.canvasNode.setCanvasSize(newWidth, newHeight);
       this.canvasNode.setModelViewTransform(this.modelViewTransform);
     }

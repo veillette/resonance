@@ -98,11 +98,7 @@ export class RungeKuttaSolver extends ODESolver {
       { length: n },
       (_, i) =>
         state[i]! +
-        ((this.k1[i]! +
-          2 * this.k2[i]! +
-          2 * this.k3[i]! +
-          this.k4[i]!) *
-          dt) /
+        ((this.k1[i]! + 2 * this.k2[i]! + 2 * this.k3[i]! + this.k4[i]!) * dt) /
           6,
     );
 

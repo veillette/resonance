@@ -43,7 +43,8 @@ onReadyToLaunch(() => {
                 spacing: 8,
                 children: [
                   new Text(
-                    ResonanceStrings.preferences.simulation.displayOptionsStringProperty,
+                    ResonanceStrings.preferences.simulation
+                      .displayOptionsStringProperty,
                     {
                       font: new PhetFont({ size: 16, weight: "bold" }),
                       fill: ResonanceColors.preferencesTextProperty,
@@ -52,7 +53,8 @@ onReadyToLaunch(() => {
                   new Checkbox(
                     resonancePreferences.showEnergyProperty,
                     new Text(
-                      ResonanceStrings.preferences.simulation.showEnergyStringProperty,
+                      ResonanceStrings.preferences.simulation
+                        .showEnergyStringProperty,
                       {
                         font: new PhetFont(16),
                         fill: ResonanceColors.preferencesTextProperty,
@@ -65,7 +67,8 @@ onReadyToLaunch(() => {
                   new Checkbox(
                     resonancePreferences.showVectorsProperty,
                     new Text(
-                      ResonanceStrings.preferences.simulation.showVectorsStringProperty,
+                      ResonanceStrings.preferences.simulation
+                        .showVectorsStringProperty,
                       {
                         font: new PhetFont(16),
                         fill: ResonanceColors.preferencesTextProperty,
@@ -78,7 +81,8 @@ onReadyToLaunch(() => {
                   new Checkbox(
                     resonancePreferences.showPhaseProperty,
                     new Text(
-                      ResonanceStrings.preferences.simulation.showPhaseStringProperty,
+                      ResonanceStrings.preferences.simulation
+                        .showPhaseStringProperty,
                       {
                         font: new PhetFont(16),
                         fill: ResonanceColors.preferencesTextProperty,
@@ -103,14 +107,16 @@ onReadyToLaunch(() => {
                         spacing: 4,
                         children: [
                           new Text(
-                            ResonanceStrings.preferences.solvers.rk4StringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .rk4StringProperty,
                             {
                               font: new PhetFont(14),
                               fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
-                            ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .rk4DescriptionStringProperty,
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
@@ -129,14 +135,16 @@ onReadyToLaunch(() => {
                         spacing: 4,
                         children: [
                           new Text(
-                            ResonanceStrings.preferences.solvers.adaptiveRK45StringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .adaptiveRK45StringProperty,
                             {
                               font: new PhetFont(14),
                               fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
-                            ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .adaptiveRK45DescriptionStringProperty,
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
@@ -155,14 +163,16 @@ onReadyToLaunch(() => {
                         spacing: 4,
                         children: [
                           new Text(
-                            ResonanceStrings.preferences.solvers.adaptiveEulerStringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .adaptiveEulerStringProperty,
                             {
                               font: new PhetFont(14),
                               fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
-                            ResonanceStrings.preferences.solvers.adaptiveEulerDescriptionStringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .adaptiveEulerDescriptionStringProperty,
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
@@ -181,14 +191,16 @@ onReadyToLaunch(() => {
                         spacing: 4,
                         children: [
                           new Text(
-                            ResonanceStrings.preferences.solvers.modifiedMidpointStringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .modifiedMidpointStringProperty,
                             {
                               font: new PhetFont(14),
                               fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
-                            ResonanceStrings.preferences.solvers.modifiedMidpointDescriptionStringProperty,
+                            ResonanceStrings.preferences.solvers
+                              .modifiedMidpointDescriptionStringProperty,
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
@@ -213,14 +225,16 @@ onReadyToLaunch(() => {
                 spacing: 12,
                 children: [
                   new Text(
-                    ResonanceStrings.preferences.simulation.solverMethodStringProperty,
+                    ResonanceStrings.preferences.simulation
+                      .solverMethodStringProperty,
                     {
                       font: new PhetFont({ size: 16, weight: "bold" }),
                       fill: ResonanceColors.preferencesTextProperty,
                     },
                   ),
                   new Text(
-                    ResonanceStrings.preferences.simulation.solverDescriptionStringProperty,
+                    ResonanceStrings.preferences.simulation
+                      .solverDescriptionStringProperty,
                     {
                       font: new PhetFont(12),
                       fill: ResonanceColors.preferencesTextProperty,
@@ -243,14 +257,16 @@ onReadyToLaunch(() => {
                         spacing: 4,
                         children: [
                           new Text(
-                            ResonanceStrings.preferences.simulation.rendererCanvasStringProperty,
+                            ResonanceStrings.preferences.simulation
+                              .rendererCanvasStringProperty,
                             {
                               font: new PhetFont(14),
                               fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
-                            ResonanceStrings.preferences.simulation.rendererCanvasDescriptionStringProperty,
+                            ResonanceStrings.preferences.simulation
+                              .rendererCanvasDescriptionStringProperty,
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
@@ -269,14 +285,16 @@ onReadyToLaunch(() => {
                         spacing: 4,
                         children: [
                           new Text(
-                            ResonanceStrings.preferences.simulation.rendererWebGLStringProperty,
+                            ResonanceStrings.preferences.simulation
+                              .rendererWebGLStringProperty,
                             {
                               font: new PhetFont(14),
                               fill: ResonanceColors.preferencesTextProperty,
                             },
                           ),
                           new Text(
-                            ResonanceStrings.preferences.simulation.rendererWebGLDescriptionStringProperty,
+                            ResonanceStrings.preferences.simulation
+                              .rendererWebGLDescriptionStringProperty,
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
@@ -301,14 +319,16 @@ onReadyToLaunch(() => {
                 spacing: 12,
                 children: [
                   new Text(
-                    ResonanceStrings.preferences.simulation.rendererStringProperty,
+                    ResonanceStrings.preferences.simulation
+                      .rendererStringProperty,
                     {
                       font: new PhetFont({ size: 16, weight: "bold" }),
                       fill: ResonanceColors.preferencesTextProperty,
                     },
                   ),
                   new Text(
-                    ResonanceStrings.preferences.simulation.rendererDescriptionStringProperty,
+                    ResonanceStrings.preferences.simulation
+                      .rendererDescriptionStringProperty,
                     {
                       font: new PhetFont(12),
                       fill: ResonanceColors.preferencesTextProperty,

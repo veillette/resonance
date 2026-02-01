@@ -205,8 +205,7 @@ export class AdaptiveRK45Solver extends ODESolver {
     const newState: number[] = Array.from(
       { length: n },
       (_, i) =>
-        state[i]! +
-        ((k1[i]! + 2 * k2[i]! + 2 * k3[i]! + k4[i]!) * dt) / 6,
+        state[i]! + ((k1[i]! + 2 * k2[i]! + 2 * k3[i]! + k4[i]!) * dt) / 6,
     );
 
     model.setState(newState);

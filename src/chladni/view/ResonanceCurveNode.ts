@@ -95,7 +95,9 @@ export class ResonanceCurveNode extends Node {
 
     // Create a clipped container for the chart content (grid, curve, marker)
     // This prevents the curve and grid from rendering outside the chart area
-    const chartClipArea = Shape.bounds(new Bounds2(0, 0, CHART_WIDTH, CHART_HEIGHT));
+    const chartClipArea = Shape.bounds(
+      new Bounds2(0, 0, CHART_WIDTH, CHART_HEIGHT),
+    );
     const clippedChartContent = new Node({
       clipArea: chartClipArea,
     });
