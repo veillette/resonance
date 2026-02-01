@@ -7,7 +7,7 @@
  */
 
 import { Vector2 } from "scenerystack/dot";
-import { NumberProperty, TReadOnlyProperty, Property } from "scenerystack/axon";
+import { NumberProperty, TReadOnlyProperty } from "scenerystack/axon";
 import {
   TWO_PI,
   PARTICLE_STEP_SCALE,

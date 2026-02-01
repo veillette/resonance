@@ -17,6 +17,7 @@ Visualizes driven, damped harmonic oscillators attached to an oscillating driver
 Visualizes Chladni patterns - the beautiful geometric patterns formed by particles on a vibrating plate. When a plate vibrates at specific frequencies, particles migrate to the nodal lines (areas of zero displacement), revealing the resonant mode shapes.
 
 **Features:**
+
 - **Material Selection**: Choose between Copper, Aluminum, Zinc, or Stainless Steel plates
 - **Frequency Control**: Adjust driving frequency from 50 Hz to 4000 Hz
 - **Particle Count**: Select 1,000 to 25,000 particles for visualization
@@ -92,6 +93,7 @@ The sharpness of resonance is characterized by the quality factor Q = √(km)/b,
 Chladni patterns demonstrate 2D resonance on vibrating plates. Named after physicist Ernst Chladni (1756-1827), these patterns reveal the nodal lines of plate vibration modes.
 
 **Physics:**
+
 - Wave number: `k = √(f/C)` where C is the material dispersion constant
 - Modal frequencies: Determined by plate geometry and material properties
 - Nodal lines: Regions where the plate displacement is zero

@@ -5,7 +5,7 @@
  * Includes the frequency slider and sweep button.
  */
 
-import { Node, VBox } from "scenerystack/scenery";
+import { VBox } from "scenerystack/scenery";
 import { TextPushButton } from "scenerystack/sun";
 import { DerivedProperty } from "scenerystack/axon";
 import { ChladniModel } from "../../model/ChladniModel.js";

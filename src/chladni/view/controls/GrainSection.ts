@@ -6,7 +6,11 @@
  */
 
 import { Node, Text, VBox, HBox } from "scenerystack/scenery";
-import { ComboBox, TextPushButton, AquaRadioButtonGroup } from "scenerystack/sun";
+import {
+  ComboBox,
+  TextPushButton,
+  AquaRadioButtonGroup,
+} from "scenerystack/sun";
 import type { ComboBoxItem } from "scenerystack/sun";
 import { DerivedProperty, TReadOnlyProperty } from "scenerystack/axon";
 import {
@@ -44,7 +48,8 @@ export class GrainSection extends VBox {
       GRAIN_COUNT_OPTIONS.map((option) => ({
         value: option,
         createNode: () => {
-          const stringProperty = GRAIN_COUNT_STRINGS.get(option.value) ??
+          const stringProperty =
+            GRAIN_COUNT_STRINGS.get(option.value) ??
             ResonanceStrings.chladni.grains10000StringProperty;
           return new Text(stringProperty, {
             font: ResonanceConstants.CONTROL_FONT,

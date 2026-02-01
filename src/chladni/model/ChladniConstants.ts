@@ -162,7 +162,8 @@ export const GRAIN_COUNT_OPTIONS: readonly GrainCountOption[] = [
  * Default grain count index in GRAIN_COUNT_OPTIONS array
  */
 export const DEFAULT_GRAIN_COUNT_INDEX = 2; // 10,000
-export const DEFAULT_GRAIN_COUNT = GRAIN_COUNT_OPTIONS[DEFAULT_GRAIN_COUNT_INDEX]!;
+export const DEFAULT_GRAIN_COUNT =
+  GRAIN_COUNT_OPTIONS[DEFAULT_GRAIN_COUNT_INDEX]!;
 
 // ============================================================================
 // CONVENIENCE EXPORTS
