@@ -6,10 +6,14 @@
  *
  * A frequency sweep automatically increases the frequency from minimum to maximum
  * over time, allowing users to observe how patterns change across the frequency range.
+ *
+ * Uses scenerystack's Animation class for built-in timing, completion detection,
+ * and integration with the global animation timer.
  */
 
-import { BooleanProperty, NumberProperty } from "scenerystack/axon";
+import { BooleanProperty, NumberProperty, Emitter } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
+import { Animation, Easing } from "scenerystack/twixt";
 import { SWEEP_RATE } from "./ChladniConstants.js";
 
 /**
@@ -21,15 +25,15 @@ export interface FrequencySweepControllerOptions {
 }
 
 /**
- * FrequencySweepController manages the frequency sweep state machine.
- * It handles starting, stopping, and stepping through frequency sweeps.
+ * FrequencySweepController manages the frequency sweep using scenerystack's Animation.
+ * It handles starting, stopping, and automatically stepping through frequency sweeps.
  */
 export class FrequencySweepController {
   private readonly frequencyProperty: NumberProperty;
   private readonly frequencyRange: Range;
 
   /**
-   * Whether a frequency sweep is currently active.
+   * Whether a frequency sweep is currently active (animation running or paused).
    */
   public readonly isSweepingProperty: BooleanProperty;
 
@@ -37,6 +41,21 @@ export class FrequencySweepController {
    * The rate at which frequency increases during a sweep (Hz per second).
    */
   public readonly sweepRate: number;
+
+  /**
+   * Emitter that fires when a sweep completes naturally (reaches max frequency).
+   */
+  public readonly sweepCompletedEmitter: Emitter;
+
+  /**
+   * The current animation instance, or null if no sweep is active.
+   */
+  private sweepAnimation: Animation | null = null;
+
+  /**
+   * Stores the frequency when sweep is paused for resume capability.
+   */
+  private pausedFrequency: number | null = null;
 
   public constructor(options: FrequencySweepControllerOptions) {
     this.frequencyProperty = options.frequencyProperty;
@@ -47,6 +66,56 @@ export class FrequencySweepController {
 
     // Sweep rate from constants
     this.sweepRate = SWEEP_RATE;
+
+    // Create emitter for sweep completion
+    this.sweepCompletedEmitter = new Emitter();
+  }
+
+  /**
+   * Calculate the duration for a sweep from a given start frequency to max.
+   */
+  private calculateDuration(fromFrequency: number): number {
+    return (this.frequencyRange.max - fromFrequency) / this.sweepRate;
+  }
+
+  /**
+   * Create and start a new animation from the current frequency to max.
+   */
+  private createAndStartAnimation(fromFrequency: number): void {
+    // Clean up any existing animation
+    this.disposeAnimation();
+
+    const duration = this.calculateDuration(fromFrequency);
+
+    // Create the sweep animation using twixt
+    this.sweepAnimation = new Animation({
+      property: this.frequencyProperty,
+      to: this.frequencyRange.max,
+      from: fromFrequency,
+      duration: duration,
+      easing: Easing.LINEAR,
+    });
+
+    // Listen for sweep completion
+    this.sweepAnimation.endedEmitter.addListener(() => {
+      this.isSweepingProperty.value = false;
+      this.pausedFrequency = null;
+      this.sweepCompletedEmitter.emit();
+    });
+
+    // Start the animation
+    this.sweepAnimation.start();
+    this.isSweepingProperty.value = true;
+  }
+
+  /**
+   * Dispose the current animation if it exists.
+   */
+  private disposeAnimation(): void {
+    if (this.sweepAnimation) {
+      this.sweepAnimation.stop();
+      this.sweepAnimation = null;
+    }
   }
 
   /**
@@ -54,8 +123,9 @@ export class FrequencySweepController {
    * The frequency will be reset to minimum and sweeping state activated.
    */
   public startSweep(): void {
+    this.pausedFrequency = null;
     this.frequencyProperty.value = this.frequencyRange.min;
-    this.isSweepingProperty.value = true;
+    this.createAndStartAnimation(this.frequencyRange.min);
   }
 
   /**
@@ -63,7 +133,30 @@ export class FrequencySweepController {
    * The current frequency is preserved.
    */
   public stopSweep(): void {
+    this.disposeAnimation();
     this.isSweepingProperty.value = false;
+    this.pausedFrequency = null;
+  }
+
+  /**
+   * Pause the sweep, preserving the current position for later resume.
+   */
+  public pauseSweep(): void {
+    if (this.sweepAnimation && this.isSweepingProperty.value) {
+      this.pausedFrequency = this.frequencyProperty.value;
+      this.disposeAnimation();
+      // Keep isSweepingProperty true to indicate sweep can be resumed
+    }
+  }
+
+  /**
+   * Resume a paused sweep from where it left off.
+   */
+  public resumeSweep(): void {
+    if (this.pausedFrequency !== null && this.isSweepingProperty.value) {
+      this.createAndStartAnimation(this.pausedFrequency);
+      this.pausedFrequency = null;
+    }
   }
 
   /**
@@ -79,35 +172,17 @@ export class FrequencySweepController {
   }
 
   /**
-   * Step the frequency sweep forward by the given time delta.
-   * If the sweep reaches the maximum frequency, it automatically stops.
-   *
-   * @param dt - Time delta in seconds
-   * @returns true if the sweep is still active, false if it completed
-   */
-  public step(dt: number): boolean {
-    if (!this.isSweepingProperty.value) {
-      return false;
-    }
-
-    const newFreq = this.frequencyProperty.value + this.sweepRate * dt;
-
-    if (newFreq >= this.frequencyRange.max) {
-      // Sweep completed
-      this.frequencyProperty.value = this.frequencyRange.max;
-      this.isSweepingProperty.value = false;
-      return false;
-    }
-
-    this.frequencyProperty.value = newFreq;
-    return true;
-  }
-
-  /**
    * Check if a sweep is currently active.
    */
   public get isSweeping(): boolean {
     return this.isSweepingProperty.value;
+  }
+
+  /**
+   * Check if the animation is actually running (not paused).
+   */
+  public get isAnimationRunning(): boolean {
+    return this.sweepAnimation !== null && this.pausedFrequency === null;
   }
 
   /**
@@ -135,6 +210,8 @@ export class FrequencySweepController {
    * Reset the sweep controller to initial state.
    */
   public reset(): void {
+    this.disposeAnimation();
+    this.pausedFrequency = null;
     this.isSweepingProperty.reset();
   }
 }

@@ -6,27 +6,33 @@
  * state transitions.
  *
  * States:
- * - IDLE: Animation is paused, no sweep active
- * - PLAYING: Animation is running, particles moving
- * - SWEEPING: Animation is running with frequency sweep active
- * - PAUSED_SWEEPING: Animation paused but sweep will resume when playing
+ * - idle: Animation is paused, no sweep active
+ * - playing: Animation is running, particles moving
+ * - sweeping: Animation is running with frequency sweep active
+ * - paused_sweeping: Animation paused but sweep will resume when playing
  */
 
-import { BooleanProperty, Property, DerivedProperty } from "scenerystack/axon";
+import {
+  BooleanProperty,
+  DerivedProperty,
+  StringUnionProperty,
+  TReadOnlyProperty,
+} from "scenerystack/axon";
+
+/**
+ * Valid playback state values.
+ */
+export const PlaybackStateValues = [
+  "idle",
+  "playing",
+  "sweeping",
+  "paused_sweeping",
+] as const;
 
 /**
  * Possible playback states for the simulation.
  */
-export enum PlaybackState {
-  /** Animation paused, no sweep active */
-  IDLE = "idle",
-  /** Animation running normally */
-  PLAYING = "playing",
-  /** Animation running with frequency sweep */
-  SWEEPING = "sweeping",
-  /** Animation paused but sweep will resume */
-  PAUSED_SWEEPING = "paused_sweeping",
-}
+export type PlaybackState = (typeof PlaybackStateValues)[number];
 
 /**
  * PlaybackStateMachine manages the animation and sweep states with clear
@@ -34,9 +40,9 @@ export enum PlaybackState {
  */
 export class PlaybackStateMachine {
   /**
-   * The current playback state.
+   * The current playback state using StringUnionProperty for type-safe validation.
    */
-  public readonly stateProperty: Property<PlaybackState>;
+  public readonly stateProperty: StringUnionProperty<PlaybackState>;
 
   /**
    * Whether animation is currently playing (derived from state).
@@ -46,18 +52,20 @@ export class PlaybackStateMachine {
 
   /**
    * Whether a frequency sweep is active (derived from state).
-   * True in both SWEEPING and PAUSED_SWEEPING states.
+   * True in both sweeping and paused_sweeping states.
    */
-  public readonly isSweepActiveProperty: Property<boolean>;
+  public readonly isSweepActiveProperty: TReadOnlyProperty<boolean>;
 
   /**
    * Whether the simulation is actively animating (playing or sweeping).
    */
-  public readonly isAnimatingProperty: Property<boolean>;
+  public readonly isAnimatingProperty: TReadOnlyProperty<boolean>;
 
   public constructor() {
-    // Initialize state to IDLE
-    this.stateProperty = new Property<PlaybackState>(PlaybackState.IDLE);
+    // Initialize state to idle using StringUnionProperty with validation
+    this.stateProperty = new StringUnionProperty<PlaybackState>("idle", {
+      validValues: PlaybackStateValues,
+    });
 
     // Create isPlayingProperty that stays in sync with state
     this.isPlayingProperty = new BooleanProperty(false);
@@ -65,22 +73,18 @@ export class PlaybackStateMachine {
     // Derive sweep active from state
     this.isSweepActiveProperty = new DerivedProperty(
       [this.stateProperty],
-      (state) =>
-        state === PlaybackState.SWEEPING ||
-        state === PlaybackState.PAUSED_SWEEPING,
+      (state) => state === "sweeping" || state === "paused_sweeping",
     );
 
     // Derive animating from state
     this.isAnimatingProperty = new DerivedProperty(
       [this.stateProperty],
-      (state) =>
-        state === PlaybackState.PLAYING || state === PlaybackState.SWEEPING,
+      (state) => state === "playing" || state === "sweeping",
     );
 
     // Keep isPlayingProperty in sync with state changes
     this.stateProperty.link((state) => {
-      const shouldBePlaying =
-        state === PlaybackState.PLAYING || state === PlaybackState.SWEEPING;
+      const shouldBePlaying = state === "playing" || state === "sweeping";
       if (this.isPlayingProperty.value !== shouldBePlaying) {
         this.isPlayingProperty.value = shouldBePlaying;
       }
@@ -100,17 +104,17 @@ export class PlaybackStateMachine {
 
     if (isPlaying) {
       // Transitioning to playing
-      if (currentState === PlaybackState.IDLE) {
-        this.stateProperty.value = PlaybackState.PLAYING;
-      } else if (currentState === PlaybackState.PAUSED_SWEEPING) {
-        this.stateProperty.value = PlaybackState.SWEEPING;
+      if (currentState === "idle") {
+        this.stateProperty.value = "playing";
+      } else if (currentState === "paused_sweeping") {
+        this.stateProperty.value = "sweeping";
       }
     } else {
       // Transitioning to paused
-      if (currentState === PlaybackState.PLAYING) {
-        this.stateProperty.value = PlaybackState.IDLE;
-      } else if (currentState === PlaybackState.SWEEPING) {
-        this.stateProperty.value = PlaybackState.PAUSED_SWEEPING;
+      if (currentState === "playing") {
+        this.stateProperty.value = "idle";
+      } else if (currentState === "sweeping") {
+        this.stateProperty.value = "paused_sweeping";
       }
     }
   }
@@ -140,7 +144,7 @@ export class PlaybackStateMachine {
    * Check if currently in sweeping state (actively sweeping).
    */
   public get isSweeping(): boolean {
-    return this.stateProperty.value === PlaybackState.SWEEPING;
+    return this.stateProperty.value === "sweeping";
   }
 
   /**
@@ -150,10 +154,10 @@ export class PlaybackStateMachine {
   public play(): void {
     const currentState = this.stateProperty.value;
 
-    if (currentState === PlaybackState.IDLE) {
-      this.stateProperty.value = PlaybackState.PLAYING;
-    } else if (currentState === PlaybackState.PAUSED_SWEEPING) {
-      this.stateProperty.value = PlaybackState.SWEEPING;
+    if (currentState === "idle") {
+      this.stateProperty.value = "playing";
+    } else if (currentState === "paused_sweeping") {
+      this.stateProperty.value = "sweeping";
     }
   }
 
@@ -164,10 +168,10 @@ export class PlaybackStateMachine {
   public pause(): void {
     const currentState = this.stateProperty.value;
 
-    if (currentState === PlaybackState.PLAYING) {
-      this.stateProperty.value = PlaybackState.IDLE;
-    } else if (currentState === PlaybackState.SWEEPING) {
-      this.stateProperty.value = PlaybackState.PAUSED_SWEEPING;
+    if (currentState === "playing") {
+      this.stateProperty.value = "idle";
+    } else if (currentState === "sweeping") {
+      this.stateProperty.value = "paused_sweeping";
     }
   }
 
@@ -187,7 +191,7 @@ export class PlaybackStateMachine {
    * Automatically starts playing if paused.
    */
   public startSweep(): void {
-    this.stateProperty.value = PlaybackState.SWEEPING;
+    this.stateProperty.value = "sweeping";
   }
 
   /**
@@ -197,30 +201,30 @@ export class PlaybackStateMachine {
   public stopSweep(): void {
     const currentState = this.stateProperty.value;
 
-    if (currentState === PlaybackState.SWEEPING) {
-      this.stateProperty.value = PlaybackState.PLAYING;
-    } else if (currentState === PlaybackState.PAUSED_SWEEPING) {
-      this.stateProperty.value = PlaybackState.IDLE;
+    if (currentState === "sweeping") {
+      this.stateProperty.value = "playing";
+    } else if (currentState === "paused_sweeping") {
+      this.stateProperty.value = "idle";
     }
   }
 
   /**
    * Called when a sweep completes naturally (reaches max frequency).
-   * Transitions from SWEEPING to PLAYING.
+   * Transitions from sweeping to playing.
    */
   public onSweepComplete(): void {
-    if (this.stateProperty.value === PlaybackState.SWEEPING) {
-      this.stateProperty.value = PlaybackState.PLAYING;
-    } else if (this.stateProperty.value === PlaybackState.PAUSED_SWEEPING) {
-      this.stateProperty.value = PlaybackState.IDLE;
+    if (this.stateProperty.value === "sweeping") {
+      this.stateProperty.value = "playing";
+    } else if (this.stateProperty.value === "paused_sweeping") {
+      this.stateProperty.value = "idle";
     }
   }
 
   /**
-   * Reset the state machine to initial state (IDLE).
+   * Reset the state machine to initial state (idle).
    */
   public reset(): void {
-    this.stateProperty.value = PlaybackState.IDLE;
+    this.stateProperty.value = "idle";
     // isPlayingProperty will be updated via the link
   }
 
@@ -233,16 +237,10 @@ export class PlaybackStateMachine {
    */
   public isValidTransition(from: PlaybackState, to: PlaybackState): boolean {
     const validTransitions: Record<PlaybackState, PlaybackState[]> = {
-      [PlaybackState.IDLE]: [PlaybackState.PLAYING, PlaybackState.SWEEPING],
-      [PlaybackState.PLAYING]: [PlaybackState.IDLE, PlaybackState.SWEEPING],
-      [PlaybackState.SWEEPING]: [
-        PlaybackState.PLAYING,
-        PlaybackState.PAUSED_SWEEPING,
-      ],
-      [PlaybackState.PAUSED_SWEEPING]: [
-        PlaybackState.IDLE,
-        PlaybackState.SWEEPING,
-      ],
+      idle: ["playing", "sweeping"],
+      playing: ["idle", "sweeping"],
+      sweeping: ["playing", "paused_sweeping"],
+      paused_sweeping: ["idle", "sweeping"],
     };
 
     return validTransitions[from]?.includes(to) ?? false;
@@ -253,13 +251,13 @@ export class PlaybackStateMachine {
    */
   public getStateDescription(): string {
     switch (this.stateProperty.value) {
-      case PlaybackState.IDLE:
+      case "idle":
         return "Paused";
-      case PlaybackState.PLAYING:
+      case "playing":
         return "Playing";
-      case PlaybackState.SWEEPING:
+      case "sweeping":
         return "Sweeping";
-      case PlaybackState.PAUSED_SWEEPING:
+      case "paused_sweeping":
         return "Sweep Paused";
       default:
         return "Unknown";

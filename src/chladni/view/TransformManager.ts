@@ -10,7 +10,7 @@
  * - View: (0,0) at top-left of visualization, +Y down
  */
 
-import { Property, TReadOnlyProperty } from "scenerystack/axon";
+import { Property, TReadOnlyProperty, Multilink } from "scenerystack/axon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { createChladniTransform } from "./ChladniTransformFactory.js";
@@ -77,9 +77,11 @@ export class TransformManager {
     // Create property for reactive updates
     this.transformProperty = new Property(this.currentTransform);
 
-    // Listen for plate dimension changes
-    this.plateWidthProperty.lazyLink(() => this.updateTransform());
-    this.plateHeightProperty.lazyLink(() => this.updateTransform());
+    // Listen for plate dimension changes using Multilink for coordinated updates
+    Multilink.lazyMultilink(
+      [this.plateWidthProperty, this.plateHeightProperty],
+      () => this.updateTransform(),
+    );
   }
 
   /**
@@ -223,7 +225,7 @@ export class TransformManager {
    * @returns true if the point is within the view bounds
    */
   public isViewPointInBounds(viewPoint: Vector2): boolean {
-    return this.getViewBounds().containsPoint(viewPoint.x, viewPoint.y);
+    return this.getViewBounds().containsPoint(viewPoint);
   }
 
   /**

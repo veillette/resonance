@@ -11,6 +11,7 @@
  * - ModelViewTransform2 handles the conversion with Y inversion
  */
 
+import { Multilink } from "scenerystack/axon";
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import {
   DragListener,
@@ -206,8 +207,11 @@ export class ChladniScreenView extends ScreenView {
     this.addChild(resetAllButton);
 
     // Listen to plate dimension changes to update the visualization
-    model.plateWidthProperty.link(() => this.updateVisualizationSize());
-    model.plateHeightProperty.link(() => this.updateVisualizationSize());
+    // Using Multilink for coordinated updates
+    Multilink.multilink(
+      [model.plateWidthProperty, model.plateHeightProperty],
+      () => this.updateVisualizationSize(),
+    );
   }
 
   /**

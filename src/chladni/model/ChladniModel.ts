@@ -24,7 +24,7 @@
  * - PlaybackStateMachine: Animation state management
  */
 
-import { Property, NumberProperty } from "scenerystack/axon";
+import { Property, NumberProperty, Multilink } from "scenerystack/axon";
 import { Vector2, Range } from "scenerystack/dot";
 import { Material, MaterialType } from "./Material.js";
 import { ModalCalculator } from "./ModalCalculator.js";
@@ -161,6 +161,22 @@ export class ChladniModel {
       frequencyRange: this.frequencyRange,
     });
 
+    // Listen for sweep completion from the Animation-based controller
+    this.sweepController.sweepCompletedEmitter.addListener(() => {
+      this.playbackStateMachine.onSweepComplete();
+    });
+
+    // Pause/resume sweep animation based on playback state
+    this.playbackStateMachine.isPlayingProperty.lazyLink((isPlaying) => {
+      if (this.sweepController.isSweeping) {
+        if (isPlaying) {
+          this.sweepController.resumeSweep();
+        } else {
+          this.sweepController.pauseSweep();
+        }
+      }
+    });
+
     // Create modal calculator
     this.modalCalculator = new ModalCalculator({
       materialProperty: this.materialProperty,
@@ -224,24 +240,18 @@ export class ChladniModel {
       this.particleManager.initialize();
     });
 
-    // Recompute when plate dimensions change
-    this.plateGeometry.widthProperty.lazyLink(() => {
-      this.modalCalculator.updateCachedDamping();
-      this.resonanceCurveCalculator.recompute();
-      this.particleManager.clampToBounds();
-      this.plateGeometry.clampExcitationPosition(
-        this.excitationPositionProperty,
-      );
-    });
-
-    this.plateGeometry.heightProperty.lazyLink(() => {
-      this.modalCalculator.updateCachedDamping();
-      this.resonanceCurveCalculator.recompute();
-      this.particleManager.clampToBounds();
-      this.plateGeometry.clampExcitationPosition(
-        this.excitationPositionProperty,
-      );
-    });
+    // Recompute when plate dimensions change - using Multilink for coordinated updates
+    Multilink.lazyMultilink(
+      [this.plateGeometry.widthProperty, this.plateGeometry.heightProperty],
+      () => {
+        this.modalCalculator.updateCachedDamping();
+        this.resonanceCurveCalculator.recompute();
+        this.particleManager.clampToBounds();
+        this.plateGeometry.clampExcitationPosition(
+          this.excitationPositionProperty,
+        );
+      },
+    );
   }
 
   /**
@@ -277,14 +287,8 @@ export class ChladniModel {
    * Step the simulation forward by dt seconds.
    */
   public step(dt: number): void {
-    // Handle frequency sweep if active
-    if (this.sweepController.isSweeping) {
-      const stillSweeping = this.sweepController.step(dt);
-      if (!stillSweeping) {
-        // Sweep completed, notify playback state machine
-        this.playbackStateMachine.onSweepComplete();
-      }
-    }
+    // Note: Frequency sweep is now handled automatically by Animation in the sweep controller.
+    // The animation runs independently and notifies completion via sweepCompletedEmitter.
 
     // Delegate particle stepping to particle manager
     this.particleManager.step(dt, (x, y) => this.psi(x, y));

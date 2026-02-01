@@ -9,6 +9,7 @@
  * revealing resonance peaks as you adjust the frequency slider.
  */
 
+import { Multilink } from "scenerystack/axon";
 import { Node, Line, Text, Rectangle } from "scenerystack/scenery";
 import {
   ChartTransform,
@@ -196,24 +197,20 @@ export class ResonanceCurveNode extends Node {
       this.updateFrequencyMarker();
     });
 
-    // Update curve when material or excitation position changes
+    // Update curve when material, excitation position, or plate dimensions change
     // (model recomputes the full curve, we just need to display the window)
-    model.materialProperty.link(() => {
-      this.updateCurveFromPrecomputed();
-    });
-
-    model.excitationPositionProperty.link(() => {
-      this.updateCurveFromPrecomputed();
-    });
-
-    // Update curve when plate dimensions change
-    model.plateWidthProperty.link(() => {
-      this.updateCurveFromPrecomputed();
-    });
-
-    model.plateHeightProperty.link(() => {
-      this.updateCurveFromPrecomputed();
-    });
+    // Using Multilink to consolidate multiple properties triggering the same action
+    Multilink.multilink(
+      [
+        model.materialProperty,
+        model.excitationPositionProperty,
+        model.plateWidthProperty,
+        model.plateHeightProperty,
+      ],
+      () => {
+        this.updateCurveFromPrecomputed();
+      },
+    );
   }
 
   /**
