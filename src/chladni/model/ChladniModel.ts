@@ -14,32 +14,36 @@
  * - For rectangular plate with dimensions a (width) × b (height):
  *   k_{m,n} = π√((m/a)² + (n/b)²)
  * - Damping term gamma = 0.02 / √(a*b) (geometric mean of dimensions)
+ *
+ * This model coordinates between specialized submodules:
+ * - PlateGeometry: Plate dimensions and bounds
+ * - ModalCalculator: Physics calculations
+ * - ParticleManager: Particle simulation
+ * - ResonanceCurveCalculator: Curve precomputation
+ * - FrequencySweepController: Sweep functionality
+ * - PlaybackStateMachine: Animation state management
  */
 
-import { Property, NumberProperty, BooleanProperty } from "scenerystack/axon";
+import { Property, NumberProperty } from "scenerystack/axon";
 import { Vector2, Range } from "scenerystack/dot";
 import { Material, MaterialType } from "./Material.js";
 import { ModalCalculator } from "./ModalCalculator.js";
 import { ParticleManager } from "./ParticleManager.js";
+import { PlateGeometry } from "./PlateGeometry.js";
+import { ResonanceCurveCalculator } from "./ResonanceCurveCalculator.js";
+import { FrequencySweepController } from "./FrequencySweepController.js";
+import { PlaybackStateMachine, PlaybackState } from "./PlaybackStateMachine.js";
 import {
   BoundaryMode,
   GrainCountOption,
   GRAIN_COUNT_OPTIONS,
   DEFAULT_GRAIN_COUNT,
-  DEFAULT_PLATE_WIDTH,
-  DEFAULT_PLATE_HEIGHT,
-  MIN_PLATE_WIDTH,
-  MIN_PLATE_HEIGHT,
   FREQUENCY_MIN,
   FREQUENCY_MAX,
   FREQUENCY_DEFAULT,
   DEFAULT_EXCITATION_X,
   DEFAULT_EXCITATION_Y,
   DEFAULT_BOUNDARY_MODE,
-  SWEEP_RATE,
-  GRAPH_WINDOW_WIDTH,
-  CURVE_SAMPLES_PER_HZ,
-  TOTAL_CURVE_SAMPLES,
 } from "./ChladniConstants.js";
 
 // Re-export types for backward compatibility
@@ -60,37 +64,60 @@ export class ChladniModel {
   // This is where the plate is driven (e.g., by a speaker or vibrator)
   public readonly excitationPositionProperty: Property<Vector2>;
 
-  // Animation state
-  public readonly isPlayingProperty: BooleanProperty;
-
   // Grain count selection (number of particles)
   public readonly grainCountProperty: Property<GrainCountOption>;
-
-  // Plate dimensions (can be resized by the user)
-  public readonly plateWidthProperty: NumberProperty;
-  public readonly plateHeightProperty: NumberProperty;
 
   // Boundary handling mode: clamp particles to edges or remove them
   public readonly boundaryModeProperty: Property<BoundaryMode>;
 
-  // Frequency sweep state
-  public readonly isSweepingProperty: BooleanProperty;
+  // --- Extracted Modules ---
 
-  // Extracted modules
+  // Plate geometry manager
+  private readonly plateGeometry: PlateGeometry;
+
+  // Modal calculator for physics
   private readonly modalCalculator: ModalCalculator;
+
+  // Particle manager
   private readonly particleManager: ParticleManager;
+
+  // Resonance curve calculator
+  private readonly resonanceCurveCalculator: ResonanceCurveCalculator;
+
+  // Frequency sweep controller
+  private readonly sweepController: FrequencySweepController;
+
+  // Playback state machine
+  private readonly playbackStateMachine: PlaybackStateMachine;
 
   // Cached wave number for current frequency
   private cachedWaveNumber: number;
 
-  // Precomputed resonance curve data
-  private readonly precomputedStrengths: Float32Array;
-  private precomputedMaxStrength: number;
+  // --- Public Properties (delegated to modules) ---
 
-  // Actual particle count (delegated to particle manager)
+  // Animation state (from playback state machine)
+  public get isPlayingProperty() {
+    return this.playbackStateMachine.isPlayingProperty;
+  }
+
+  // Frequency sweep state (from sweep controller)
+  public get isSweepingProperty() {
+    return this.sweepController.isSweepingProperty;
+  }
+
+  // Plate dimensions (from plate geometry)
+  public get plateWidthProperty() {
+    return this.plateGeometry.widthProperty;
+  }
+
+  public get plateHeightProperty() {
+    return this.plateGeometry.heightProperty;
+  }
+
+  // Actual particle count (from particle manager)
   public readonly actualParticleCountProperty: NumberProperty;
 
-  // Particle positions (delegated to particle manager)
+  // Particle positions (from particle manager)
   public get particlePositions(): Vector2[] {
     return this.particleManager.particlePositions;
   }
@@ -110,45 +137,50 @@ export class ChladniModel {
       new Vector2(DEFAULT_EXCITATION_X, DEFAULT_EXCITATION_Y),
     );
 
-    // Animation starts paused
-    this.isPlayingProperty = new BooleanProperty(false);
-
     // Initialize grain count to default (10,000)
     this.grainCountProperty = new Property<GrainCountOption>(
       DEFAULT_GRAIN_COUNT,
     );
-
-    // Initialize plate dimensions
-    this.plateWidthProperty = new NumberProperty(DEFAULT_PLATE_WIDTH, {
-      range: new Range(MIN_PLATE_WIDTH, DEFAULT_PLATE_WIDTH),
-    });
-    this.plateHeightProperty = new NumberProperty(DEFAULT_PLATE_HEIGHT, {
-      range: new Range(MIN_PLATE_HEIGHT, DEFAULT_PLATE_HEIGHT),
-    });
 
     // Initialize boundary mode
     this.boundaryModeProperty = new Property<BoundaryMode>(
       DEFAULT_BOUNDARY_MODE,
     );
 
-    // Initialize sweep state
-    this.isSweepingProperty = new BooleanProperty(false);
+    // --- Initialize Extracted Modules ---
+
+    // Create plate geometry manager
+    this.plateGeometry = new PlateGeometry();
+
+    // Create playback state machine
+    this.playbackStateMachine = new PlaybackStateMachine();
+
+    // Create frequency sweep controller
+    this.sweepController = new FrequencySweepController({
+      frequencyProperty: this.frequencyProperty,
+      frequencyRange: this.frequencyRange,
+    });
 
     // Create modal calculator
     this.modalCalculator = new ModalCalculator({
       materialProperty: this.materialProperty,
-      plateWidthProperty: this.plateWidthProperty,
-      plateHeightProperty: this.plateHeightProperty,
+      plateWidthProperty: this.plateGeometry.widthProperty,
+      plateHeightProperty: this.plateGeometry.heightProperty,
       excitationPositionProperty: this.excitationPositionProperty,
     });
 
     // Create particle manager
     this.particleManager = new ParticleManager({
       grainCountProperty: this.grainCountProperty,
-      plateWidthProperty: this.plateWidthProperty,
-      plateHeightProperty: this.plateHeightProperty,
+      plateWidthProperty: this.plateGeometry.widthProperty,
+      plateHeightProperty: this.plateGeometry.heightProperty,
       boundaryModeProperty: this.boundaryModeProperty,
-      isPlayingProperty: this.isPlayingProperty,
+      isPlayingProperty: this.playbackStateMachine.isPlayingProperty,
+    });
+
+    // Create resonance curve calculator
+    this.resonanceCurveCalculator = new ResonanceCurveCalculator({
+      modalCalculator: this.modalCalculator,
     });
 
     // Expose actual particle count from particle manager
@@ -164,9 +196,9 @@ export class ChladniModel {
     );
 
     // Initialize precomputed resonance curve
-    this.precomputedStrengths = new Float32Array(TOTAL_CURVE_SAMPLES);
-    this.precomputedMaxStrength = 0;
-    this.recomputeResonanceCurve();
+    this.resonanceCurveCalculator.recompute();
+
+    // --- Set Up Property Links ---
 
     // Update cached wave number when frequency changes
     this.frequencyProperty.link(() => {
@@ -180,11 +212,11 @@ export class ChladniModel {
       this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
         this.frequencyProperty.value,
       );
-      this.recomputeResonanceCurve();
+      this.resonanceCurveCalculator.recompute();
     });
 
     this.excitationPositionProperty.link(() => {
-      this.recomputeResonanceCurve();
+      this.resonanceCurveCalculator.recompute();
     });
 
     // Regenerate particles when grain count changes
@@ -193,56 +225,23 @@ export class ChladniModel {
     });
 
     // Recompute when plate dimensions change
-    this.plateWidthProperty.lazyLink(() => {
+    this.plateGeometry.widthProperty.lazyLink(() => {
       this.modalCalculator.updateCachedDamping();
-      this.recomputeResonanceCurve();
+      this.resonanceCurveCalculator.recompute();
       this.particleManager.clampToBounds();
-      this.clampExcitationToBounds();
+      this.plateGeometry.clampExcitationPosition(
+        this.excitationPositionProperty,
+      );
     });
 
-    this.plateHeightProperty.lazyLink(() => {
+    this.plateGeometry.heightProperty.lazyLink(() => {
       this.modalCalculator.updateCachedDamping();
-      this.recomputeResonanceCurve();
+      this.resonanceCurveCalculator.recompute();
       this.particleManager.clampToBounds();
-      this.clampExcitationToBounds();
+      this.plateGeometry.clampExcitationPosition(
+        this.excitationPositionProperty,
+      );
     });
-  }
-
-  /**
-   * Clamp excitation position to current plate bounds.
-   * Called when plate dimensions change to ensure excitation stays within bounds.
-   */
-  private clampExcitationToBounds(): void {
-    const halfWidth = this.plateWidthProperty.value / 2;
-    const halfHeight = this.plateHeightProperty.value / 2;
-    const pos = this.excitationPositionProperty.value;
-
-    const clampedX = Math.max(-halfWidth, Math.min(halfWidth, pos.x));
-    const clampedY = Math.max(-halfHeight, Math.min(halfHeight, pos.y));
-
-    // Only update if actually changed to avoid unnecessary notifications
-    if (clampedX !== pos.x || clampedY !== pos.y) {
-      this.excitationPositionProperty.value = new Vector2(clampedX, clampedY);
-    }
-  }
-
-  /**
-   * Recompute the full resonance curve for the entire frequency range.
-   * This is called when material or excitation position changes.
-   */
-  private recomputeResonanceCurve(): void {
-    let maxStrength = 0;
-
-    for (let i = 0; i < TOTAL_CURVE_SAMPLES; i++) {
-      const freq = FREQUENCY_MIN + i / CURVE_SAMPLES_PER_HZ;
-      const s = this.modalCalculator.strength(freq);
-      this.precomputedStrengths[i] = s;
-      if (s > maxStrength) {
-        maxStrength = s;
-      }
-    }
-
-    this.precomputedMaxStrength = maxStrength;
   }
 
   /**
@@ -250,37 +249,20 @@ export class ChladniModel {
    * Returns an array of {frequency, normalizedStrength} points ready for plotting.
    */
   public getResonanceCurveData(sampleCount: number): Vector2[] {
-    const range = this.getGraphWindowRange();
-    const freqMin = range.min;
-    const freqMax = range.max;
-    const dataSet: Vector2[] = [];
+    return this.resonanceCurveCalculator.getData(
+      this.frequencyProperty.value,
+      sampleCount,
+    );
+  }
 
-    if (this.precomputedMaxStrength <= 0) {
-      // No resonance data, return flat line
-      for (let i = 0; i < sampleCount; i++) {
-        const freq = freqMin + (i / (sampleCount - 1)) * (freqMax - freqMin);
-        dataSet.push(new Vector2(freq, 0));
-      }
-      return dataSet;
-    }
-
-    for (let i = 0; i < sampleCount; i++) {
-      const freq = freqMin + (i / (sampleCount - 1)) * (freqMax - freqMin);
-
-      // Map frequency to precomputed array index
-      const index = Math.round((freq - FREQUENCY_MIN) * CURVE_SAMPLES_PER_HZ);
-      const clampedIndex = Math.max(
-        0,
-        Math.min(TOTAL_CURVE_SAMPLES - 1, index),
-      );
-
-      const strength = this.precomputedStrengths[clampedIndex]!;
-      const normalized = Math.min(strength / this.precomputedMaxStrength, 1);
-
-      dataSet.push(new Vector2(freq, normalized));
-    }
-
-    return dataSet;
+  /**
+   * Get the visible frequency range for the resonance curve graph.
+   * Returns a window centered on the current frequency.
+   */
+  public getGraphWindowRange(): Range {
+    return this.resonanceCurveCalculator.getGraphWindowRange(
+      this.frequencyProperty.value,
+    );
   }
 
   /**
@@ -296,13 +278,11 @@ export class ChladniModel {
    */
   public step(dt: number): void {
     // Handle frequency sweep if active
-    if (this.isSweepingProperty.value) {
-      const newFreq = this.frequencyProperty.value + SWEEP_RATE * dt;
-      if (newFreq >= this.frequencyRange.max) {
-        this.frequencyProperty.value = this.frequencyRange.max;
-        this.isSweepingProperty.value = false;
-      } else {
-        this.frequencyProperty.value = newFreq;
+    if (this.sweepController.isSweeping) {
+      const stillSweeping = this.sweepController.step(dt);
+      if (!stillSweeping) {
+        // Sweep completed, notify playback state machine
+        this.playbackStateMachine.onSweepComplete();
       }
     }
 
@@ -314,15 +294,16 @@ export class ChladniModel {
    * Start a frequency sweep from minimum to maximum frequency.
    */
   public startSweep(): void {
-    this.frequencyProperty.value = this.frequencyRange.min;
-    this.isSweepingProperty.value = true;
+    this.sweepController.startSweep();
+    this.playbackStateMachine.startSweep();
   }
 
   /**
    * Stop an active frequency sweep.
    */
   public stopSweep(): void {
-    this.isSweepingProperty.value = false;
+    this.sweepController.stopSweep();
+    this.playbackStateMachine.stopSweep();
   }
 
   /**
@@ -332,41 +313,22 @@ export class ChladniModel {
     this.materialProperty.reset();
     this.frequencyProperty.reset();
     this.excitationPositionProperty.reset();
-    this.isPlayingProperty.reset();
     this.grainCountProperty.reset();
-    this.plateWidthProperty.reset();
-    this.plateHeightProperty.reset();
     this.boundaryModeProperty.reset();
-    this.isSweepingProperty.reset();
+
+    // Reset extracted modules
+    this.plateGeometry.reset();
+    this.playbackStateMachine.reset();
+    this.sweepController.reset();
+
+    // Reinitialize particles
     this.particleManager.initialize();
+
+    // Update cached values
     this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
       this.frequencyProperty.value,
     );
     this.modalCalculator.updateCachedDamping();
-  }
-
-  /**
-   * Get the visible frequency range for the resonance curve graph.
-   * Returns a window centered on the current frequency.
-   */
-  public getGraphWindowRange(): Range {
-    const currentFreq = this.frequencyProperty.value;
-    const halfWindow = GRAPH_WINDOW_WIDTH / 2;
-
-    let min = currentFreq - halfWindow;
-    let max = currentFreq + halfWindow;
-
-    // Clamp to valid frequency range
-    if (min < FREQUENCY_MIN) {
-      min = FREQUENCY_MIN;
-      max = Math.min(FREQUENCY_MIN + GRAPH_WINDOW_WIDTH, FREQUENCY_MAX);
-    }
-    if (max > FREQUENCY_MAX) {
-      max = FREQUENCY_MAX;
-      min = Math.max(FREQUENCY_MAX - GRAPH_WINDOW_WIDTH, FREQUENCY_MIN);
-    }
-
-    return new Range(min, max);
   }
 
   /**
@@ -384,7 +346,28 @@ export class ChladniModel {
     return this.modalCalculator.strength(freq);
   }
 
-  // Convenience getters
+  /**
+   * Get the current playback state.
+   */
+  public get playbackState(): PlaybackState {
+    return this.playbackStateMachine.state;
+  }
+
+  /**
+   * Get the playback state machine for advanced state management.
+   */
+  public getPlaybackStateMachine(): PlaybackStateMachine {
+    return this.playbackStateMachine;
+  }
+
+  /**
+   * Get the plate geometry manager for bounds calculations.
+   */
+  public getPlateGeometry(): PlateGeometry {
+    return this.plateGeometry;
+  }
+
+  // --- Convenience Getters ---
 
   public get frequency(): number {
     return this.frequencyProperty.value;
@@ -399,22 +382,22 @@ export class ChladniModel {
   }
 
   public get plateWidth(): number {
-    return this.plateWidthProperty.value;
+    return this.plateGeometry.width;
   }
 
   public get plateHeight(): number {
-    return this.plateHeightProperty.value;
+    return this.plateGeometry.height;
   }
 
   public get aspectRatio(): number {
-    return this.plateWidthProperty.value / this.plateHeightProperty.value;
+    return this.plateGeometry.aspectRatio;
   }
 
   public get defaultPlateWidth(): number {
-    return DEFAULT_PLATE_WIDTH;
+    return this.plateGeometry.defaultWidth;
   }
 
   public get defaultPlateHeight(): number {
-    return DEFAULT_PLATE_HEIGHT;
+    return this.plateGeometry.defaultHeight;
   }
 }
