@@ -461,7 +461,7 @@ export class ChladniScreenView extends ScreenView {
     this.visualizationNode.update();
   }
 
-  public override step(dt: number): void {
+  public override step(_dt: number): void {
     // Note: model.step(dt) is called by the Screen base class, not here
     // to avoid double-stepping
 

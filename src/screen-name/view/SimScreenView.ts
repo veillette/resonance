@@ -440,7 +440,7 @@ export class SimScreenView extends ScreenView {
     this.controlPanel.reset();
   }
 
-  public step(dt: number): void {
+  public step(_dt: number): void {
     // Note: model.step(dt) is called by the Screen base class, not here
     // to avoid double-stepping
 
