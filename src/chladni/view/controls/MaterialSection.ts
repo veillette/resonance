@@ -22,7 +22,10 @@ const MATERIAL_STRINGS = new Map<MaterialType, TReadOnlyProperty<string>>([
   [Material.COPPER, ResonanceStrings.chladni.copperStringProperty],
   [Material.ALUMINUM, ResonanceStrings.chladni.aluminumStringProperty],
   [Material.ZINC, ResonanceStrings.chladni.zincStringProperty],
-  [Material.STAINLESS_STEEL, ResonanceStrings.chladni.stainlessSteelStringProperty],
+  [
+    Material.STAINLESS_STEEL,
+    ResonanceStrings.chladni.stainlessSteelStringProperty,
+  ],
 ]);
 
 export class MaterialSection extends VBox {
@@ -41,7 +44,8 @@ export class MaterialSection extends VBox {
       (material) => ({
         value: material,
         createNode: () => {
-          const stringProperty = MATERIAL_STRINGS.get(material) ??
+          const stringProperty =
+            MATERIAL_STRINGS.get(material) ??
             ResonanceStrings.chladni.copperStringProperty;
           return new Text(stringProperty, {
             font: ResonanceConstants.CONTROL_FONT,

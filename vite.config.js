@@ -8,7 +8,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Split scenerystack into its own chunk for better caching and to address chunk size warning
-        manualChunks: (id) => (id.includes("node_modules/scenerystack") ? "scenerystack" : undefined),
+        manualChunks: (id) =>
+          id.includes("node_modules/scenerystack") ? "scenerystack" : undefined,
       },
     },
   },

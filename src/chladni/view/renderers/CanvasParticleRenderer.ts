@@ -5,11 +5,7 @@
  * Renders particles using the HTML5 Canvas 2D API.
  */
 
-import {
-  CanvasNode,
-  CanvasNodeOptions,
-  Node,
-} from "scenerystack/scenery";
+import { CanvasNode, CanvasNodeOptions, Node } from "scenerystack/scenery";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import ResonanceColors from "../../../common/ResonanceColors.js";

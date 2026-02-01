@@ -831,21 +831,22 @@ The plate displacement ψ(x, y) is calculated using modal superposition:
 ```
 
 Where:
+
 - **(x', y')**: Excitation position
 - **(x, y)**: Field position
 - **k = √(f/C)**: Wave number from frequency f and dispersion constant C
-- **k_{m,n} = π√((m/a)² + (n/b)²)**: Modal wave number for mode (m, n)
+- **k\_{m,n} = π√((m/a)² + (n/b)²)**: Modal wave number for mode (m, n)
 - **γ = 0.02/√(ab)**: Damping coefficient
 - **a, b**: Plate dimensions
 
 #### Material Properties
 
-| Material | Dispersion Constant C (m²/s) |
-|----------|------------------------------|
-| Copper | 0.178 |
-| Aluminum | 0.246 |
-| Zinc | 0.166 |
-| Stainless Steel | 0.238 |
+| Material        | Dispersion Constant C (m²/s) |
+| --------------- | ---------------------------- |
+| Copper          | 0.178                        |
+| Aluminum        | 0.246                        |
+| Zinc            | 0.166                        |
+| Stainless Steel | 0.238                        |
 
 #### Resonance Strength
 
@@ -855,7 +856,7 @@ The resonance curve shows amplitude response vs. frequency:
 I(f) = Σₘₙ |φₘₙ(x',y')|² / [(k² - k²ₘₙ)² + 4(γk)²]
 ```
 
-Peaks occur when k ≈ k_{m,n} for some mode (m, n).
+Peaks occur when k ≈ k\_{m,n} for some mode (m, n).
 
 ### Particle Simulation
 
@@ -871,6 +872,7 @@ newY = y + stepSize × sin(angle)
 ```
 
 **Key Constants:**
+
 - `PARTICLE_STEP_SCALE = 0.3`: Base step size multiplier
 - `STEP_TIME_SCALE = 0.01`: Time normalization factor
 - `TARGET_FPS = 60`: Frame rate normalization
@@ -883,6 +885,7 @@ newY = y + stepSize × sin(angle)
 ### Coordinate System
 
 The model uses centered coordinates:
+
 - **(0, 0)**: Center of plate
 - **x ∈ [-width/2, +width/2]**: Horizontal position
 - **y ∈ [-height/2, +height/2]**: Vertical position (positive = up)
@@ -894,6 +897,7 @@ Default plate dimensions: 0.32m × 0.32m (32 cm square)
 #### Precomputed Resonance Curve
 
 The full resonance curve (50-4000 Hz) is precomputed when material or excitation position changes:
+
 - **Resolution**: 4 samples per Hz
 - **Total samples**: 15,800 points
 - **Storage**: Float32Array for memory efficiency
@@ -901,6 +905,7 @@ The full resonance curve (50-4000 Hz) is precomputed when material or excitation
 #### Particle Rendering
 
 Two rendering modes are supported:
+
 1. **Canvas**: Standard 2D canvas for compatibility
 2. **WebGL**: Hardware-accelerated sprites for large particle counts
 
@@ -908,15 +913,15 @@ Two rendering modes are supported:
 
 ### Control Panel Options
 
-| Control | Range | Default | Description |
-|---------|-------|---------|-------------|
-| Material | 4 options | Aluminum | Plate material |
-| Grains | 1K-25K | 10,000 | Number of particles |
-| Frequency | 50-4000 Hz | 500 Hz | Driving frequency |
-| Boundary | Clamp/Remove | Clamp | Edge behavior |
-| Resonance Curve | On/Off | On | Show frequency graph |
-| Ruler | On/Off | Off | Show measurement ruler |
-| Grid | On/Off | Off | Show grid overlay |
+| Control         | Range        | Default  | Description            |
+| --------------- | ------------ | -------- | ---------------------- |
+| Material        | 4 options    | Aluminum | Plate material         |
+| Grains          | 1K-25K       | 10,000   | Number of particles    |
+| Frequency       | 50-4000 Hz   | 500 Hz   | Driving frequency      |
+| Boundary        | Clamp/Remove | Clamp    | Edge behavior          |
+| Resonance Curve | On/Off       | On       | Show frequency graph   |
+| Ruler           | On/Off       | Off      | Show measurement ruler |
+| Grid            | On/Off       | Off      | Show grid overlay      |
 
 ### Usage Example
 
@@ -953,6 +958,7 @@ const positions = model.particlePositions; // Vector2[]
 ### Historical Note
 
 This implementation is inspired by J. Roussel's 2024 Chladni plate simulation. Key differences from the original:
+
 - Full complex arithmetic in wave equation (vs. magnitude-only)
 - Support for rectangular plates with independent dimensions
 - Configurable excitation position

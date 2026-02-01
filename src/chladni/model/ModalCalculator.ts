@@ -12,7 +12,7 @@
  */
 
 import { Vector2 } from "scenerystack/dot";
-import { Property, NumberProperty, TReadOnlyProperty } from "scenerystack/axon";
+import { TReadOnlyProperty } from "scenerystack/axon";
 import { MaterialType } from "./Material.js";
 import {
   MAX_MODE,

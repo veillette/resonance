@@ -110,7 +110,10 @@ export class ExcitationMarkerNode extends Node {
         // Clamp to plate boundaries (centered model coordinates)
         const halfWidth = this.model.plateWidth / 2;
         const halfHeight = this.model.plateHeight / 2;
-        const clampedX = Math.max(-halfWidth, Math.min(halfWidth, modelPoint.x));
+        const clampedX = Math.max(
+          -halfWidth,
+          Math.min(halfWidth, modelPoint.x),
+        );
         const clampedY = Math.max(
           -halfHeight,
           Math.min(halfHeight, modelPoint.y),

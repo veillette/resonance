@@ -230,7 +230,11 @@ export class ChladniVisualizationNode extends Node {
 
     // Resize the renderer
     if (this.particleRenderer) {
-      this.particleRenderer.resize(newWidth, newHeight, this.modelViewTransform);
+      this.particleRenderer.resize(
+        newWidth,
+        newHeight,
+        this.modelViewTransform,
+      );
     }
 
     // Explicitly set local bounds so they update immediately (even when paused)
