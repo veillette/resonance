@@ -13,7 +13,6 @@
 
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import {
-  Circle,
   DragListener,
   Node,
   Path,
@@ -25,7 +24,7 @@ import {
   ResetAllButton,
   PlayPauseStepButtonGroup,
 } from "scenerystack/scenery-phet";
-import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { ChladniModel } from "../model/ChladniModel.js";
@@ -34,6 +33,8 @@ import { ChladniControlPanel } from "./ChladniControlPanel.js";
 import { ResonanceCurveNode } from "./ResonanceCurveNode.js";
 import { ChladniRulerNode } from "./ChladniRulerNode.js";
 import { ChladniGridNode } from "./ChladniGridNode.js";
+import { ExcitationMarkerNode } from "./ExcitationMarkerNode.js";
+import { createChladniTransform } from "./ChladniTransformFactory.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
@@ -42,19 +43,14 @@ import { ResonancePreferencesModel } from "../../preferences/ResonancePreference
 // Base size for the Chladni plate visualization (pixels per meter of plate)
 const PIXELS_PER_METER = 1400;
 
-// Excitation marker properties
-const EXCITATION_MARKER_RADIUS = 12;
-const EXCITATION_MARKER_INNER_RADIUS = 4;
-
 // Resize handle properties
 const RESIZE_HANDLE_SIZE = 24;
 const RESIZE_HANDLE_HIT_AREA = 36;
 
 export class ChladniScreenView extends ScreenView {
   private readonly model: ChladniModel;
-  private readonly preferencesModel: ResonancePreferencesModel;
   private readonly visualizationNode: ChladniVisualizationNode;
-  private readonly excitationMarker: Node;
+  private readonly excitationMarker: ExcitationMarkerNode;
   private readonly resizeHandle: Node;
   private readonly controlPanel: ChladniControlPanel;
   private readonly resonanceCurveNode: ResonanceCurveNode;
@@ -68,7 +64,6 @@ export class ChladniScreenView extends ScreenView {
   private readonly visualizationCenterY: number;
 
   // Model-View transform for coordinate conversion
-  // Model: (0,0) at center, +Y up; View: (0,0) at top-left of viz, +Y down
   private modelViewTransform: ModelViewTransform2;
 
   public constructor(
@@ -78,7 +73,6 @@ export class ChladniScreenView extends ScreenView {
   ) {
     super(options);
     this.model = model;
-    this.preferencesModel = preferencesModel;
 
     // Fixed center position for the visualization
     this.visualizationCenterX = this.layoutBounds.centerX - 100;
@@ -88,10 +82,10 @@ export class ChladniScreenView extends ScreenView {
     const initialWidth = model.plateWidth * PIXELS_PER_METER;
     const initialHeight = model.plateHeight * PIXELS_PER_METER;
 
-    // Create the model-view transform
-    // Model: centered coordinates with +Y up
-    // View: top-left origin with +Y down
-    this.modelViewTransform = this.createModelViewTransform(
+    // Create the model-view transform using the shared factory
+    this.modelViewTransform = createChladniTransform(
+      model.plateWidth,
+      model.plateHeight,
       initialWidth,
       initialHeight,
     );
@@ -141,10 +135,15 @@ export class ChladniScreenView extends ScreenView {
     this.addChild(this.resizeHandle);
     this.updateResizeHandlePosition();
 
-    // Create the draggable excitation marker
-    this.excitationMarker = this.createExcitationMarker();
+    // Create the draggable excitation marker using extracted component
+    this.excitationMarker = new ExcitationMarkerNode(model, {
+      getModelViewTransform: () => this.modelViewTransform,
+      getVisualizationBounds: () => this.visualizationNode.bounds,
+      getVisualizationNode: () => this.visualizationNode,
+      onDragEnd: () => this.visualizationNode.update(),
+    });
     this.addChild(this.excitationMarker);
-    this.updateExcitationMarkerPosition();
+    this.excitationMarker.updatePosition();
 
     // Create the control panel first so we can position the curve relative to it
     this.controlPanel = new ChladniControlPanel(model, this.layoutBounds);
@@ -212,44 +211,16 @@ export class ChladniScreenView extends ScreenView {
   }
 
   /**
-   * Create a ModelViewTransform2 for converting between model and view coordinates.
-   * Model: (0,0) at center, x in [-w/2, w/2], y in [-h/2, h/2], +Y up
-   * View: (0,0) at top-left, x in [0, viewWidth], y in [0, viewHeight], +Y down
-   */
-  private createModelViewTransform(
-    viewWidth: number,
-    viewHeight: number,
-  ): ModelViewTransform2 {
-    const plateWidth = this.model.plateWidth;
-    const plateHeight = this.model.plateHeight;
-
-    // Model bounds: centered coordinates
-    const modelBounds = new Bounds2(
-      -plateWidth / 2,
-      -plateHeight / 2,
-      plateWidth / 2,
-      plateHeight / 2,
-    );
-
-    // View bounds: (0,0) at top-left
-    const viewBounds = new Bounds2(0, 0, viewWidth, viewHeight);
-
-    // Create transform with Y inversion (model +Y up, view +Y down)
-    return ModelViewTransform2.createRectangleInvertedYMapping(
-      modelBounds,
-      viewBounds,
-    );
-  }
-
-  /**
    * Update the visualization size based on the model's plate dimensions.
    */
   private updateVisualizationSize(): void {
     const newWidth = this.model.plateWidth * PIXELS_PER_METER;
     const newHeight = this.model.plateHeight * PIXELS_PER_METER;
 
-    // Update the model-view transform
-    this.modelViewTransform = this.createModelViewTransform(
+    // Update the model-view transform using the shared factory
+    this.modelViewTransform = createChladniTransform(
+      this.model.plateWidth,
+      this.model.plateHeight,
       newWidth,
       newHeight,
     );
@@ -263,7 +234,7 @@ export class ChladniScreenView extends ScreenView {
 
     // Update dependent elements
     this.updateResizeHandlePosition();
-    this.updateExcitationMarkerPosition();
+    this.excitationMarker.updatePosition();
     this.updateRulerAndGrid();
     this.visualizationNode.update();
   }
@@ -420,102 +391,6 @@ export class ChladniScreenView extends ScreenView {
       this.layoutBounds.maxY - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN;
 
     return playPauseStepButtonGroup;
-  }
-
-  /**
-   * Create the draggable excitation position marker.
-   * This shows where the plate is being driven (vibrator position).
-   */
-  private createExcitationMarker(): Node {
-    // Outer circle (ring)
-    const outerCircle = new Circle(EXCITATION_MARKER_RADIUS, {
-      stroke: ResonanceColors.frequencyTrackProperty,
-      lineWidth: 3,
-      fill: null,
-    });
-
-    // Inner filled circle
-    const innerCircle = new Circle(EXCITATION_MARKER_INNER_RADIUS, {
-      fill: ResonanceColors.frequencyTrackProperty,
-    });
-
-    // Container node for the marker
-    const marker = new Node({
-      children: [outerCircle, innerCircle],
-      cursor: "pointer",
-    });
-
-    // Add drag listener
-    const dragListener = new DragListener({
-      positionProperty: this.model.excitationPositionProperty,
-      dragBoundsProperty: null, // We'll handle bounds manually
-      transform: null,
-      drag: (event) => {
-        // Get the position in the visualization's local coordinate system (view coords)
-        const viewPoint = this.visualizationNode.globalToLocalPoint(
-          event.pointer.point,
-        );
-
-        // Convert view coordinates to model coordinates using the transform
-        const modelPoint =
-          this.modelViewTransform.viewToModelPosition(viewPoint);
-
-        // Clamp to plate boundaries (centered model coordinates)
-        const halfWidth = this.model.plateWidth / 2;
-        const halfHeight = this.model.plateHeight / 2;
-        const clampedX = Math.max(
-          -halfWidth,
-          Math.min(halfWidth, modelPoint.x),
-        );
-        const clampedY = Math.max(
-          -halfHeight,
-          Math.min(halfHeight, modelPoint.y),
-        );
-
-        // Update the model
-        this.model.excitationPositionProperty.value = new Vector2(
-          clampedX,
-          clampedY,
-        );
-      },
-      end: () => {
-        // Update visualization when drag ends
-        this.visualizationNode.update();
-      },
-    });
-
-    marker.addInputListener(dragListener);
-
-    // Update marker position when model changes
-    this.model.excitationPositionProperty.link(() => {
-      // Only update if marker is already set (avoid calling during initialization)
-      if (this.excitationMarker) {
-        this.updateExcitationMarkerPosition();
-        this.visualizationNode.update();
-      }
-    });
-
-    return marker;
-  }
-
-  /**
-   * Update the excitation marker position based on the model.
-   * Uses ModelViewTransform2 to convert from model to view coordinates.
-   */
-  private updateExcitationMarkerPosition(): void {
-    if (!this.excitationMarker) return;
-
-    // Get model position (centered coordinates, +Y up)
-    const modelPosition = this.model.excitationPositionProperty.value;
-
-    // Convert to view coordinates using the transform
-    const viewPosition =
-      this.modelViewTransform.modelToViewPosition(modelPosition);
-
-    // Position relative to visualization bounds
-    const vizBounds = this.visualizationNode.bounds;
-    this.excitationMarker.centerX = vizBounds.minX + viewPosition.x;
-    this.excitationMarker.centerY = vizBounds.minY + viewPosition.y;
   }
 
   public reset(): void {

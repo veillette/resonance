@@ -19,124 +19,32 @@
 import { Property, NumberProperty, BooleanProperty } from "scenerystack/axon";
 import { Vector2, Range } from "scenerystack/dot";
 import { Material, MaterialType } from "./Material.js";
+import { ModalCalculator } from "./ModalCalculator.js";
+import { ParticleManager } from "./ParticleManager.js";
+import {
+  BoundaryMode,
+  GrainCountOption,
+  GRAIN_COUNT_OPTIONS,
+  DEFAULT_GRAIN_COUNT,
+  DEFAULT_PLATE_WIDTH,
+  DEFAULT_PLATE_HEIGHT,
+  MIN_PLATE_WIDTH,
+  MIN_PLATE_HEIGHT,
+  FREQUENCY_MIN,
+  FREQUENCY_MAX,
+  FREQUENCY_DEFAULT,
+  DEFAULT_EXCITATION_X,
+  DEFAULT_EXCITATION_Y,
+  DEFAULT_BOUNDARY_MODE,
+  SWEEP_RATE,
+  GRAPH_WINDOW_WIDTH,
+  CURVE_SAMPLES_PER_HZ,
+  TOTAL_CURVE_SAMPLES,
+} from "./ChladniConstants.js";
 
-// Boundary handling mode: how particles behave at plate edges
-export type BoundaryMode = "clamp" | "remove";
-
-// Grain count options for the combo box
-export type GrainCountOption = {
-  readonly value: number;
-  readonly name: string;
-};
-
-export const GRAIN_COUNT_OPTIONS: readonly GrainCountOption[] = [
-  { value: 1000, name: "1000" },
-  { value: 5000, name: "5000" },
-  { value: 10000, name: "10000" },
-  { value: 25000, name: "25000" },
-] as const;
-
-// ============================================================================
-// MATHEMATICAL CONSTANTS
-// ============================================================================
-
-const TWO_PI = Math.PI * 2;
-
-// ============================================================================
-// PHYSICAL CONSTANTS
-// ============================================================================
-
-// Default physical plate dimensions in meters (from original Chladni simulator)
-// These affect wave number calculations and resonant frequencies
-// For a rectangular plate, width (a) is along x-axis, height (b) is along y-axis
-const DEFAULT_PLATE_WIDTH = 0.32; // a - dimension along x (meters)
-const DEFAULT_PLATE_HEIGHT = 0.32; // b - dimension along y (meters)
-
-// Plate size constraints
-const MIN_PLATE_SIZE_RATIO = 0.5; // Minimum plate size as fraction of default
-const MIN_PLATE_WIDTH = DEFAULT_PLATE_WIDTH * MIN_PLATE_SIZE_RATIO;
-const MIN_PLATE_HEIGHT = DEFAULT_PLATE_HEIGHT * MIN_PLATE_SIZE_RATIO;
-
-// Damping coefficient for the plate vibration (dimensionless)
-// gamma = DAMPING_COEFFICIENT / sqrt(a * b)
-const DAMPING_COEFFICIENT = 0.02;
-
-// ============================================================================
-// FREQUENCY PARAMETERS
-// ============================================================================
-
-// Full frequency range for the simulation (Hz)
-const FREQUENCY_MIN = 50;
-const FREQUENCY_MAX = 4000;
-const FREQUENCY_DEFAULT = 500;
-
-// Frequency sweep rate (Hz per second)
-// Full range is 3950 Hz (50-4000), so ~66 Hz/s gives ~60 second sweep
-const SWEEP_RATE = 66;
-
-// ============================================================================
-// MODAL CALCULATION PARAMETERS
-// ============================================================================
-
-// Maximum mode number for modal superposition (m, n = 0, 1, 2, ..., MAX_MODE)
-const MAX_MODE = 16;
-
-// Mode step size: 1 = all modes (for off-center excitation), 2 = even modes only
-const MODE_STEP = 1;
-
-// Threshold for skipping modes with negligible source contribution
-const SOURCE_THRESHOLD = 0.001;
-const SOURCE_THRESHOLD_SQUARED = SOURCE_THRESHOLD * SOURCE_THRESHOLD;
-
-// Normalization factor for rectangular plate mode shapes: (2/√(ab))² = 4/(ab)
-const NORMALIZATION_NUMERATOR = 4;
-
-// ============================================================================
-// PARTICLE ANIMATION PARAMETERS
-// ============================================================================
-
-// Scale factor for particle step size, tuned to match Roussel's pixel-based behavior
-// Roussel: 5*psi pixels on ~480px plate ≈ 0.01*psi fraction of plate
-// Here: PARTICLE_STEP_SCALE * psi * STEP_TIME_SCALE meters on 0.32m plate
-const PARTICLE_STEP_SCALE = 0.3;
-
-// Time scaling factor for step size calculation
-const STEP_TIME_SCALE = 0.01;
-
-// Target frame rate for normalizing time-based calculations
-const TARGET_FPS = 60;
-
-// Default boundary handling mode
-const DEFAULT_BOUNDARY_MODE: BoundaryMode = "clamp";
-
-// ============================================================================
-// EXCITATION PARAMETERS
-// ============================================================================
-
-// Default excitation position (center of plate, in model coordinates)
-// Model uses centered coordinates: (0,0) is at plate center
-const DEFAULT_EXCITATION_X = 0;
-const DEFAULT_EXCITATION_Y = 0;
-
-// ============================================================================
-// RESONANCE CURVE GRAPH PARAMETERS
-// ============================================================================
-
-// Width of the visible window in the resonance curve graph (Hz)
-const GRAPH_WINDOW_WIDTH = 500;
-
-// Precomputed resonance curve resolution (samples per Hz)
-const CURVE_SAMPLES_PER_HZ = 4;
-const TOTAL_CURVE_SAMPLES =
-  (FREQUENCY_MAX - FREQUENCY_MIN) * CURVE_SAMPLES_PER_HZ;
-
-// ============================================================================
-// GRAIN COUNT OPTIONS
-// ============================================================================
-
-// Default grain count index in GRAIN_COUNT_OPTIONS array
-const DEFAULT_GRAIN_COUNT_INDEX = 2; // 10,000
-const DEFAULT_GRAIN_COUNT = GRAIN_COUNT_OPTIONS[DEFAULT_GRAIN_COUNT_INDEX]!;
+// Re-export types for backward compatibility
+export type { BoundaryMode, GrainCountOption };
+export { GRAIN_COUNT_OPTIONS };
 
 export class ChladniModel {
   // Material selection
@@ -148,7 +56,7 @@ export class ChladniModel {
   // Full frequency range
   public readonly frequencyRange: Range;
 
-  // Excitation position (normalized 0-1 coordinates)
+  // Excitation position (centered model coordinates)
   // This is where the plate is driven (e.g., by a speaker or vibrator)
   public readonly excitationPositionProperty: Property<Vector2>;
 
@@ -168,20 +76,24 @@ export class ChladniModel {
   // Frequency sweep state
   public readonly isSweepingProperty: BooleanProperty;
 
-  // Particle positions (normalized 0-1 coordinates)
-  public readonly particlePositions: Vector2[];
+  // Extracted modules
+  private readonly modalCalculator: ModalCalculator;
+  private readonly particleManager: ParticleManager;
 
-  // Actual particle count (updated when particles are added/removed)
-  public readonly actualParticleCountProperty: NumberProperty;
-
-  // Cached values for performance
+  // Cached wave number for current frequency
   private cachedWaveNumber: number;
-  private cachedDamping: number;
 
   // Precomputed resonance curve data
-  // Array of strength values for the full frequency range, computed once
   private readonly precomputedStrengths: Float32Array;
   private precomputedMaxStrength: number;
+
+  // Actual particle count (delegated to particle manager)
+  public readonly actualParticleCountProperty: NumberProperty;
+
+  // Particle positions (delegated to particle manager)
+  public get particlePositions(): Vector2[] {
+    return this.particleManager.particlePositions;
+  }
 
   public constructor() {
     // Initialize material to aluminum (good mid-range dispersion)
@@ -222,14 +134,34 @@ export class ChladniModel {
     // Initialize sweep state
     this.isSweepingProperty = new BooleanProperty(false);
 
-    // Initialize particles with random positions
-    this.particlePositions = [];
-    this.actualParticleCountProperty = new NumberProperty(0);
-    this.initializeParticles();
+    // Create modal calculator
+    this.modalCalculator = new ModalCalculator({
+      materialProperty: this.materialProperty,
+      plateWidthProperty: this.plateWidthProperty,
+      plateHeightProperty: this.plateHeightProperty,
+      excitationPositionProperty: this.excitationPositionProperty,
+    });
 
-    // Cache derived values
-    this.cachedWaveNumber = this.calculateWaveNumber();
-    this.cachedDamping = this.calculateDamping();
+    // Create particle manager
+    this.particleManager = new ParticleManager({
+      grainCountProperty: this.grainCountProperty,
+      plateWidthProperty: this.plateWidthProperty,
+      plateHeightProperty: this.plateHeightProperty,
+      boundaryModeProperty: this.boundaryModeProperty,
+      isPlayingProperty: this.isPlayingProperty,
+    });
+
+    // Expose actual particle count from particle manager
+    this.actualParticleCountProperty =
+      this.particleManager.actualParticleCountProperty;
+
+    // Initialize particles
+    this.particleManager.initialize();
+
+    // Cache initial wave number
+    this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
+      this.frequencyProperty.value,
+    );
 
     // Initialize precomputed resonance curve
     this.precomputedStrengths = new Float32Array(TOTAL_CURVE_SAMPLES);
@@ -238,12 +170,16 @@ export class ChladniModel {
 
     // Update cached wave number when frequency changes
     this.frequencyProperty.link(() => {
-      this.cachedWaveNumber = this.calculateWaveNumber();
+      this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
+        this.frequencyProperty.value,
+      );
     });
 
     // Recompute resonance curve when material or excitation position changes
     this.materialProperty.link(() => {
-      this.cachedWaveNumber = this.calculateWaveNumber();
+      this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
+        this.frequencyProperty.value,
+      );
       this.recomputeResonanceCurve();
     });
 
@@ -253,37 +189,23 @@ export class ChladniModel {
 
     // Regenerate particles when grain count changes
     this.grainCountProperty.lazyLink(() => {
-      this.initializeParticles();
+      this.particleManager.initialize();
     });
 
     // Recompute when plate dimensions change
     this.plateWidthProperty.lazyLink(() => {
-      this.cachedDamping = this.calculateDamping();
+      this.modalCalculator.updateCachedDamping();
       this.recomputeResonanceCurve();
-      this.clampParticlesToBounds();
+      this.particleManager.clampToBounds();
       this.clampExcitationToBounds();
     });
 
     this.plateHeightProperty.lazyLink(() => {
-      this.cachedDamping = this.calculateDamping();
+      this.modalCalculator.updateCachedDamping();
       this.recomputeResonanceCurve();
-      this.clampParticlesToBounds();
+      this.particleManager.clampToBounds();
       this.clampExcitationToBounds();
     });
-  }
-
-  /**
-   * Clamp all particles to current plate bounds.
-   * Called when plate dimensions change to ensure particles stay within bounds.
-   */
-  private clampParticlesToBounds(): void {
-    const halfWidth = this.plateWidthProperty.value / 2;
-    const halfHeight = this.plateHeightProperty.value / 2;
-
-    for (const particle of this.particlePositions) {
-      particle.x = Math.max(-halfWidth, Math.min(halfWidth, particle.x));
-      particle.y = Math.max(-halfHeight, Math.min(halfHeight, particle.y));
-    }
   }
 
   /**
@@ -305,17 +227,6 @@ export class ChladniModel {
   }
 
   /**
-   * Calculate the damping coefficient based on plate dimensions.
-   * Uses geometric mean of plate dimensions.
-   */
-  private calculateDamping(): number {
-    return (
-      DAMPING_COEFFICIENT /
-      Math.sqrt(this.plateWidthProperty.value * this.plateHeightProperty.value)
-    );
-  }
-
-  /**
    * Recompute the full resonance curve for the entire frequency range.
    * This is called when material or excitation position changes.
    */
@@ -324,7 +235,7 @@ export class ChladniModel {
 
     for (let i = 0; i < TOTAL_CURVE_SAMPLES; i++) {
       const freq = FREQUENCY_MIN + i / CURVE_SAMPLES_PER_HZ;
-      const s = this.strength(freq);
+      const s = this.modalCalculator.strength(freq);
       this.precomputedStrengths[i] = s;
       if (s > maxStrength) {
         maxStrength = s;
@@ -373,119 +284,15 @@ export class ChladniModel {
   }
 
   /**
-   * Initialize all particles with random positions across the plate.
-   * Uses centered coordinates: x in [-width/2, width/2], y in [-height/2, height/2].
-   */
-  private initializeParticles(): void {
-    const count = this.grainCountProperty.value.value;
-    const halfWidth = this.plateWidthProperty.value / 2;
-    const halfHeight = this.plateHeightProperty.value / 2;
-
-    this.particlePositions.length = 0;
-    for (let i = 0; i < count; i++) {
-      // Random position in centered coordinates
-      const x = (Math.random() - 0.5) * 2 * halfWidth; // -halfWidth to +halfWidth
-      const y = (Math.random() - 0.5) * 2 * halfHeight; // -halfHeight to +halfHeight
-      this.particlePositions.push(new Vector2(x, y));
-    }
-
-    // Update actual particle count
-    this.actualParticleCountProperty.value = this.particlePositions.length;
-  }
-
-  /**
-   * Calculate the wave number k from the current frequency and material.
-   * k = sqrt(frequency / C) where C is the dispersion constant
-   */
-  private calculateWaveNumber(): number {
-    const frequency = this.frequencyProperty.value;
-    const C = this.materialProperty.value.dispersionConstant;
-    return Math.sqrt(frequency / C);
-  }
-
-  /**
    * Calculate the displacement psi at a given point (x, y).
-   * Input coordinates are centered: x in [-a/2, a/2], y in [-b/2, b/2].
-   * Uses modal superposition based on the inhomogeneous Helmholtz equation solution.
-   *
-   * For a rectangular plate with dimensions a (width) × b (height):
-   * Ψ(x,y; k,γ) = (2/√(ab))² Σₘ Σₙ [cos(mπx'/a)cos(nπy'/b) / ((k² - k²ₘₙ) + 2iγk)]
-   *              × cos(mπx/a)cos(nπy/b)
-   *
-   * where (x', y') is the excitation position and k_{m,n} = π√((m/a)² + (n/b)²)
+   * Delegates to ModalCalculator using the cached wave number.
    */
   public psi(x: number, y: number): number {
-    const k = this.cachedWaveNumber;
-    const gamma = this.cachedDamping;
-    const a = this.plateWidthProperty.value;
-    const b = this.plateHeightProperty.value;
-
-    // Convert centered coordinates to physics coordinates (0 to a, 0 to b)
-    // Model: x in [-a/2, a/2] -> Physics: x in [0, a]
-    const excitation = this.excitationPositionProperty.value;
-    const excitX = excitation.x + a / 2;
-    const excitY = excitation.y + b / 2;
-
-    // Convert input centered coordinates to physics coordinates
-    const physX = x + a / 2;
-    const physY = y + b / 2;
-
-    let sumReal = 0;
-    let sumImag = 0;
-    const mOverA = Math.PI / a;
-    const nOverB = Math.PI / b;
-    const twoGammaK = 2 * gamma * k;
-    const kSquared = k * k;
-
-    // Sum over modes m, n = 0, 1, 2, ..., MAX_MODE
-    for (let m = 0; m <= MAX_MODE; m += MODE_STEP) {
-      // Source term X component: cos(mπx'/a)
-      const sourceX = Math.cos((m * Math.PI * excitX) / a);
-
-      for (let n = 0; n <= MAX_MODE; n += MODE_STEP) {
-        // Skip the (0,0) mode to avoid division issues
-        if (m === 0 && n === 0) continue;
-
-        // Source term: cos(mπx'/a)cos(nπy'/b)
-        const sourceY = Math.cos((n * Math.PI * excitY) / b);
-        const sourceTerm = sourceX * sourceY;
-
-        // Skip modes with negligible source contribution (optimization)
-        if (Math.abs(sourceTerm) < SOURCE_THRESHOLD) continue;
-
-        // Modal wave number for rectangular plate: k_{m,n} = π√((m/a)² + (n/b)²)
-        const kmn = Math.sqrt(
-          m * mOverA * (m * mOverA) + n * nOverB * (n * nOverB),
-        );
-        const kmnSquared = kmn * kmn;
-
-        // Complex denominator: (k² - k²ₘₙ) + 2iγk
-        const realPart = kSquared - kmnSquared;
-        const imagPart = twoGammaK;
-        const denomMagSquared = realPart * realPart + imagPart * imagPart;
-
-        // Field term: cos(mπx/a)cos(nπy/b)
-        const fieldX = Math.cos((m * Math.PI * physX) / a);
-        const fieldY = Math.cos((n * Math.PI * physY) / b);
-        const fieldTerm = fieldX * fieldY;
-
-        // Complex division: numerator / (realPart + i*imagPart)
-        // = numerator * (realPart - i*imagPart) / |denominator|²
-        const numerator = sourceTerm * fieldTerm;
-        sumReal += (numerator * realPart) / denomMagSquared;
-        sumImag -= (numerator * imagPart) / denomMagSquared;
-      }
-    }
-
-    // Return magnitude of complex sum, with normalization for rectangular plate
-    const normalization = NORMALIZATION_NUMERATOR / (a * b);
-    return normalization * Math.sqrt(sumReal * sumReal + sumImag * sumImag);
+    return this.modalCalculator.psi(x, y, this.cachedWaveNumber);
   }
 
   /**
    * Step the simulation forward by dt seconds.
-   * Moves particles based on a biased random walk where step size
-   * is proportional to local displacement magnitude.
    */
   public step(dt: number): void {
     // Handle frequency sweep if active
@@ -499,53 +306,8 @@ export class ChladniModel {
       }
     }
 
-    if (!this.isPlayingProperty.value) {
-      return;
-    }
-
-    // Scale factor for reasonable animation speed (normalize to target FPS)
-    const timeScale = dt * TARGET_FPS;
-
-    const halfWidth = this.plateWidthProperty.value / 2;
-    const halfHeight = this.plateHeightProperty.value / 2;
-    const boundaryMode = this.boundaryModeProperty.value;
-
-    // Process particles in reverse order for safe removal
-    for (let i = this.particlePositions.length - 1; i >= 0; i--) {
-      const particle = this.particlePositions[i]!;
-      const x = particle.x;
-      const y = particle.y;
-
-      // Calculate displacement at current position
-      const displacement = Math.abs(this.psi(x, y));
-
-      // Random walk with step size proportional to displacement
-      const stepSize =
-        PARTICLE_STEP_SCALE * displacement * timeScale * STEP_TIME_SCALE;
-      const angle = Math.random() * TWO_PI;
-
-      // Update position
-      const newX = x + stepSize * Math.cos(angle);
-      const newY = y + stepSize * Math.sin(angle);
-
-      // Handle boundary based on mode
-      if (boundaryMode === "remove") {
-        // Remove particles that leave the plate (Roussel's approach)
-        if (Math.abs(newX) > halfWidth || Math.abs(newY) > halfHeight) {
-          this.particlePositions.splice(i, 1);
-        } else {
-          particle.setXY(newX, newY);
-        }
-      } else {
-        // Clamp to plate boundaries (default behavior)
-        const clampedX = Math.max(-halfWidth, Math.min(halfWidth, newX));
-        const clampedY = Math.max(-halfHeight, Math.min(halfHeight, newY));
-        particle.setXY(clampedX, clampedY);
-      }
-    }
-
-    // Update actual particle count (may have changed if particles were removed)
-    this.actualParticleCountProperty.value = this.particlePositions.length;
+    // Delegate particle stepping to particle manager
+    this.particleManager.step(dt, (x, y) => this.psi(x, y));
   }
 
   /**
@@ -576,9 +338,11 @@ export class ChladniModel {
     this.plateHeightProperty.reset();
     this.boundaryModeProperty.reset();
     this.isSweepingProperty.reset();
-    this.initializeParticles();
-    this.cachedWaveNumber = this.calculateWaveNumber();
-    this.cachedDamping = this.calculateDamping();
+    this.particleManager.initialize();
+    this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
+      this.frequencyProperty.value,
+    );
+    this.modalCalculator.updateCachedDamping();
   }
 
   /**
@@ -609,125 +373,47 @@ export class ChladniModel {
    * Regenerate particles with new random positions.
    */
   public regenerateParticles(): void {
-    this.initializeParticles();
-  }
-
-  /**
-   * Get the current frequency display value.
-   */
-  public get frequency(): number {
-    return this.frequencyProperty.value;
-  }
-
-  /**
-   * Get the current material name.
-   */
-  public get materialName(): string {
-    return this.materialProperty.value.name;
-  }
-
-  /**
-   * Get the number of particles.
-   */
-  public get particleCount(): number {
-    return this.grainCountProperty.value.value;
+    this.particleManager.regenerate();
   }
 
   /**
    * Calculate the resonance strength/amplitude at a given frequency.
-   * This is used to plot the resonance curve showing peaks at resonant frequencies.
-   *
-   * For a rectangular plate with dimensions a × b:
-   * I(x',y',k,γ) = Σₘₙ |φₘₙ(x',y')|² / [(k² - k²ₘₙ)² + 4(γk)²]
-   *
-   * The |φₘₙ(x',y')|² term weights each mode by its amplitude at the excitation point.
+   * Delegates to ModalCalculator.
    */
   public strength(freq: number): number {
-    const C = this.materialProperty.value.dispersionConstant;
-    const k = Math.sqrt(freq / C);
-    const gamma = this.cachedDamping;
-    const a = this.plateWidthProperty.value;
-    const b = this.plateHeightProperty.value;
-
-    // Convert centered excitation position to physics coordinates (0 to a, 0 to b)
-    const excitation = this.excitationPositionProperty.value;
-    const excitX = excitation.x + a / 2;
-    const excitY = excitation.y + b / 2;
-
-    let sum = 0;
-    const mOverA = Math.PI / a;
-    const nOverB = Math.PI / b;
-    const fourGammaKSquared = NORMALIZATION_NUMERATOR * gamma * gamma * k * k;
-    const kSquared = k * k;
-    // Normalization for rectangular plate: (2/√(ab))² = 4/(ab)
-    const normFactor = NORMALIZATION_NUMERATOR / (a * b);
-
-    // Sum over modes m, n = 0, 1, 2, ..., MAX_MODE
-    for (let m = 0; m <= MAX_MODE; m += MODE_STEP) {
-      const cosX = Math.cos((m * Math.PI * excitX) / a);
-      const cosXSquared = cosX * cosX;
-
-      for (let n = 0; n <= MAX_MODE; n += MODE_STEP) {
-        // Skip (0,0) mode
-        if (m === 0 && n === 0) continue;
-
-        // |φₘₙ(x',y')|² = (4/ab) cos²(mπx'/a) cos²(nπy'/b)
-        const cosY = Math.cos((n * Math.PI * excitY) / b);
-        const phiSquared = normFactor * cosXSquared * cosY * cosY;
-
-        // Skip modes with negligible source contribution
-        if (phiSquared < SOURCE_THRESHOLD_SQUARED) continue;
-
-        // Modal wave number for rectangular plate: k_{m,n} = π√((m/a)² + (n/b)²)
-        const kmn = Math.sqrt(
-          m * mOverA * (m * mOverA) + n * nOverB * (n * nOverB),
-        );
-        const kmnSquared = kmn * kmn;
-
-        // Resonance denominator: (k² - kmn²)² + 4(γk)²
-        const diff = kSquared - kmnSquared;
-        const denominator = diff * diff + fourGammaKSquared;
-
-        if (denominator > 0) {
-          sum += phiSquared / denominator;
-        }
-      }
-    }
-
-    return sum;
+    return this.modalCalculator.strength(freq);
   }
 
-  /**
-   * Get the plate width (a) in meters.
-   */
+  // Convenience getters
+
+  public get frequency(): number {
+    return this.frequencyProperty.value;
+  }
+
+  public get materialName(): string {
+    return this.materialProperty.value.name;
+  }
+
+  public get particleCount(): number {
+    return this.grainCountProperty.value.value;
+  }
+
   public get plateWidth(): number {
     return this.plateWidthProperty.value;
   }
 
-  /**
-   * Get the plate height (b) in meters.
-   */
   public get plateHeight(): number {
     return this.plateHeightProperty.value;
   }
 
-  /**
-   * Get the plate aspect ratio (width / height).
-   */
   public get aspectRatio(): number {
     return this.plateWidthProperty.value / this.plateHeightProperty.value;
   }
 
-  /**
-   * Get the default plate width.
-   */
   public get defaultPlateWidth(): number {
     return DEFAULT_PLATE_WIDTH;
   }
 
-  /**
-   * Get the default plate height.
-   */
   public get defaultPlateHeight(): number {
     return DEFAULT_PLATE_HEIGHT;
   }

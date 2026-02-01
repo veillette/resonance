@@ -11,27 +11,19 @@
  * - Uses ModelViewTransform2 for coordinate conversion
  */
 
-import {
-  CanvasNode,
-  CanvasNodeOptions,
-  Node,
-  NodeOptions,
-  Rectangle,
-  Sprite,
-  SpriteImage,
-  SpriteInstance,
-  SpriteInstanceTransformType,
-  Sprites,
-} from "scenerystack/scenery";
-import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Node, NodeOptions, Rectangle } from "scenerystack/scenery";
+import { Bounds2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Property } from "scenerystack/axon";
 import { ChladniModel } from "../model/ChladniModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { RendererType } from "../../preferences/ResonancePreferencesModel.js";
-
-// Particle rendering size in pixels
-const PARTICLE_SIZE = 2;
+import { createChladniTransform } from "./ChladniTransformFactory.js";
+import {
+  ParticleRenderer,
+  CanvasParticleRenderer,
+  WebGLParticleRenderer,
+} from "./renderers/index.js";
 
 export interface ChladniVisualizationNodeOptions extends NodeOptions {
   // Size of the visualization area (deprecated, use visualizationWidth/Height)
@@ -40,55 +32,6 @@ export interface ChladniVisualizationNodeOptions extends NodeOptions {
   visualizationWidth?: number;
   // Height of the visualization area in pixels
   visualizationHeight?: number;
-}
-
-/**
- * Custom CanvasNode for rendering particles using 2D Canvas API.
- */
-class ParticleCanvasNode extends CanvasNode {
-  private readonly model: ChladniModel;
-  private modelViewTransform: ModelViewTransform2;
-
-  public constructor(
-    model: ChladniModel,
-    modelViewTransform: ModelViewTransform2,
-    width: number,
-    height: number,
-    options?: CanvasNodeOptions,
-  ) {
-    super({
-      ...options,
-      canvasBounds: new Bounds2(0, 0, width, height),
-    });
-    this.model = model;
-    this.modelViewTransform = modelViewTransform;
-  }
-
-  public setModelViewTransform(transform: ModelViewTransform2): void {
-    this.modelViewTransform = transform;
-  }
-
-  public setCanvasSize(width: number, height: number): void {
-    this.canvasBounds = new Bounds2(0, 0, width, height);
-  }
-
-  public override paintCanvas(context: CanvasRenderingContext2D): void {
-    const particles = this.model.particlePositions;
-    const color = ResonanceColors.chladniParticleProperty.value.toCSS();
-    const radius = PARTICLE_SIZE / 2;
-
-    context.fillStyle = color;
-
-    // Draw all particles
-    for (let i = 0; i < particles.length; i++) {
-      const particle = particles[i]!;
-      const viewPos = this.modelViewTransform.modelToViewPosition(particle);
-
-      context.beginPath();
-      context.arc(viewPos.x, viewPos.y, radius, 0, Math.PI * 2);
-      context.fill();
-    }
-  }
 }
 
 export class ChladniVisualizationNode extends Node {
@@ -105,16 +48,9 @@ export class ChladniVisualizationNode extends Node {
   private readonly borderRect: Rectangle;
   private readonly innerBorderRect: Rectangle;
 
-  // WebGL (Sprites) rendering components
-  private spritesNode: Sprites | null = null;
-  private sprite: Sprite | null = null;
-  private spriteInstances: SpriteInstance[] = [];
-
-  // Canvas rendering components
-  private canvasNode: ParticleCanvasNode | null = null;
-
-  // Current renderer type
-  private currentRenderer: RendererType;
+  // Particle renderer (strategy pattern)
+  private particleRenderer: ParticleRenderer | null = null;
+  private currentRendererType: RendererType;
 
   public constructor(
     model: ChladniModel,
@@ -138,10 +74,15 @@ export class ChladniVisualizationNode extends Node {
     this.rendererTypeProperty = rendererTypeProperty;
     this.visualizationWidth = visualizationWidth;
     this.visualizationHeight = visualizationHeight;
-    this.currentRenderer = rendererTypeProperty.value;
+    this.currentRendererType = rendererTypeProperty.value;
 
-    // Create the model-view transform
-    this.modelViewTransform = this.createModelViewTransform();
+    // Create the model-view transform using the shared factory
+    this.modelViewTransform = createChladniTransform(
+      model.plateWidth,
+      model.plateHeight,
+      visualizationWidth,
+      visualizationHeight,
+    );
 
     // Create background rectangle
     this.backgroundRect = new Rectangle(
@@ -181,8 +122,8 @@ export class ChladniVisualizationNode extends Node {
       },
     );
 
-    // Initialize the appropriate renderer
-    this.initializeRenderer(this.currentRenderer);
+    // Initialize the renderer using strategy pattern
+    this.initializeRenderer(this.currentRendererType);
 
     // Add borders on top
     this.addChild(this.borderRect);
@@ -195,264 +136,68 @@ export class ChladniVisualizationNode extends Node {
 
     // Listen for renderer type changes
     rendererTypeProperty.link((newRenderer) => {
-      if (newRenderer !== this.currentRenderer) {
+      if (newRenderer !== this.currentRendererType) {
         this.switchRenderer(newRenderer);
       }
     });
 
-    // Update sprite/canvas when particle color changes
+    // Update renderer when particle color changes
     ResonanceColors.chladniParticleProperty.link(() => {
-      if (this.currentRenderer === RendererType.WEBGL && this.spritesNode) {
-        this.recreateSpritesNode();
-      } else if (
-        this.currentRenderer === RendererType.CANVAS &&
-        this.canvasNode
-      ) {
-        this.canvasNode.invalidatePaint();
-      }
+      this.particleRenderer?.onColorChange();
     });
   }
 
   /**
-   * Initialize the specified renderer.
+   * Initialize the specified renderer using strategy pattern.
    */
   private initializeRenderer(rendererType: RendererType): void {
-    if (rendererType === RendererType.WEBGL) {
-      this.initializeWebGLRenderer();
-    } else {
-      this.initializeCanvasRenderer();
+    // Dispose existing renderer
+    if (this.particleRenderer) {
+      const oldNode = this.particleRenderer.getNode();
+      if (this.hasChild(oldNode)) {
+        this.removeChild(oldNode);
+      }
+      this.particleRenderer.dispose();
     }
-    this.currentRenderer = rendererType;
-  }
 
-  /**
-   * Initialize WebGL (Sprites) renderer.
-   */
-  private initializeWebGLRenderer(): void {
-    // Create the particle sprite
-    this.sprite = this.createParticleSprite();
-
-    // Create sprite instances for all particles
-    this.spriteInstances = [];
-    this.initializeSpriteInstances();
-
-    // Create the sprites node for WebGL rendering
-    this.spritesNode = new Sprites({
-      sprites: [this.sprite],
-      spriteInstances: this.spriteInstances,
-      canvasBounds: new Bounds2(
-        0,
-        0,
+    // Create new renderer based on type
+    if (rendererType === RendererType.WEBGL) {
+      this.particleRenderer = new WebGLParticleRenderer(
         this.visualizationWidth,
         this.visualizationHeight,
-      ),
-      hitTestSprites: false,
-      renderer: "webgl",
-    });
-    this.insertChild(1, this.spritesNode);
-  }
-
-  /**
-   * Initialize Canvas 2D renderer.
-   */
-  private initializeCanvasRenderer(): void {
-    this.canvasNode = new ParticleCanvasNode(
-      this.model,
-      this.modelViewTransform,
-      this.visualizationWidth,
-      this.visualizationHeight,
-    );
-    this.insertChild(1, this.canvasNode);
-  }
-
-  /**
-   * Switch between renderers.
-   */
-  private switchRenderer(newRenderer: RendererType): void {
-    // Remove current renderer
-    if (this.currentRenderer === RendererType.WEBGL && this.spritesNode) {
-      this.removeChild(this.spritesNode);
-      this.spritesNode = null;
-      this.sprite = null;
-      this.spriteInstances = [];
-    } else if (
-      this.currentRenderer === RendererType.CANVAS &&
-      this.canvasNode
-    ) {
-      this.removeChild(this.canvasNode);
-      this.canvasNode = null;
+        this.modelViewTransform,
+      );
+    } else {
+      this.particleRenderer = new CanvasParticleRenderer(
+        this.visualizationWidth,
+        this.visualizationHeight,
+        this.modelViewTransform,
+      );
     }
 
-    // Initialize new renderer
-    this.initializeRenderer(newRenderer);
+    // Insert renderer node between background and border
+    this.insertChild(1, this.particleRenderer.getNode());
+    this.currentRendererType = rendererType;
+  }
 
-    // Update positions
+  /**
+   * Switch to a different renderer.
+   */
+  private switchRenderer(newRendererType: RendererType): void {
+    this.initializeRenderer(newRendererType);
     this.update();
   }
 
   /**
-   * Recreate the sprites node with updated sprite/instances.
-   * Called when sprite appearance or instance count changes.
-   */
-  private recreateSpritesNode(): void {
-    if (!this.spritesNode) return;
-
-    // Remove old sprites node
-    this.removeChild(this.spritesNode);
-
-    // Create new sprite
-    this.sprite = this.createParticleSprite();
-
-    // Update all instances to use new sprite
-    for (const instance of this.spriteInstances) {
-      instance.sprite = this.sprite;
-    }
-
-    // Create new sprites node
-    this.spritesNode = new Sprites({
-      sprites: [this.sprite],
-      spriteInstances: this.spriteInstances,
-      canvasBounds: new Bounds2(
-        0,
-        0,
-        this.visualizationWidth,
-        this.visualizationHeight,
-      ),
-      hitTestSprites: false,
-      renderer: "webgl",
-    });
-
-    // Insert between background and border
-    this.insertChild(1, this.spritesNode);
-  }
-
-  /**
-   * Create a sprite image for a single particle.
-   */
-  private createParticleSprite(): Sprite {
-    // Create a small canvas for the particle
-    const canvas = document.createElement("canvas");
-    const size = PARTICLE_SIZE * 2; // Extra space for anti-aliasing
-    canvas.width = size;
-    canvas.height = size;
-
-    const context = canvas.getContext("2d")!;
-    const color = ResonanceColors.chladniParticleProperty.value;
-
-    // Draw a filled circle
-    context.beginPath();
-    context.arc(size / 2, size / 2, PARTICLE_SIZE / 2, 0, Math.PI * 2);
-    context.fillStyle = color.toCSS();
-    context.fill();
-
-    // Create sprite image with center offset
-    const spriteImage = new SpriteImage(
-      canvas,
-      new Vector2(size / 2, size / 2),
-    );
-    return new Sprite(spriteImage);
-  }
-
-  /**
-   * Initialize sprite instances for all particles.
-   */
-  private initializeSpriteInstances(): void {
-    const particles = this.model.particlePositions;
-
-    // Clear existing instances
-    this.spriteInstances.length = 0;
-
-    // Create an instance for each particle
-    for (let i = 0; i < particles.length; i++) {
-      const instance = SpriteInstance.pool.fetch();
-      instance.sprite = this.sprite!;
-      instance.transformType = SpriteInstanceTransformType.TRANSLATION;
-      instance.alpha = 1.0;
-      instance.matrix.setToIdentity();
-      this.spriteInstances.push(instance);
-    }
-  }
-
-  /**
-   * Create the ModelViewTransform2 for coordinate conversion.
-   * Model: (0,0) at center, +Y up
-   * View: (0,0) at top-left, +Y down
-   */
-  private createModelViewTransform(): ModelViewTransform2 {
-    const plateWidth = this.model.plateWidth;
-    const plateHeight = this.model.plateHeight;
-
-    // Model bounds: centered coordinates
-    const modelBounds = new Bounds2(
-      -plateWidth / 2,
-      -plateHeight / 2,
-      plateWidth / 2,
-      plateHeight / 2,
-    );
-
-    // View bounds: (0,0) at top-left
-    const viewBounds = new Bounds2(
-      0,
-      0,
-      this.visualizationWidth,
-      this.visualizationHeight,
-    );
-
-    // Create transform with Y inversion (model +Y up, view +Y down)
-    return ModelViewTransform2.createRectangleInvertedYMapping(
-      modelBounds,
-      viewBounds,
-    );
-  }
-
-  /**
    * Update the visualization (called each frame when animating).
-   * Updates sprite instance positions or triggers canvas repaint.
    */
   public update(): void {
-    if (this.currentRenderer === RendererType.WEBGL) {
-      this.updateWebGL();
-    } else {
-      this.updateCanvas();
+    if (this.particleRenderer) {
+      this.particleRenderer.update(
+        this.model.particlePositions,
+        this.modelViewTransform,
+      );
     }
-  }
-
-  /**
-   * Update WebGL (Sprites) renderer.
-   */
-  private updateWebGL(): void {
-    if (!this.spritesNode) return;
-
-    const particles = this.model.particlePositions;
-
-    // Ensure we have the right number of sprite instances
-    if (this.spriteInstances.length !== particles.length) {
-      this.initializeSpriteInstances();
-      this.recreateSpritesNode();
-    }
-
-    // Update each sprite instance position
-    for (let i = 0; i < particles.length; i++) {
-      const particle = particles[i]!;
-      const instance = this.spriteInstances[i]!;
-
-      // Convert model coordinates to view coordinates
-      const viewPos = this.modelViewTransform.modelToViewPosition(particle);
-
-      // Update the instance's translation matrix
-      instance.matrix.setToTranslation(viewPos.x, viewPos.y);
-    }
-
-    // Trigger repaint
-    this.spritesNode.invalidatePaint();
-  }
-
-  /**
-   * Update Canvas renderer.
-   */
-  private updateCanvas(): void {
-    if (!this.canvasNode) return;
-    this.canvasNode.invalidatePaint();
   }
 
   /**
@@ -464,8 +209,13 @@ export class ChladniVisualizationNode extends Node {
     this.visualizationWidth = newWidth;
     this.visualizationHeight = newHeight;
 
-    // Recreate the transform for new dimensions
-    this.modelViewTransform = this.createModelViewTransform();
+    // Recreate the transform using the shared factory
+    this.modelViewTransform = createChladniTransform(
+      this.model.plateWidth,
+      this.model.plateHeight,
+      newWidth,
+      newHeight,
+    );
 
     // Update background and borders
     this.backgroundRect.setRect(0, 0, newWidth, newHeight);
@@ -478,15 +228,9 @@ export class ChladniVisualizationNode extends Node {
       newHeight - 2 * innerInset,
     );
 
-    // Update renderer-specific elements
-    if (this.currentRenderer === RendererType.WEBGL && this.spritesNode) {
-      this.recreateSpritesNode();
-    } else if (
-      this.currentRenderer === RendererType.CANVAS &&
-      this.canvasNode
-    ) {
-      this.canvasNode.setCanvasSize(newWidth, newHeight);
-      this.canvasNode.setModelViewTransform(this.modelViewTransform);
+    // Resize the renderer
+    if (this.particleRenderer) {
+      this.particleRenderer.resize(newWidth, newHeight, this.modelViewTransform);
     }
 
     // Explicitly set local bounds so they update immediately (even when paused)
@@ -508,5 +252,13 @@ export class ChladniVisualizationNode extends Node {
    */
   public getVisualizationHeight(): number {
     return this.visualizationHeight;
+  }
+
+  /**
+   * Dispose of the visualization node and its renderer.
+   */
+  public override dispose(): void {
+    this.particleRenderer?.dispose();
+    super.dispose();
   }
 }
