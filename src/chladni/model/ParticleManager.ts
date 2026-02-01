@@ -87,7 +87,7 @@ export class ParticleManager {
     this.isPlayingProperty = options.isPlayingProperty;
 
     // Pre-allocate particle pool at maximum capacity
-    this.particlePool = new Array(MAX_PARTICLE_COUNT);
+    this.particlePool = new Array<Vector2>(MAX_PARTICLE_COUNT);
     for (let i = 0; i < MAX_PARTICLE_COUNT; i++) {
       this.particlePool[i] = new Vector2(0, 0);
     }

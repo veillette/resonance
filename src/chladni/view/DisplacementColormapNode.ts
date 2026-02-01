@@ -128,7 +128,7 @@ class ColormapCanvasNode extends CanvasNode {
 
     // First pass: calculate all displacements to find max for normalization
     let maxDisplacement = 0;
-    const displacements: number[] = new Array(sampleWidth * sampleHeight);
+    const displacements: number[] = new Array<number>(sampleWidth * sampleHeight);
 
     for (let sy = 0; sy < sampleHeight; sy++) {
       // Convert sample Y to model Y (view Y is top-down, model Y is bottom-up)
