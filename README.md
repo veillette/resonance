@@ -4,11 +4,30 @@ An interactive physics simulation demonstrating resonance phenomena in driven os
 
 ## Overview
 
-This simulation visualizes the behavior of mass-spring systems driven by an oscillating platform. Users can observe resonance effects, phase relationships, and the influence of various physical parameters on oscillation behavior.
+This simulation visualizes the behavior of mass-spring systems driven by an oscillating platform and Chladni plate vibration patterns. Users can observe resonance effects, phase relationships, and the influence of various physical parameters on oscillation behavior.
+
+## Screens
+
+### Oscillator Screen
+
+Visualizes driven, damped harmonic oscillators attached to an oscillating driver plate. Demonstrates resonance when driving frequency matches the natural frequency of the system.
+
+### Chladni Plate Screen
+
+Visualizes Chladni patterns - the beautiful geometric patterns formed by particles on a vibrating plate. When a plate vibrates at specific frequencies, particles migrate to the nodal lines (areas of zero displacement), revealing the resonant mode shapes.
+
+**Features:**
+- **Material Selection**: Choose between Copper, Aluminum, Zinc, or Stainless Steel plates
+- **Frequency Control**: Adjust driving frequency from 50 Hz to 4000 Hz
+- **Particle Count**: Select 1,000 to 25,000 particles for visualization
+- **Resonance Curve**: Real-time graph showing resonance peaks
+- **Boundary Modes**: Toggle between clamping particles at edges or removing them
+- **Measurement Tools**: Optional ruler and grid overlays
 
 ## Features
 
 - **Multiple Oscillators**: Support for 1-10 oscillators with configurable parameters
+- **Chladni Patterns**: Visualize 2D plate vibration mode shapes
 - **Real-time Controls**: Adjust mass, spring constant, damping, driving frequency, and amplitude
 - **Configuration Modes**: Same mass, same spring constant, mixed, same frequency, or custom
 - **Visual Feedback**: Dynamic springs, color-coded elements, natural frequency display
@@ -54,7 +73,7 @@ npm run test:e2e  # Run end-to-end tests
 
 ## Physics Background
 
-### Resonance
+### Oscillator Resonance
 
 Maximum oscillation amplitude occurs when the driving frequency matches the natural frequency of the oscillator:
 
@@ -67,6 +86,26 @@ The driving plate oscillates sinusoidally, creating a time-varying boundary cond
 ### Quality Factor
 
 The sharpness of resonance is characterized by the quality factor Q = √(km)/b, where b is the damping coefficient. Higher Q means sharper resonance peaks.
+
+### Chladni Patterns
+
+Chladni patterns demonstrate 2D resonance on vibrating plates. Named after physicist Ernst Chladni (1756-1827), these patterns reveal the nodal lines of plate vibration modes.
+
+**Physics:**
+- Wave number: `k = √(f/C)` where C is the material dispersion constant
+- Modal frequencies: Determined by plate geometry and material properties
+- Nodal lines: Regions where the plate displacement is zero
+
+**Pattern Formation:**
+Particles on a vibrating plate experience forces proportional to the local displacement. At high-displacement regions (antinodes), particles are pushed away. At low-displacement regions (nodal lines), particles accumulate, revealing the mode shape.
+
+**Material Properties (Dispersion Constants):**
+| Material | C (m²/s) |
+|----------|----------|
+| Copper | 0.178 |
+| Aluminum | 0.246 |
+| Zinc | 0.166 |
+| Stainless Steel | 0.238 |
 
 ## Documentation
 

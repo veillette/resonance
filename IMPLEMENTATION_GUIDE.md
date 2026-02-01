@@ -799,6 +799,165 @@ property1.link(val => {
 4. Resonance should show growing amplitude at f₀
 5. Energy display should decrease with damping
 
+## Chladni Plate Screen
+
+The Chladni plate screen visualizes 2D resonance patterns on vibrating plates, demonstrating how particles migrate to nodal lines.
+
+### Architecture
+
+```
+src/chladni/
+├── ChladniScreen.ts                 # Screen configuration
+├── model/
+│   ├── ChladniModel.ts              # Physics model and particle simulation
+│   └── Material.ts                  # Material properties (dispersion constants)
+└── view/
+    ├── ChladniScreenView.ts         # Main view composition
+    ├── ChladniControlPanel.ts       # UI controls
+    ├── ChladniVisualizationNode.ts  # Particle rendering (Canvas/WebGL)
+    ├── ResonanceCurveNode.ts        # Frequency response graph
+    ├── ChladniGridNode.ts           # Grid overlay
+    └── ChladniRulerNode.ts          # Measurement ruler
+```
+
+### Physics Model
+
+#### Wave Equation Solution
+
+The plate displacement ψ(x, y) is calculated using modal superposition:
+
+```
+ψ(x,y) = (4/ab) × Σₘ Σₙ [cos(mπx'/a)cos(nπy'/b) / ((k² - k²ₘₙ) + 2iγk)] × cos(mπx/a)cos(nπy/b)
+```
+
+Where:
+- **(x', y')**: Excitation position
+- **(x, y)**: Field position
+- **k = √(f/C)**: Wave number from frequency f and dispersion constant C
+- **k_{m,n} = π√((m/a)² + (n/b)²)**: Modal wave number for mode (m, n)
+- **γ = 0.02/√(ab)**: Damping coefficient
+- **a, b**: Plate dimensions
+
+#### Material Properties
+
+| Material | Dispersion Constant C (m²/s) |
+|----------|------------------------------|
+| Copper | 0.178 |
+| Aluminum | 0.246 |
+| Zinc | 0.166 |
+| Stainless Steel | 0.238 |
+
+#### Resonance Strength
+
+The resonance curve shows amplitude response vs. frequency:
+
+```
+I(f) = Σₘₙ |φₘₙ(x',y')|² / [(k² - k²ₘₙ)² + 4(γk)²]
+```
+
+Peaks occur when k ≈ k_{m,n} for some mode (m, n).
+
+### Particle Simulation
+
+#### Random Walk Model
+
+Particles perform a biased random walk where step size is proportional to local displacement:
+
+```typescript
+stepSize = PARTICLE_STEP_SCALE × |ψ(x, y)| × dt × TARGET_FPS × STEP_TIME_SCALE
+angle = random(0, 2π)
+newX = x + stepSize × cos(angle)
+newY = y + stepSize × sin(angle)
+```
+
+**Key Constants:**
+- `PARTICLE_STEP_SCALE = 0.3`: Base step size multiplier
+- `STEP_TIME_SCALE = 0.01`: Time normalization factor
+- `TARGET_FPS = 60`: Frame rate normalization
+
+#### Boundary Handling Modes
+
+1. **Clamp** (default): Particles are constrained to plate boundaries
+2. **Remove**: Particles that leave the plate are removed (Roussel's original approach)
+
+### Coordinate System
+
+The model uses centered coordinates:
+- **(0, 0)**: Center of plate
+- **x ∈ [-width/2, +width/2]**: Horizontal position
+- **y ∈ [-height/2, +height/2]**: Vertical position (positive = up)
+
+Default plate dimensions: 0.32m × 0.32m (32 cm square)
+
+### Performance Optimization
+
+#### Precomputed Resonance Curve
+
+The full resonance curve (50-4000 Hz) is precomputed when material or excitation position changes:
+- **Resolution**: 4 samples per Hz
+- **Total samples**: 15,800 points
+- **Storage**: Float32Array for memory efficiency
+
+#### Particle Rendering
+
+Two rendering modes are supported:
+1. **Canvas**: Standard 2D canvas for compatibility
+2. **WebGL**: Hardware-accelerated sprites for large particle counts
+
+**Particle size**: 2 pixels (configurable via `PARTICLE_SIZE` constant)
+
+### Control Panel Options
+
+| Control | Range | Default | Description |
+|---------|-------|---------|-------------|
+| Material | 4 options | Aluminum | Plate material |
+| Grains | 1K-25K | 10,000 | Number of particles |
+| Frequency | 50-4000 Hz | 500 Hz | Driving frequency |
+| Boundary | Clamp/Remove | Clamp | Edge behavior |
+| Resonance Curve | On/Off | On | Show frequency graph |
+| Ruler | On/Off | Off | Show measurement ruler |
+| Grid | On/Off | Off | Show grid overlay |
+
+### Usage Example
+
+```typescript
+import { ChladniModel } from "./chladni/model/ChladniModel.js";
+
+const model = new ChladniModel();
+
+// Set material (affects wave propagation speed)
+model.materialProperty.value = Material.COPPER;
+
+// Set driving frequency
+model.frequencyProperty.value = 500; // Hz
+
+// Set particle count
+model.grainCountProperty.value = GRAIN_COUNT_OPTIONS[2]; // 10,000
+
+// Set boundary mode
+model.boundaryModeProperty.value = "remove"; // or "clamp"
+
+// Start animation
+model.isPlayingProperty.value = true;
+
+// Step physics (called each frame)
+model.step(dt);
+
+// Get resonance curve data for plotting
+const curveData = model.getResonanceCurveData(200); // 200 sample points
+
+// Access particle positions for rendering
+const positions = model.particlePositions; // Vector2[]
+```
+
+### Historical Note
+
+This implementation is inspired by J. Roussel's 2024 Chladni plate simulation. Key differences from the original:
+- Full complex arithmetic in wave equation (vs. magnitude-only)
+- Support for rectangular plates with independent dimensions
+- Configurable excitation position
+- All modes included (vs. even modes only)
+
 ## Future Enhancements
 
 Possible additions to the model:
