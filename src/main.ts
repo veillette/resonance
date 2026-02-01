@@ -36,7 +36,6 @@ onReadyToLaunch(() => {
       simulationOptions: {
         customPreferences: [
           {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             createContent: (_tandem: Tandem) => {
               // Display options section
               const displayOptionsSection = new VBox({
