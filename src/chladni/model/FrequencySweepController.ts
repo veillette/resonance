@@ -162,6 +162,7 @@ export class FrequencySweepController {
   /**
    * Toggle the sweep state.
    * If sweeping, stops the sweep. If not sweeping, starts a new sweep.
+   * @unused - Currently not used in the codebase but kept for toggle button implementations
    */
   public toggleSweep(): void {
     if (this.isSweepingProperty.value) {
@@ -180,6 +181,7 @@ export class FrequencySweepController {
 
   /**
    * Check if the animation is actually running (not paused).
+   * @unused - Currently not used in the codebase but kept for animation state monitoring
    */
   public get isAnimationRunning(): boolean {
     return this.sweepAnimation !== null && this.pausedFrequency === null;
@@ -187,6 +189,7 @@ export class FrequencySweepController {
 
   /**
    * Get the progress of the current sweep as a fraction (0 to 1).
+   * @unused - Currently not used in the codebase but kept for progress indicators
    */
   public getSweepProgress(): number {
     const min = this.frequencyRange.min;
@@ -197,6 +200,7 @@ export class FrequencySweepController {
 
   /**
    * Get the estimated time remaining in the sweep (in seconds).
+   * @unused - Currently not used in the codebase but kept for time estimation features
    */
   public getEstimatedTimeRemaining(): number {
     if (!this.isSweepingProperty.value) {

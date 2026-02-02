@@ -130,6 +130,7 @@ export class PlateGeometry {
    *
    * @param point - Point in model space
    * @returns true if the point is within the plate bounds
+   * @unused - Currently not used in the codebase but kept for boundary checking
    */
   public containsVector(point: Vector2): boolean {
     return this.containsPoint(point.x, point.y);
@@ -186,6 +187,7 @@ export class PlateGeometry {
    * @param physX - X in physics space (0 to width)
    * @param physY - Y in physics space (0 to height)
    * @returns [modelX, modelY] coordinates centered at origin
+   * @unused - Currently not used in the codebase but kept for coordinate transformations
    */
   public physicsToModel(physX: number, physY: number): [number, number] {
     return [physX - this.halfWidth, physY - this.halfHeight];
@@ -198,6 +200,7 @@ export class PlateGeometry {
    * @param modelX - X in model space (centered)
    * @param modelY - Y in model space (centered)
    * @returns [physX, physY] coordinates in physics space
+   * @unused - Currently not used in the codebase but kept for coordinate transformations
    */
   public modelToPhysics(modelX: number, modelY: number): [number, number] {
     return [modelX + this.halfWidth, modelY + this.halfHeight];
@@ -205,6 +208,7 @@ export class PlateGeometry {
 
   /**
    * Get the plate area in square meters.
+   * @unused - Currently not used in the codebase but kept for area calculations
    */
   public getArea(): number {
     return this.widthProperty.value * this.heightProperty.value;
@@ -213,6 +217,7 @@ export class PlateGeometry {
   /**
    * Get the geometric mean of width and height.
    * Used for damping calculations.
+   * @unused - Currently not used in the codebase but kept for physics calculations
    */
   public getGeometricMean(): number {
     return Math.sqrt(this.widthProperty.value * this.heightProperty.value);
@@ -222,6 +227,7 @@ export class PlateGeometry {
    * Add a listener for when plate dimensions change.
    *
    * @param listener - Callback function (width, height)
+   * @unused - Currently not used in the codebase but kept for dimension change notifications
    */
   public linkDimensions(
     listener: (width: number, height: number) => void,

@@ -60,7 +60,7 @@ export class ModalCalculator {
    * Calculate the damping coefficient based on plate dimensions.
    * Uses geometric mean of plate dimensions.
    */
-  public calculateDamping(): number {
+  private calculateDamping(): number {
     const a = this.plateWidthProperty.value;
     const b = this.plateHeightProperty.value;
     return DAMPING_COEFFICIENT / Math.sqrt(a * b);
