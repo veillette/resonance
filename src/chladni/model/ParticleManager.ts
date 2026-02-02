@@ -5,9 +5,10 @@
  * Handles particle initialization, stepping, boundary handling, and regeneration.
  * Extracted from ChladniModel for separation of concerns.
  *
- * Performance: Uses object pooling to reuse Vector2 instances and reduce GC pressure.
- * The particle pool is pre-allocated at the maximum grain count and reused across
- * reinitializations.
+ * Performance optimizations:
+ * - Object pooling: Reuses Vector2 instances to reduce GC pressure
+ * - Cached particle view: Avoids array allocation on every frame
+ * - Swap-remove: O(1) particle removal instead of O(n) splice
  */
 
 import { Vector2 } from "scenerystack/dot";
@@ -68,11 +69,23 @@ export class ParticleManager {
   private activeCount: number;
 
   /**
+   * Cached view of active particles. Updated only when activeCount changes
+   * to avoid array allocation on every frame.
+   */
+  private cachedParticleView: Vector2[];
+  private cachedViewCount: number;
+
+  /**
    * Public view of active particle positions.
-   * Returns a slice of the pool for backward compatibility.
+   * Returns a cached slice of the pool - only regenerates when count changes.
    */
   public get particlePositions(): Vector2[] {
-    return this.particlePool.slice(0, this.activeCount);
+    // Only regenerate the view if the active count has changed
+    if (this.cachedViewCount !== this.activeCount) {
+      this.cachedParticleView = this.particlePool.slice(0, this.activeCount);
+      this.cachedViewCount = this.activeCount;
+    }
+    return this.cachedParticleView;
   }
 
   /**
@@ -93,6 +106,10 @@ export class ParticleManager {
       this.particlePool[i] = new Vector2(0, 0);
     }
     this.activeCount = 0;
+
+    // Initialize cached view (will be populated on first access or initialize())
+    this.cachedParticleView = [];
+    this.cachedViewCount = -1; // Force initial cache miss
 
     this.actualParticleCountProperty = new NumberProperty(0);
   }
@@ -236,7 +253,8 @@ export class ParticleManager {
    * @unused - Currently not used in the codebase but kept for alternative rendering approaches
    */
   public getActiveParticles(): readonly Vector2[] {
-    return this.particlePool.slice(0, this.activeCount);
+    // Reuse the cached view to avoid allocation
+    return this.particlePositions;
   }
 
   /**
