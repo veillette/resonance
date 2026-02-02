@@ -224,8 +224,7 @@ export class ResonanceCurveNode extends Node {
       (frequency, material) => {
         const strength = model.strength(frequency);
         const maxStrength = this.estimateMaxStrengthInWindow();
-        const normalizedStrength =
-          maxStrength > 0 ? strength / maxStrength : 0;
+        const normalizedStrength = maxStrength > 0 ? strength / maxStrength : 0;
 
         const windowRange = model.getGraphWindowRange();
         const freqRounded = Math.round(frequency);
@@ -266,7 +265,8 @@ export class ResonanceCurveNode extends Node {
 
     for (let i = 0; i <= sampleCount; i++) {
       const freq =
-        windowRange.min + (i / sampleCount) * (windowRange.max - windowRange.min);
+        windowRange.min +
+        (i / sampleCount) * (windowRange.max - windowRange.min);
       const strength = this.model.strength(freq);
       if (strength > maxStrength) {
         maxStrength = strength;

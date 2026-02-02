@@ -159,7 +159,12 @@ export class ExcitationMarkerNode extends Node {
     // Create drag bounds based on plate dimensions
     const halfWidth = this.model.plateWidth / 2;
     const halfHeight = this.model.plateHeight / 2;
-    const dragBounds = new Bounds2(-halfWidth, -halfHeight, halfWidth, halfHeight);
+    const dragBounds = new Bounds2(
+      -halfWidth,
+      -halfHeight,
+      halfWidth,
+      halfHeight,
+    );
     const dragBoundsProperty = new Property(dragBounds);
 
     // Update drag bounds when plate dimensions change

@@ -111,7 +111,9 @@ class ParticleCanvasNode extends CanvasNode {
     let clearBounds: Bounds2;
     if (this.previousDirtyBounds && currentBounds) {
       // Union of previous and current bounds, clamped to canvas
-      clearBounds = this.previousDirtyBounds.union(currentBounds).intersection(canvasBounds);
+      clearBounds = this.previousDirtyBounds
+        .union(currentBounds)
+        .intersection(canvasBounds);
     } else if (this.previousDirtyBounds) {
       clearBounds = this.previousDirtyBounds.intersection(canvasBounds);
     } else if (currentBounds) {

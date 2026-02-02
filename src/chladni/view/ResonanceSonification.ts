@@ -12,7 +12,11 @@
  * This follows SceneryStack's audio patterns and respects the global audio enabled state.
  */
 
-import { DerivedProperty, Property, TReadOnlyProperty } from "scenerystack/axon";
+import {
+  DerivedProperty,
+  Property,
+  TReadOnlyProperty,
+} from "scenerystack/axon";
 import { ChladniModel } from "../model/ChladniModel.js";
 
 /**
@@ -246,7 +250,8 @@ export class ResonanceSonification {
       const strengthT =
         (normalizedStrength - MIN_STRENGTH_FOR_SOUND) /
         (1 - MIN_STRENGTH_FOR_SOUND);
-      targetVolume = MIN_VOLUME + strengthT * strengthT * (MAX_VOLUME - MIN_VOLUME);
+      targetVolume =
+        MIN_VOLUME + strengthT * strengthT * (MAX_VOLUME - MIN_VOLUME);
     }
 
     // Smooth volume transition

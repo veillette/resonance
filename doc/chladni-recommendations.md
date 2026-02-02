@@ -48,6 +48,7 @@ this.particlePositions[i].setXY(x, y);
 The Canvas renderer redraws all particles every frame without dirty rectangle culling.
 
 **Recommendation**: For very high particle counts, consider:
+
 - Implement dirty region tracking for static particles
 - Use WebGL exclusively when particle count exceeds 10k
 - Add automatic renderer switching based on performance metrics
@@ -59,6 +60,7 @@ The Canvas renderer redraws all particles every frame without dirty rectangle cu
 The entire frequency range is recomputed when material or excitation position changes.
 
 **Recommendation**: Implement lazy/progressive computation:
+
 - Only compute visible window initially
 - Compute additional ranges on demand
 - Use web workers for background precomputation
@@ -74,6 +76,7 @@ The entire frequency range is recomputed when material or excitation position ch
 The sweep rate is currently hardcoded at 66 Hz/s.
 
 **Recommendation**: Add user-configurable sweep options:
+
 - Slow sweep (33 Hz/s) for detailed observation
 - Normal sweep (66 Hz/s) - current default
 - Fast sweep (132 Hz/s) for quick overview
@@ -86,6 +89,7 @@ The sweep rate is currently hardcoded at 66 Hz/s.
 In "remove" boundary mode, particle count can drop significantly over time.
 
 **Recommendation**:
+
 - Add optional auto-replenish when count drops below 50% of target
 - Show warning indicator when particle count is low
 - Track and display cumulative particle loss statistics
@@ -97,6 +101,7 @@ In "remove" boundary mode, particle count can drop significantly over time.
 Currently the plate can be freely resized.
 
 **Recommendation**: Add preset aspect ratios for common plate configurations:
+
 - Square (1:1)
 - Golden ratio (1.618:1)
 - Standard sheet metal sizes
@@ -111,6 +116,7 @@ Currently the plate can be freely resized.
 Add an optional colormap overlay showing displacement magnitude across the plate surface. This would be educational for understanding the nodal patterns.
 
 **Implementation approach**:
+
 - Create `DisplacementColormapNode` extending the overlay system
 - Use gradient colors (blue-white-red) for negative-zero-positive displacement
 - Add toggle in Display Options section
@@ -120,6 +126,7 @@ Add an optional colormap overlay showing displacement magnitude across the plate
 Add a mode to visualize individual modal shapes (m,n patterns) to help users understand how the superposition creates the final pattern.
 
 **Features**:
+
 - Mode selector for specific (m,n) combinations
 - Show contribution strength of each mode at current frequency
 - Animate between modes to show constructive/destructive interference
@@ -156,6 +163,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 ### 14. Keyboard Accessibility
 
 Add keyboard controls for:
+
 - Arrow keys to adjust frequency in small increments
 - Space to toggle play/pause
 - Tab navigation through control sections
@@ -168,6 +176,7 @@ Add keyboard controls for:
 ### 15. Physics Documentation
 
 Add inline documentation for:
+
 - `MODE_STEP = 1` rationale (vs. 2 for symmetric excitation)
 - `SOURCE_THRESHOLD` value selection criteria
 - `ParticleManager.step()` timeScale calculation explanation
@@ -175,6 +184,7 @@ Add inline documentation for:
 ### 16. Architecture Decision Records
 
 Document key design decisions:
+
 - Why dual-renderer strategy (Canvas + WebGL)
 - Coordinate system choices and Y-inversion handling
 - PlaybackStateMachine state transition design
@@ -183,18 +193,18 @@ Document key design decisions:
 
 ## Priority Matrix
 
-| Recommendation | Impact | Effort | Priority |
-|----------------|--------|--------|----------|
-| Remove redundant TransformManager | Low | Low | P3 |
-| Particle memory optimization | Medium | Medium | P2 |
-| Configurable sweep rate | Medium | Low | P2 |
-| Auto particle replenishment | Medium | Low | P2 |
-| Displacement colormap | High | Medium | P1 |
-| Modal shape visualization | High | High | P2 |
-| Keyboard accessibility | Medium | Medium | P2 |
-| Physics documentation | Low | Low | P3 |
-| Progressive curve computation | Low | High | P3 |
-| Plate dimension presets | Low | Low | P3 |
+| Recommendation                    | Impact | Effort | Priority |
+| --------------------------------- | ------ | ------ | -------- |
+| Remove redundant TransformManager | Low    | Low    | P3       |
+| Particle memory optimization      | Medium | Medium | P2       |
+| Configurable sweep rate           | Medium | Low    | P2       |
+| Auto particle replenishment       | Medium | Low    | P2       |
+| Displacement colormap             | High   | Medium | P1       |
+| Modal shape visualization         | High   | High   | P2       |
+| Keyboard accessibility            | Medium | Medium | P2       |
+| Physics documentation             | Low    | Low    | P3       |
+| Progressive curve computation     | Low    | High   | P3       |
+| Plate dimension presets           | Low    | Low    | P3       |
 
 ---
 

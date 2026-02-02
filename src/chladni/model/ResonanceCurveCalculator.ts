@@ -218,7 +218,8 @@ export class ResonanceCurveCalculator {
       this.cachedDataSampleCount = sampleCount;
     }
 
-    const freqStep = sampleCount > 1 ? (freqMax - freqMin) / (sampleCount - 1) : 0;
+    const freqStep =
+      sampleCount > 1 ? (freqMax - freqMin) / (sampleCount - 1) : 0;
 
     if (this.precomputedMaxStrength <= 0) {
       // No resonance data, return flat line

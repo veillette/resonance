@@ -336,7 +336,9 @@ export class ChladniScreenView extends ScreenView {
             ? FREQUENCY_STEP_LARGE
             : FREQUENCY_STEP_MEDIUM;
           this.adjustFrequency(-step);
-        } else if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_UP_ARROW)) {
+        } else if (
+          KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_UP_ARROW)
+        ) {
           // Increase frequency (larger step)
           const step = shiftPressed
             ? FREQUENCY_STEP_LARGE

@@ -259,7 +259,9 @@ export class ModalCalculator {
     }
 
     // Return magnitude of complex sum with cached normalization
-    return this.cacheNormalization * Math.sqrt(sumReal * sumReal + sumImag * sumImag);
+    return (
+      this.cacheNormalization * Math.sqrt(sumReal * sumReal + sumImag * sumImag)
+    );
   }
 
   /**
