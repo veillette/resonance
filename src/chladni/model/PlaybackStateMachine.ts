@@ -234,6 +234,7 @@ export class PlaybackStateMachine {
    * @param from - Current state
    * @param to - Target state
    * @returns true if the transition is valid
+   * @unused - Currently not used in the codebase but kept for future validation needs
    */
   public isValidTransition(from: PlaybackState, to: PlaybackState): boolean {
     const validTransitions: Record<PlaybackState, PlaybackState[]> = {
@@ -248,6 +249,7 @@ export class PlaybackStateMachine {
 
   /**
    * Get a human-readable description of the current state.
+   * @unused - Currently not used in the codebase but kept for debugging purposes
    */
   public getStateDescription(): string {
     switch (this.stateProperty.value) {

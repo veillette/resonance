@@ -215,6 +215,7 @@ export class ParticleManager {
 
   /**
    * Get the current particle count.
+   * @unused - Currently not used in the codebase but kept for external monitoring
    */
   public get count(): number {
     return this.activeCount;
@@ -222,6 +223,7 @@ export class ParticleManager {
 
   /**
    * Get the target particle count from settings.
+   * @unused - Currently not used in the codebase but kept for configuration display
    */
   public get targetCount(): number {
     return this.grainCountProperty.value.value;
@@ -230,6 +232,7 @@ export class ParticleManager {
   /**
    * Get read-only access to the active particles in the pool.
    * For performance-critical rendering, use getParticleAt() instead.
+   * @unused - Currently not used in the codebase but kept for alternative rendering approaches
    */
   public getActiveParticles(): readonly Vector2[] {
     return this.particlePool.slice(0, this.activeCount);
@@ -239,6 +242,7 @@ export class ParticleManager {
    * Get a particle at a specific index (for efficient iteration).
    * @param index - Index in range [0, count)
    * @returns The Vector2 at that index, or undefined if out of range
+   * @unused - Currently not used in the codebase but kept for optimized rendering
    */
   public getParticleAt(index: number): Vector2 | undefined {
     if (index >= 0 && index < this.activeCount) {

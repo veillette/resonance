@@ -173,6 +173,7 @@ export class ResonanceCurveCalculator {
 
   /**
    * Check if the current computation is valid and complete.
+   * @unused - Currently not used in the codebase but kept for future validation needs
    */
   public isValid(): boolean {
     return this.isComputationValid;
@@ -180,6 +181,7 @@ export class ResonanceCurveCalculator {
 
   /**
    * Get the progress of the current progressive computation (0-1).
+   * @unused - Currently not used in the codebase but kept for progress tracking features
    */
   public getProgress(): number {
     if (this.isComputationValid) {
@@ -259,6 +261,7 @@ export class ResonanceCurveCalculator {
   /**
    * Get the maximum precomputed strength value.
    * Useful for normalization purposes.
+   * @unused - Currently not used in the codebase but kept for external analysis tools
    */
   public getMaxStrength(): number {
     return this.precomputedMaxStrength;
@@ -267,6 +270,7 @@ export class ResonanceCurveCalculator {
   /**
    * Get the raw strength value at a specific index.
    * @param index - The index into the precomputed array
+   * @unused - Currently not used in the codebase but kept for data inspection
    */
   public getStrengthAtIndex(index: number): number {
     const clampedIndex = Math.max(0, Math.min(TOTAL_CURVE_SAMPLES - 1, index));
