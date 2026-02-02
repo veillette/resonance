@@ -14,11 +14,12 @@
 import { Node, NodeOptions, Rectangle } from "scenerystack/scenery";
 import { Bounds2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Property } from "scenerystack/axon";
+import { DerivedProperty, Property } from "scenerystack/axon";
 import { ChladniModel } from "../model/ChladniModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { RendererType } from "../../preferences/ResonancePreferencesModel.js";
 import { createChladniTransform } from "./ChladniTransformFactory.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import {
   ParticleRenderer,
   CanvasParticleRenderer,
@@ -144,6 +145,29 @@ export class ChladniVisualizationNode extends Node {
     // Update renderer when particle color changes
     ResonanceColors.chladniParticleProperty.link(() => {
       this.particleRenderer?.onColorChange();
+    });
+
+    // --- Accessibility (PDOM) Setup ---
+    // Make the visualization accessible to screen readers
+    this.tagName = "div";
+    this.ariaRole = "img";
+    this.accessibleName =
+      ResonanceStrings.chladni.a11y.visualizationLabelStringProperty;
+
+    // Create dynamic description that updates with model state
+    const descriptionProperty = new DerivedProperty(
+      [
+        model.frequencyProperty,
+        model.materialProperty,
+        model.actualParticleCountProperty,
+      ],
+      (frequency, material, particleCount) => {
+        return `Chladni plate visualization showing ${particleCount} particles on a ${material.name} plate at ${Math.round(frequency)} Hz. Particles gather along nodal lines where the plate has zero displacement.`;
+      },
+    );
+
+    descriptionProperty.link((description) => {
+      this.descriptionContent = description;
     });
   }
 
