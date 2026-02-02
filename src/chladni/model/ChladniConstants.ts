@@ -166,6 +166,37 @@ export const DEFAULT_GRAIN_COUNT =
   GRAIN_COUNT_OPTIONS[DEFAULT_GRAIN_COUNT_INDEX]!;
 
 // ============================================================================
+// GUITAR SHAPE PARAMETERS
+// ============================================================================
+
+/**
+ * Default scale factor for guitar shape (1.0 = base size)
+ */
+export const DEFAULT_GUITAR_SCALE = 1.0;
+
+/**
+ * Minimum scale factor for guitar shape
+ */
+export const MIN_GUITAR_SCALE = 0.6;
+
+/**
+ * Maximum scale factor for guitar shape
+ */
+export const MAX_GUITAR_SCALE = 1.4;
+
+/**
+ * Base width of guitar at scale 1.0 (meters)
+ * Dreadnought guitars are typically ~40cm wide at lower bout
+ */
+export const GUITAR_BASE_WIDTH = 0.28;
+
+/**
+ * Base height of guitar at scale 1.0 (meters)
+ * Dreadnought bodies are typically ~50cm long
+ */
+export const GUITAR_BASE_HEIGHT = 0.38;
+
+// ============================================================================
 // CONVENIENCE EXPORTS
 // ============================================================================
 
@@ -221,6 +252,13 @@ const ChladniConstants = {
   GRAIN_COUNT_OPTIONS,
   DEFAULT_GRAIN_COUNT_INDEX,
   DEFAULT_GRAIN_COUNT,
+
+  // Guitar shape
+  DEFAULT_GUITAR_SCALE,
+  MIN_GUITAR_SCALE,
+  MAX_GUITAR_SCALE,
+  GUITAR_BASE_WIDTH,
+  GUITAR_BASE_HEIGHT,
 } as const;
 
 export default ChladniConstants;

@@ -30,6 +30,11 @@ import { Material, MaterialType } from "./Material.js";
 import { ModalCalculator } from "./ModalCalculator.js";
 import { ParticleManager } from "./ParticleManager.js";
 import { PlateGeometry } from "./PlateGeometry.js";
+import { CircularPlateGeometry } from "./CircularPlateGeometry.js";
+import { GuitarPlateGeometry } from "./GuitarPlateGeometry.js";
+import { PlateShape, PlateShapeType, DEFAULT_PLATE_SHAPE } from "./PlateShape.js";
+import { ModalCalculatorFactory } from "./ModalCalculatorFactory.js";
+import type { IModalCalculatorStrategy } from "./IModalCalculatorStrategy.js";
 import { ResonanceCurveCalculator } from "./ResonanceCurveCalculator.js";
 import { FrequencySweepController } from "./FrequencySweepController.js";
 import { PlaybackStateMachine, PlaybackState } from "./PlaybackStateMachine.js";
@@ -54,6 +59,9 @@ export class ChladniModel {
   // Material selection
   public readonly materialProperty: Property<MaterialType>;
 
+  // Plate shape selection
+  public readonly plateShapeProperty: Property<PlateShapeType>;
+
   // Frequency control - single slider covering full range
   public readonly frequencyProperty: NumberProperty;
 
@@ -72,10 +80,23 @@ export class ChladniModel {
 
   // --- Extracted Modules ---
 
-  // Plate geometry manager
-  private readonly plateGeometry: PlateGeometry;
+  // Plate geometry managers for each shape
+  private readonly rectangularGeometry: PlateGeometry;
+  private readonly circularGeometry: CircularPlateGeometry;
+  private readonly guitarGeometry: GuitarPlateGeometry;
 
-  // Modal calculator for physics
+  // Legacy alias for backward compatibility
+  private get plateGeometry(): PlateGeometry {
+    return this.rectangularGeometry;
+  }
+
+  // Modal calculator factory
+  private readonly calculatorFactory: ModalCalculatorFactory;
+
+  // Current active modal calculator (based on selected shape)
+  private activeCalculator: IModalCalculatorStrategy;
+
+  // Legacy alias for backward compatibility
   private readonly modalCalculator: ModalCalculator;
 
   // Particle manager
@@ -131,6 +152,9 @@ export class ChladniModel {
     // Initialize material to aluminum (good mid-range dispersion)
     this.materialProperty = new Property<MaterialType>(Material.ALUMINUM);
 
+    // Initialize plate shape
+    this.plateShapeProperty = new Property<PlateShapeType>(DEFAULT_PLATE_SHAPE);
+
     // Initialize frequency with full range
     this.frequencyRange = new Range(FREQUENCY_MIN, FREQUENCY_MAX);
     this.frequencyProperty = new NumberProperty(FREQUENCY_DEFAULT, {
@@ -154,8 +178,10 @@ export class ChladniModel {
 
     // --- Initialize Extracted Modules ---
 
-    // Create plate geometry manager
-    this.plateGeometry = new PlateGeometry();
+    // Create plate geometry managers for each shape
+    this.rectangularGeometry = new PlateGeometry();
+    this.circularGeometry = new CircularPlateGeometry();
+    this.guitarGeometry = new GuitarPlateGeometry();
 
     // Create playback state machine
     this.playbackStateMachine = new PlaybackStateMachine();
@@ -182,13 +208,27 @@ export class ChladniModel {
       }
     });
 
-    // Create modal calculator
+    // Create modal calculator (for backward compatibility and rectangular)
     this.modalCalculator = new ModalCalculator({
       materialProperty: this.materialProperty,
-      plateWidthProperty: this.plateGeometry.widthProperty,
-      plateHeightProperty: this.plateGeometry.heightProperty,
+      plateWidthProperty: this.rectangularGeometry.widthProperty,
+      plateHeightProperty: this.rectangularGeometry.heightProperty,
       excitationPositionProperty: this.excitationPositionProperty,
     });
+
+    // Create modal calculator factory
+    this.calculatorFactory = new ModalCalculatorFactory({
+      materialProperty: this.materialProperty,
+      excitationPositionProperty: this.excitationPositionProperty,
+      rectangularGeometry: this.rectangularGeometry,
+      circularGeometry: this.circularGeometry,
+      guitarGeometry: this.guitarGeometry,
+    });
+
+    // Set initial active calculator based on shape
+    this.activeCalculator = this.calculatorFactory.getCalculator(
+      this.plateShapeProperty.value,
+    );
 
     // Create particle manager
     this.particleManager = new ParticleManager({
@@ -223,22 +263,22 @@ export class ChladniModel {
 
     // Update cached wave number when frequency changes
     this.frequencyProperty.link(() => {
-      this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
+      this.cachedWaveNumber = this.activeCalculator.calculateWaveNumber(
         this.frequencyProperty.value,
       );
     });
 
     // Recompute resonance curve when material or excitation position changes
     this.materialProperty.link(() => {
-      this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
+      this.cachedWaveNumber = this.activeCalculator.calculateWaveNumber(
         this.frequencyProperty.value,
       );
-      this.modalCalculator.invalidateModeCache();
+      this.calculatorFactory.invalidateAllModeCaches();
       this.resonanceCurveCalculator.recompute();
     });
 
     this.excitationPositionProperty.link(() => {
-      this.modalCalculator.invalidateModeCache();
+      this.calculatorFactory.invalidateAllModeCaches();
       this.resonanceCurveCalculator.recompute();
     });
 
@@ -249,16 +289,69 @@ export class ChladniModel {
 
     // Recompute when plate dimensions change - using Multilink for coordinated updates
     Multilink.lazyMultilink(
-      [this.plateGeometry.widthProperty, this.plateGeometry.heightProperty],
+      [this.rectangularGeometry.widthProperty, this.rectangularGeometry.heightProperty],
       () => {
         this.modalCalculator.updateCachedDamping();
         this.resonanceCurveCalculator.recompute();
         this.particleManager.clampToBounds();
-        this.plateGeometry.clampExcitationPosition(
+        this.rectangularGeometry.clampExcitationPosition(
           this.excitationPositionProperty,
         );
       },
     );
+
+    // Handle shape changes
+    this.plateShapeProperty.lazyLink((shape) => {
+      this.activeCalculator = this.calculatorFactory.getCalculator(shape);
+      this.activeCalculator.updateCachedDamping();
+      this.cachedWaveNumber = this.activeCalculator.calculateWaveNumber(
+        this.frequencyProperty.value,
+      );
+      // Update geometry provider for particle manager
+      this.updateParticleGeometryProvider(shape);
+      // Reinitialize particles for new shape
+      this.particleManager.initialize();
+    });
+
+    // Set initial geometry provider
+    this.updateParticleGeometryProvider(this.plateShapeProperty.value);
+
+    // Update circular geometry listeners
+    Multilink.lazyMultilink(
+      [this.circularGeometry.outerRadiusProperty, this.circularGeometry.innerRadiusProperty],
+      () => {
+        if (this.plateShapeProperty.value === PlateShape.CIRCLE) {
+          this.activeCalculator.updateCachedDamping();
+          this.resonanceCurveCalculator.recompute();
+        }
+      },
+    );
+
+    // Update guitar geometry listener
+    this.guitarGeometry.scaleProperty.lazyLink(() => {
+      if (this.plateShapeProperty.value === PlateShape.GUITAR) {
+        this.activeCalculator.updateCachedDamping();
+        this.resonanceCurveCalculator.recompute();
+      }
+    });
+  }
+
+  /**
+   * Update the particle manager's geometry provider based on shape.
+   */
+  private updateParticleGeometryProvider(shape: PlateShapeType): void {
+    switch (shape) {
+      case PlateShape.CIRCLE:
+        this.particleManager.setGeometryProvider(this.circularGeometry);
+        break;
+      case PlateShape.GUITAR:
+        this.particleManager.setGeometryProvider(this.guitarGeometry);
+        break;
+      case PlateShape.RECTANGLE:
+      default:
+        this.particleManager.setGeometryProvider(null);
+        break;
+    }
   }
 
   /**
@@ -284,10 +377,10 @@ export class ChladniModel {
 
   /**
    * Calculate the displacement psi at a given point (x, y).
-   * Delegates to ModalCalculator using the cached wave number.
+   * Delegates to the active ModalCalculator using the cached wave number.
    */
   public psi(x: number, y: number): number {
-    return this.modalCalculator.psi(x, y, this.cachedWaveNumber);
+    return this.activeCalculator.psi(x, y, this.cachedWaveNumber);
   }
 
   /**
@@ -322,23 +415,34 @@ export class ChladniModel {
    */
   public reset(): void {
     this.materialProperty.reset();
+    this.plateShapeProperty.reset();
     this.frequencyProperty.reset();
     this.excitationPositionProperty.reset();
     this.grainCountProperty.reset();
     this.boundaryModeProperty.reset();
 
-    // Reset extracted modules
-    this.plateGeometry.reset();
+    // Reset all geometry modules
+    this.rectangularGeometry.reset();
+    this.circularGeometry.reset();
+    this.guitarGeometry.reset();
+
+    // Reset other modules
     this.playbackStateMachine.reset();
     this.sweepController.reset();
+
+    // Update active calculator
+    this.activeCalculator = this.calculatorFactory.getCalculator(
+      this.plateShapeProperty.value,
+    );
 
     // Reinitialize particles
     this.particleManager.initialize();
 
     // Update cached values
-    this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
+    this.cachedWaveNumber = this.activeCalculator.calculateWaveNumber(
       this.frequencyProperty.value,
     );
+    this.activeCalculator.updateCachedDamping();
     this.modalCalculator.updateCachedDamping();
   }
 
@@ -351,10 +455,10 @@ export class ChladniModel {
 
   /**
    * Calculate the resonance strength/amplitude at a given frequency.
-   * Delegates to ModalCalculator.
+   * Delegates to the active ModalCalculator.
    */
   public strength(freq: number): number {
-    return this.modalCalculator.strength(freq);
+    return this.activeCalculator.strength(freq);
   }
 
   /**
@@ -372,10 +476,31 @@ export class ChladniModel {
   }
 
   /**
-   * Get the plate geometry manager for bounds calculations.
+   * Get the rectangular plate geometry manager.
    */
   public getPlateGeometry(): PlateGeometry {
-    return this.plateGeometry;
+    return this.rectangularGeometry;
+  }
+
+  /**
+   * Get the circular plate geometry manager.
+   */
+  public getCircularGeometry(): CircularPlateGeometry {
+    return this.circularGeometry;
+  }
+
+  /**
+   * Get the guitar plate geometry manager.
+   */
+  public getGuitarGeometry(): GuitarPlateGeometry {
+    return this.guitarGeometry;
+  }
+
+  /**
+   * Get the current plate shape.
+   */
+  public get plateShape(): PlateShapeType {
+    return this.plateShapeProperty.value;
   }
 
   // --- Convenience Getters ---

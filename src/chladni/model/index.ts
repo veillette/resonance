@@ -20,6 +20,45 @@ export { ParticleManager } from "./ParticleManager.js";
 export { PlateGeometry } from "./PlateGeometry.js";
 export type { PlateGeometryOptions } from "./PlateGeometry.js";
 
+// Guitar plate geometry
+export { GuitarPlateGeometry } from "./GuitarPlateGeometry.js";
+
+// Circular plate geometry
+export { CircularPlateGeometry } from "./CircularPlateGeometry.js";
+
+// Plate shape enumeration
+export { PlateShape, DEFAULT_PLATE_SHAPE } from "./PlateShape.js";
+export type { PlateShapeType } from "./PlateShape.js";
+
+// Modal calculator strategy interface
+export type { IModalCalculatorStrategy } from "./IModalCalculatorStrategy.js";
+
+// Circular modal calculator
+export { CircularModalCalculator } from "./CircularModalCalculator.js";
+export type {
+  CircularModalCalculatorOptions,
+  CircularBoundaryCondition,
+} from "./CircularModalCalculator.js";
+
+// Guitar modal calculator
+export { GuitarModalCalculator } from "./GuitarModalCalculator.js";
+export type { GuitarModalCalculatorOptions } from "./GuitarModalCalculator.js";
+
+// Modal calculator factory
+export { ModalCalculatorFactory } from "./ModalCalculatorFactory.js";
+export type { ModalCalculatorFactoryOptions } from "./ModalCalculatorFactory.js";
+
+// Bessel functions
+export {
+  besselJ,
+  besselY,
+  besselJPrime,
+  getBesselJZero,
+  getBesselJPrimeZero,
+  BESSEL_J_ZEROS,
+  BESSEL_J_PRIME_ZEROS,
+} from "./BesselFunctions.js";
+
 // Resonance curve calculation
 export { ResonanceCurveCalculator } from "./ResonanceCurveCalculator.js";
 export type { ResonanceCurveCalculatorOptions } from "./ResonanceCurveCalculator.js";

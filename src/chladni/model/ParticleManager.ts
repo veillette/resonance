@@ -29,6 +29,27 @@ import {
 export type DisplacementFunction = (x: number, y: number) => number;
 
 /**
+ * Interface for geometry providers that define particle bounds.
+ */
+export interface ParticleGeometryProvider {
+  /**
+   * Check if a point is inside the plate boundary.
+   */
+  containsPoint(x: number, y: number): boolean;
+
+  /**
+   * Clamp a point to the plate boundary.
+   * Returns [clampedX, clampedY].
+   */
+  clampPoint(x: number, y: number): [number, number];
+
+  /**
+   * Generate a random point inside the plate.
+   */
+  randomPoint(): [number, number];
+}
+
+/**
  * Options for creating a ParticleManager
  */
 export interface ParticleManagerOptions {
@@ -37,6 +58,7 @@ export interface ParticleManagerOptions {
   plateHeightProperty: TReadOnlyProperty<number>;
   boundaryModeProperty: TReadOnlyProperty<BoundaryMode>;
   isPlayingProperty: TReadOnlyProperty<boolean>;
+  geometryProvider?: ParticleGeometryProvider;
 }
 
 // Maximum particles (from GRAIN_COUNT_OPTIONS)
@@ -56,6 +78,12 @@ export class ParticleManager {
   private readonly plateHeightProperty: TReadOnlyProperty<number>;
   private readonly boundaryModeProperty: TReadOnlyProperty<BoundaryMode>;
   private readonly isPlayingProperty: TReadOnlyProperty<boolean>;
+
+  /**
+   * Optional geometry provider for non-rectangular shapes.
+   * If not provided, uses rectangular bounds based on width/height.
+   */
+  private geometryProvider: ParticleGeometryProvider | null = null;
 
   /**
    * Pre-allocated particle pool (fixed size at MAX_PARTICLE_COUNT).
@@ -99,6 +127,7 @@ export class ParticleManager {
     this.plateHeightProperty = options.plateHeightProperty;
     this.boundaryModeProperty = options.boundaryModeProperty;
     this.isPlayingProperty = options.isPlayingProperty;
+    this.geometryProvider = options.geometryProvider ?? null;
 
     // Pre-allocate particle pool at maximum capacity
     this.particlePool = new Array<Vector2>(MAX_PARTICLE_COUNT);
@@ -115,6 +144,13 @@ export class ParticleManager {
   }
 
   /**
+   * Set the geometry provider for non-rectangular shapes.
+   */
+  public setGeometryProvider(provider: ParticleGeometryProvider | null): void {
+    this.geometryProvider = provider;
+  }
+
+  /**
    * Initialize all particles with random positions across the plate.
    * Uses centered coordinates: x in [-width/2, width/2], y in [-height/2, height/2].
    *
@@ -122,16 +158,25 @@ export class ParticleManager {
    */
   public initialize(): void {
     const count = this.grainCountProperty.value.value;
-    const halfWidth = this.plateWidthProperty.value / 2;
-    const halfHeight = this.plateHeightProperty.value / 2;
 
-    // Reuse pooled Vector2 objects - just update their positions
-    for (let i = 0; i < count; i++) {
-      const particle = this.particlePool[i]!;
-      // Random position in centered coordinates
-      const x = (Math.random() - 0.5) * 2 * halfWidth;
-      const y = (Math.random() - 0.5) * 2 * halfHeight;
-      particle.setXY(x, y);
+    if (this.geometryProvider) {
+      // Use geometry provider for non-rectangular shapes
+      for (let i = 0; i < count; i++) {
+        const particle = this.particlePool[i]!;
+        const [x, y] = this.geometryProvider.randomPoint();
+        particle.setXY(x, y);
+      }
+    } else {
+      // Rectangular plate
+      const halfWidth = this.plateWidthProperty.value / 2;
+      const halfHeight = this.plateHeightProperty.value / 2;
+
+      for (let i = 0; i < count; i++) {
+        const particle = this.particlePool[i]!;
+        const x = (Math.random() - 0.5) * 2 * halfWidth;
+        const y = (Math.random() - 0.5) * 2 * halfHeight;
+        particle.setXY(x, y);
+      }
     }
 
     this.activeCount = count;
@@ -160,6 +205,7 @@ export class ParticleManager {
     const halfHeight = this.plateHeightProperty.value / 2;
     const boundaryMode = this.boundaryModeProperty.value;
     const isRemoveMode = boundaryMode === "remove";
+    const geom = this.geometryProvider;
 
     // Process active particles - iterate forward with swap-remove for efficiency
     let i = 0;
@@ -182,10 +228,13 @@ export class ParticleManager {
 
       // Handle boundary based on mode
       if (isRemoveMode) {
-        // Remove particles that leave the plate (Roussel's approach)
-        if (Math.abs(newX) > halfWidth || Math.abs(newY) > halfHeight) {
+        // Remove particles that leave the plate
+        const isOutside = geom
+          ? !geom.containsPoint(newX, newY)
+          : Math.abs(newX) > halfWidth || Math.abs(newY) > halfHeight;
+
+        if (isOutside) {
           // Swap-remove: move last active particle to this slot, decrement count
-          // This is O(1) vs splice's O(n)
           this.activeCount--;
           if (i < this.activeCount) {
             const lastParticle = this.particlePool[this.activeCount]!;
@@ -198,9 +247,14 @@ export class ParticleManager {
         }
       } else {
         // Clamp to plate boundaries (default behavior)
-        const clampedX = Math.max(-halfWidth, Math.min(halfWidth, newX));
-        const clampedY = Math.max(-halfHeight, Math.min(halfHeight, newY));
-        particle.setXY(clampedX, clampedY);
+        if (geom) {
+          const [clampedX, clampedY] = geom.clampPoint(newX, newY);
+          particle.setXY(clampedX, clampedY);
+        } else {
+          const clampedX = Math.max(-halfWidth, Math.min(halfWidth, newX));
+          const clampedY = Math.max(-halfHeight, Math.min(halfHeight, newY));
+          particle.setXY(clampedX, clampedY);
+        }
         i++;
       }
     }
@@ -214,13 +268,23 @@ export class ParticleManager {
    * Called when plate dimensions change to ensure particles stay within bounds.
    */
   public clampToBounds(): void {
-    const halfWidth = this.plateWidthProperty.value / 2;
-    const halfHeight = this.plateHeightProperty.value / 2;
+    const geom = this.geometryProvider;
 
-    for (let i = 0; i < this.activeCount; i++) {
-      const particle = this.particlePool[i]!;
-      particle.x = Math.max(-halfWidth, Math.min(halfWidth, particle.x));
-      particle.y = Math.max(-halfHeight, Math.min(halfHeight, particle.y));
+    if (geom) {
+      for (let i = 0; i < this.activeCount; i++) {
+        const particle = this.particlePool[i]!;
+        const [clampedX, clampedY] = geom.clampPoint(particle.x, particle.y);
+        particle.setXY(clampedX, clampedY);
+      }
+    } else {
+      const halfWidth = this.plateWidthProperty.value / 2;
+      const halfHeight = this.plateHeightProperty.value / 2;
+
+      for (let i = 0; i < this.activeCount; i++) {
+        const particle = this.particlePool[i]!;
+        particle.x = Math.max(-halfWidth, Math.min(halfWidth, particle.x));
+        particle.y = Math.max(-halfHeight, Math.min(halfHeight, particle.y));
+      }
     }
   }
 

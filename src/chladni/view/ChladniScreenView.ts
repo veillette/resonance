@@ -37,6 +37,7 @@ import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { ChladniModel } from "../model/ChladniModel.js";
+import { PlateShape } from "../model/PlateShape.js";
 import { ChladniVisualizationNode } from "./ChladniVisualizationNode.js";
 import { ChladniControlPanel } from "./ChladniControlPanel.js";
 import { ResonanceCurveNode } from "./ResonanceCurveNode.js";
@@ -46,6 +47,8 @@ import { DisplacementColormapNode } from "./DisplacementColormapNode.js";
 import { ModalShapeNode } from "./ModalShapeNode.js";
 import { ExcitationMarkerNode } from "./ExcitationMarkerNode.js";
 import { createChladniTransform } from "./ChladniTransformFactory.js";
+import { CircleRadiusHandles } from "./CircleRadiusHandles.js";
+import { GuitarScaleHandle } from "./GuitarScaleHandle.js";
 import { ResonanceSonification } from "./ResonanceSonification.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
@@ -69,6 +72,8 @@ export class ChladniScreenView extends ScreenView {
   private readonly visualizationNode: ChladniVisualizationNode;
   private readonly excitationMarker: ExcitationMarkerNode;
   private readonly resizeHandle: Node;
+  private readonly circleRadiusHandles: CircleRadiusHandles;
+  private readonly guitarScaleHandle: GuitarScaleHandle;
   private readonly controlPanel: ChladniControlPanel;
   private readonly resonanceCurveNode: ResonanceCurveNode;
   private readonly curveContainer: VBox;
@@ -166,10 +171,34 @@ export class ChladniScreenView extends ScreenView {
 
     // Note: Modal shape node is created after control panel so we can use its mode property
 
-    // Create the resize handle at the bottom-right corner
+    // Create the resize handle at the bottom-right corner (for rectangular plates)
     this.resizeHandle = this.createResizeHandle();
     this.addChild(this.resizeHandle);
     this.updateResizeHandlePosition();
+
+    // Create the circle radius handles (for circular plates)
+    this.circleRadiusHandles = new CircleRadiusHandles(
+      model.getCircularGeometry(),
+      {
+        getModelViewTransform: () => this.modelViewTransform,
+        getVisualizationBounds: () => this.visualizationNode.bounds,
+        onDragEnd: () => this.visualizationNode.update(),
+      },
+    );
+    this.circleRadiusHandles.visible = false;
+    this.addChild(this.circleRadiusHandles);
+
+    // Create the guitar scale handle (for guitar plates)
+    this.guitarScaleHandle = new GuitarScaleHandle(model.getGuitarGeometry(), {
+      getModelViewTransform: () => this.modelViewTransform,
+      getVisualizationBounds: () => this.visualizationNode.bounds,
+      onDragEnd: () => this.visualizationNode.update(),
+    });
+    this.guitarScaleHandle.visible = false;
+    this.addChild(this.guitarScaleHandle);
+
+    // Update handle visibility based on shape
+    this.updateShapeHandleVisibility();
 
     // Create the draggable excitation marker using extracted component
     this.excitationMarker = new ExcitationMarkerNode(model, {
@@ -274,6 +303,32 @@ export class ChladniScreenView extends ScreenView {
       [model.plateWidthProperty, model.plateHeightProperty],
       () => this.updateVisualizationSize(),
     );
+
+    // Listen to shape changes to update handle visibility
+    model.plateShapeProperty.link(() => {
+      this.updateShapeHandleVisibility();
+      this.updateVisualizationSize();
+    });
+
+    // Listen to circular geometry changes
+    Multilink.lazyMultilink(
+      [
+        model.getCircularGeometry().outerRadiusProperty,
+        model.getCircularGeometry().innerRadiusProperty,
+      ],
+      () => {
+        if (model.plateShape === PlateShape.CIRCLE) {
+          this.circleRadiusHandles.updatePositions();
+        }
+      },
+    );
+
+    // Listen to guitar geometry changes
+    model.getGuitarGeometry().scaleProperty.lazyLink(() => {
+      if (model.plateShape === PlateShape.GUITAR) {
+        this.guitarScaleHandle.updatePosition();
+      }
+    });
 
     // Set up keyboard accessibility
     this.setupKeyboardControls();
@@ -380,13 +435,33 @@ export class ChladniScreenView extends ScreenView {
    * Update the visualization size based on the model's plate dimensions.
    */
   private updateVisualizationSize(): void {
-    const newWidth = this.model.plateWidth * PIXELS_PER_METER;
-    const newHeight = this.model.plateHeight * PIXELS_PER_METER;
+    // Get dimensions based on current shape
+    let plateWidth: number;
+    let plateHeight: number;
+
+    const shape = this.model.plateShape;
+    if (shape === PlateShape.CIRCLE) {
+      const circularGeom = this.model.getCircularGeometry();
+      const diameter = circularGeom.outerRadius * 2;
+      plateWidth = diameter;
+      plateHeight = diameter;
+    } else if (shape === PlateShape.GUITAR) {
+      const guitarGeom = this.model.getGuitarGeometry();
+      plateWidth = guitarGeom.width;
+      plateHeight = guitarGeom.height;
+    } else {
+      // Rectangle
+      plateWidth = this.model.plateWidth;
+      plateHeight = this.model.plateHeight;
+    }
+
+    const newWidth = plateWidth * PIXELS_PER_METER;
+    const newHeight = plateHeight * PIXELS_PER_METER;
 
     // Update the model-view transform using the shared factory
     this.modelViewTransform = createChladniTransform(
-      this.model.plateWidth,
-      this.model.plateHeight,
+      plateWidth,
+      plateHeight,
       newWidth,
       newHeight,
     );
@@ -402,6 +477,7 @@ export class ChladniScreenView extends ScreenView {
     this.updateResizeHandlePosition();
     this.excitationMarker.updatePosition();
     this.updateRulerAndGrid();
+    this.updateShapeHandleVisibility();
     this.visualizationNode.update();
   }
 
@@ -452,6 +528,28 @@ export class ChladniScreenView extends ScreenView {
     if (this.modalShapeNode) {
       this.modalShapeNode.x = vizBounds.minX;
       this.modalShapeNode.y = vizBounds.minY;
+    }
+  }
+
+  /**
+   * Update visibility of shape-specific drag handles.
+   */
+  private updateShapeHandleVisibility(): void {
+    const shape = this.model.plateShape;
+
+    // Show rectangular resize handle only for rectangle shape
+    this.resizeHandle.visible = shape === PlateShape.RECTANGLE;
+
+    // Show circle handles only for circle shape
+    this.circleRadiusHandles.visible = shape === PlateShape.CIRCLE;
+    if (shape === PlateShape.CIRCLE) {
+      this.circleRadiusHandles.updatePositions();
+    }
+
+    // Show guitar handle only for guitar shape
+    this.guitarScaleHandle.visible = shape === PlateShape.GUITAR;
+    if (shape === PlateShape.GUITAR) {
+      this.guitarScaleHandle.updatePosition();
     }
   }
 

@@ -3,6 +3,7 @@
  */
 
 export { MaterialSection } from "./MaterialSection.js";
+export { ShapeSection } from "./ShapeSection.js";
 export { FrequencySection } from "./FrequencySection.js";
 export { GrainSection } from "./GrainSection.js";
 export { DisplayOptionsSection } from "./DisplayOptionsSection.js";

@@ -14,6 +14,7 @@ import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import {
   MaterialSection,
+  ShapeSection,
   FrequencySection,
   GrainSection,
   DisplayOptionsSection,
@@ -66,6 +67,10 @@ export class ChladniControlPanel extends Panel {
 
     // Create sections using modular components
     const materialSection = new MaterialSection(model, comboBoxListParent);
+    const shapeSection = new ShapeSection(
+      model.plateShapeProperty,
+      comboBoxListParent,
+    );
     const frequencySection = new FrequencySection(model);
     const grainSection = new GrainSection(model, comboBoxListParent);
     const displayOptionsSection = new DisplayOptionsSection();
@@ -82,6 +87,7 @@ export class ChladniControlPanel extends Panel {
     const controlPanelContent = new VBox({
       children: [
         materialSection,
+        shapeSection,
         createSeparator(),
         frequencySection,
         grainSection,

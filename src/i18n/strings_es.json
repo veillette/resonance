@@ -105,6 +105,13 @@
     },
     "chladni": {
       "material": "Material",
+      "shape": "Forma",
+      "shapeRectangle": "Rectángulo",
+      "shapeCircle": "Círculo",
+      "shapeGuitar": "Guitarra",
+      "outerRadius": "Radio Exterior",
+      "innerRadius": "Radio Interior",
+      "scale": "Escala",
       "copper": "Cobre",
       "aluminum": "Aluminio",
       "zinc": "Zinc",
