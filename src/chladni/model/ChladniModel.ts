@@ -122,6 +122,11 @@ export class ChladniModel {
     return this.particleManager.particlePositions;
   }
 
+  // Current wave number (for modal visualization)
+  public get waveNumber(): number {
+    return this.cachedWaveNumber;
+  }
+
   public constructor() {
     // Initialize material to aluminum (good mid-range dispersion)
     this.materialProperty = new Property<MaterialType>(Material.ALUMINUM);

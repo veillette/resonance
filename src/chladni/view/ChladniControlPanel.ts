@@ -17,7 +17,9 @@ import {
   FrequencySection,
   GrainSection,
   DisplayOptionsSection,
+  ModalSelectorSection,
 } from "./controls/index.js";
+import type { ModeSelection } from "./ModalShapeNode.js";
 
 export class ChladniControlPanel extends Panel {
   /**
@@ -46,7 +48,18 @@ export class ChladniControlPanel extends Panel {
    */
   public readonly showColormapProperty: Property<boolean>;
 
+  /**
+   * Property controlling whether modal shape visualization is enabled.
+   */
+  public readonly showModalShapeProperty: Property<boolean>;
+
+  /**
+   * Property containing the currently selected mode (m, n).
+   */
+  public readonly selectedModeProperty: Property<ModeSelection>;
+
   private readonly displayOptionsSection: DisplayOptionsSection;
+  private readonly modalSelectorSection: ModalSelectorSection;
 
   public constructor(model: ChladniModel, layoutBounds: Bounds2) {
     const comboBoxListParent = new Node();
@@ -56,6 +69,7 @@ export class ChladniControlPanel extends Panel {
     const frequencySection = new FrequencySection(model);
     const grainSection = new GrainSection(model, comboBoxListParent);
     const displayOptionsSection = new DisplayOptionsSection();
+    const modalSelectorSection = new ModalSelectorSection();
 
     // Create separators
     const createSeparator = () =>
@@ -73,6 +87,8 @@ export class ChladniControlPanel extends Panel {
         grainSection,
         createSeparator(),
         displayOptionsSection,
+        createSeparator(),
+        modalSelectorSection,
       ],
       spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
       align: "left",
@@ -92,6 +108,7 @@ export class ChladniControlPanel extends Panel {
     // Store references
     this.comboBoxListParent = comboBoxListParent;
     this.displayOptionsSection = displayOptionsSection;
+    this.modalSelectorSection = modalSelectorSection;
 
     // Expose display option properties from the section
     this.showResonanceCurveProperty =
@@ -99,9 +116,14 @@ export class ChladniControlPanel extends Panel {
     this.showRulerProperty = displayOptionsSection.showRulerProperty;
     this.showGridProperty = displayOptionsSection.showGridProperty;
     this.showColormapProperty = displayOptionsSection.showColormapProperty;
+
+    // Expose modal selector properties
+    this.showModalShapeProperty = modalSelectorSection.showModalShapeProperty;
+    this.selectedModeProperty = modalSelectorSection.selectedModeProperty;
   }
 
   public reset(): void {
     this.displayOptionsSection.reset();
+    this.modalSelectorSection.reset();
   }
 }

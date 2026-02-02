@@ -43,6 +43,7 @@ import { ResonanceCurveNode } from "./ResonanceCurveNode.js";
 import { ChladniRulerNode } from "./ChladniRulerNode.js";
 import { ChladniGridNode } from "./ChladniGridNode.js";
 import { DisplacementColormapNode } from "./DisplacementColormapNode.js";
+import { ModalShapeNode } from "./ModalShapeNode.js";
 import { ExcitationMarkerNode } from "./ExcitationMarkerNode.js";
 import { createChladniTransform } from "./ChladniTransformFactory.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
@@ -74,6 +75,7 @@ export class ChladniScreenView extends ScreenView {
   private readonly rulerNode: ChladniRulerNode;
   private readonly gridNode: ChladniGridNode;
   private readonly colormapNode: DisplacementColormapNode;
+  private modalShapeNode!: ModalShapeNode;
 
   // Center position of the visualization in screen coordinates (fixed during resize)
   private readonly visualizationCenterX: number;
@@ -161,6 +163,8 @@ export class ChladniScreenView extends ScreenView {
     this.addChild(this.colormapNode);
     this.colormapNode.moveToBack();
 
+    // Note: Modal shape node is created after control panel so we can use its mode property
+
     // Create the resize handle at the bottom-right corner
     this.resizeHandle = this.createResizeHandle();
     this.addChild(this.resizeHandle);
@@ -223,6 +227,27 @@ export class ChladniScreenView extends ScreenView {
     // Link colormap visibility to the checkbox property
     this.controlPanel.showColormapProperty.linkAttribute(
       this.colormapNode,
+      "visible",
+    );
+
+    // Create the modal shape overlay (after control panel so we can use its mode property)
+    this.modalShapeNode = new ModalShapeNode(
+      initialWidth,
+      initialHeight,
+      model.plateWidth,
+      model.plateHeight,
+      this.controlPanel.selectedModeProperty,
+      model.waveNumber,
+    );
+    this.modalShapeNode.visible = false;
+    this.modalShapeNode.x = this.visualizationNode.bounds.minX;
+    this.modalShapeNode.y = this.visualizationNode.bounds.minY;
+    this.addChild(this.modalShapeNode);
+    this.modalShapeNode.moveToBack();
+
+    // Link modal shape visibility to the checkbox property (after node is created)
+    this.controlPanel.showModalShapeProperty.linkAttribute(
+      this.modalShapeNode,
       "visible",
     );
 
@@ -398,6 +423,15 @@ export class ChladniScreenView extends ScreenView {
       this.model.plateWidth,
       this.model.plateHeight,
     );
+    // Update modal shape if it exists (may not during initial construction)
+    if (this.modalShapeNode) {
+      this.modalShapeNode.updateDimensions(
+        vizWidth,
+        vizHeight,
+        this.model.plateWidth,
+        this.model.plateHeight,
+      );
+    }
 
     // Update positions to match visualization bounds
     this.rulerNode.x = vizBounds.minX;
@@ -406,6 +440,10 @@ export class ChladniScreenView extends ScreenView {
     this.gridNode.y = vizBounds.minY;
     this.colormapNode.x = vizBounds.minX;
     this.colormapNode.y = vizBounds.minY;
+    if (this.modalShapeNode) {
+      this.modalShapeNode.x = vizBounds.minX;
+      this.modalShapeNode.y = vizBounds.minY;
+    }
   }
 
   /**
@@ -549,6 +587,12 @@ export class ChladniScreenView extends ScreenView {
     // Update colormap if visible (reflects current displacement field)
     if (this.colormapNode.visible) {
       this.colormapNode.update();
+    }
+
+    // Update modal shape if visible (reflects current wave number and mode)
+    if (this.modalShapeNode.visible) {
+      this.modalShapeNode.setWaveNumber(this.model.waveNumber);
+      this.modalShapeNode.update();
     }
   }
 }

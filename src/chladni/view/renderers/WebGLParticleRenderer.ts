@@ -27,6 +27,8 @@ const PARTICLE_SIZE = 2;
 export class WebGLParticleRenderer implements ParticleRenderer {
   private width: number;
   private height: number;
+  // Container node that stays in the scene graph; sprites node is swapped inside it
+  private readonly containerNode: Node;
   private spritesNode: Sprites | null = null;
   private sprite: Sprite | null = null;
   private spriteInstances: SpriteInstance[] = [];
@@ -41,6 +43,7 @@ export class WebGLParticleRenderer implements ParticleRenderer {
     this.width = width;
     this.height = height;
     this.transform = transform;
+    this.containerNode = new Node();
     this.initialize();
   }
 
@@ -57,6 +60,8 @@ export class WebGLParticleRenderer implements ParticleRenderer {
       hitTestSprites: false,
       renderer: "webgl",
     });
+
+    this.containerNode.addChild(this.spritesNode);
   }
 
   /**
@@ -113,6 +118,11 @@ export class WebGLParticleRenderer implements ParticleRenderer {
    * Recreate the sprites node (needed when instances change).
    */
   private recreateSpritesNode(): void {
+    // Remove old sprites node from container
+    if (this.spritesNode) {
+      this.containerNode.removeChild(this.spritesNode);
+    }
+
     this.spritesNode = new Sprites({
       sprites: [this.sprite!],
       spriteInstances: this.spriteInstances,
@@ -120,10 +130,12 @@ export class WebGLParticleRenderer implements ParticleRenderer {
       hitTestSprites: false,
       renderer: "webgl",
     });
+
+    this.containerNode.addChild(this.spritesNode);
   }
 
   public getNode(): Node {
-    return this.spritesNode!;
+    return this.containerNode;
   }
 
   public update(particles: Vector2[], transform: ModelViewTransform2): void {
@@ -171,6 +183,9 @@ export class WebGLParticleRenderer implements ParticleRenderer {
   }
 
   public dispose(): void {
+    if (this.spritesNode) {
+      this.containerNode.removeChild(this.spritesNode);
+    }
     this.spriteInstances = [];
     this.spritesNode = null;
     this.sprite = null;
