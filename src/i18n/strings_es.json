@@ -126,9 +126,11 @@
       "resonanceCurve": "Curva de Resonancia",
       "ruler": "Regla",
       "grid": "Cuadrícula",
+      "colormap": "Desplazamiento",
       "boundaryMode": "Límite",
       "boundaryClamp": "Limitar",
-      "boundaryRemove": "Eliminar"
+      "boundaryRemove": "Eliminar",
+      "keyboardHint": "Teclado: Espacio=Reproducir/Pausar, Flechas=Frecuencia, R=Restablecer"
     }
   }
 }
