@@ -13,7 +13,8 @@
     "test:fuzz": "npx playwright test --project=chromium",
     "test:fuzz:headed": "npx playwright test --project=chromium --headed",
     "test:fuzz:quick": "FUZZ_DURATION=30 npx playwright test --project=chromium fuzz.spec.ts",
-    "test:fuzz:long": "FUZZ_DURATION=300 npx playwright test --project=chromium fuzz.spec.ts"
+    "test:fuzz:long": "FUZZ_DURATION=300 npx playwright test --project=chromium fuzz.spec.ts",
+    "format": "npx prettier --write ."
   },
   "dependencies": {
     "scenerystack": "^3.0.0"
