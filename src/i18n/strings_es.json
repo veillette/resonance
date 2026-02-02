@@ -140,7 +140,8 @@
         "excitationMarkerDescription": "Marcador arrastrable que muestra dónde se excita la placa. Use las teclas de flecha para mover. Mantenga presionado Shift para control fino.",
         "resonancePeakAlert": "Pico de resonancia detectado a {{frequency}} Hz",
         "nearResonance": "Cerca de resonancia",
-        "atResonance": "En pico de resonancia"
+        "atResonance": "En pico de resonancia",
+        "resonanceCurveLabel": "Gráfico de Curva de Resonancia"
       }
     }
   }

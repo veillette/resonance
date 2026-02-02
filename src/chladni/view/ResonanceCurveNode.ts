@@ -9,7 +9,7 @@
  * revealing resonance peaks as you adjust the frequency slider.
  */
 
-import { Multilink } from "scenerystack/axon";
+import { DerivedProperty, Multilink } from "scenerystack/axon";
 import { Node, Line, Text, Rectangle } from "scenerystack/scenery";
 import {
   ChartTransform,
@@ -211,6 +211,69 @@ export class ResonanceCurveNode extends Node {
         this.updateCurveFromPrecomputed();
       },
     );
+
+    // --- Accessibility (PDOM) Setup ---
+    this.tagName = "div";
+    this.ariaRole = "img";
+    this.accessibleName =
+      ResonanceStrings.chladni.a11y.resonanceCurveLabelStringProperty;
+
+    // Create dynamic description that updates with frequency and resonance state
+    const descriptionProperty = new DerivedProperty(
+      [model.frequencyProperty, model.materialProperty],
+      (frequency, material) => {
+        const strength = model.strength(frequency);
+        const maxStrength = this.estimateMaxStrengthInWindow();
+        const normalizedStrength =
+          maxStrength > 0 ? strength / maxStrength : 0;
+
+        const windowRange = model.getGraphWindowRange();
+        const freqRounded = Math.round(frequency);
+        const minFreq = Math.round(windowRange.min);
+        const maxFreq = Math.round(windowRange.max);
+
+        let description = `Resonance curve graph for ${material.name} plate. `;
+        description += `Showing frequencies from ${minFreq} to ${maxFreq} Hz. `;
+        description += `Current frequency marker at ${freqRounded} Hz. `;
+
+        if (normalizedStrength > 0.8) {
+          description += "At a strong resonance peak.";
+        } else if (normalizedStrength > 0.5) {
+          description += "Near a resonance peak.";
+        } else if (normalizedStrength > 0.2) {
+          description += "Moderate response level.";
+        } else {
+          description += "Low response level.";
+        }
+
+        return description;
+      },
+    );
+
+    descriptionProperty.link((description) => {
+      this.descriptionContent = description;
+    });
+  }
+
+  /**
+   * Estimate the maximum strength in the current visible window.
+   * Used for normalizing the resonance description.
+   */
+  private estimateMaxStrengthInWindow(): number {
+    const windowRange = this.model.getGraphWindowRange();
+    const sampleCount = 20;
+    let maxStrength = 0;
+
+    for (let i = 0; i <= sampleCount; i++) {
+      const freq =
+        windowRange.min + (i / sampleCount) * (windowRange.max - windowRange.min);
+      const strength = this.model.strength(freq);
+      if (strength > maxStrength) {
+        maxStrength = strength;
+      }
+    }
+
+    return maxStrength;
   }
 
   /**
