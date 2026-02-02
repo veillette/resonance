@@ -233,10 +233,12 @@ export class ChladniModel {
       this.cachedWaveNumber = this.modalCalculator.calculateWaveNumber(
         this.frequencyProperty.value,
       );
+      this.modalCalculator.invalidateModeCache();
       this.resonanceCurveCalculator.recompute();
     });
 
     this.excitationPositionProperty.link(() => {
+      this.modalCalculator.invalidateModeCache();
       this.resonanceCurveCalculator.recompute();
     });
 
