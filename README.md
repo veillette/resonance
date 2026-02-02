@@ -112,7 +112,7 @@ Particles on a vibrating plate experience forces proportional to the local displ
 ## Documentation
 
 - **[Implementation Guide](IMPLEMENTATION_GUIDE.md)** - Technical details on physics model, coordinate system, ODE solvers, and visual representation
-- **[Developer Guide](claude.md)** - Instructions for extending the simulation, code patterns, and API usage
+- **[Developer Guide](CLAUDE.md)** - Instructions for extending the simulation, code patterns, and API usage
 
 ## Technology
 

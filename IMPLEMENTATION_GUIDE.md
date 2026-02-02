@@ -5,7 +5,7 @@ This document is the authoritative technical reference for the Resonance simulat
 **Related documentation:**
 
 - [README.md](README.md) - User-facing overview, features, and getting started
-- [claude.md](claude.md) - Development patterns, code examples, and SceneryStack API usage
+- [CLAUDE.md](CLAUDE.md) - Development patterns, code examples, and SceneryStack API usage
 
 ---
 
