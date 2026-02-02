@@ -161,9 +161,8 @@ export class ChladniScreenView extends ScreenView {
     this.colormapNode.visible = false;
     this.colormapNode.x = this.visualizationNode.bounds.minX;
     this.colormapNode.y = this.visualizationNode.bounds.minY;
-    // Insert behind visualization but in front of background
+    // Add as overlay on top of visualization
     this.addChild(this.colormapNode);
-    this.colormapNode.moveToBack();
 
     // Note: Modal shape node is created after control panel so we can use its mode property
 
@@ -244,8 +243,8 @@ export class ChladniScreenView extends ScreenView {
     this.modalShapeNode.visible = false;
     this.modalShapeNode.x = this.visualizationNode.bounds.minX;
     this.modalShapeNode.y = this.visualizationNode.bounds.minY;
+    // Add as overlay on top of visualization
     this.addChild(this.modalShapeNode);
-    this.modalShapeNode.moveToBack();
 
     // Link modal shape visibility to the checkbox property (after node is created)
     this.controlPanel.showModalShapeProperty.linkAttribute(

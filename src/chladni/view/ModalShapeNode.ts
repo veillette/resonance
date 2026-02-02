@@ -72,6 +72,13 @@ export class ModalShapeNode extends CanvasNode {
     this.selectedModeProperty.link(() => {
       this.update();
     });
+
+    // Listen for visibility changes to trigger repaint when becoming visible
+    this.visibleProperty.lazyLink((visible) => {
+      if (visible) {
+        this.invalidatePaint();
+      }
+    });
   }
 
   /**
