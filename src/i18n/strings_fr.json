@@ -133,7 +133,16 @@
       "boundaryMode": "Limite",
       "boundaryClamp": "Limiter",
       "boundaryRemove": "Supprimer",
-      "keyboardHint": "Clavier: Espace=Lecture/Pause, Flèches=Fréquence, R=Réinitialiser"
+      "keyboardHint": "Clavier: Espace=Lecture/Pause, Flèches=Fréquence, R=Réinitialiser",
+      "a11y": {
+        "visualizationLabel": "Visualisation de la Plaque de Chladni",
+        "excitationMarkerLabel": "Point d'Excitation",
+        "excitationMarkerDescription": "Marqueur déplaçable indiquant où la plaque est excitée. Utilisez les touches fléchées pour déplacer. Maintenez Shift pour un contrôle précis.",
+        "resonancePeakAlert": "Pic de résonance détecté à {{frequency}} Hz",
+        "nearResonance": "Proche de la résonance",
+        "atResonance": "Au pic de résonance",
+        "resonanceCurveLabel": "Graphique de la Courbe de Résonance"
+      }
     }
   }
 }

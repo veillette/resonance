@@ -6,11 +6,18 @@
  * Extracted from ChladniScreenView for better separation of concerns.
  */
 
-import { Circle, DragListener, Node } from "scenerystack/scenery";
+import {
+  Circle,
+  DragListener,
+  KeyboardDragListener,
+  Node,
+} from "scenerystack/scenery";
 import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Property } from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { ChladniModel } from "../model/ChladniModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 // Excitation marker properties
 const EXCITATION_MARKER_RADIUS = 12;
@@ -62,10 +69,21 @@ export class ExcitationMarkerNode extends Node {
     // Add drag listener
     this.addDragListener();
 
+    // Add keyboard drag listener for accessibility
+    this.addKeyboardDragListener();
+
     // Update position when model changes
     model.excitationPositionProperty.link(() => {
       this.updatePosition();
     });
+
+    // --- Accessibility (PDOM) Setup ---
+    this.tagName = "div";
+    this.focusable = true;
+    this.accessibleName =
+      ResonanceStrings.chladni.a11y.excitationMarkerLabelStringProperty;
+    this.descriptionContent =
+      ResonanceStrings.chladni.a11y.excitationMarkerDescriptionStringProperty;
   }
 
   /**
@@ -131,6 +149,39 @@ export class ExcitationMarkerNode extends Node {
     });
 
     this.addInputListener(dragListener);
+  }
+
+  /**
+   * Add keyboard drag listener for accessibility.
+   * Allows arrow key navigation to move the excitation point.
+   */
+  private addKeyboardDragListener(): void {
+    // Create drag bounds based on plate dimensions
+    const halfWidth = this.model.plateWidth / 2;
+    const halfHeight = this.model.plateHeight / 2;
+    const dragBounds = new Bounds2(-halfWidth, -halfHeight, halfWidth, halfHeight);
+    const dragBoundsProperty = new Property(dragBounds);
+
+    // Update drag bounds when plate dimensions change
+    this.model.plateWidthProperty.link(() => {
+      const hw = this.model.plateWidth / 2;
+      const hh = this.model.plateHeight / 2;
+      dragBoundsProperty.value = new Bounds2(-hw, -hh, hw, hh);
+    });
+    this.model.plateHeightProperty.link(() => {
+      const hw = this.model.plateWidth / 2;
+      const hh = this.model.plateHeight / 2;
+      dragBoundsProperty.value = new Bounds2(-hw, -hh, hw, hh);
+    });
+
+    const keyboardDragListener = new KeyboardDragListener({
+      positionProperty: this.model.excitationPositionProperty,
+      dragBoundsProperty: dragBoundsProperty,
+      dragSpeed: 0.05, // meters per second (model units)
+      shiftDragSpeed: 0.01, // slower with shift key for fine control
+    });
+
+    this.addInputListener(keyboardDragListener);
   }
 
   /**

@@ -19,7 +19,7 @@
  */
 
 import { Multilink } from "scenerystack/axon";
-import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
+import { ScreenView, ScreenViewOptions, audioManager } from "scenerystack/sim";
 import {
   DragListener,
   KeyboardUtils,
@@ -46,6 +46,7 @@ import { DisplacementColormapNode } from "./DisplacementColormapNode.js";
 import { ModalShapeNode } from "./ModalShapeNode.js";
 import { ExcitationMarkerNode } from "./ExcitationMarkerNode.js";
 import { createChladniTransform } from "./ChladniTransformFactory.js";
+import { ResonanceSonification } from "./ResonanceSonification.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
@@ -76,6 +77,7 @@ export class ChladniScreenView extends ScreenView {
   private readonly gridNode: ChladniGridNode;
   private readonly colormapNode: DisplacementColormapNode;
   private modalShapeNode!: ModalShapeNode;
+  private readonly sonification: ResonanceSonification;
 
   // Center position of the visualization in screen coordinates (fixed during resize)
   private readonly visualizationCenterX: number;
@@ -276,6 +278,12 @@ export class ChladniScreenView extends ScreenView {
 
     // Set up keyboard accessibility
     this.setupKeyboardControls();
+
+    // Set up audio sonification for resonance peaks
+    this.sonification = new ResonanceSonification(
+      model,
+      audioManager.audioAndSoundEnabledProperty,
+    );
   }
 
   /**

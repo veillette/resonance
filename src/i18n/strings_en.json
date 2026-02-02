@@ -133,7 +133,16 @@
       "boundaryMode": "Boundary",
       "boundaryClamp": "Clamp",
       "boundaryRemove": "Remove",
-      "keyboardHint": "Keyboard: Space=Play/Pause, Arrows=Frequency, R=Reset"
+      "keyboardHint": "Keyboard: Space=Play/Pause, Arrows=Frequency, R=Reset",
+      "a11y": {
+        "visualizationLabel": "Chladni Plate Visualization",
+        "excitationMarkerLabel": "Excitation Point",
+        "excitationMarkerDescription": "Draggable marker showing where the plate is driven. Use arrow keys to move. Hold Shift for fine control.",
+        "resonancePeakAlert": "Resonance peak detected at {{frequency}} Hz",
+        "nearResonance": "Near resonance",
+        "atResonance": "At resonance peak",
+        "resonanceCurveLabel": "Resonance Curve Graph"
+      }
     }
   }
 }
