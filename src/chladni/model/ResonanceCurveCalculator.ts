@@ -63,6 +63,10 @@ export class ResonanceCurveCalculator {
   private isComputationValid: boolean = false;
   private computationVersion: number = 0;
 
+  // Cached data points for getData() to avoid allocations
+  private cachedDataPoints: Vector2[] = [];
+  private cachedDataSampleCount: number = 0;
+
   public constructor(options: ResonanceCurveCalculatorOptions) {
     this.modalCalculator = options.modalCalculator;
 
@@ -194,6 +198,8 @@ export class ResonanceCurveCalculator {
    * Get the precomputed resonance curve data for a given frequency window.
    * Returns an array of {frequency, normalizedStrength} points ready for plotting.
    *
+   * Performance: Reuses a cached array of Vector2 objects to avoid allocations.
+   *
    * @param currentFrequency - The current frequency to center the window on
    * @param sampleCount - The number of data points to return
    * @returns Array of Vector2 points with (frequency, normalizedStrength)
@@ -202,19 +208,31 @@ export class ResonanceCurveCalculator {
     const range = this.getGraphWindowRange(currentFrequency);
     const freqMin = range.min;
     const freqMax = range.max;
-    const dataSet: Vector2[] = [];
+
+    // Ensure cached array has correct size (only reallocate if size changes)
+    if (this.cachedDataSampleCount !== sampleCount) {
+      this.cachedDataPoints = new Array<Vector2>(sampleCount);
+      for (let i = 0; i < sampleCount; i++) {
+        this.cachedDataPoints[i] = new Vector2(0, 0);
+      }
+      this.cachedDataSampleCount = sampleCount;
+    }
+
+    const freqStep = sampleCount > 1 ? (freqMax - freqMin) / (sampleCount - 1) : 0;
 
     if (this.precomputedMaxStrength <= 0) {
       // No resonance data, return flat line
       for (let i = 0; i < sampleCount; i++) {
-        const freq = freqMin + (i / (sampleCount - 1)) * (freqMax - freqMin);
-        dataSet.push(new Vector2(freq, 0));
+        const freq = freqMin + i * freqStep;
+        this.cachedDataPoints[i]!.setXY(freq, 0);
       }
-      return dataSet;
+      return this.cachedDataPoints;
     }
 
+    const invMaxStrength = 1 / this.precomputedMaxStrength;
+
     for (let i = 0; i < sampleCount; i++) {
-      const freq = freqMin + (i / (sampleCount - 1)) * (freqMax - freqMin);
+      const freq = freqMin + i * freqStep;
 
       // Map frequency to precomputed array index
       const index = Math.round((freq - FREQUENCY_MIN) * CURVE_SAMPLES_PER_HZ);
@@ -224,12 +242,12 @@ export class ResonanceCurveCalculator {
       );
 
       const strength = this.precomputedStrengths[clampedIndex]!;
-      const normalized = Math.min(strength / this.precomputedMaxStrength, 1);
+      const normalized = Math.min(strength * invMaxStrength, 1);
 
-      dataSet.push(new Vector2(freq, normalized));
+      this.cachedDataPoints[i]!.setXY(freq, normalized);
     }
 
-    return dataSet;
+    return this.cachedDataPoints;
   }
 
   /**
