@@ -5,16 +5,24 @@
   "type": "module",
   "scripts": {
     "start": "npx vite",
-    "build": "npx tsc && npx vite build",
-    "check": "npx tsc --noEmit",
+    "build": "npx tsgo && npx vite build",
+    "preview": "npx vite preview",
     "lint": "npx eslint .",
+    "format": "npx prettier --write .",
+    "fix": "npx eslint --fix . && npx prettier --write .",
+    "release": "npm version patch && git push && git push --tags",
+    "check": "npx tsgo --noEmit",
+    "check:tsc": "npx tsc --noEmit",
+    "serve": "npx serve -s dist",
+    "watch": "npx tsgo --watch",
+    "watch:tsc": "npx tsc --watch",
+    "clean": "rm -rf dist",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "test:fuzz": "npx playwright test --project=chromium",
     "test:fuzz:headed": "npx playwright test --project=chromium --headed",
     "test:fuzz:quick": "FUZZ_DURATION=30 npx playwright test --project=chromium fuzz.spec.ts",
-    "test:fuzz:long": "FUZZ_DURATION=300 npx playwright test --project=chromium fuzz.spec.ts",
-    "format": "npx prettier --write ."
+    "test:fuzz:long": "FUZZ_DURATION=300 npx playwright test --project=chromium fuzz.spec.ts"
   },
   "dependencies": {
     "scenerystack": "^3.0.0"
@@ -28,6 +36,7 @@
     "globals": "^15.15.0",
     "jsdom": "^27.4.0",
     "prettier": "^3.8.1",
+    "serve": "^14.2.5",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.18.2",
     "vite": "^7.3.1",
