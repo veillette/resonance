@@ -39,7 +39,8 @@ export interface ParticleManagerOptions {
 }
 
 // Maximum particles (from GRAIN_COUNT_OPTIONS)
-const MAX_PARTICLE_COUNT = GRAIN_COUNT_OPTIONS[GRAIN_COUNT_OPTIONS.length - 1]!.value;
+const MAX_PARTICLE_COUNT =
+  GRAIN_COUNT_OPTIONS[GRAIN_COUNT_OPTIONS.length - 1]!.value;
 
 /**
  * ParticleManager handles all particle-related operations for the Chladni simulation.
