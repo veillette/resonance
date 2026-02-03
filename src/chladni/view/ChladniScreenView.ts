@@ -161,9 +161,8 @@ export class ChladniScreenView extends ScreenView {
     this.colormapNode.visible = false;
     this.colormapNode.x = this.visualizationNode.bounds.minX;
     this.colormapNode.y = this.visualizationNode.bounds.minY;
-    // Insert behind visualization but in front of background
+    // Add as overlay on top of visualization
     this.addChild(this.colormapNode);
-    this.colormapNode.moveToBack();
 
     // Note: Modal shape node is created after control panel so we can use its mode property
 
@@ -183,7 +182,9 @@ export class ChladniScreenView extends ScreenView {
     this.excitationMarker.updatePosition();
 
     // Create the control panel first so we can position the curve relative to it
-    this.controlPanel = new ChladniControlPanel(model, this.layoutBounds);
+    this.controlPanel = new ChladniControlPanel(model, this.layoutBounds, {
+      showModalControlsProperty: preferencesModel.showModalControlsProperty,
+    });
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);
 
@@ -244,8 +245,8 @@ export class ChladniScreenView extends ScreenView {
     this.modalShapeNode.visible = false;
     this.modalShapeNode.x = this.visualizationNode.bounds.minX;
     this.modalShapeNode.y = this.visualizationNode.bounds.minY;
+    // Add as overlay on top of visualization
     this.addChild(this.modalShapeNode);
-    this.modalShapeNode.moveToBack();
 
     // Link modal shape visibility to the checkbox property (after node is created)
     this.controlPanel.showModalShapeProperty.linkAttribute(
@@ -305,6 +306,20 @@ export class ChladniScreenView extends ScreenView {
         return;
       }
 
+      // Ignore arrow keys if any interactive element has focus
+      // (buttons, sliders, and the excitation marker have their own keyboard handling)
+      if (KeyboardUtils.isArrowKey(event)) {
+        const activeElement = document.activeElement;
+        // Skip if focus is on a button, slider, or other interactive element
+        if (
+          activeElement &&
+          activeElement !== document.body &&
+          activeElement.tagName !== "BODY"
+        ) {
+          return;
+        }
+      }
+
       const shiftPressed = event.shiftKey;
 
       if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_SPACE)) {
@@ -337,7 +352,9 @@ export class ChladniScreenView extends ScreenView {
             ? FREQUENCY_STEP_LARGE
             : FREQUENCY_STEP_MEDIUM;
           this.adjustFrequency(-step);
-        } else if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_UP_ARROW)) {
+        } else if (
+          KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_UP_ARROW)
+        ) {
           // Increase frequency (larger step)
           const step = shiftPressed
             ? FREQUENCY_STEP_LARGE

@@ -7,6 +7,7 @@ This document provides essential information for AI assistants working with the 
 Resonance is an interactive physics simulation demonstrating resonance phenomena in oscillating systems and Chladni plate vibration patterns. Built with [SceneryStack](https://scenerystack.org/), a simulation framework from PhET Interactive Simulations.
 
 **Two simulation screens:**
+
 1. **Oscillator Screen** - Driven, damped harmonic oscillators attached to an oscillating driver plate
 2. **Chladni Plate Screen** - Visualization of Chladni patterns showing 2D plate vibration modes
 
@@ -115,7 +116,12 @@ SceneryStack requires a **strict import order** in the entry chain:
 All observable state uses Properties from `scenerystack/axon`:
 
 ```typescript
-import { NumberProperty, Property, BooleanProperty, DerivedProperty } from "scenerystack/axon";
+import {
+  NumberProperty,
+  Property,
+  BooleanProperty,
+  DerivedProperty,
+} from "scenerystack/axon";
 
 // Basic properties
 const massProperty = new NumberProperty(0.25);
@@ -127,7 +133,7 @@ massProperty.link((value) => console.log(`Mass: ${value}`));
 // Derived properties (computed from other properties)
 const frequencyProperty = new DerivedProperty(
   [massProperty, springConstantProperty],
-  (m, k) => Math.sqrt(k / m) / (2 * Math.PI)
+  (m, k) => Math.sqrt(k / m) / (2 * Math.PI),
 );
 ```
 
@@ -139,8 +145,8 @@ All colors must use `ProfileColorProperty` for accessibility support:
 import { ProfileColorProperty, Color } from "scenerystack/scenery";
 
 const springProperty = new ProfileColorProperty(namespace, "spring", {
-  default: new Color(255, 100, 100),   // Dark theme
-  projector: new Color(204, 0, 0),      // Light/projector theme
+  default: new Color(255, 100, 100), // Dark theme
+  projector: new Color(204, 0, 0), // Light/projector theme
 });
 ```
 
@@ -149,7 +155,14 @@ Colors are defined in `src/common/ResonanceColors.ts`.
 ### Scene Graph (UI Elements)
 
 ```typescript
-import { Circle, Rectangle, Text, Node, VBox, HBox } from "scenerystack/scenery";
+import {
+  Circle,
+  Rectangle,
+  Text,
+  Node,
+  VBox,
+  HBox,
+} from "scenerystack/scenery";
 import { NumberControl, ResetAllButton } from "scenerystack/scenery-phet";
 import { Range } from "scenerystack/dot";
 
@@ -167,21 +180,29 @@ class MyScreen extends Screen<MyModel, MyScreenView> {
     super(
       () => new MyModel(),
       (model) => new MyScreenView(model),
-      options
+      options,
     );
   }
 }
 
 // Model - physics calculations, step(dt), reset()
 class MyModel extends BaseModel {
-  step(dt: number): void { /* physics integration */ }
-  reset(): void { /* restore initial state */ }
+  step(dt: number): void {
+    /* physics integration */
+  }
+  reset(): void {
+    /* restore initial state */
+  }
 }
 
 // View - UI elements, step(dt), reset()
 class MyScreenView extends ScreenView {
-  step(dt: number): void { /* update visuals */ }
-  reset(): void { /* reset view state */ }
+  step(dt: number): void {
+    /* update visuals */
+  }
+  reset(): void {
+    /* reset view state */
+  }
 }
 ```
 
@@ -197,6 +218,7 @@ src/screen-name/view/__tests__/SimScreenView.test.ts
 ```
 
 Test pattern:
+
 ```typescript
 import { describe, it, expect, beforeEach } from "vitest";
 
@@ -232,6 +254,7 @@ m·a = -k·(x - x_plate(t)) - b·v + m·g
 ```
 
 Where:
+
 - `x_plate(t) = A·sin(ω·t)` - driver plate position
 - `-k·x` - spring restoring force (Hooke's Law)
 - `-b·v` - damping force
@@ -246,13 +269,13 @@ Where:
 
 ### Parameter Ranges (from ResonanceConstants)
 
-| Parameter | Default | Min | Max | Unit |
-|-----------|---------|-----|-----|------|
-| Mass | 0.25 | 0.1 | 5.0 | kg |
-| Spring Constant | 100 | 10 | 1200 | N/m |
-| Damping | 0.5 | 0.1 | 5.0 | N·s/m |
-| Driving Frequency | 1.0 | 0.1 | 5.0 | Hz |
-| Driving Amplitude | 1.0 | 0.2 | 2.0 | cm |
+| Parameter         | Default | Min | Max  | Unit  |
+| ----------------- | ------- | --- | ---- | ----- |
+| Mass              | 0.25    | 0.1 | 5.0  | kg    |
+| Spring Constant   | 100     | 10  | 1200 | N/m   |
+| Damping           | 0.5     | 0.1 | 5.0  | N·s/m |
+| Driving Frequency | 1.0     | 0.1 | 5.0  | Hz    |
+| Driving Amplitude | 1.0     | 0.2 | 2.0  | cm    |
 
 ## Internationalization
 
@@ -265,7 +288,7 @@ import { ResonanceStrings } from "../i18n/ResonanceStrings";
 const control = new NumberControl(
   ResonanceStrings.controls.massStringProperty,
   model.massProperty,
-  new Range(0.1, 5.0)
+  new Range(0.1, 5.0),
 );
 ```
 
@@ -281,9 +304,11 @@ When syncing properties (e.g., meters ↔ centimeters), use guards:
 import { CircularUpdateGuard } from "../common/util/CircularUpdateGuard.js";
 
 const guard = new CircularUpdateGuard();
-property1.link(val => guard.execute(() => {
-  property2.value = transform(val);
-}));
+property1.link((val) =>
+  guard.execute(() => {
+    property2.value = transform(val);
+  }),
+);
 ```
 
 ### 2. Coordinate System
@@ -301,21 +326,22 @@ property1.link(val => guard.execute(() => {
 ### 4. Unused Variable Naming
 
 ESLint rule requires prefixing unused variables with `_`:
+
 ```typescript
 callback: (_tandem: Tandem) => { ... }
 ```
 
 ## Key Files for Common Tasks
 
-| Task | Files |
-|------|-------|
-| Add new physics parameter | `ResonanceModel.ts`, `ResonanceConstants.ts` |
-| Add new color | `ResonanceColors.ts` |
-| Add new string | `strings_en.json`, `ResonanceStrings.ts` |
-| Modify control panel | `ResonatorControlPanel.ts`, `ChladniControlPanel.ts` |
-| Change solver behavior | `common/model/` solvers |
-| Add preference | `ResonancePreferencesModel.ts`, `main.ts` |
-| Add new screen | Create directory in `src/`, register in `main.ts` |
+| Task                      | Files                                                |
+| ------------------------- | ---------------------------------------------------- |
+| Add new physics parameter | `ResonanceModel.ts`, `ResonanceConstants.ts`         |
+| Add new color             | `ResonanceColors.ts`                                 |
+| Add new string            | `strings_en.json`, `ResonanceStrings.ts`             |
+| Modify control panel      | `ResonatorControlPanel.ts`, `ChladniControlPanel.ts` |
+| Change solver behavior    | `common/model/` solvers                              |
+| Add preference            | `ResonancePreferencesModel.ts`, `main.ts`            |
+| Add new screen            | Create directory in `src/`, register in `main.ts`    |
 
 ## Related Documentation
 

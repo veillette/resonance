@@ -128,6 +128,7 @@ describe("ResonancePreferencesModel", () => {
         showVectors: true,
         showPhase: false,
         solverType: SolverType.MODIFIED_MIDPOINT,
+        showModalControls: false, // Default value
         rendererType: "canvas", // Default renderer type
       });
     });

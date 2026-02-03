@@ -27,17 +27,30 @@ onReadyToLaunch(() => {
         supportsInteractiveHighlights: true,
       },
       audioOptions: {
-        supportsVoicing: false,
+        supportsVoicing: true,
         supportsSound: true,
       },
       inputOptions: {
-        supportsGestureControl: true,
+        supportsGestureControl: false,
       },
       simulationOptions: {
         customPreferences: [
           {
             createContent: (_tandem: Tandem) => {
-              // Display options section
+              // ============================================
+              // OSCILLATOR SCREEN SECTION
+              // ============================================
+
+              // Oscillator screen header
+              const oscillatorHeader = new Text(
+                ResonanceStrings.screens.simStringProperty,
+                {
+                  font: new PhetFont({ size: 18, weight: "bold" }),
+                  fill: ResonanceColors.preferencesTextProperty,
+                },
+              );
+
+              // Display options for oscillator screen
               const displayOptionsSection = new VBox({
                 align: "left",
                 spacing: 8,
@@ -46,7 +59,7 @@ onReadyToLaunch(() => {
                     ResonanceStrings.preferences.simulation
                       .displayOptionsStringProperty,
                     {
-                      font: new PhetFont({ size: 16, weight: "bold" }),
+                      font: new PhetFont({ size: 14, weight: "bold" }),
                       fill: ResonanceColors.preferencesTextProperty,
                     },
                   ),
@@ -56,7 +69,7 @@ onReadyToLaunch(() => {
                       ResonanceStrings.preferences.simulation
                         .showEnergyStringProperty,
                       {
-                        font: new PhetFont(16),
+                        font: new PhetFont(14),
                         fill: ResonanceColors.preferencesTextProperty,
                       },
                     ),
@@ -70,7 +83,7 @@ onReadyToLaunch(() => {
                       ResonanceStrings.preferences.simulation
                         .showVectorsStringProperty,
                       {
-                        font: new PhetFont(16),
+                        font: new PhetFont(14),
                         fill: ResonanceColors.preferencesTextProperty,
                       },
                     ),
@@ -84,7 +97,7 @@ onReadyToLaunch(() => {
                       ResonanceStrings.preferences.simulation
                         .showPhaseStringProperty,
                       {
-                        font: new PhetFont(16),
+                        font: new PhetFont(14),
                         fill: ResonanceColors.preferencesTextProperty,
                       },
                     ),
@@ -120,7 +133,7 @@ onReadyToLaunch(() => {
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 550,
+                              maxWidth: 500,
                             },
                           ),
                         ],
@@ -148,7 +161,7 @@ onReadyToLaunch(() => {
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 550,
+                              maxWidth: 500,
                             },
                           ),
                         ],
@@ -176,7 +189,7 @@ onReadyToLaunch(() => {
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 550,
+                              maxWidth: 500,
                             },
                           ),
                         ],
@@ -204,7 +217,7 @@ onReadyToLaunch(() => {
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 550,
+                              maxWidth: 500,
                             },
                           ),
                         ],
@@ -213,7 +226,7 @@ onReadyToLaunch(() => {
                   },
                 ],
                 {
-                  spacing: 12,
+                  spacing: 10,
                   radioButtonOptions: {
                     radius: 8,
                   },
@@ -222,13 +235,13 @@ onReadyToLaunch(() => {
 
               const solverSection = new VBox({
                 align: "left",
-                spacing: 12,
+                spacing: 8,
                 children: [
                   new Text(
                     ResonanceStrings.preferences.simulation
                       .solverMethodStringProperty,
                     {
-                      font: new PhetFont({ size: 16, weight: "bold" }),
+                      font: new PhetFont({ size: 14, weight: "bold" }),
                       fill: ResonanceColors.preferencesTextProperty,
                     },
                   ),
@@ -236,14 +249,65 @@ onReadyToLaunch(() => {
                     ResonanceStrings.preferences.simulation
                       .solverDescriptionStringProperty,
                     {
-                      font: new PhetFont(12),
-                      fill: ResonanceColors.preferencesTextProperty,
-                      maxWidth: 600,
+                      font: new PhetFont(11),
+                      fill: ResonanceColors.preferencesTextSecondaryProperty,
+                      maxWidth: 550,
                     },
                   ),
                   solverRadioButtonGroup,
                 ],
               });
+
+              // Complete oscillator screen section
+              const oscillatorScreenSection = new VBox({
+                align: "left",
+                spacing: 12,
+                children: [oscillatorHeader, displayOptionsSection, solverSection],
+              });
+
+              // ============================================
+              // CHLADNI SCREEN SECTION
+              // ============================================
+
+              // Chladni screen header
+              const chladniHeader = new Text(
+                ResonanceStrings.screens.chladniStringProperty,
+                {
+                  font: new PhetFont({ size: 18, weight: "bold" }),
+                  fill: ResonanceColors.preferencesTextProperty,
+                },
+              );
+
+              // Modal controls checkbox
+              const modalControlsCheckbox = new Checkbox(
+                resonancePreferences.showModalControlsProperty,
+                new VBox({
+                  align: "left",
+                  spacing: 2,
+                  children: [
+                    new Text(
+                      ResonanceStrings.preferences.simulation
+                        .showModalControlsStringProperty,
+                      {
+                        font: new PhetFont(14),
+                        fill: ResonanceColors.preferencesTextProperty,
+                      },
+                    ),
+                    new Text(
+                      ResonanceStrings.preferences.simulation
+                        .showModalControlsDescriptionStringProperty,
+                      {
+                        font: new PhetFont(11),
+                        fill: ResonanceColors.preferencesTextSecondaryProperty,
+                        maxWidth: 500,
+                      },
+                    ),
+                  ],
+                }),
+                {
+                  boxWidth: 16,
+                },
+              );
 
               // Renderer preference
               const rendererRadioButtonGroup = new VerticalAquaRadioButtonGroup(
@@ -270,7 +334,7 @@ onReadyToLaunch(() => {
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 550,
+                              maxWidth: 500,
                             },
                           ),
                         ],
@@ -298,7 +362,7 @@ onReadyToLaunch(() => {
                             {
                               font: new PhetFont(11),
                               fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 550,
+                              maxWidth: 500,
                             },
                           ),
                         ],
@@ -307,7 +371,7 @@ onReadyToLaunch(() => {
                   },
                 ],
                 {
-                  spacing: 12,
+                  spacing: 10,
                   radioButtonOptions: {
                     radius: 8,
                   },
@@ -316,13 +380,13 @@ onReadyToLaunch(() => {
 
               const rendererSection = new VBox({
                 align: "left",
-                spacing: 12,
+                spacing: 8,
                 children: [
                   new Text(
                     ResonanceStrings.preferences.simulation
                       .rendererStringProperty,
                     {
-                      font: new PhetFont({ size: 16, weight: "bold" }),
+                      font: new PhetFont({ size: 14, weight: "bold" }),
                       fill: ResonanceColors.preferencesTextProperty,
                     },
                   ),
@@ -330,23 +394,32 @@ onReadyToLaunch(() => {
                     ResonanceStrings.preferences.simulation
                       .rendererDescriptionStringProperty,
                     {
-                      font: new PhetFont(12),
-                      fill: ResonanceColors.preferencesTextProperty,
-                      maxWidth: 600,
+                      font: new PhetFont(11),
+                      fill: ResonanceColors.preferencesTextSecondaryProperty,
+                      maxWidth: 550,
                     },
                   ),
                   rendererRadioButtonGroup,
                 ],
               });
 
+              // Complete Chladni screen section
+              const chladniScreenSection = new VBox({
+                align: "left",
+                spacing: 12,
+                children: [chladniHeader, modalControlsCheckbox, rendererSection],
+              });
+
+              // ============================================
+              // FINAL LAYOUT
+              // ============================================
               return new VBox({
                 align: "left",
-                spacing: 20,
+                spacing: 24,
                 children: [
-                  displayOptionsSection,
-                  new HStrut(650), // Set minimum width
-                  solverSection,
-                  rendererSection,
+                  oscillatorScreenSection,
+                  new HStrut(600), // Set minimum width
+                  chladniScreenSection,
                 ],
               });
             },

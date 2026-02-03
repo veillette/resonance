@@ -94,6 +94,12 @@ export class ModalShapeNode extends CanvasNode {
       },
     );
     this.descriptionContent = descriptionProperty;
+    // Listen for visibility changes to trigger repaint when becoming visible
+    this.visibleProperty.lazyLink((visible) => {
+      if (visible) {
+        this.invalidatePaint();
+      }
+    });
   }
 
   /**

@@ -7,7 +7,7 @@
 
 import { Node, VBox, Line } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
-import { Property } from "scenerystack/axon";
+import { Property, TReadOnlyProperty } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
 import { ChladniModel } from "../model/ChladniModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
@@ -20,6 +20,10 @@ import {
   ModalSelectorSection,
 } from "./controls/index.js";
 import type { ModeSelection } from "./ModalShapeNode.js";
+
+export interface ChladniControlPanelOptions {
+  showModalControlsProperty: TReadOnlyProperty<boolean>;
+}
 
 export class ChladniControlPanel extends Panel {
   /**
@@ -60,8 +64,13 @@ export class ChladniControlPanel extends Panel {
 
   private readonly displayOptionsSection: DisplayOptionsSection;
   private readonly modalSelectorSection: ModalSelectorSection;
+  private readonly modalSeparator: Line;
 
-  public constructor(model: ChladniModel, layoutBounds: Bounds2) {
+  public constructor(
+    model: ChladniModel,
+    layoutBounds: Bounds2,
+    options: ChladniControlPanelOptions,
+  ) {
     const comboBoxListParent = new Node();
 
     // Create sections using modular components
@@ -78,6 +87,9 @@ export class ChladniControlPanel extends Panel {
         lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
       });
 
+    // Create separator for modal section (needs to be toggled with section)
+    const modalSeparator = createSeparator();
+
     // Assemble panel content
     const controlPanelContent = new VBox({
       children: [
@@ -87,12 +99,19 @@ export class ChladniControlPanel extends Panel {
         grainSection,
         createSeparator(),
         displayOptionsSection,
-        createSeparator(),
+        modalSeparator,
         modalSelectorSection,
       ],
       spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
       align: "left",
     });
+
+    // Link modal section and separator visibility to preference
+    options.showModalControlsProperty.linkAttribute(
+      modalSelectorSection,
+      "visible",
+    );
+    options.showModalControlsProperty.linkAttribute(modalSeparator, "visible");
 
     super(controlPanelContent, {
       fill: ResonanceColors.controlPanelFillProperty,
@@ -109,6 +128,7 @@ export class ChladniControlPanel extends Panel {
     this.comboBoxListParent = comboBoxListParent;
     this.displayOptionsSection = displayOptionsSection;
     this.modalSelectorSection = modalSelectorSection;
+    this.modalSeparator = modalSeparator;
 
     // Expose display option properties from the section
     this.showResonanceCurveProperty =
