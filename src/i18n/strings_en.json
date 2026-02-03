@@ -70,7 +70,9 @@
         "rendererCanvas": "Canvas",
         "rendererCanvasDescription": "Standard 2D canvas rendering. Good compatibility.",
         "rendererWebGL": "WebGL",
-        "rendererWebGLDescription": "Hardware-accelerated rendering. Better performance for many particles."
+        "rendererWebGLDescription": "Hardware-accelerated rendering. Better performance for many particles.",
+        "showModalControls": "Show Modal Shape Controls",
+        "showModalControlsDescription": "Show controls for visualizing individual mode shapes on the Chladni plate."
       },
       "localization": {
         "title": "Localization",

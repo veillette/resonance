@@ -12,12 +12,13 @@ import {
   KeyboardDragListener,
   Node,
 } from "scenerystack/scenery";
-import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Bounds2, Transform3, Vector2 } from "scenerystack/dot";
 import { Property } from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { ChladniModel } from "../model/ChladniModel.js";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+import { Matrix3 } from "scenerystack/dot";
 
 // Excitation marker properties
 const EXCITATION_MARKER_RADIUS = 12;
@@ -109,40 +110,31 @@ export class ExcitationMarkerNode extends Node {
    * Add drag listener for interactive positioning.
    */
   private addDragListener(): void {
+    // Create drag bounds in model coordinates
+    const createDragBounds = () => {
+      const halfWidth = this.model.plateWidth / 2;
+      const halfHeight = this.model.plateHeight / 2;
+      return new Bounds2(-halfWidth, -halfHeight, halfWidth, halfHeight);
+    };
+    const dragBoundsProperty = new Property(createDragBounds());
+
+    // Update bounds when plate dimensions change
+    this.model.plateWidthProperty.link(() => {
+      dragBoundsProperty.value = createDragBounds();
+    });
+    this.model.plateHeightProperty.link(() => {
+      dragBoundsProperty.value = createDragBounds();
+    });
+
     const dragListener = new DragListener({
       positionProperty: this.model.excitationPositionProperty,
-      dragBoundsProperty: null, // We handle bounds manually
-      transform: null,
-      drag: (event) => {
-        const visualizationNode = this.options.getVisualizationNode();
-        const transform = this.options.getModelViewTransform();
-
-        // Get the position in the visualization's local coordinate system
-        const viewPoint = visualizationNode.globalToLocalPoint(
-          event.pointer.point,
-        );
-
-        // Convert view coordinates to model coordinates
-        const modelPoint = transform.viewToModelPosition(viewPoint);
-
-        // Clamp to plate boundaries (centered model coordinates)
-        const halfWidth = this.model.plateWidth / 2;
-        const halfHeight = this.model.plateHeight / 2;
-        const clampedX = Math.max(
-          -halfWidth,
-          Math.min(halfWidth, modelPoint.x),
-        );
-        const clampedY = Math.max(
-          -halfHeight,
-          Math.min(halfHeight, modelPoint.y),
-        );
-
-        // Update the model
-        this.model.excitationPositionProperty.value = new Vector2(
-          clampedX,
-          clampedY,
-        );
-      },
+      dragBoundsProperty: dragBoundsProperty,
+      // Use visualization node's coordinate frame for drag positions
+      targetNode: this.options.getVisualizationNode(),
+      // Transform from view coordinates to model coordinates
+      transform: this.options.getModelViewTransform(),
+      // Don't apply pointer offset - excitation point moves directly to pointer location
+      applyOffset: false,
       end: () => {
         this.options.onDragEnd?.();
       },
@@ -179,11 +171,17 @@ export class ExcitationMarkerNode extends Node {
       dragBoundsProperty.value = new Bounds2(-hw, -hh, hw, hh);
     });
 
+    // Create a transform that inverts Y axis for keyboard drag
+    // This is needed because KeyboardDragListener assumes screen coordinates (+Y down)
+    // but excitationPositionProperty uses model coordinates (+Y up)
+    const invertYTransform = new Transform3(Matrix3.scaling(1, -1));
+
     const keyboardDragListener = new KeyboardDragListener({
       positionProperty: this.model.excitationPositionProperty,
       dragBoundsProperty: dragBoundsProperty,
       dragSpeed: 0.05, // meters per second (model units)
       shiftDragSpeed: 0.01, // slower with shift key for fine control
+      transform: invertYTransform,
     });
 
     this.addInputListener(keyboardDragListener);

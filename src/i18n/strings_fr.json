@@ -70,7 +70,9 @@
         "rendererCanvas": "Canvas",
         "rendererCanvasDescription": "Rendu Canvas 2D standard. Bonne compatibilité.",
         "rendererWebGL": "WebGL",
-        "rendererWebGLDescription": "Rendu accéléré par le matériel. Meilleures performances pour beaucoup de particules."
+        "rendererWebGLDescription": "Rendu accéléré par le matériel. Meilleures performances pour beaucoup de particules.",
+        "showModalControls": "Afficher les Contrôles de Forme Modale",
+        "showModalControlsDescription": "Afficher les contrôles pour visualiser les formes modales individuelles sur la plaque de Chladni."
       },
       "localization": {
         "title": "Localisation",

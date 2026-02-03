@@ -182,7 +182,9 @@ export class ChladniScreenView extends ScreenView {
     this.excitationMarker.updatePosition();
 
     // Create the control panel first so we can position the curve relative to it
-    this.controlPanel = new ChladniControlPanel(model, this.layoutBounds);
+    this.controlPanel = new ChladniControlPanel(model, this.layoutBounds, {
+      showModalControlsProperty: preferencesModel.showModalControlsProperty,
+    });
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);
 
