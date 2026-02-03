@@ -34,6 +34,15 @@ export class FrequencySection extends VBox {
       (isSweeping) => !isSweeping,
     );
 
+    // Text fill changes based on enabled state
+    const sweepTextFillProperty = new DerivedProperty(
+      [sweepEnabledProperty],
+      (enabled) =>
+        enabled
+          ? ResonanceColors.textProperty.value
+          : ResonanceColors.textDisabledProperty.value,
+    );
+
     const sweepButton = new TextPushButton(
       ResonanceStrings.chladni.sweepStringProperty,
       {
@@ -42,7 +51,7 @@ export class FrequencySection extends VBox {
           model.startSweep();
         },
         baseColor: ResonanceColors.subPanelFillProperty,
-        textFill: ResonanceColors.textProperty,
+        textFill: sweepTextFillProperty,
         enabledProperty: sweepEnabledProperty,
       },
     );

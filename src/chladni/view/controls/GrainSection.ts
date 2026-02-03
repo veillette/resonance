@@ -84,6 +84,15 @@ export class GrainSection extends VBox {
       (actualCount, grainOption) => actualCount !== grainOption.value,
     );
 
+    // Text fill changes based on enabled state
+    const replenishTextFillProperty = new DerivedProperty(
+      [replenishEnabledProperty],
+      (enabled) =>
+        enabled
+          ? ResonanceColors.textProperty.value
+          : ResonanceColors.textDisabledProperty.value,
+    );
+
     const replenishButton = new TextPushButton(
       ResonanceStrings.chladni.replenishStringProperty,
       {
@@ -92,7 +101,7 @@ export class GrainSection extends VBox {
           model.regenerateParticles();
         },
         baseColor: ResonanceColors.subPanelFillProperty,
-        textFill: ResonanceColors.textProperty,
+        textFill: replenishTextFillProperty,
         enabledProperty: replenishEnabledProperty,
       },
     );

@@ -35,6 +35,12 @@ const ResonanceColors = {
     projector: new Color(102, 102, 102),
   }),
 
+  // Disabled text color (for buttons, etc.)
+  textDisabledProperty: new ProfileColorProperty(resonance, "textDisabled", {
+    default: new Color(100, 100, 100),
+    projector: new Color(150, 150, 150),
+  }),
+
   // Preferences text - stays black regardless of color profile
   preferencesTextProperty: new ProfileColorProperty(
     resonance,
