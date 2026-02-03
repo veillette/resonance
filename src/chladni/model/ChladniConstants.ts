@@ -166,6 +166,34 @@ export const DEFAULT_GRAIN_COUNT =
   GRAIN_COUNT_OPTIONS[DEFAULT_GRAIN_COUNT_INDEX]!;
 
 // ============================================================================
+// HELMHOLTZ SOLVER PARAMETERS (for guitar shape)
+// ============================================================================
+
+/**
+ * Grid resolution for Helmholtz eigenmode computation.
+ * Higher values give more accurate modes but slower computation.
+ * 32x32 provides good balance of accuracy and performance.
+ */
+export const HELMHOLTZ_GRID_SIZE = 32;
+
+/**
+ * Maximum number of eigenmodes to compute for modal superposition.
+ * More modes give more accurate high-frequency response.
+ */
+export const HELMHOLTZ_MAX_MODES = 50;
+
+/**
+ * Convergence tolerance for eigenvalue iteration.
+ * Relative tolerance: |λ_new - λ_old| < tol * |λ_new|
+ */
+export const HELMHOLTZ_EIGENVALUE_TOLERANCE = 1e-6;
+
+/**
+ * Maximum iterations for power iteration eigenvalue solver.
+ */
+export const HELMHOLTZ_MAX_ITERATIONS = 500;
+
+// ============================================================================
 // GUITAR SHAPE PARAMETERS
 // ============================================================================
 
@@ -259,6 +287,12 @@ const ChladniConstants = {
   MAX_GUITAR_SCALE,
   GUITAR_BASE_WIDTH,
   GUITAR_BASE_HEIGHT,
+
+  // Helmholtz solver
+  HELMHOLTZ_GRID_SIZE,
+  HELMHOLTZ_MAX_MODES,
+  HELMHOLTZ_EIGENVALUE_TOLERANCE,
+  HELMHOLTZ_MAX_ITERATIONS,
 } as const;
 
 export default ChladniConstants;
