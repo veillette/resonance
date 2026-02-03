@@ -34,13 +34,15 @@ export class FrequencySection extends VBox {
       (isSweeping) => !isSweeping,
     );
 
-    // Text fill changes based on enabled state
+    // Text fill changes based on enabled state and color profile
     const sweepTextFillProperty = new DerivedProperty(
-      [sweepEnabledProperty],
-      (enabled) =>
-        enabled
-          ? ResonanceColors.textProperty.value
-          : ResonanceColors.textDisabledProperty.value,
+      [
+        sweepEnabledProperty,
+        ResonanceColors.textProperty,
+        ResonanceColors.textDisabledProperty,
+      ],
+      (enabled, textColor, disabledColor) =>
+        enabled ? textColor : disabledColor,
     );
 
     const sweepButton = new TextPushButton(

@@ -84,13 +84,15 @@ export class GrainSection extends VBox {
       (actualCount, grainOption) => actualCount !== grainOption.value,
     );
 
-    // Text fill changes based on enabled state
+    // Text fill changes based on enabled state and color profile
     const replenishTextFillProperty = new DerivedProperty(
-      [replenishEnabledProperty],
-      (enabled) =>
-        enabled
-          ? ResonanceColors.textProperty.value
-          : ResonanceColors.textDisabledProperty.value,
+      [
+        replenishEnabledProperty,
+        ResonanceColors.textProperty,
+        ResonanceColors.textDisabledProperty,
+      ],
+      (enabled, textColor, disabledColor) =>
+        enabled ? textColor : disabledColor,
     );
 
     const replenishButton = new TextPushButton(
