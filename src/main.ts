@@ -27,11 +27,11 @@ onReadyToLaunch(() => {
         supportsInteractiveHighlights: true,
       },
       audioOptions: {
-        supportsVoicing: false,
+        supportsVoicing: true,
         supportsSound: true,
       },
       inputOptions: {
-        supportsGestureControl: true,
+        supportsGestureControl: false,
       },
       simulationOptions: {
         customPreferences: [
