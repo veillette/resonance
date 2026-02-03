@@ -13,8 +13,9 @@
  */
 
 import { CanvasNode, CanvasNodeOptions } from "scenerystack/scenery";
-import { Property } from "scenerystack/axon";
+import { DerivedProperty, Property } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 /**
  * Represents a mode selection (m, n) for the Chladni plate.
@@ -72,6 +73,27 @@ export class ModalShapeNode extends CanvasNode {
     this.selectedModeProperty.link(() => {
       this.update();
     });
+
+    // PDOM accessibility
+    this.tagName = "div";
+    this.ariaRole = "img";
+    this.accessibleName =
+      ResonanceStrings.chladni.a11y.modalShapeLabelStringProperty;
+
+    // Dynamic description that updates with mode selection
+    const descriptionProperty = new DerivedProperty(
+      [selectedModeProperty],
+      (mode) => {
+        // Build description with mode values substituted
+        const template =
+          ResonanceStrings.chladni.a11y.modalShapeDescriptionStringProperty
+            .value;
+        return template
+          .replace("{{m}}", mode.m.toString())
+          .replace("{{n}}", mode.n.toString());
+      },
+    );
+    this.descriptionContent = descriptionProperty;
   }
 
   /**

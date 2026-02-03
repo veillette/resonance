@@ -7,6 +7,7 @@
  */
 
 import { Line, Text } from "scenerystack/scenery";
+import { StringProperty } from "scenerystack/axon";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
@@ -32,6 +33,20 @@ export class ChladniRulerNode extends ChladniOverlayNode {
       plateWidthMeters,
       plateHeightMeters,
     );
+
+    // PDOM accessibility
+    this.tagName = "div";
+    this.ariaRole = "img";
+    this.accessibleName = ResonanceStrings.chladni.a11y.rulerLabelStringProperty;
+
+    // Create description with plate dimensions
+    const { widthCm, heightCm } = this.getPlateDimensionsCm();
+    const template =
+      ResonanceStrings.chladni.a11y.rulerDescriptionStringProperty.value;
+    const description = template
+      .replace("{{width}}", Math.round(widthCm).toString())
+      .replace("{{height}}", Math.round(heightCm).toString());
+    this.descriptionContent = new StringProperty(description);
   }
 
   /**
