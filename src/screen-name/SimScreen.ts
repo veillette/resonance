@@ -3,7 +3,7 @@ import { SimModel } from "./model/SimModel.js";
 import { SimScreenView } from "./view/SimScreenView.js";
 import { ResonancePreferencesModel } from "../preferences/ResonancePreferencesModel.js";
 import ResonanceColors from "../common/ResonanceColors.js";
-import { KeyboardShortcutsNode } from "./view/KeyboardShortcutsNode.js";
+import { KeyboardShortcutsNode } from "../common/view/KeyboardShortcutsNode.js";
 import { ResonanceStrings } from "../i18n/ResonanceStrings.js";
 
 export class SimScreen extends Screen<SimModel, SimScreenView> {

@@ -38,7 +38,7 @@ import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ListenerTracker } from "../../common/util/index.js";
-import { NumberControlFactory } from "./NumberControlFactory.js";
+import { NumberControlFactory } from "../../common/view/NumberControlFactory.js";
 
 export class ResonatorControlPanel extends Panel {
   /**

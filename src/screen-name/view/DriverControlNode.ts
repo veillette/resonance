@@ -12,7 +12,7 @@ import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { CircularUpdateGuard } from "../../common/util/index.js";
-import { NumberControlFactory } from "./NumberControlFactory.js";
+import { NumberControlFactory } from "../../common/view/NumberControlFactory.js";
 
 export class DriverControlNode extends Node {
   public constructor(model: SimModel) {

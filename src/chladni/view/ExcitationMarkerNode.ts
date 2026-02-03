@@ -71,7 +71,9 @@ export class ExcitationMarkerNode extends Node {
     this.options = options;
 
     // Create view position property initialized from model
-    const initialViewPos = this.modelToViewPosition(model.excitationPositionProperty.value);
+    const initialViewPos = this.modelToViewPosition(
+      model.excitationPositionProperty.value,
+    );
     this.viewPositionProperty = new Property(initialViewPos);
 
     // Bidirectional sync: model -> view
@@ -86,7 +88,8 @@ export class ExcitationMarkerNode extends Node {
     this.viewPositionProperty.lazyLink((viewPos) => {
       if (this.isUpdatingFromModel) return;
       this.isUpdatingFromView = true;
-      model.excitationPositionProperty.value = this.viewToModelPosition(viewPos);
+      model.excitationPositionProperty.value =
+        this.viewToModelPosition(viewPos);
       this.isUpdatingFromView = false;
     });
 
@@ -120,7 +123,10 @@ export class ExcitationMarkerNode extends Node {
     const transform = this.options.getModelViewTransform();
     const vizBounds = this.options.getVisualizationBounds();
     const localView = transform.modelToViewPosition(modelPos);
-    return new Vector2(vizBounds.minX + localView.x, vizBounds.minY + localView.y);
+    return new Vector2(
+      vizBounds.minX + localView.x,
+      vizBounds.minY + localView.y,
+    );
   }
 
   /**
@@ -129,7 +135,10 @@ export class ExcitationMarkerNode extends Node {
   private viewToModelPosition(viewPos: Vector2): Vector2 {
     const transform = this.options.getModelViewTransform();
     const vizBounds = this.options.getVisualizationBounds();
-    const localView = new Vector2(viewPos.x - vizBounds.minX, viewPos.y - vizBounds.minY);
+    const localView = new Vector2(
+      viewPos.x - vizBounds.minX,
+      viewPos.y - vizBounds.minY,
+    );
     return transform.viewToModelPosition(localView);
   }
 
@@ -228,7 +237,7 @@ export class ExcitationMarkerNode extends Node {
     // Trigger re-sync from model to view
     this.isUpdatingFromModel = true;
     this.viewPositionProperty.value = this.modelToViewPosition(
-      this.model.excitationPositionProperty.value
+      this.model.excitationPositionProperty.value,
     );
     this.isUpdatingFromModel = false;
   }

@@ -12,7 +12,7 @@ import { ChladniModel } from "../../model/ChladniModel.js";
 import ResonanceColors from "../../../common/ResonanceColors.js";
 import ResonanceConstants from "../../../common/ResonanceConstants.js";
 import { ResonanceStrings } from "../../../i18n/ResonanceStrings.js";
-import { NumberControlFactory } from "../../../screen-name/view/NumberControlFactory.js";
+import { NumberControlFactory } from "../../../common/view/NumberControlFactory.js";
 
 export class FrequencySection extends VBox {
   public constructor(model: ChladniModel) {

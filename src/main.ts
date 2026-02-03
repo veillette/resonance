@@ -265,7 +265,11 @@ onReadyToLaunch(() => {
               const oscillatorScreenSection = new VBox({
                 align: "left",
                 spacing: 12,
-                children: [oscillatorHeader, displayOptionsSection, solverSection],
+                children: [
+                  oscillatorHeader,
+                  displayOptionsSection,
+                  solverSection,
+                ],
               });
 
               // ============================================
@@ -410,7 +414,11 @@ onReadyToLaunch(() => {
               const chladniScreenSection = new VBox({
                 align: "left",
                 spacing: 12,
-                children: [chladniHeader, modalControlsCheckbox, rendererSection],
+                children: [
+                  chladniHeader,
+                  modalControlsCheckbox,
+                  rendererSection,
+                ],
               });
 
               // ============================================

@@ -37,7 +37,8 @@ export class ChladniRulerNode extends ChladniOverlayNode {
     // PDOM accessibility
     this.tagName = "div";
     this.ariaRole = "img";
-    this.accessibleName = ResonanceStrings.chladni.a11y.rulerLabelStringProperty;
+    this.accessibleName =
+      ResonanceStrings.chladni.a11y.rulerLabelStringProperty;
 
     // Create description with plate dimensions
     const { widthCm, heightCm } = this.getPlateDimensionsCm();
