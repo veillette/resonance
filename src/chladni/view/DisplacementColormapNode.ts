@@ -13,6 +13,7 @@
 import { CanvasNode, CanvasNodeOptions } from "scenerystack/scenery";
 import { Bounds2 } from "scenerystack/dot";
 import { ChladniOverlayNode } from "./ChladniOverlayNode.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 /**
  * Type for the displacement function
@@ -219,6 +220,14 @@ export class DisplacementColormapNode extends ChladniOverlayNode {
       plateHeightMeters,
     );
     this.addChild(this.canvasNode);
+
+    // PDOM accessibility
+    this.tagName = "div";
+    this.ariaRole = "img";
+    this.accessibleName =
+      ResonanceStrings.chladni.a11y.displacementColormapLabelStringProperty;
+    this.descriptionContent =
+      ResonanceStrings.chladni.a11y.displacementColormapDescriptionStringProperty;
   }
 
   /**

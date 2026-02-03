@@ -7,7 +7,9 @@
  */
 
 import { Line } from "scenerystack/scenery";
+import { StringProperty } from "scenerystack/axon";
 import ResonanceColors from "../../common/ResonanceColors.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ChladniOverlayNode } from "./ChladniOverlayNode.js";
 
 // Grid configuration
@@ -31,6 +33,20 @@ export class ChladniGridNode extends ChladniOverlayNode {
       plateWidthMeters,
       plateHeightMeters,
     );
+
+    // PDOM accessibility
+    this.tagName = "div";
+    this.ariaRole = "img";
+    this.accessibleName = ResonanceStrings.chladni.a11y.gridLabelStringProperty;
+
+    // Create description with plate dimensions
+    const { widthCm, heightCm } = this.getPlateDimensionsCm();
+    const template =
+      ResonanceStrings.chladni.a11y.gridDescriptionStringProperty.value;
+    const description = template
+      .replace("{{width}}", Math.round(widthCm).toString())
+      .replace("{{height}}", Math.round(heightCm).toString());
+    this.descriptionContent = new StringProperty(description);
   }
 
   /**
