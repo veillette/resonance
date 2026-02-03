@@ -4,6 +4,7 @@ import { ChladniScreenView } from "./view/ChladniScreenView.js";
 import { ResonancePreferencesModel } from "../preferences/ResonancePreferencesModel.js";
 import ResonanceColors from "../common/ResonanceColors.js";
 import { ResonanceStrings } from "../i18n/ResonanceStrings.js";
+import { KeyboardShortcutsNode } from "../screen-name/view/KeyboardShortcutsNode.js";
 
 export class ChladniScreen extends Screen<ChladniModel, ChladniScreenView> {
   public constructor(
@@ -17,6 +18,7 @@ export class ChladniScreen extends Screen<ChladniModel, ChladniScreenView> {
         ...options,
         name: ResonanceStrings.screens.chladniStringProperty,
         backgroundColorProperty: ResonanceColors.backgroundProperty,
+        createKeyboardHelpNode: () => new KeyboardShortcutsNode(),
       },
     );
   }
