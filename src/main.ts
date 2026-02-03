@@ -33,6 +33,9 @@ onReadyToLaunch(() => {
       inputOptions: {
         supportsGestureControl: false,
       },
+      localizationOptions: {
+        supportsDynamicLocale: true,
+      },
       simulationOptions: {
         customPreferences: [
           {
