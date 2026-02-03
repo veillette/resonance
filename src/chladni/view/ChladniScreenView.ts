@@ -306,6 +306,20 @@ export class ChladniScreenView extends ScreenView {
         return;
       }
 
+      // Ignore arrow keys if any interactive element has focus
+      // (buttons, sliders, and the excitation marker have their own keyboard handling)
+      if (KeyboardUtils.isArrowKey(event)) {
+        const activeElement = document.activeElement;
+        // Skip if focus is on a button, slider, or other interactive element
+        if (
+          activeElement &&
+          activeElement !== document.body &&
+          activeElement.tagName !== "BODY"
+        ) {
+          return;
+        }
+      }
+
       const shiftPressed = event.shiftKey;
 
       if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_SPACE)) {

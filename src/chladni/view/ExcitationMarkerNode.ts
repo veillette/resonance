@@ -55,6 +55,12 @@ export class ExcitationMarkerNode extends Node {
   private readonly model: ChladniModel;
   private readonly options: ExcitationMarkerNodeOptions;
 
+  // View-coordinate position property for drag handling
+  // This is kept in sync with the model's excitation position
+  private readonly viewPositionProperty: Property<Vector2>;
+  private isUpdatingFromModel = false;
+  private isUpdatingFromView = false;
+
   public constructor(
     model: ChladniModel,
     options: ExcitationMarkerNodeOptions,
@@ -63,6 +69,26 @@ export class ExcitationMarkerNode extends Node {
 
     this.model = model;
     this.options = options;
+
+    // Create view position property initialized from model
+    const initialViewPos = this.modelToViewPosition(model.excitationPositionProperty.value);
+    this.viewPositionProperty = new Property(initialViewPos);
+
+    // Bidirectional sync: model -> view
+    model.excitationPositionProperty.link((modelPos) => {
+      if (this.isUpdatingFromView) return;
+      this.isUpdatingFromModel = true;
+      this.viewPositionProperty.value = this.modelToViewPosition(modelPos);
+      this.isUpdatingFromModel = false;
+    });
+
+    // Bidirectional sync: view -> model
+    this.viewPositionProperty.lazyLink((viewPos) => {
+      if (this.isUpdatingFromModel) return;
+      this.isUpdatingFromView = true;
+      model.excitationPositionProperty.value = this.viewToModelPosition(viewPos);
+      this.isUpdatingFromView = false;
+    });
 
     // Create the marker visuals
     this.createMarker();
@@ -73,9 +99,9 @@ export class ExcitationMarkerNode extends Node {
     // Add keyboard drag listener for accessibility
     this.addKeyboardDragListener();
 
-    // Update position when model changes
-    model.excitationPositionProperty.link(() => {
-      this.updatePosition();
+    // Update node position when view position changes
+    this.viewPositionProperty.link((viewPos) => {
+      this.center = viewPos;
     });
 
     // --- Accessibility (PDOM) Setup ---
@@ -85,6 +111,26 @@ export class ExcitationMarkerNode extends Node {
       ResonanceStrings.chladni.a11y.excitationMarkerLabelStringProperty;
     this.descriptionContent =
       ResonanceStrings.chladni.a11y.excitationMarkerDescriptionStringProperty;
+  }
+
+  /**
+   * Convert model position to global view position.
+   */
+  private modelToViewPosition(modelPos: Vector2): Vector2 {
+    const transform = this.options.getModelViewTransform();
+    const vizBounds = this.options.getVisualizationBounds();
+    const localView = transform.modelToViewPosition(modelPos);
+    return new Vector2(vizBounds.minX + localView.x, vizBounds.minY + localView.y);
+  }
+
+  /**
+   * Convert global view position to model position.
+   */
+  private viewToModelPosition(viewPos: Vector2): Vector2 {
+    const transform = this.options.getModelViewTransform();
+    const vizBounds = this.options.getVisualizationBounds();
+    const localView = new Vector2(viewPos.x - vizBounds.minX, viewPos.y - vizBounds.minY);
+    return transform.viewToModelPosition(localView);
   }
 
   /**
@@ -110,11 +156,10 @@ export class ExcitationMarkerNode extends Node {
    * Add drag listener for interactive positioning.
    */
   private addDragListener(): void {
-    // Create drag bounds in model coordinates
+    // Create drag bounds in view coordinates
     const createDragBounds = () => {
-      const halfWidth = this.model.plateWidth / 2;
-      const halfHeight = this.model.plateHeight / 2;
-      return new Bounds2(-halfWidth, -halfHeight, halfWidth, halfHeight);
+      const vizBounds = this.options.getVisualizationBounds();
+      return vizBounds;
     };
     const dragBoundsProperty = new Property(createDragBounds());
 
@@ -127,14 +172,9 @@ export class ExcitationMarkerNode extends Node {
     });
 
     const dragListener = new DragListener({
-      positionProperty: this.model.excitationPositionProperty,
+      positionProperty: this.viewPositionProperty,
       dragBoundsProperty: dragBoundsProperty,
-      // Use visualization node's coordinate frame for drag positions
-      targetNode: this.options.getVisualizationNode(),
-      // Transform from view coordinates to model coordinates
-      transform: this.options.getModelViewTransform(),
-      // Don't apply pointer offset - excitation point moves directly to pointer location
-      applyOffset: false,
+      useParentOffset: true,
       end: () => {
         this.options.onDragEnd?.();
       },
@@ -148,27 +188,20 @@ export class ExcitationMarkerNode extends Node {
    * Allows arrow key navigation to move the excitation point.
    */
   private addKeyboardDragListener(): void {
-    // Create drag bounds based on plate dimensions
-    const halfWidth = this.model.plateWidth / 2;
-    const halfHeight = this.model.plateHeight / 2;
-    const dragBounds = new Bounds2(
-      -halfWidth,
-      -halfHeight,
-      halfWidth,
-      halfHeight,
-    );
-    const dragBoundsProperty = new Property(dragBounds);
+    // Create drag bounds based on plate dimensions (in model coordinates)
+    const createDragBounds = () => {
+      const halfWidth = this.model.plateWidth / 2;
+      const halfHeight = this.model.plateHeight / 2;
+      return new Bounds2(-halfWidth, -halfHeight, halfWidth, halfHeight);
+    };
+    const dragBoundsProperty = new Property(createDragBounds());
 
     // Update drag bounds when plate dimensions change
     this.model.plateWidthProperty.link(() => {
-      const hw = this.model.plateWidth / 2;
-      const hh = this.model.plateHeight / 2;
-      dragBoundsProperty.value = new Bounds2(-hw, -hh, hw, hh);
+      dragBoundsProperty.value = createDragBounds();
     });
     this.model.plateHeightProperty.link(() => {
-      const hw = this.model.plateWidth / 2;
-      const hh = this.model.plateHeight / 2;
-      dragBoundsProperty.value = new Bounds2(-hw, -hh, hw, hh);
+      dragBoundsProperty.value = createDragBounds();
     });
 
     // Create a transform that inverts Y axis for keyboard drag
@@ -189,20 +222,14 @@ export class ExcitationMarkerNode extends Node {
 
   /**
    * Update the marker position based on the model.
-   * Uses ModelViewTransform2 to convert from model to view coordinates.
+   * Called when visualization size changes.
    */
   public updatePosition(): void {
-    const transform = this.options.getModelViewTransform();
-    const vizBounds = this.options.getVisualizationBounds();
-
-    // Get model position (centered coordinates, +Y up)
-    const modelPosition = this.model.excitationPositionProperty.value;
-
-    // Convert to view coordinates using the transform
-    const viewPosition = transform.modelToViewPosition(modelPosition);
-
-    // Position relative to visualization bounds
-    this.centerX = vizBounds.minX + viewPosition.x;
-    this.centerY = vizBounds.minY + viewPosition.y;
+    // Trigger re-sync from model to view
+    this.isUpdatingFromModel = true;
+    this.viewPositionProperty.value = this.modelToViewPosition(
+      this.model.excitationPositionProperty.value
+    );
+    this.isUpdatingFromModel = false;
   }
 }
