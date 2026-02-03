@@ -141,7 +141,15 @@
         "resonancePeakAlert": "Resonance peak detected at {{frequency}} Hz",
         "nearResonance": "Near resonance",
         "atResonance": "At resonance peak",
-        "resonanceCurveLabel": "Resonance Curve Graph"
+        "resonanceCurveLabel": "Resonance Curve Graph",
+        "modalShapeLabel": "Modal Shape Visualization",
+        "modalShapeDescription": "Shows the theoretical vibration pattern for mode ({{m}}, {{n}}). Blue regions move down, red regions move up, white lines are nodal lines where the plate doesn't move.",
+        "displacementColormapLabel": "Displacement Colormap",
+        "displacementColormapDescription": "Color overlay showing plate displacement at the current frequency. Blue indicates downward displacement, red indicates upward displacement, and white shows nodal lines where particles collect.",
+        "rulerLabel": "Measurement Ruler",
+        "rulerDescription": "Ruler showing plate dimensions. Width: {{width}} cm, Height: {{height}} cm. Major tick marks every 5 cm.",
+        "gridLabel": "Reference Grid",
+        "gridDescription": "Grid overlay for spatial reference on the {{width}} cm by {{height}} cm plate. Major grid lines every 5 cm, minor lines every 1 cm."
       }
     }
   }

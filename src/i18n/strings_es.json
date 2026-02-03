@@ -141,7 +141,15 @@
         "resonancePeakAlert": "Pico de resonancia detectado a {{frequency}} Hz",
         "nearResonance": "Cerca de resonancia",
         "atResonance": "En pico de resonancia",
-        "resonanceCurveLabel": "Gráfico de Curva de Resonancia"
+        "resonanceCurveLabel": "Gráfico de Curva de Resonancia",
+        "modalShapeLabel": "Visualización de Forma Modal",
+        "modalShapeDescription": "Muestra el patrón teórico de vibración para el modo ({{m}}, {{n}}). Las regiones azules se mueven hacia abajo, las rojas hacia arriba, y las líneas blancas son líneas nodales donde la placa no se mueve.",
+        "displacementColormapLabel": "Mapa de Colores de Desplazamiento",
+        "displacementColormapDescription": "Superposición de colores que muestra el desplazamiento de la placa a la frecuencia actual. El azul indica desplazamiento hacia abajo, el rojo hacia arriba, y el blanco muestra las líneas nodales donde se acumulan las partículas.",
+        "rulerLabel": "Regla de Medición",
+        "rulerDescription": "Regla que muestra las dimensiones de la placa. Ancho: {{width}} cm, Alto: {{height}} cm. Marcas principales cada 5 cm.",
+        "gridLabel": "Cuadrícula de Referencia",
+        "gridDescription": "Superposición de cuadrícula para referencia espacial en la placa de {{width}} cm por {{height}} cm. Líneas principales cada 5 cm, líneas menores cada 1 cm."
       }
     }
   }
