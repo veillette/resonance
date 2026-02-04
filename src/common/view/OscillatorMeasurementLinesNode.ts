@@ -113,15 +113,13 @@ export class OscillatorMeasurementLinesNode extends Node {
   ) {
     super();
 
-    // Calculate height range in model coordinates (meters)
-    const minHeight = -0.2; // 20cm minimum below plate
-    const screenHeightView = driverTopY - layoutBounds.minY;
-    const maxHeight = Math.abs(
-      modelViewTransform.viewToModelDeltaY(screenHeightView),
-    );
+    // Calculate displacement range in model coordinates (meters)
+    // Using same coordinate system as mass position: 0 = equilibrium
+    const minDisplacement = -0.4; // Can go 40cm below equilibrium
+    const maxDisplacement = 0.3; // Can go 30cm above equilibrium
 
-    // Create the model with height bounds
-    this.model = new MeasurementLinesModel(minHeight, maxHeight, 0.2, 0.4);
+    // Create the model with displacement bounds (0 cm and 14 cm from equilibrium)
+    this.model = new MeasurementLinesModel(minDisplacement, maxDisplacement, 0.0, 0.14);
 
     // Create view nodes for each line
     this.line1Node = new MeasurementLineNode(

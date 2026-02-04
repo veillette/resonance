@@ -73,16 +73,16 @@ export class ResonanceModel extends BaseModel {
     this.isDraggingProperty = new BooleanProperty(false); // Not being dragged initially
 
     // Initialize physical parameters with reasonable defaults
-    this.massProperty = new NumberProperty(0.25); // 0.25 kg - reasonable for small oscillator
-    this.springConstantProperty = new NumberProperty(100.0); // 100 N/m - gives ~3.2 Hz natural frequency
-    this.dampingProperty = new NumberProperty(0.5); // 0.5 N/(m/s) - light damping
+    this.massProperty = new NumberProperty(2.53); // 2.53 kg
+    this.springConstantProperty = new NumberProperty(100.0); // 100 N/m
+    this.dampingProperty = new NumberProperty(1.0); // 1.0 N/(m/s)
     this.gravityProperty = new NumberProperty(0); // Start with no gravity
     this.naturalLengthProperty = new NumberProperty(0.2); // 20 cm natural length
 
     // Initialize driving force parameters
-    this.drivingAmplitudeProperty = new NumberProperty(0.01); // 1 cm (in meters)
+    this.drivingAmplitudeProperty = new NumberProperty(0.005); // 0.5 cm (in meters)
     this.drivingFrequencyProperty = new NumberProperty(1.0); // Start at 1.0 Hz
-    this.drivingEnabledProperty = new Property<boolean>(true); // Enabled by default
+    this.drivingEnabledProperty = new Property<boolean>(false); // Disabled by default
     this.drivingPhaseProperty = new NumberProperty(0.0); // Start at zero phase
 
     // Compute natural frequency: ω₀ = √(k/m)
