@@ -36,7 +36,9 @@ class SimulationShortcutsKeyboardHelpSection extends KeyboardHelpSection {
     // Large frequency steps with Shift + arrows
     const largeStepRow = KeyboardHelpSectionRow.labelWithIcon(
       "Large Frequency Steps",
-      KeyboardHelpIconFactory.shiftPlusIcon(KeyboardHelpIconFactory.upDownArrowKeysRowIcon()),
+      KeyboardHelpIconFactory.shiftPlusIcon(
+        KeyboardHelpIconFactory.upDownArrowKeysRowIcon(),
+      ),
     );
 
     // Reset with R key
@@ -75,7 +77,9 @@ class DragObjectsKeyboardHelpSection extends KeyboardHelpSection {
     // Fine control with Shift
     const fineRow = KeyboardHelpSectionRow.labelWithIcon(
       "Fine Movement",
-      KeyboardHelpIconFactory.shiftPlusIcon(KeyboardHelpIconFactory.arrowOrWasdKeysRowIcon()),
+      KeyboardHelpIconFactory.shiftPlusIcon(
+        KeyboardHelpIconFactory.arrowOrWasdKeysRowIcon(),
+      ),
     );
 
     super("Drag Controls", [moveRow, fineRow]);
@@ -98,10 +102,14 @@ export class KeyboardShortcutsNode extends TwoColumnKeyboardHelpContent {
 
     // Left column: simulation + drag controls
     // Right column: slider + basic actions
-    super([simulationSection, dragSection], [sliderControlsSection, basicActionsSection], {
-      columnSpacing: 20,
-      sectionSpacing: 15,
-    });
+    super(
+      [simulationSection, dragSection],
+      [sliderControlsSection, basicActionsSection],
+      {
+        columnSpacing: 20,
+        sectionSpacing: 15,
+      },
+    );
   }
 }
 

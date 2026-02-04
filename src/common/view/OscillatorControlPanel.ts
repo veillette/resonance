@@ -153,7 +153,12 @@ export class OscillatorControlPanel extends Panel {
     // In single oscillator mode, hide the resonator selection box
     const subPanelChildren = singleOscillatorMode
       ? [massControl, springConstantControl, naturalFrequencyBox]
-      : [resonatorSelectionBox, massControl, springConstantControl, naturalFrequencyBox];
+      : [
+          resonatorSelectionBox,
+          massControl,
+          springConstantControl,
+          naturalFrequencyBox,
+        ];
 
     const massSpringResonatorSubPanel = new Panel(
       new VBox({
@@ -177,10 +182,16 @@ export class OscillatorControlPanel extends Panel {
       stroke: ResonanceColors.textProperty,
       lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
     });
-    const bottomSeparator = new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
-      stroke: ResonanceColors.textProperty,
-      lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
-    });
+    const bottomSeparator = new Line(
+      0,
+      0,
+      ResonanceConstants.SEPARATOR_WIDTH,
+      0,
+      {
+        stroke: ResonanceColors.textProperty,
+        lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
+      },
+    );
 
     const panelChildren: Node[] = singleOscillatorMode
       ? [
@@ -252,7 +263,9 @@ export class OscillatorControlPanel extends Panel {
   /**
    * Creates the gravity enabled property that syncs with the model.
    */
-  private static createGravityProperty(model: BaseOscillatorScreenModel): Property<boolean> {
+  private static createGravityProperty(
+    model: BaseOscillatorScreenModel,
+  ): Property<boolean> {
     const gravityEnabledProperty = new Property<boolean>(
       model.resonanceModel.gravityProperty.value > 0,
     );
@@ -267,7 +280,9 @@ export class OscillatorControlPanel extends Panel {
   /**
    * Creates the resonator count slider control.
    */
-  private static createResonatorCountControl(model: BaseOscillatorScreenModel): NumberControl {
+  private static createResonatorCountControl(
+    model: BaseOscillatorScreenModel,
+  ): NumberControl {
     return NumberControlFactory.create({
       titleProperty: ResonanceStrings.controls.resonatorsStringProperty,
       numberProperty: model.resonatorCountProperty,
@@ -297,7 +312,9 @@ export class OscillatorControlPanel extends Panel {
   /**
    * Creates the resonator configuration combo box and its container.
    */
-  private static createConfigurationControls(model: BaseOscillatorScreenModel): {
+  private static createConfigurationControls(
+    model: BaseOscillatorScreenModel,
+  ): {
     configBox: VBox;
     comboBoxListParent: Node;
   } {
@@ -372,7 +389,9 @@ export class OscillatorControlPanel extends Panel {
   /**
    * Creates the resonator selection spinner and label.
    */
-  private static createResonatorSelectionControls(model: BaseOscillatorScreenModel): {
+  private static createResonatorSelectionControls(
+    model: BaseOscillatorScreenModel,
+  ): {
     resonatorSelectionBox: HBox;
     displayResonatorNumberProperty: NumberProperty;
   } {
@@ -467,7 +486,9 @@ export class OscillatorControlPanel extends Panel {
   /**
    * Creates the natural frequency readout text and container.
    */
-  private static createNaturalFrequencyReadout(model: BaseOscillatorScreenModel): {
+  private static createNaturalFrequencyReadout(
+    model: BaseOscillatorScreenModel,
+  ): {
     naturalFrequencyText: Text;
     naturalFrequencyBox: AlignBox;
   } {
@@ -495,7 +516,9 @@ export class OscillatorControlPanel extends Panel {
   /**
    * Creates the damping slider control.
    */
-  private static createDampingControl(model: BaseOscillatorScreenModel): NumberControl {
+  private static createDampingControl(
+    model: BaseOscillatorScreenModel,
+  ): NumberControl {
     return NumberControlFactory.create({
       titleProperty: ResonanceStrings.controls.dampingStringProperty,
       numberProperty: model.resonanceModel.dampingProperty,

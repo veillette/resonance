@@ -309,11 +309,10 @@ export class ChladniScreenView extends ScreenView {
     this.sonification.isAtResonanceProperty.lazyLink((isAtResonance) => {
       if (isAtResonance) {
         const frequency = this.model.frequencyProperty.value.toFixed(0);
-        const alertString =
-          a11y.resonancePeakAlertStringProperty.value.replace(
-            "{{frequency}}",
-            frequency,
-          );
+        const alertString = a11y.resonancePeakAlertStringProperty.value.replace(
+          "{{frequency}}",
+          frequency,
+        );
         resonanceUtterance.alert = alertString;
         utteranceQueue.addToBack(resonanceUtterance);
       }
@@ -344,11 +343,10 @@ export class ChladniScreenView extends ScreenView {
 
     // Announce material changes
     this.model.materialProperty.lazyLink((material) => {
-      const alertString =
-        a11y.materialChangedAlertStringProperty.value.replace(
-          "{{material}}",
-          material.name,
-        );
+      const alertString = a11y.materialChangedAlertStringProperty.value.replace(
+        "{{material}}",
+        material.name,
+      );
       utteranceQueue.addToBack(
         new Utterance({
           alert: alertString,

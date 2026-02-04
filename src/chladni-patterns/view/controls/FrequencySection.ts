@@ -57,7 +57,8 @@ export class FrequencySection extends VBox {
         enabledProperty: sweepEnabledProperty,
         // Accessibility
         accessibleName:
-          ResonanceStrings.chladni.a11y.controlPanel.sweepButtonLabelStringProperty,
+          ResonanceStrings.chladni.a11y.controlPanel
+            .sweepButtonLabelStringProperty,
       },
     );
 

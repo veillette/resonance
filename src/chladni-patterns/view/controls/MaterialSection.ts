@@ -65,7 +65,8 @@ export class MaterialSection extends VBox {
         cornerRadius: ResonanceConstants.COMBO_BOX_CORNER_RADIUS,
         // Accessibility
         accessibleName:
-          ResonanceStrings.chladni.a11y.controlPanel.materialLabelStringProperty,
+          ResonanceStrings.chladni.a11y.controlPanel
+            .materialLabelStringProperty,
       },
     );
 

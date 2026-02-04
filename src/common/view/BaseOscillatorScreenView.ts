@@ -54,7 +54,10 @@ export class BaseOscillatorScreenView extends ScreenView {
   protected driverPlate!: Rectangle;
   protected connectionRod!: Rectangle;
 
-  public constructor(model: BaseOscillatorScreenModel, options?: ScreenViewOptions) {
+  public constructor(
+    model: BaseOscillatorScreenModel,
+    options?: ScreenViewOptions,
+  ) {
     super(options);
 
     this.model = model;
@@ -151,7 +154,10 @@ export class BaseOscillatorScreenView extends ScreenView {
     this.addChild(resetAllButton);
 
     // ===== PLAYBACK CONTROLS =====
-    const playbackControls = new OscillatorPlaybackControlNode(model, this.layoutBounds);
+    const playbackControls = new OscillatorPlaybackControlNode(
+      model,
+      this.layoutBounds,
+    );
     this.addChild(playbackControls);
 
     // ===== RULER =====

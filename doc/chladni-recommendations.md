@@ -23,6 +23,7 @@ The abstract `updateDimensions()` method implementation appears incomplete. Revi
 **Status**: Already implemented with object pooling pattern.
 
 The current implementation:
+
 - Pre-allocates a fixed-size pool of `MAX_PARTICLE_COUNT` Vector2 objects at construction
 - Uses `particle.setXY(x, y)` to update positions in-place
 - Tracks active particles via `activeCount` rather than array resizing
@@ -66,6 +67,7 @@ The entire frequency range is recomputed when material or excitation position ch
 **Status**: Sweep rate options have been added to constants. UI integration pending.
 
 Added constants:
+
 - `SWEEP_RATE_SLOW` (33 Hz/s): ~120 second sweep for detailed observation
 - `SWEEP_RATE_NORMAL` (66 Hz/s): ~60 second sweep (default)
 - `SWEEP_RATE_FAST` (132 Hz/s): ~30 second sweep for quick overview
@@ -109,6 +111,7 @@ Currently the plate can be freely resized.
 **Status**: Already implemented as a complete visualization overlay.
 
 Features:
+
 - Extends `ChladniOverlayNode` for consistent overlay management
 - Uses blue-white-red colormap (blue = negative, white = zero/nodal, red = positive)
 - Efficient rendering with downsampled ImageData and smooth upscaling
@@ -116,6 +119,7 @@ Features:
 - Full accessibility support with PDOM labels
 
 Integration:
+
 - Can be added to `ChladniVisualizationNode` as a child
 - Toggle via display options (visibility property)
 - Updates via `setPsiFunction()` and `update()` methods
@@ -166,6 +170,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 **Status**: Keyboard controls implemented and documented in help dialog.
 
 Implemented:
+
 - Space: Toggle play/pause
 - Left/Right arrows: Adjust frequency (10 Hz steps)
 - Shift + Left/Right: 100 Hz steps
@@ -189,6 +194,7 @@ Custom keyboard help sections added to `KeyboardShortcutsNode.ts`.
 **Status**: Detailed inline documentation has been added.
 
 Documented:
+
 - `MODE_STEP = 1`: Full rationale explaining why all modes are included (vs. only even
   modes for center excitation), including the physics of mode shapes φ_mn(x,y)
 - `SOURCE_THRESHOLD = 0.001`: Value selection criteria explaining the 0.1% threshold
@@ -209,17 +215,17 @@ Document key design decisions:
 
 ## Priority Matrix
 
-| Recommendation                | Impact | Effort | Priority | Status          |
-| ----------------------------- | ------ | ------ | -------- | --------------- |
-| Displacement colormap         | High   | Medium | P1       | ✅ Done         |
-| Particle memory optimization  | Medium | Medium | P2       | ✅ Done         |
-| Configurable sweep rate       | Medium | Low    | P2       | 🔶 Constants    |
-| Auto particle replenishment   | Medium | Low    | P2       | Open            |
-| Modal shape visualization     | High   | High   | P2       | Open            |
-| Keyboard accessibility        | Medium | Medium | P2       | ✅ Done         |
-| Progressive curve computation | Low    | High   | P3       | Open            |
-| Plate dimension presets       | Low    | Low    | P3       | Open            |
-| Physics documentation         | Low    | Low    | P3       | ✅ Done         |
+| Recommendation                | Impact | Effort | Priority | Status       |
+| ----------------------------- | ------ | ------ | -------- | ------------ |
+| Displacement colormap         | High   | Medium | P1       | ✅ Done      |
+| Particle memory optimization  | Medium | Medium | P2       | ✅ Done      |
+| Configurable sweep rate       | Medium | Low    | P2       | 🔶 Constants |
+| Auto particle replenishment   | Medium | Low    | P2       | Open         |
+| Modal shape visualization     | High   | High   | P2       | Open         |
+| Keyboard accessibility        | Medium | Medium | P2       | ✅ Done      |
+| Progressive curve computation | Low    | High   | P3       | Open         |
+| Plate dimension presets       | Low    | Low    | P3       | Open         |
+| Physics documentation         | Low    | Low    | P3       | ✅ Done      |
 
 ---
 

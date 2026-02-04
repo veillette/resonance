@@ -338,8 +338,8 @@ All oscillators share:
 
 ```typescript
 class BaseOscillatorScreenModel {
-  resonanceModel: ResonanceModel;        // Reference model for shared parameters
-  resonatorModels: ResonanceModel[];     // Array of 1-10 oscillators
+  resonanceModel: ResonanceModel; // Reference model for shared parameters
+  resonatorModels: ResonanceModel[]; // Array of 1-10 oscillators
   resonatorConfigProperty: Property<ResonatorConfigModeType>;
   resonatorCountProperty: NumberProperty;
 

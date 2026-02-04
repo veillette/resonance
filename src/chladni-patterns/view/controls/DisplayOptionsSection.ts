@@ -67,7 +67,8 @@ export class DisplayOptionsSection extends VBox {
         boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
         // Accessibility
         accessibleName:
-          ResonanceStrings.chladni.a11y.controlPanel.showRulerLabelStringProperty,
+          ResonanceStrings.chladni.a11y.controlPanel
+            .showRulerLabelStringProperty,
       },
     );
 
@@ -82,7 +83,8 @@ export class DisplayOptionsSection extends VBox {
         boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
         // Accessibility
         accessibleName:
-          ResonanceStrings.chladni.a11y.controlPanel.showGridLabelStringProperty,
+          ResonanceStrings.chladni.a11y.controlPanel
+            .showGridLabelStringProperty,
       },
     );
 

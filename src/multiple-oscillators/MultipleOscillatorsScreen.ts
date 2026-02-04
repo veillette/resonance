@@ -11,14 +11,18 @@ import ResonanceColors from "../common/ResonanceColors.js";
 import { KeyboardShortcutsNode } from "../common/view/KeyboardShortcutsNode.js";
 import { ResonanceStrings } from "../i18n/ResonanceStrings.js";
 
-export class MultipleOscillatorsScreen extends Screen<MultipleOscillatorsModel, MultipleOscillatorsScreenView> {
+export class MultipleOscillatorsScreen extends Screen<
+  MultipleOscillatorsModel,
+  MultipleOscillatorsScreenView
+> {
   public constructor(
     preferencesModel: ResonancePreferencesModel,
     options: ScreenOptions,
   ) {
     super(
       () => new MultipleOscillatorsModel(preferencesModel),
-      (model: MultipleOscillatorsModel) => new MultipleOscillatorsScreenView(model),
+      (model: MultipleOscillatorsModel) =>
+        new MultipleOscillatorsScreenView(model),
       {
         ...options,
         name: ResonanceStrings.screens.multipleOscillatorsStringProperty,

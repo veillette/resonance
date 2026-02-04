@@ -9,6 +9,7 @@ This document summarizes the current accessibility features and recommendations 
 The simulation has excellent screen reader support through the Parallel DOM:
 
 **Implemented in:**
+
 - `OscillatorResonatorNodeBuilder.ts` - Springs and masses have accessible names and descriptions
 - `OscillatorControlPanel.ts` - All controls labeled
 - `OscillatorDriverControlNode.ts` - Driver controls accessible
@@ -19,6 +20,7 @@ The simulation has excellent screen reader support through the Parallel DOM:
 - `ResonanceCurveNode.ts` - Graph accessible
 
 **i18n a11y strings** (`strings_en.json`):
+
 - Complete accessibility strings for all controls
 - Dynamic labels with interpolation (e.g., "Mass {{number}}")
 - Descriptions explaining what each control does
@@ -26,12 +28,14 @@ The simulation has excellent screen reader support through the Parallel DOM:
 ### Keyboard Navigation - Good
 
 **Implemented:**
+
 - `KeyboardDragListener` for draggable elements (masses, excitation marker)
 - `KeyboardShortcutsNode` with standard slider and basic actions help
 - Arrow keys for movement, Shift+arrows for fine control
 - Tab navigation for focus traversal
 
 **Files:**
+
 - `src/common/view/KeyboardShortcutsNode.ts` - Help dialog
 - `src/common/view/OscillatorResonatorNodeBuilder.ts` - Mass keyboard drag
 - `src/chladni-patterns/view/ExcitationMarkerNode.ts` - Excitation marker keyboard drag
@@ -39,6 +43,7 @@ The simulation has excellent screen reader support through the Parallel DOM:
 ### Sonification - Implemented
 
 **`ResonanceSonification.ts`** provides audio feedback:
+
 - Base pitch follows simulation frequency (scaled to audible 220-880 Hz)
 - Volume increases as resonance strength increases
 - Clear audio cue when at a resonance peak (threshold: 0.7 normalized strength)
@@ -47,6 +52,7 @@ The simulation has excellent screen reader support through the Parallel DOM:
 ### Preferences Support - Declared
 
 In `main.ts`:
+
 ```typescript
 audioOptions: {
   supportsVoicing: true,  // Declared but NOT implemented
@@ -67,6 +73,7 @@ visualOptions: {
 **Status**: The sim declares `supportsVoicing: true` but doesn't use SceneryStack's Voicing API.
 
 **What's Missing**:
+
 - No `Voicing` mixin applied to interactive nodes
 - No `voicingNameResponse`, `voicingObjectResponse`, `voicingContextResponse`
 - No spoken descriptions when elements receive focus
@@ -96,6 +103,7 @@ class MyVoicingControl extends VoicingNode {
 **Status**: No dynamic announcements for state changes.
 
 **What's Missing**:
+
 - No alerts when resonance is detected
 - No announcements when frequency sweep completes
 - No feedback when parameters change significantly
@@ -114,7 +122,7 @@ model.isAtResonanceProperty.link((isAtResonance) => {
       new Utterance({
         alert: `Resonance peak detected at ${frequency} hertz`,
         alertStableDelay: 500,
-      })
+      }),
     );
   }
 });
@@ -123,6 +131,7 @@ model.isAtResonanceProperty.link((isAtResonance) => {
 **Priority**: P1 (Low effort, high impact for screen reader users)
 
 **Suggested alerts**:
+
 - "Resonance peak detected at {{frequency}} Hz" (string already exists!)
 - "Frequency sweep complete"
 - "Particles replenished"
@@ -141,11 +150,13 @@ SceneryStack's interactive highlights show visual focus indicators for keyboard 
 The existing `KeyboardShortcutsNode` uses generic sections. Could add custom shortcuts:
 
 **Chladni screen** (string already exists in i18n):
+
 - Space = Play/Pause
 - Arrows = Frequency adjustment
 - R = Reset/Replenish
 
 **Oscillator screens**:
+
 - Space = Play/Pause
 - 1-6 = Apply presets
 - G = Toggle gravity
@@ -158,36 +169,40 @@ Already supports projector mode via `supportsProjectorMode: true` and uses `Prof
 
 ## Implementation Priority
 
-| Feature | Effort | Impact | Priority | Status |
-|---------|--------|--------|----------|--------|
-| Utterance alerts for resonance | Low | High | P1 | ✅ Done |
-| Sweep complete announcement | Low | Medium | P1 | ✅ Done |
-| Play/pause announcements | Low | Medium | P1 | ✅ Done |
-| Material/gravity/count alerts | Low | Medium | P1 | ✅ Done |
-| Voicing for excitation marker | Medium | Medium | P2 | ✅ Done |
-| Custom keyboard shortcuts help | Low | Low | P3 | ✅ Done |
-| Voicing for sliders | Medium | Medium | P2 | Open |
+| Feature                        | Effort | Impact | Priority | Status  |
+| ------------------------------ | ------ | ------ | -------- | ------- |
+| Utterance alerts for resonance | Low    | High   | P1       | ✅ Done |
+| Sweep complete announcement    | Low    | Medium | P1       | ✅ Done |
+| Play/pause announcements       | Low    | Medium | P1       | ✅ Done |
+| Material/gravity/count alerts  | Low    | Medium | P1       | ✅ Done |
+| Voicing for excitation marker  | Medium | Medium | P2       | ✅ Done |
+| Custom keyboard shortcuts help | Low    | Low    | P3       | ✅ Done |
+| Voicing for sliders            | Medium | Medium | P2       | Open    |
 
 ---
 
 ## Implemented Changes
 
 ### ChladniScreenView.ts
+
 - ✅ Utterance alerts for resonance peak detection
 - ✅ Sweep complete announcement
 - ✅ Play/pause state announcements
 - ✅ Material change announcements
 
 ### BaseOscillatorScreenView.ts
+
 - ✅ Play/pause state announcements
 - ✅ Gravity toggle announcements
 - ✅ Resonator count change announcements
 
 ### ExcitationMarkerNode.ts
+
 - ✅ Voicing mixin applied
 - ✅ voicingNameResponse and voicingHintResponse set
 
 ### KeyboardShortcutsNode.ts
+
 - ✅ SimulationShortcutsKeyboardHelpSection (Space, Arrows, R, Escape)
 - ✅ DragObjectsKeyboardHelpSection (Arrow keys, Shift+Arrows)
 
@@ -195,14 +210,14 @@ Already supports projector mode via `supportsProjectorMode: true` and uses `Prof
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `ChladniScreenView.ts` | Added utterance alerts for resonance, sweep, play/pause, material |
-| `BaseOscillatorScreenView.ts` | Added utterance for play/pause, gravity, resonator count |
-| `ExcitationMarkerNode.ts` | Added Voicing mixin with spoken responses |
-| `KeyboardShortcutsNode.ts` | Added custom sections for simulation shortcuts |
-| `strings_en.json` | Added new a11y alert strings |
-| `strings_fr.json` | Added French translations for alerts |
+| File                          | Changes                                                           |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `ChladniScreenView.ts`        | Added utterance alerts for resonance, sweep, play/pause, material |
+| `BaseOscillatorScreenView.ts` | Added utterance for play/pause, gravity, resonator count          |
+| `ExcitationMarkerNode.ts`     | Added Voicing mixin with spoken responses                         |
+| `KeyboardShortcutsNode.ts`    | Added custom sections for simulation shortcuts                    |
+| `strings_en.json`             | Added new a11y alert strings                                      |
+| `strings_fr.json`             | Added French translations for alerts                              |
 
 ---
 

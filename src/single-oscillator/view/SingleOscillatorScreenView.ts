@@ -10,7 +10,10 @@ import { BaseOscillatorScreenView } from "../../common/view/BaseOscillatorScreen
 import { SingleOscillatorModel } from "../model/SingleOscillatorModel.js";
 
 export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
-  public constructor(model: SingleOscillatorModel, options?: ScreenViewOptions) {
+  public constructor(
+    model: SingleOscillatorModel,
+    options?: ScreenViewOptions,
+  ) {
     super(model, options);
   }
 }

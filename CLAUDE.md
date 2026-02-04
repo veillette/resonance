@@ -365,17 +365,17 @@ callback: (_tandem: Tandem) => { ... }
 
 ## Key Files for Common Tasks
 
-| Task                        | Files                                                              |
-| --------------------------- | ------------------------------------------------------------------ |
-| Add new physics parameter   | `ResonanceModel.ts`, `ResonanceConstants.ts`                       |
-| Add new color               | `ResonanceColors.ts`                                               |
-| Add new string              | `strings_en.json`, `ResonanceStrings.ts`                           |
-| Modify oscillator controls  | `common/view/OscillatorControlPanel.ts`                            |
-| Modify Chladni controls     | `chladni-patterns/view/ChladniControlPanel.ts`                     |
-| Change solver behavior      | `common/model/` solvers                                            |
-| Add preference              | `ResonancePreferencesModel.ts`, `main.ts`                          |
-| Add new oscillator screen   | Extend `BaseOscillatorScreenModel`/`View`, register in `main.ts`   |
-| Customize oscillator screen | Override methods in screen-specific model/view classes             |
+| Task                        | Files                                                            |
+| --------------------------- | ---------------------------------------------------------------- |
+| Add new physics parameter   | `ResonanceModel.ts`, `ResonanceConstants.ts`                     |
+| Add new color               | `ResonanceColors.ts`                                             |
+| Add new string              | `strings_en.json`, `ResonanceStrings.ts`                         |
+| Modify oscillator controls  | `common/view/OscillatorControlPanel.ts`                          |
+| Modify Chladni controls     | `chladni-patterns/view/ChladniControlPanel.ts`                   |
+| Change solver behavior      | `common/model/` solvers                                          |
+| Add preference              | `ResonancePreferencesModel.ts`, `main.ts`                        |
+| Add new oscillator screen   | Extend `BaseOscillatorScreenModel`/`View`, register in `main.ts` |
+| Customize oscillator screen | Override methods in screen-specific model/view classes           |
 
 ## Related Documentation
 

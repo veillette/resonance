@@ -302,7 +302,10 @@ export class OscillatorResonatorNodeBuilder {
       }
 
       // Create spring node
-      const springNode = OscillatorResonatorNodeBuilder.createSpringNode(resonatorModel, i);
+      const springNode = OscillatorResonatorNodeBuilder.createSpringNode(
+        resonatorModel,
+        i,
+      );
       springNodes.push(springNode);
 
       // Create mass node

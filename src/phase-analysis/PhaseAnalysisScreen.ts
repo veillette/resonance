@@ -11,7 +11,10 @@ import ResonanceColors from "../common/ResonanceColors.js";
 import { KeyboardShortcutsNode } from "../common/view/KeyboardShortcutsNode.js";
 import { ResonanceStrings } from "../i18n/ResonanceStrings.js";
 
-export class PhaseAnalysisScreen extends Screen<PhaseAnalysisModel, PhaseAnalysisScreenView> {
+export class PhaseAnalysisScreen extends Screen<
+  PhaseAnalysisModel,
+  PhaseAnalysisScreenView
+> {
   public constructor(
     preferencesModel: ResonancePreferencesModel,
     options: ScreenOptions,
