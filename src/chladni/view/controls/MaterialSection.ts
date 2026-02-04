@@ -63,6 +63,9 @@ export class MaterialSection extends VBox {
         xMargin: ResonanceConstants.COMBO_BOX_X_MARGIN,
         yMargin: ResonanceConstants.COMBO_BOX_Y_MARGIN,
         cornerRadius: ResonanceConstants.COMBO_BOX_CORNER_RADIUS,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.chladni.a11y.controlPanel.materialLabelStringProperty,
       },
     );
 

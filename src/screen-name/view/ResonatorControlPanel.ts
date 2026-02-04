@@ -184,6 +184,12 @@ export class ResonatorControlPanel extends Panel {
       yMargin: ResonanceConstants.CONTROL_PANEL_Y_MARGIN,
       right: layoutBounds.maxX - ResonanceConstants.CONTROL_PANEL_RIGHT_MARGIN,
       top: layoutBounds.minY + ResonanceConstants.CONTROL_PANEL_TOP_MARGIN,
+      // Accessibility
+      tagName: "div",
+      labelTagName: "h2",
+      labelContent: ResonanceStrings.a11y.resonatorPanel.labelStringProperty,
+      descriptionContent:
+        ResonanceStrings.a11y.resonatorPanel.descriptionStringProperty,
     });
 
     // Store references for instance methods
@@ -357,6 +363,10 @@ export class ResonatorControlPanel extends Panel {
       {
         arrowsPosition: "bothRight",
         arrowsScale: 0.8,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.a11y.resonatorPanel
+            .resonatorSelectorLabelStringProperty,
       },
     );
 
@@ -475,6 +485,9 @@ export class ResonatorControlPanel extends Panel {
         trackFillLeft: ResonanceColors.gravityToggleOffProperty,
         trackFillRight: ResonanceColors.gravityToggleOnProperty,
         scale: 0.7,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.a11y.resonatorPanel.gravityToggleLabelStringProperty,
       },
     );
 
@@ -506,6 +519,9 @@ export class ResonatorControlPanel extends Panel {
       }),
       {
         boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.a11y.resonatorPanel.rulerCheckboxLabelStringProperty,
       },
     );
   }

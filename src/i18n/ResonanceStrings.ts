@@ -79,6 +79,9 @@ export const ResonanceStrings = {
 
   // Chladni screen strings
   chladni: strings.resonance.chladni,
+
+  // Accessibility strings for oscillator screen
+  a11y: strings.resonance.a11y,
 };
 
 // Export for backward compatibility

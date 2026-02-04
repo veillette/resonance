@@ -16,7 +16,14 @@ import { NumberControlFactory } from "../../common/view/NumberControlFactory.js"
 
 export class DriverControlNode extends Node {
   public constructor(model: SimModel) {
-    super();
+    super({
+      // Accessibility: make the driver control box accessible as a group
+      tagName: "div",
+      labelTagName: "h3",
+      labelContent: ResonanceStrings.a11y.driverControl.labelStringProperty,
+      descriptionContent:
+        ResonanceStrings.a11y.driverControl.descriptionStringProperty,
+    });
 
     // Grey driver box
     const driverBox = new Rectangle(
@@ -51,6 +58,9 @@ export class DriverControlNode extends Node {
         trackFillRight: ResonanceColors.toggleTrackOnProperty,
         thumbFill: "white",
         scale: 0.7,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.a11y.driverControl.powerToggleLabelStringProperty,
       },
     );
     const powerToggleBox = new VBox({

@@ -65,6 +65,9 @@ export class GrainSection extends VBox {
         xMargin: ResonanceConstants.COMBO_BOX_X_MARGIN,
         yMargin: ResonanceConstants.COMBO_BOX_Y_MARGIN,
         cornerRadius: ResonanceConstants.COMBO_BOX_CORNER_RADIUS,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.chladni.a11y.controlPanel.grainsLabelStringProperty,
       },
     );
 
@@ -105,6 +108,10 @@ export class GrainSection extends VBox {
         baseColor: ResonanceColors.subPanelFillProperty,
         textFill: replenishTextFillProperty,
         enabledProperty: replenishEnabledProperty,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.chladni.a11y.controlPanel
+            .replenishButtonLabelStringProperty,
       },
     );
 
@@ -158,6 +165,10 @@ export class GrainSection extends VBox {
         radioButtonOptions: {
           radius: 8,
         },
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.chladni.a11y.controlPanel
+            .boundaryModeLabelStringProperty,
       },
     );
 

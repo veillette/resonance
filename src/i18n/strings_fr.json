@@ -91,6 +91,50 @@
     "content": {
       "sampleText": "Le contenu va ici"
     },
+    "a11y": {
+      "driverControl": {
+        "label": "Boîte de Contrôle du Conducteur",
+        "description": "Contrôles pour la plaque conductrice oscillante qui alimente les résonateurs",
+        "powerToggleLabel": "Interrupteur d'Alimentation",
+        "powerToggleDescription": "Active ou désactive la force de conduite",
+        "frequencySliderLabel": "Fréquence de Conduite",
+        "frequencySliderDescription": "Ajuste la fréquence de la plaque conductrice oscillante",
+        "amplitudeSliderLabel": "Amplitude de Conduite",
+        "amplitudeSliderDescription": "Ajuste l'amplitude de la plaque conductrice oscillante"
+      },
+      "playbackControl": {
+        "label": "Contrôles de Lecture",
+        "description": "Contrôles pour la vitesse de lecture et lecture/pause",
+        "speedControlLabel": "Vitesse de Simulation",
+        "speedControlDescription": "Choisissez entre vitesse de simulation lente et normale"
+      },
+      "resonatorPanel": {
+        "label": "Panneau de Contrôle du Résonateur",
+        "description": "Contrôles pour configurer les résonateurs incluant masse, constante de ressort et amortissement",
+        "resonatorCountLabel": "Nombre de Résonateurs",
+        "resonatorCountDescription": "Ajuste combien de résonateurs sont affichés",
+        "configLabel": "Configuration du Résonateur",
+        "configDescription": "Choisissez comment plusieurs résonateurs sont configurés",
+        "resonatorSelectorLabel": "Sélecteur de Résonateur",
+        "resonatorSelectorDescription": "Sélectionnez quel résonateur ajuster",
+        "massControlLabel": "Contrôle de Masse",
+        "massControlDescription": "Ajuste la masse du résonateur sélectionné",
+        "springConstantControlLabel": "Contrôle de Constante de Ressort",
+        "springConstantControlDescription": "Ajuste la rigidité du ressort du résonateur sélectionné",
+        "dampingControlLabel": "Contrôle d'Amortissement",
+        "dampingControlDescription": "Ajuste le coefficient d'amortissement pour tous les résonateurs",
+        "gravityToggleLabel": "Interrupteur de Gravité",
+        "gravityToggleDescription": "Active ou désactive la gravité dans la simulation",
+        "rulerCheckboxLabel": "Visibilité de la Règle",
+        "rulerCheckboxDescription": "Affiche ou masque la règle de mesure"
+      },
+      "resonator": {
+        "springLabel": "Ressort {{number}}",
+        "springDescription": "Ressort élastique connectant la masse {{number}} à la plaque conductrice",
+        "massLabel": "Masse {{number}}",
+        "massDescription": "Masse déplaçable sur le résonateur {{number}}. Utilisez les touches fléchées pour déplacer verticalement."
+      }
+    },
     "presets": {
       "lightAndBouncy": "Léger et Élastique",
       "heavyAndSlow": "Lourd et Lent",
@@ -151,7 +195,29 @@
         "rulerLabel": "Règle de Mesure",
         "rulerDescription": "Règle montrant les dimensions de la plaque. Largeur: {{width}} cm, Hauteur: {{height}} cm. Graduations principales tous les 5 cm.",
         "gridLabel": "Grille de Référence",
-        "gridDescription": "Superposition de grille pour référence spatiale sur la plaque de {{width}} cm par {{height}} cm. Lignes principales tous les 5 cm, lignes mineures tous les 1 cm."
+        "gridDescription": "Superposition de grille pour référence spatiale sur la plaque de {{width}} cm par {{height}} cm. Lignes principales tous les 5 cm, lignes mineures tous les 1 cm.",
+        "controlPanel": {
+          "materialLabel": "Sélection du Matériau",
+          "materialDescription": "Choisissez le matériau de la plaque qui affecte les fréquences de résonance",
+          "frequencyLabel": "Contrôle de Fréquence",
+          "frequencyDescription": "Ajustez la fréquence d'excitation de la plaque",
+          "sweepButtonLabel": "Balayage de Fréquence",
+          "sweepButtonDescription": "Balaye automatiquement la plage de fréquence pour trouver les résonances",
+          "grainsLabel": "Nombre de Grains",
+          "grainsDescription": "Sélectionnez le nombre de particules sur la plaque",
+          "replenishButtonLabel": "Renouveler les Grains",
+          "replenishButtonDescription": "Réinitialiser les particules au nombre sélectionné",
+          "boundaryModeLabel": "Mode de Limite",
+          "boundaryModeDescription": "Choisissez ce qui arrive aux particules aux bords de la plaque",
+          "showResonanceCurveLabel": "Afficher la Courbe de Résonance",
+          "showResonanceCurveDescription": "Basculer la visibilité du graphique d'amplitude de résonance",
+          "showRulerLabel": "Afficher la Règle",
+          "showRulerDescription": "Basculer la visibilité de la règle de mesure",
+          "showGridLabel": "Afficher la Grille",
+          "showGridDescription": "Basculer la visibilité de la grille de référence",
+          "showColormapLabel": "Afficher le Déplacement",
+          "showColormapDescription": "Basculer la visibilité de la carte de couleurs de déplacement"
+        }
       }
     }
   }
