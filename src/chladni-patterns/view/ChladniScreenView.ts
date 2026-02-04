@@ -19,6 +19,7 @@
  */
 
 import { Multilink } from "scenerystack/axon";
+import { Utterance, utteranceQueue } from "scenerystack/utterance-queue";
 import { ScreenView, ScreenViewOptions, audioManager } from "scenerystack/sim";
 import {
   DragListener,
@@ -285,6 +286,47 @@ export class ChladniScreenView extends ScreenView {
       model,
       audioManager.audioAndSoundEnabledProperty,
     );
+
+    // Set up screen reader alerts for resonance detection
+    this.setupAccessibilityAlerts();
+  }
+
+  /**
+   * Set up screen reader alerts for important state changes.
+   * Uses utteranceQueue to announce when resonance peaks are detected.
+   */
+  private setupAccessibilityAlerts(): void {
+    // Create reusable utterance for resonance alerts
+    const resonanceUtterance = new Utterance({
+      alertStableDelay: 500, // Wait for frequency to stabilize before announcing
+      priority: Utterance.MEDIUM_PRIORITY,
+    });
+
+    // Announce when a resonance peak is detected
+    this.sonification.isAtResonanceProperty.lazyLink((isAtResonance) => {
+      if (isAtResonance) {
+        const frequency = this.model.frequencyProperty.value.toFixed(0);
+        // Use the existing i18n string with interpolation
+        const alertString =
+          ResonanceStrings.chladni.a11y.resonancePeakAlertStringProperty.value.replace(
+            "{{frequency}}",
+            frequency,
+          );
+        resonanceUtterance.alert = alertString;
+        utteranceQueue.addToBack(resonanceUtterance);
+      }
+    });
+
+    // Announce when frequency sweep completes
+    this.model.sweepController.sweepCompletedEmitter.addListener(() => {
+      utteranceQueue.addToBack(
+        new Utterance({
+          alert:
+            ResonanceStrings.chladni.a11y.sweepCompleteAlertStringProperty.value,
+          priority: Utterance.LOW_PRIORITY,
+        }),
+      );
+    });
   }
 
   /**
