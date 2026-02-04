@@ -268,9 +268,9 @@ getDerivatives(t: number, state: number[]): number[] {
 }
 ```
 
-### 6. Multiple Oscillator System (SimModel)
+### 6. Multiple Oscillator System (BaseOscillatorScreenModel)
 
-The `SimModel` wraps and manages multiple `ResonanceModel` instances, allowing for comparative study of resonance phenomena.
+The `BaseOscillatorScreenModel` wraps and manages multiple `ResonanceModel` instances, allowing for comparative study of resonance phenomena.
 
 #### Configuration Modes
 
@@ -309,12 +309,13 @@ Five preset modes determine how multiple oscillators' parameters are distributed
 ```typescript
 // User-facing: 1-indexed display (Resonator 1, 2, 3...)
 // Internal: 0-indexed arrays
-resonatorSelectionProperty: NumberProperty; // Which oscillator to view/edit
+selectedResonatorIndexProperty: NumberProperty; // Which oscillator to view/edit (0-indexed)
 
-// Dynamic property binding
-displayedMassProperty: TReadOnlyProperty<number>;
-displayedSpringConstantProperty: TReadOnlyProperty<number>;
-// etc.
+// Access properties via getter method
+const resonator = model.getResonatorModel(index);
+const mass = resonator.massProperty.value;
+const springConstant = resonator.springConstantProperty.value;
+const naturalFrequencyHz = resonator.naturalFrequencyHzProperty.value;
 ```
 
 **Editing Rules:**
@@ -336,19 +337,26 @@ All oscillators share:
 #### Implementation Pattern
 
 ```typescript
-class SimModel extends BaseModel {
-  resonators: ResonanceModel[]; // Array of 1-10 oscillators
+class BaseOscillatorScreenModel {
+  resonanceModel: ResonanceModel;        // Reference model for shared parameters
+  resonatorModels: ResonanceModel[];     // Array of 1-10 oscillators
+  resonatorConfigProperty: Property<ResonatorConfigModeType>;
+  resonatorCountProperty: NumberProperty;
 
-  step(dt: number, forceStep?: boolean): void {
-    // Step all oscillators with same driver plate position
-    for (const resonator of this.resonators) {
-      resonator.step(dt, forceStep);
+  step(dt: number): void {
+    // Step all active oscillators
+    const count = this.resonatorCountProperty.value;
+    for (let i = 0; i < count; i++) {
+      const model = this.getResonatorModel(i);
+      if (!model.isDraggingProperty.value) {
+        model.step(dt);
+      }
     }
   }
 
-  updateDerivedResonators(): void {
-    // Called when base oscillator or mode changes
-    // Recalculates masses/spring constants for derived oscillators
+  getResonatorModel(index: number): ResonanceModel {
+    // Type-safe access with bounds checking
+    return this.resonatorModels[index];
   }
 }
 ```
