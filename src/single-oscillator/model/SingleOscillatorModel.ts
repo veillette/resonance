@@ -1,6 +1,7 @@
 /**
  * SingleOscillatorModel is the model for the Single Oscillator screen.
- * It extends BaseOscillatorScreenModel and provides the same functionality.
+ * It extends BaseOscillatorScreenModel with singleOscillatorMode enabled,
+ * which hides multi-oscillator UI controls in the view.
  *
  * In the future, this class can be extended to add screen-specific behavior.
  */
@@ -10,6 +11,6 @@ import { ResonancePreferencesModel } from "../../preferences/ResonancePreference
 
 export class SingleOscillatorModel extends BaseOscillatorScreenModel {
   public constructor(preferencesModel: ResonancePreferencesModel) {
-    super(preferencesModel);
+    super(preferencesModel, { singleOscillatorMode: true });
   }
 }

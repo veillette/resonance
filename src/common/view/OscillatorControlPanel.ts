@@ -45,6 +45,14 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ListenerTracker } from "../util/index.js";
 import { NumberControlFactory } from "./NumberControlFactory.js";
 
+export type OscillatorControlPanelOptions = {
+  /**
+   * When true, hides multi-oscillator controls (resonator count slider,
+   * configuration combo box, and resonator selection spinner).
+   */
+  singleOscillatorMode?: boolean;
+};
+
 export class OscillatorControlPanel extends Panel {
   /**
    * The combo box list parent node. Must be added to the scene graph above the panel
@@ -76,13 +84,18 @@ export class OscillatorControlPanel extends Panel {
   // Natural frequency text element
   private readonly naturalFrequencyText: Text;
 
+  // Whether to hide multi-oscillator controls
+  private readonly singleOscillatorMode: boolean;
+
   public constructor(
     model: BaseOscillatorScreenModel,
     layoutBounds: Bounds2,
     rulerVisibleProperty: Property<boolean>,
+    options?: OscillatorControlPanelOptions,
   ) {
     // Store model reference for use in methods
     const tempModel = model;
+    const singleOscillatorMode = options?.singleOscillatorMode ?? false;
 
     // --- Create all controls using extracted methods ---
     const gravityEnabledProperty =
@@ -137,14 +150,14 @@ export class OscillatorControlPanel extends Panel {
 
     // --- Create sub-panel for mass/spring/resonator/frequency controls ---
     // Use a light blue color to contrast with the green main panel
+    // In single oscillator mode, hide the resonator selection box
+    const subPanelChildren = singleOscillatorMode
+      ? [massControl, springConstantControl, naturalFrequencyBox]
+      : [resonatorSelectionBox, massControl, springConstantControl, naturalFrequencyBox];
+
     const massSpringResonatorSubPanel = new Panel(
       new VBox({
-        children: [
-          resonatorSelectionBox,
-          massControl,
-          springConstantControl,
-          naturalFrequencyBox,
-        ],
+        children: subPanelChildren,
         spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
         align: "left",
       }),
@@ -159,23 +172,39 @@ export class OscillatorControlPanel extends Panel {
     );
 
     // --- Assemble panel content ---
+    // In single oscillator mode, hide the resonator count slider and config box
+    const topSeparator = new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
+      stroke: ResonanceColors.textProperty,
+      lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
+    });
+    const bottomSeparator = new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
+      stroke: ResonanceColors.textProperty,
+      lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
+    });
+
+    const panelChildren: Node[] = singleOscillatorMode
+      ? [
+          // Single oscillator mode: no resonator count or config controls
+          massSpringResonatorSubPanel,
+          dampingControl,
+          bottomSeparator,
+          gravityBox,
+          rulerCheckbox,
+        ]
+      : [
+          // Multiple oscillators mode: full controls
+          resonatorCountControl,
+          configBoxContainer, // Container that swaps between configBox and strut
+          topSeparator,
+          massSpringResonatorSubPanel,
+          dampingControl,
+          bottomSeparator,
+          gravityBox,
+          rulerCheckbox,
+        ];
+
     const controlPanelContent = new VBox({
-      children: [
-        resonatorCountControl,
-        configBoxContainer, // Container that swaps between configBox and strut
-        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
-          stroke: ResonanceColors.textProperty,
-          lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
-        }),
-        massSpringResonatorSubPanel,
-        dampingControl,
-        new Line(0, 0, ResonanceConstants.SEPARATOR_WIDTH, 0, {
-          stroke: ResonanceColors.textProperty,
-          lineWidth: ResonanceConstants.SEPARATOR_LINE_WIDTH,
-        }),
-        gravityBox,
-        rulerCheckbox,
-      ],
+      children: panelChildren,
       spacing: ResonanceConstants.CONTROL_PANEL_SPACING,
       align: "left",
     });
@@ -212,6 +241,7 @@ export class OscillatorControlPanel extends Panel {
     this.configBoxStrut = configBoxStrut;
     this.resonatorSelectionBox = resonatorSelectionBox;
     this.naturalFrequencyText = naturalFrequencyText;
+    this.singleOscillatorMode = singleOscillatorMode;
 
     // Setup listeners that need to be tracked for cleanup
     this.setupVisibilityListeners();
@@ -535,6 +565,11 @@ export class OscillatorControlPanel extends Panel {
    * Sets up listeners that control visibility of UI elements based on resonator count.
    */
   private setupVisibilityListeners(): void {
+    // Skip visibility management for multi-oscillator controls when in single oscillator mode
+    if (this.singleOscillatorMode) {
+      return;
+    }
+
     // Ensure resonator selector is always visible
     this.resonatorSelectionBox.visible = true;
 
@@ -555,6 +590,12 @@ export class OscillatorControlPanel extends Panel {
    */
   private setupMassSpringSync(): void {
     const updateControlsEnabledState = () => {
+      // In single oscillator mode, controls are always enabled
+      if (this.singleOscillatorMode) {
+        this.massControl.enabled = true;
+        this.springConstantControl.enabled = true;
+        return;
+      }
       const index = this.model.selectedResonatorIndexProperty.value;
       const isCustomMode =
         this.model.resonatorConfigProperty.value === ResonatorConfigMode.CUSTOM;
