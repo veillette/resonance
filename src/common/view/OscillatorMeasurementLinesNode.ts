@@ -109,7 +109,7 @@ export class OscillatorMeasurementLinesNode extends Node {
     driverTopY: number,
     driverWidth: number,
     modelViewTransform: ModelViewTransform2,
-    layoutBounds: Bounds2,
+    _layoutBounds: Bounds2,
   ) {
     super();
 
@@ -119,7 +119,12 @@ export class OscillatorMeasurementLinesNode extends Node {
     const maxDisplacement = 0.3; // Can go 30cm above equilibrium
 
     // Create the model with displacement bounds (0 cm and 14 cm from equilibrium)
-    this.model = new MeasurementLinesModel(minDisplacement, maxDisplacement, 0.0, 0.14);
+    this.model = new MeasurementLinesModel(
+      minDisplacement,
+      maxDisplacement,
+      0.0,
+      0.14,
+    );
 
     // Create view nodes for each line
     this.line1Node = new MeasurementLineNode(

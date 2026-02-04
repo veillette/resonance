@@ -475,9 +475,18 @@ export class BaseOscillatorScreenView extends ScreenView {
     );
     const equilibriumY = driverTopY - naturalLengthView;
 
+    // Convert spring end lengths from model to view coordinates
     const endLengths =
-      ResonanceConstants.SPRING_LEFT_END_LENGTH +
-      ResonanceConstants.SPRING_RIGHT_END_LENGTH;
+      Math.abs(
+        this.modelViewTransform.modelToViewDeltaY(
+          ResonanceConstants.SPRING_LEFT_END_LENGTH_MODEL,
+        ),
+      ) +
+      Math.abs(
+        this.modelViewTransform.modelToViewDeltaY(
+          ResonanceConstants.SPRING_RIGHT_END_LENGTH_MODEL,
+        ),
+      );
 
     for (let i = 0; i < count; i++) {
       const xCenter =
@@ -492,10 +501,11 @@ export class BaseOscillatorScreenView extends ScreenView {
       // With inverted Y transform: positive position = upward (spring stretched)
       // modelToViewDeltaY(positive) returns negative, so junctionY decreases (moves up on screen)
       const junctionY = equilibriumY + viewYOffset;
-      const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
+      // The mass bottom is at the junction point (local origin is at bottom of mass box)
+      const massBottomY = junctionY;
 
-      this.massNodes[i]!.centerX = xCenter;
-      this.massNodes[i]!.centerY = massCenterY;
+      this.massNodes[i]!.x = xCenter;
+      this.massNodes[i]!.y = massBottomY;
 
       const springStartY = driverTopY;
       const springEndY = junctionY;

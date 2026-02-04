@@ -70,8 +70,14 @@ export class MeasurementLinesModel {
     // x is fixed at 0
     this.dragBounds = new Bounds2(0, minDisplacement, 0, maxDisplacement);
 
-    this.line1 = new MeasurementLineModel(initialDisplacement1, this.dragBounds);
-    this.line2 = new MeasurementLineModel(initialDisplacement2, this.dragBounds);
+    this.line1 = new MeasurementLineModel(
+      initialDisplacement1,
+      this.dragBounds,
+    );
+    this.line2 = new MeasurementLineModel(
+      initialDisplacement2,
+      this.dragBounds,
+    );
   }
 
   public reset(): void {

@@ -64,6 +64,7 @@ export class OscillatorResonatorNodeBuilder {
   public static createSpringNode(
     resonatorModel: ResonanceModel,
     index: number,
+    modelViewTransform: ModelViewTransform2,
   ): ParametricSpringNode {
     // Generate accessible label with resonator number
     const springNumber = index + 1;
@@ -78,6 +79,18 @@ export class OscillatorResonatorNodeBuilder {
         String(springNumber),
       );
 
+    // Convert spring end lengths from model coordinates (meters) to view coordinates (pixels)
+    const leftEndLengthView = Math.abs(
+      modelViewTransform.modelToViewDeltaY(
+        ResonanceConstants.SPRING_LEFT_END_LENGTH_MODEL,
+      ),
+    );
+    const rightEndLengthView = Math.abs(
+      modelViewTransform.modelToViewDeltaY(
+        ResonanceConstants.SPRING_RIGHT_END_LENGTH_MODEL,
+      ),
+    );
+
     const springNode = new ParametricSpringNode({
       frontColor: ResonanceColors.springProperty,
       middleColor: ResonanceColors.springProperty,
@@ -87,8 +100,8 @@ export class OscillatorResonatorNodeBuilder {
       aspectRatio: ResonanceConstants.SPRING_ASPECT_RATIO,
       pointsPerLoop: ResonanceConstants.SPRING_POINTS_PER_LOOP,
       lineWidth: ResonanceConstants.SPRING_LINE_WIDTH,
-      leftEndLength: ResonanceConstants.SPRING_LEFT_END_LENGTH,
-      rightEndLength: ResonanceConstants.SPRING_RIGHT_END_LENGTH,
+      leftEndLength: leftEndLengthView,
+      rightEndLength: rightEndLengthView,
       rotation: -Math.PI / 2,
       boundsMethod: "none",
       // Accessibility
@@ -133,12 +146,20 @@ export class OscillatorResonatorNodeBuilder {
     const initialMassSize = OscillatorResonatorNodeBuilder.calculateMassSize(
       resonatorModel.massProperty.value,
     );
-    const massBox = new Rectangle(0, 0, initialMassSize, initialMassSize, {
-      fill: ResonanceColors.massProperty,
-      stroke: ResonanceColors.massStrokeProperty,
-      lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH,
-      cornerRadius: 3,
-    });
+    // Position the mass box so its bottom is at y=0 (local origin at bottom)
+    // This way, when mass size changes, the bottom stays fixed and it grows upward
+    const massBox = new Rectangle(
+      -initialMassSize / 2,
+      -initialMassSize,
+      initialMassSize,
+      initialMassSize,
+      {
+        fill: ResonanceColors.massProperty,
+        stroke: ResonanceColors.massStrokeProperty,
+        lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH,
+        cornerRadius: 3,
+      },
+    );
     // Use a fixed font size based on max resonators to avoid label size changes
     const massLabel = new Text(`${index + 1}`, {
       font: new PhetFont({
@@ -155,10 +176,10 @@ export class OscillatorResonatorNodeBuilder {
     massNode.addChild(massBox);
     massNode.addChild(massLabel);
 
-    // Update mass box size when mass changes
+    // Update mass box size when mass changes - bottom stays fixed, grows upward
     resonatorModel.massProperty.link((mass: number) => {
       const newSize = OscillatorResonatorNodeBuilder.calculateMassSize(mass);
-      massBox.setRect(0, 0, newSize, newSize);
+      massBox.setRect(-newSize / 2, -newSize, newSize, newSize);
       massLabel.center = massBox.center;
     });
 
@@ -180,6 +201,7 @@ export class OscillatorResonatorNodeBuilder {
 
     // Bidirectional sync: model position -> view position
     // Only update view from model when NOT dragging
+    // The mass bottom (junction point) is at the local origin (y=0)
     resonatorModel.positionProperty.link((modelPosition: number) => {
       // Skip model->view updates while dragging (user controls position)
       if (resonatorModel.isDraggingProperty.value) {
@@ -196,12 +218,13 @@ export class OscillatorResonatorNodeBuilder {
         // With inverted Y transform: positive position = upward (spring stretched)
         // modelToViewDeltaY(positive) returns negative, so junctionY decreases (moves up on screen)
         const junctionY = equilibriumY + viewYOffset;
-        const massCenterY = junctionY - ResonanceConstants.MASS_CENTER_OFFSET;
+        // The mass bottom is at the junction point (local origin is at bottom)
+        const massBottomY = junctionY;
 
-        // Keep x fixed, only update y
+        // Keep x fixed, only update y (this is the bottom position)
         massPositionProperty.value = new Vector2(
           massPositionProperty.value.x,
-          massCenterY,
+          massBottomY,
         );
       });
     });
@@ -209,8 +232,8 @@ export class OscillatorResonatorNodeBuilder {
     // View position -> model position (only active during drag)
     massPositionProperty.lazyLink((viewPosition: Vector2) => {
       positionGuard.run(() => {
-        const massCenterY = viewPosition.y;
-        const junctionY = massCenterY + ResonanceConstants.MASS_CENTER_OFFSET;
+        // The view position y is the mass bottom (junction point)
+        const junctionY = viewPosition.y;
 
         const naturalLength = resonatorModel.naturalLengthProperty.value;
         const naturalLengthView = Math.abs(
@@ -305,6 +328,7 @@ export class OscillatorResonatorNodeBuilder {
       const springNode = OscillatorResonatorNodeBuilder.createSpringNode(
         resonatorModel,
         i,
+        context.modelViewTransform,
       );
       springNodes.push(springNode);
 

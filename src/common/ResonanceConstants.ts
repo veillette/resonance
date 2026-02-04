@@ -45,7 +45,7 @@ const AMPLITUDE_CONTROL_BOTTOM_MARGIN = 40;
 // ===== PHYSICS RANGES =====
 
 const FREQUENCY_RANGE = new Range(0.0, 6); // 0 Hz to 6 Hz
-const AMPLITUDE_RANGE = new Range(0.000, 0.02); // 0.2 cm to 2 cm (in meters)
+const AMPLITUDE_RANGE = new Range(0.0, 0.02); // 0.2 cm to 2 cm (in meters)
 const RESONATOR_COUNT_RANGE = new Range(1, 10); // 1 to 10 resonators
 const MASS_RANGE = new Range(0.1, 5.0); // 0.1 kg to 5 kg
 const SPRING_CONSTANT_RANGE = new Range(10, 1200); // 10 N/m to 1200 N/m
@@ -65,7 +65,6 @@ const MIN_MASS_SIZE = 20; // pixels
 const MASS_STROKE_LINE_WIDTH = 3;
 const MASS_LABEL_FONT_SIZE_BASE = 24; // base font size
 const MASS_LABEL_FONT_SIZE_MIN = 10; // minimum font size
-const MASS_CENTER_OFFSET = 5; // pixels - offset of mass center above junction point
 
 // ParametricSpringNode configuration
 const SPRING_LOOPS = 10;
@@ -75,8 +74,10 @@ const SPRING_POINTS_PER_LOOP = 40;
 const SPRING_LINE_WIDTH = 1;
 const SPRING_LINE_WIDTH_MIN = 1; // minimum line width based on spring constant
 const SPRING_LINE_WIDTH_MAX = 5; // maximum line width based on spring constant
-const SPRING_LEFT_END_LENGTH = 5;
-const SPRING_RIGHT_END_LENGTH = 5;
+// Spring end lengths in model coordinates (meters)
+// These are the straight stem portions before/after the coils
+const SPRING_LEFT_END_LENGTH_MODEL = 0.005; // 0.5 cm stem at driver plate
+const SPRING_RIGHT_END_LENGTH_MODEL = 0.015; // 1.5 cm stem at mass connection
 const MIN_SPRING_XSCALE = 0.3;
 
 // ===== RULER =====
@@ -111,7 +112,7 @@ const COMBO_BOX_SPACING = 4;
 // ===== GRAVITY =====
 
 const GRAVITY_ACCELERATION = 1.62; // Moon's gravity (m/s²)
-const GRAVITY_BOX_SPACING = 10; 
+const GRAVITY_BOX_SPACING = 10;
 
 // ===== RULER CHECKBOX =====
 
@@ -125,7 +126,7 @@ const RESET_ALL_BOTTOM_MARGIN = 20; // 20px from bottom edge
 // ===== PLAYBACK CONTROLS =====
 
 const STEP_DT = 0.016; // 16ms for 60fps
-const PLAY_PAUSE_SCALE = 0.8; 
+const PLAY_PAUSE_SCALE = 0.8;
 const PLAYBACK_CONTROLS_SPACING = 10;
 const SPEED_CONTROL_SPACING = 5;
 const SPEED_RADIO_BUTTON_RADIUS = 8;
@@ -182,7 +183,6 @@ const ResonanceConstants = {
   MASS_STROKE_LINE_WIDTH,
   MASS_LABEL_FONT_SIZE_BASE,
   MASS_LABEL_FONT_SIZE_MIN,
-  MASS_CENTER_OFFSET,
   SPRING_LOOPS,
   SPRING_RADIUS,
   SPRING_ASPECT_RATIO,
@@ -190,8 +190,8 @@ const ResonanceConstants = {
   SPRING_LINE_WIDTH,
   SPRING_LINE_WIDTH_MIN,
   SPRING_LINE_WIDTH_MAX,
-  SPRING_LEFT_END_LENGTH,
-  SPRING_RIGHT_END_LENGTH,
+  SPRING_LEFT_END_LENGTH_MODEL,
+  SPRING_RIGHT_END_LENGTH_MODEL,
   MIN_SPRING_XSCALE,
 
   // Ruler
