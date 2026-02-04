@@ -44,12 +44,12 @@ const AMPLITUDE_CONTROL_BOTTOM_MARGIN = 40;
 
 // ===== PHYSICS RANGES =====
 
-const FREQUENCY_RANGE = new Range(0.0, 6);
+const FREQUENCY_RANGE = new Range(0.0, 6); // 0 Hz to 6 Hz
 const AMPLITUDE_RANGE = new Range(0.000, 0.02); // 0.2 cm to 2 cm (in meters)
-const RESONATOR_COUNT_RANGE = new Range(1, 10);
-const MASS_RANGE = new Range(0.1, 5.0);
-const SPRING_CONSTANT_RANGE = new Range(10, 1200);
-const DAMPING_RANGE = new Range(0.0, 5);
+const RESONATOR_COUNT_RANGE = new Range(1, 10); // 1 to 10 resonators
+const MASS_RANGE = new Range(0.1, 5.0); // 0.1 kg to 5 kg
+const SPRING_CONSTANT_RANGE = new Range(10, 1200); // 10 N/m to 1200 N/m
+const DAMPING_RANGE = new Range(0.0, 5); // 0 N·s/m to 5 N·s/m
 
 // ===== MODEL-VIEW TRANSFORM =====
 
@@ -111,21 +111,21 @@ const COMBO_BOX_SPACING = 4;
 // ===== GRAVITY =====
 
 const GRAVITY_ACCELERATION = 1.62; // Moon's gravity (m/s²)
-const GRAVITY_BOX_SPACING = 10;
+const GRAVITY_BOX_SPACING = 10; 
 
 // ===== RULER CHECKBOX =====
 
-const RULER_CHECKBOX_BOX_WIDTH = 18;
+const RULER_CHECKBOX_BOX_WIDTH = 18; // 18px wide
 
 // ===== RESET ALL BUTTON =====
 
-const RESET_ALL_RIGHT_MARGIN = 20;
-const RESET_ALL_BOTTOM_MARGIN = 20;
+const RESET_ALL_RIGHT_MARGIN = 20; // 20px from right edge
+const RESET_ALL_BOTTOM_MARGIN = 20; // 20px from bottom edge
 
 // ===== PLAYBACK CONTROLS =====
 
-const STEP_DT = 0.016;
-const PLAY_PAUSE_SCALE = 0.8;
+const STEP_DT = 0.016; // 16ms for 60fps
+const PLAY_PAUSE_SCALE = 0.8; 
 const PLAYBACK_CONTROLS_SPACING = 10;
 const SPEED_CONTROL_SPACING = 5;
 const SPEED_RADIO_BUTTON_RADIUS = 8;
