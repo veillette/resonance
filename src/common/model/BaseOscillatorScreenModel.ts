@@ -1,15 +1,5 @@
-import { ResonanceModel } from "../../common/model/index.js";
-import {
-  ResonatorConfigMode,
-  ResonatorConfigModeType,
-} from "../../common/model/ResonatorConfigMode.js";
-import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
-import { Property, NumberProperty } from "scenerystack/axon";
-import { TimeSpeed } from "../../common/model/BaseModel.js";
-import { CircularUpdateGuard } from "../../common/util/index.js";
-
 /**
- * Main model for the Resonance simulation.
+ * Base model for oscillator-based screens (Single Oscillator, Multiple Oscillators, Phase Analysis).
  *
  * Manages multiple independent ResonanceModel instances (one per resonator).
  * The resonator configuration mode determines how masses and spring constants
@@ -25,7 +15,18 @@ import { CircularUpdateGuard } from "../../common/util/index.js";
  * - SAME_FREQUENCY: Same as MIXED (both scale proportionally to maintain constant f)
  * - CUSTOM: User sets all parameters manually
  */
-export class SimModel {
+
+import { ResonanceModel } from "./ResonanceModel.js";
+import {
+  ResonatorConfigMode,
+  ResonatorConfigModeType,
+} from "./ResonatorConfigMode.js";
+import { ResonancePreferencesModel } from "../../preferences/ResonancePreferencesModel.js";
+import { Property, NumberProperty } from "scenerystack/axon";
+import { TimeSpeed } from "./BaseModel.js";
+import { CircularUpdateGuard } from "../util/index.js";
+
+export class BaseOscillatorScreenModel {
   // The first resonance model acts as the "reference" model that controls
   // drive parameters, damping, gravity, etc. shared across all resonators.
   public readonly resonanceModel: ResonanceModel;
@@ -42,7 +43,7 @@ export class SimModel {
   // Index of the currently selected resonator for editing (0-indexed)
   public readonly selectedResonatorIndexProperty: NumberProperty;
 
-  private readonly preferencesModel: ResonancePreferencesModel;
+  protected readonly preferencesModel: ResonancePreferencesModel;
 
   // Guard to prevent circular updates when parameters change
   private readonly parameterGuard = new CircularUpdateGuard();
@@ -63,7 +64,7 @@ export class SimModel {
     this.selectedResonatorIndexProperty = new NumberProperty(0); // Start with first resonator selected
 
     // Pre-create all resonator models
-    for (let i = 1; i < SimModel.MAX_RESONATORS; i++) {
+    for (let i = 1; i < BaseOscillatorScreenModel.MAX_RESONATORS; i++) {
       const model = new ResonanceModel(preferencesModel);
       this.resonatorModels.push(model);
     }

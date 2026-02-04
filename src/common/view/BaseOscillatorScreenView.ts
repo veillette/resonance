@@ -1,5 +1,22 @@
+/**
+ * BaseOscillatorScreenView is the shared view for oscillator-based screens.
+ * It provides the common UI elements for:
+ * - Single Oscillator
+ * - Multiple Oscillators
+ * - Phase Analysis
+ *
+ * This includes:
+ * - Driver plate and connection rod
+ * - Measurement lines
+ * - Resonators (springs + masses)
+ * - Control panel
+ * - Reset button
+ * - Playback controls
+ * - Ruler
+ */
+
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
-import { SimModel } from "../model/SimModel.js";
+import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
 import {
   ResetAllButton,
   RulerNode,
@@ -10,32 +27,32 @@ import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import { Vector2Property } from "scenerystack/dot";
-import ResonanceColors from "../../common/ResonanceColors.js";
-import ResonanceConstants from "../../common/ResonanceConstants.js";
+import ResonanceColors from "../ResonanceColors.js";
+import ResonanceConstants from "../ResonanceConstants.js";
 import { Property } from "scenerystack/axon";
-import { DriverControlNode } from "./DriverControlNode.js";
-import { ResonatorControlPanel } from "./ResonatorControlPanel.js";
-import { PlaybackControlNode } from "./PlaybackControlNode.js";
+import { OscillatorDriverControlNode } from "./OscillatorDriverControlNode.js";
+import { OscillatorControlPanel } from "./OscillatorControlPanel.js";
+import { OscillatorPlaybackControlNode } from "./OscillatorPlaybackControlNode.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
-import { ResonatorNodeBuilder } from "./ResonatorNodeBuilder.js";
-import { MeasurementLinesNode } from "./MeasurementLinesNode.js";
+import { OscillatorResonatorNodeBuilder } from "./OscillatorResonatorNodeBuilder.js";
+import { OscillatorMeasurementLinesNode } from "./OscillatorMeasurementLinesNode.js";
 
-export class SimScreenView extends ScreenView {
-  private readonly model: SimModel;
-  private readonly modelViewTransform: ModelViewTransform2;
-  private readonly resonatorsContainer: Node;
-  private springNodes: ParametricSpringNode[] = [];
-  private massNodes: Node[] = [];
-  private readonly rulerNode: RulerNode;
-  private readonly rulerVisibleProperty: Property<boolean>;
-  private readonly rulerPositionProperty: Vector2Property;
-  private readonly measurementLinesNode: MeasurementLinesNode;
-  private readonly controlPanel: ResonatorControlPanel;
-  private readonly driverNode: DriverControlNode;
-  private driverPlate!: Rectangle;
-  private connectionRod!: Rectangle;
+export class BaseOscillatorScreenView extends ScreenView {
+  protected readonly model: BaseOscillatorScreenModel;
+  protected readonly modelViewTransform: ModelViewTransform2;
+  protected readonly resonatorsContainer: Node;
+  protected springNodes: ParametricSpringNode[] = [];
+  protected massNodes: Node[] = [];
+  protected readonly rulerNode: RulerNode;
+  protected readonly rulerVisibleProperty: Property<boolean>;
+  protected readonly rulerPositionProperty: Vector2Property;
+  protected readonly measurementLinesNode: OscillatorMeasurementLinesNode;
+  protected readonly controlPanel: OscillatorControlPanel;
+  protected readonly driverNode: OscillatorDriverControlNode;
+  protected driverPlate!: Rectangle;
+  protected connectionRod!: Rectangle;
 
-  public constructor(model: SimModel, options?: ScreenViewOptions) {
+  public constructor(model: BaseOscillatorScreenModel, options?: ScreenViewOptions) {
     super(options);
 
     this.model = model;
@@ -71,7 +88,7 @@ export class SimScreenView extends ScreenView {
     const simulationArea = new Node();
 
     // ===== DRIVER CONTROL BOX =====
-    this.driverNode = new DriverControlNode(model);
+    this.driverNode = new OscillatorDriverControlNode(model);
     this.driverNode.centerX =
       this.layoutBounds.centerX + ResonanceConstants.DRIVER_CENTER_X_OFFSET;
     this.driverNode.bottom =
@@ -83,7 +100,7 @@ export class SimScreenView extends ScreenView {
 
     // ===== MEASUREMENT LINES =====
     // Must be created before resonators since measurement lines appear behind them
-    this.measurementLinesNode = new MeasurementLinesNode(
+    this.measurementLinesNode = new OscillatorMeasurementLinesNode(
       this.driverPlate.centerX,
       this.driverPlate.top,
       ResonanceConstants.DRIVER_BOX_WIDTH,
@@ -108,7 +125,7 @@ export class SimScreenView extends ScreenView {
     this.addChild(simulationArea);
 
     // ===== CONTROL PANEL (right side) =====
-    this.controlPanel = new ResonatorControlPanel(
+    this.controlPanel = new OscillatorControlPanel(
       model,
       this.layoutBounds,
       this.rulerVisibleProperty,
@@ -131,7 +148,7 @@ export class SimScreenView extends ScreenView {
     this.addChild(resetAllButton);
 
     // ===== PLAYBACK CONTROLS =====
-    const playbackControls = new PlaybackControlNode(model, this.layoutBounds);
+    const playbackControls = new OscillatorPlaybackControlNode(model, this.layoutBounds);
     this.addChild(playbackControls);
 
     // ===== RULER =====
@@ -152,7 +169,7 @@ export class SimScreenView extends ScreenView {
   /**
    * Create the driver plate and connection rod visuals.
    */
-  private createDriverPlateAndRod(simulationArea: Node): void {
+  protected createDriverPlateAndRod(simulationArea: Node): void {
     const driverPlateWidth = ResonanceConstants.DRIVER_BOX_WIDTH;
     const driverPlateHeight = ResonanceConstants.DRIVER_PLATE_HEIGHT;
     const connectionRodHeight = ResonanceConstants.CONNECTION_ROD_HEIGHT;
@@ -197,7 +214,7 @@ export class SimScreenView extends ScreenView {
    * Create and configure the ruler node with drag handling.
    * The ruler uses model-based dimensions converted to view coordinates.
    */
-  private createRulerNode(): RulerNode {
+  protected createRulerNode(): RulerNode {
     // Generate labels: 0, 5, 10, 15, ..., 50 (cm)
     const rulerLabels: string[] = [];
     for (let i = 0; i < ResonanceConstants.RULER_NUM_MAJOR_TICKS; i++) {
@@ -288,7 +305,7 @@ export class SimScreenView extends ScreenView {
    * Create all resonator nodes (springs + masses) once at startup.
    * All MAX_RESONATORS are created; visibility is controlled by count.
    */
-  private createAllResonators(): void {
+  protected createAllResonators(): void {
     const context = {
       modelViewTransform: this.modelViewTransform,
       layoutBounds: this.layoutBounds,
@@ -296,7 +313,7 @@ export class SimScreenView extends ScreenView {
       selectedResonatorIndexProperty: this.model.selectedResonatorIndexProperty,
     };
 
-    const result = ResonatorNodeBuilder.buildResonators(
+    const result = OscillatorResonatorNodeBuilder.buildResonators(
       this.model.resonatorModels,
       context,
     );
@@ -319,7 +336,7 @@ export class SimScreenView extends ScreenView {
   /**
    * Update visibility of resonator nodes based on the current count.
    */
-  private updateResonatorVisibility(count: number): void {
+  protected updateResonatorVisibility(count: number): void {
     for (let i = 0; i < this.springNodes.length; i++) {
       const visible = i < count;
       this.springNodes[i]!.visible = visible;
@@ -330,7 +347,7 @@ export class SimScreenView extends ScreenView {
   /**
    * Update spring and mass positions each frame.
    */
-  private updateSpringAndMass(): void {
+  protected updateSpringAndMass(): void {
     const count = this.model.resonatorCountProperty.value;
     if (count === 0) {
       return;

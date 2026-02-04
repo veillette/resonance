@@ -1,19 +1,24 @@
 /**
- * PlaybackControlNode contains the simulation speed radio buttons (slow/normal)
+ * OscillatorPlaybackControlNode contains the simulation speed radio buttons (slow/normal)
  * and the play/pause/step button group.
+ *
+ * This is a shared control node used by all oscillator-based screens:
+ * - Single Oscillator
+ * - Multiple Oscillators
+ * - Phase Analysis
  */
 
 import { Text, HBox } from "scenerystack/scenery";
 import { PlayPauseStepButtonGroup } from "scenerystack/scenery-phet";
 import { AquaRadioButtonGroup } from "scenerystack/sun";
 import { Bounds2 } from "scenerystack/dot";
-import { SimModel } from "../model/SimModel.js";
-import ResonanceConstants from "../../common/ResonanceConstants.js";
+import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
+import ResonanceConstants from "../ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
-import ResonanceColors from "../../common/ResonanceColors.js";
+import ResonanceColors from "../ResonanceColors.js";
 
-export class PlaybackControlNode extends HBox {
-  public constructor(model: SimModel, layoutBounds: Bounds2) {
+export class OscillatorPlaybackControlNode extends HBox {
+  public constructor(model: BaseOscillatorScreenModel, layoutBounds: Bounds2) {
     // Speed radio buttons
     const speedButtons = [
       {

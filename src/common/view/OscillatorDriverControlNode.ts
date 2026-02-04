@@ -1,21 +1,26 @@
 /**
- * DriverControlNode is the grey box at the bottom of the simulation that contains
+ * OscillatorDriverControlNode is the grey box at the bottom of the simulation that contains
  * the power toggle, frequency slider, and amplitude slider for the driving force.
+ *
+ * This is a shared control node used by all oscillator-based screens:
+ * - Single Oscillator
+ * - Multiple Oscillators
+ * - Phase Analysis
  */
 
 import { Node, Text, Rectangle, HBox, VBox } from "scenerystack/scenery";
 import { ToggleSwitch } from "scenerystack/sun";
 import { NumberProperty } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
-import { SimModel } from "../model/SimModel.js";
-import ResonanceColors from "../../common/ResonanceColors.js";
-import ResonanceConstants from "../../common/ResonanceConstants.js";
+import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
+import ResonanceColors from "../ResonanceColors.js";
+import ResonanceConstants from "../ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
-import { CircularUpdateGuard } from "../../common/util/index.js";
-import { NumberControlFactory } from "../../common/view/NumberControlFactory.js";
+import { CircularUpdateGuard } from "../util/index.js";
+import { NumberControlFactory } from "./NumberControlFactory.js";
 
-export class DriverControlNode extends Node {
-  public constructor(model: SimModel) {
+export class OscillatorDriverControlNode extends Node {
+  public constructor(model: BaseOscillatorScreenModel) {
     super({
       // Accessibility: make the driver control box accessible as a group
       tagName: "div",

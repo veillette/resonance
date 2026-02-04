@@ -7,8 +7,10 @@ import { Tandem } from "scenerystack/tandem";
 import { VBox, Text, HStrut } from "scenerystack/scenery";
 import { Checkbox, VerticalAquaRadioButtonGroup } from "scenerystack/sun";
 import { PhetFont } from "scenerystack/scenery-phet";
-import { SimScreen } from "./screen-name/SimScreen.js";
-import { ChladniScreen } from "./chladni/ChladniScreen.js";
+import { SingleOscillatorScreen } from "./single-oscillator/SingleOscillatorScreen.js";
+import { MultipleOscillatorsScreen } from "./multiple-oscillators/MultipleOscillatorsScreen.js";
+import { PhaseAnalysisScreen } from "./phase-analysis/PhaseAnalysisScreen.js";
+import { ChladniScreen } from "./chladni-patterns/ChladniScreen.js";
 import { ResonanceStrings } from "./i18n/ResonanceStrings.js";
 import { ResonancePreferencesModel } from "./preferences/ResonancePreferencesModel.js";
 import { SolverType } from "./common/model/SolverType.js";
@@ -44,9 +46,9 @@ onReadyToLaunch(() => {
               // OSCILLATOR SCREEN SECTION
               // ============================================
 
-              // Oscillator screen header
+              // Oscillator screens header (Single Oscillator, Multiple Oscillators, Phase Analysis)
               const oscillatorHeader = new Text(
-                ResonanceStrings.screens.simStringProperty,
+                ResonanceStrings.screens.singleOscillatorStringProperty,
                 {
                   font: new PhetFont({ size: 18, weight: "bold" }),
                   fill: ResonanceColors.preferencesTextProperty,
@@ -276,9 +278,9 @@ onReadyToLaunch(() => {
               // CHLADNI SCREEN SECTION
               // ============================================
 
-              // Chladni screen header
+              // Chladni Patterns screen header
               const chladniHeader = new Text(
-                ResonanceStrings.screens.chladniStringProperty,
+                ResonanceStrings.screens.chladniPatternsStringProperty,
                 {
                   font: new PhetFont({ size: 18, weight: "bold" }),
                   fill: ResonanceColors.preferencesTextProperty,
@@ -441,11 +443,17 @@ onReadyToLaunch(() => {
   };
 
   const screens = [
-    new SimScreen(resonancePreferences, {
-      tandem: Tandem.ROOT.createTandem("simScreen"),
+    new SingleOscillatorScreen(resonancePreferences, {
+      tandem: Tandem.ROOT.createTandem("singleOscillatorScreen"),
+    }),
+    new MultipleOscillatorsScreen(resonancePreferences, {
+      tandem: Tandem.ROOT.createTandem("multipleOscillatorsScreen"),
+    }),
+    new PhaseAnalysisScreen(resonancePreferences, {
+      tandem: Tandem.ROOT.createTandem("phaseAnalysisScreen"),
     }),
     new ChladniScreen(resonancePreferences, {
-      tandem: Tandem.ROOT.createTandem("chladniScreen"),
+      tandem: Tandem.ROOT.createTandem("chladniPatternsScreen"),
     }),
   ];
 

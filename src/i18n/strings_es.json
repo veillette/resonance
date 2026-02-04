@@ -3,7 +3,11 @@
     "title": "Resonancia",
     "screens": {
       "sim": "Simulación",
-      "chladni": "Chladni"
+      "chladni": "Chladni",
+      "singleOscillator": "Oscilador Único",
+      "multipleOscillators": "Múltiples Osciladores",
+      "phaseAnalysis": "Análisis de Fase",
+      "chladniPatterns": "Patrones de Chladni"
     },
     "controls": {
       "springConstant": "Constante del Resorte (k)",

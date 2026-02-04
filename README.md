@@ -8,11 +8,19 @@ This simulation visualizes the behavior of mass-spring systems driven by an osci
 
 ## Screens
 
-### Oscillator Screen
+### Single Oscillator
 
-Visualizes driven, damped harmonic oscillators attached to an oscillating driver plate. Demonstrates resonance when driving frequency matches the natural frequency of the system.
+A single driven, damped harmonic oscillator attached to an oscillating driver plate. Ideal for exploring the fundamentals of resonance when driving frequency matches the natural frequency.
 
-### Chladni Plate Screen
+### Multiple Oscillators
+
+Multiple oscillators (1-10) with different natural frequencies driven simultaneously. Observe which systems resonate with the driving frequency and compare their behaviors.
+
+### Phase Analysis
+
+Explore phase relationships between the driving force and oscillator response. Visualize how phase lag changes as driving frequency passes through resonance.
+
+### Chladni Patterns
 
 Visualizes Chladni patterns - the beautiful geometric patterns formed by particles on a vibrating plate. When a plate vibrates at specific frequencies, particles migrate to the nodal lines (areas of zero displacement), revealing the resonant mode shapes.
 

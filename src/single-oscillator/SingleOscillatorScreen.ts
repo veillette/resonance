@@ -1,22 +1,27 @@
+/**
+ * SingleOscillatorScreen is the first screen of the simulation.
+ * It demonstrates a single driven, damped harmonic oscillator.
+ */
+
 import { Screen, ScreenOptions } from "scenerystack/sim";
-import { SimModel } from "./model/SimModel.js";
-import { SimScreenView } from "./view/SimScreenView.js";
+import { SingleOscillatorModel } from "./model/SingleOscillatorModel.js";
+import { SingleOscillatorScreenView } from "./view/SingleOscillatorScreenView.js";
 import { ResonancePreferencesModel } from "../preferences/ResonancePreferencesModel.js";
 import ResonanceColors from "../common/ResonanceColors.js";
 import { KeyboardShortcutsNode } from "../common/view/KeyboardShortcutsNode.js";
 import { ResonanceStrings } from "../i18n/ResonanceStrings.js";
 
-export class SimScreen extends Screen<SimModel, SimScreenView> {
+export class SingleOscillatorScreen extends Screen<SingleOscillatorModel, SingleOscillatorScreenView> {
   public constructor(
     preferencesModel: ResonancePreferencesModel,
     options: ScreenOptions,
   ) {
     super(
-      () => new SimModel(preferencesModel),
-      (model: SimModel) => new SimScreenView(model),
+      () => new SingleOscillatorModel(preferencesModel),
+      (model: SingleOscillatorModel) => new SingleOscillatorScreenView(model),
       {
         ...options,
-        name: ResonanceStrings.screens.simStringProperty,
+        name: ResonanceStrings.screens.singleOscillatorStringProperty,
         backgroundColorProperty: ResonanceColors.backgroundProperty,
         createKeyboardHelpNode: () => new KeyboardShortcutsNode(),
       },

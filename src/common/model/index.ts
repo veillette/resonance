@@ -15,6 +15,7 @@ export {
 } from "./SolverType.js";
 export { BaseModel } from "./BaseModel.js";
 export type { TimeSpeed } from "./BaseModel.js";
+export { BaseOscillatorScreenModel } from "./BaseOscillatorScreenModel.js";
 export {
   ResonanceModel,
   ResonancePresets,
@@ -23,3 +24,7 @@ export {
 export type { ResonancePreset } from "./ResonanceModel.js";
 export { ResonatorConfigMode } from "./ResonatorConfigMode.js";
 export type { ResonatorConfigModeType } from "./ResonatorConfigMode.js";
+export {
+  MeasurementLineModel,
+  MeasurementLinesModel,
+} from "./MeasurementLineModel.js";
