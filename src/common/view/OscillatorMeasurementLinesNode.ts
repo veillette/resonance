@@ -27,6 +27,7 @@ class MeasurementLineNode extends Node {
     model: MeasurementLineModel,
     driverWidth: number,
     driverCenterX: number,
+    equilibriumY: number,
     modelViewTransform: ModelViewTransform2,
     lineNumber: number,
   ) {
@@ -68,11 +69,14 @@ class MeasurementLineNode extends Node {
     this.focusable = true;
     this.accessibleName = `Measurement Line ${lineNumber}`;
 
-    // Position the node based on model position using modelViewTransform
+    // Position the node based on model position relative to equilibrium
+    // The model position y is displacement from equilibrium (positive = above equilibrium)
     model.positionProperty.link((position) => {
-      const viewPosition = modelViewTransform.modelToViewPosition(position);
+      // Convert displacement to view delta (positive displacement = above equilibrium = negative Y in view)
+      const viewYOffset = modelViewTransform.modelToViewDeltaY(position.y);
       this.x = driverCenterX;
-      this.y = viewPosition.y;
+      // equilibriumY is where model y=0 should appear, and viewYOffset is negative for positive displacements
+      this.y = equilibriumY + viewYOffset;
     });
 
     // DragListener uses model's positionProperty directly with transform and bounds
@@ -108,6 +112,7 @@ export class OscillatorMeasurementLinesNode extends Node {
     driverCenterX: number,
     driverTopY: number,
     driverWidth: number,
+    naturalLength: number,
     modelViewTransform: ModelViewTransform2,
     _layoutBounds: Bounds2,
   ) {
@@ -126,11 +131,19 @@ export class OscillatorMeasurementLinesNode extends Node {
       0.14,
     );
 
+    // Calculate equilibrium Y position in view coordinates
+    // Equilibrium is where the mass sits at rest (natural spring length above driver plate)
+    const naturalLengthView = Math.abs(
+      modelViewTransform.modelToViewDeltaY(naturalLength),
+    );
+    const equilibriumY = driverTopY - naturalLengthView;
+
     // Create view nodes for each line
     this.line1Node = new MeasurementLineNode(
       this.model.line1,
       driverWidth,
       driverCenterX,
+      equilibriumY,
       modelViewTransform,
       1,
     );
@@ -138,6 +151,7 @@ export class OscillatorMeasurementLinesNode extends Node {
       this.model.line2,
       driverWidth,
       driverCenterX,
+      equilibriumY,
       modelViewTransform,
       2,
     );
