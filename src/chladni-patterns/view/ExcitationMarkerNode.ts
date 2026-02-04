@@ -11,6 +11,7 @@ import {
   DragListener,
   KeyboardDragListener,
   Node,
+  Voicing,
 } from "scenerystack/scenery";
 import { Bounds2, Transform3, Vector2 } from "scenerystack/dot";
 import { Property } from "scenerystack/axon";
@@ -51,7 +52,10 @@ export interface ExcitationMarkerNodeOptions {
   onDragEnd?: () => void;
 }
 
-export class ExcitationMarkerNode extends Node {
+// Apply Voicing mixin to Node for spoken descriptions
+const VoicingNode = Voicing(Node);
+
+export class ExcitationMarkerNode extends VoicingNode {
   private readonly model: ChladniModel;
   private readonly options: ExcitationMarkerNodeOptions;
 
@@ -114,6 +118,13 @@ export class ExcitationMarkerNode extends Node {
       ResonanceStrings.chladni.a11y.excitationMarkerLabelStringProperty;
     this.descriptionContent =
       ResonanceStrings.chladni.a11y.excitationMarkerDescriptionStringProperty;
+
+    // --- Voicing Setup ---
+    // Spoken when the marker receives focus
+    this.voicingNameResponse =
+      ResonanceStrings.chladni.a11y.excitationMarkerLabelStringProperty;
+    this.voicingHintResponse =
+      "Use arrow keys to move. Hold Shift for fine control.";
   }
 
   /**

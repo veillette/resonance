@@ -159,14 +159,24 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 - Show actual vs. target particle count as percentage
 - Group related controls more clearly
 
-### 13. Keyboard Accessibility
+### 13. Keyboard Accessibility ✅ IMPLEMENTED
 
-Add keyboard controls for:
+**Files**: `ChladniScreenView.ts`, `KeyboardShortcutsNode.ts`
 
-- Arrow keys to adjust frequency in small increments
-- Space to toggle play/pause
-- Tab navigation through control sections
-- Escape to reset view/zoom
+**Status**: Keyboard controls implemented and documented in help dialog.
+
+Implemented:
+- Space: Toggle play/pause
+- Left/Right arrows: Adjust frequency (10 Hz steps)
+- Shift + Left/Right: 100 Hz steps
+- Up/Down arrows: 100 Hz steps
+- Shift + Up/Down: 500 Hz steps
+- R: Reset simulation
+- Escape: Stop frequency sweep
+- Tab navigation through all controls
+- Arrow keys for dragging masses and excitation marker
+
+Custom keyboard help sections added to `KeyboardShortcutsNode.ts`.
 
 ---
 
@@ -206,7 +216,7 @@ Document key design decisions:
 | Configurable sweep rate       | Medium | Low    | P2       | 🔶 Constants    |
 | Auto particle replenishment   | Medium | Low    | P2       | Open            |
 | Modal shape visualization     | High   | High   | P2       | Open            |
-| Keyboard accessibility        | Medium | Medium | P2       | Open            |
+| Keyboard accessibility        | Medium | Medium | P2       | ✅ Done         |
 | Progressive curve computation | Low    | High   | P3       | Open            |
 | Plate dimension presets       | Low    | Low    | P3       | Open            |
 | Physics documentation         | Low    | Low    | P3       | ✅ Done         |

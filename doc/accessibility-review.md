@@ -158,38 +158,51 @@ Already supports projector mode via `supportsProjectorMode: true` and uses `Prof
 
 ## Implementation Priority
 
-| Feature | Effort | Impact | Priority |
-|---------|--------|--------|----------|
-| Utterance alerts for resonance | Low | High | P1 |
-| Sweep complete announcement | Low | Medium | P1 |
-| Play/pause announcements | Low | Medium | P1 |
-| Voicing for sliders | Medium | Medium | P2 |
-| Voicing for buttons | Medium | Medium | P2 |
-| Custom keyboard shortcuts help | Low | Low | P3 |
+| Feature | Effort | Impact | Priority | Status |
+|---------|--------|--------|----------|--------|
+| Utterance alerts for resonance | Low | High | P1 | ✅ Done |
+| Sweep complete announcement | Low | Medium | P1 | ✅ Done |
+| Play/pause announcements | Low | Medium | P1 | ✅ Done |
+| Material/gravity/count alerts | Low | Medium | P1 | ✅ Done |
+| Voicing for excitation marker | Medium | Medium | P2 | ✅ Done |
+| Custom keyboard shortcuts help | Low | Low | P3 | ✅ Done |
+| Voicing for sliders | Medium | Medium | P2 | Open |
 
 ---
 
-## Quick Win: Add Resonance Alert
+## Implemented Changes
 
-The easiest accessibility improvement is adding an utterance when resonance is detected. The string already exists:
+### ChladniScreenView.ts
+- ✅ Utterance alerts for resonance peak detection
+- ✅ Sweep complete announcement
+- ✅ Play/pause state announcements
+- ✅ Material change announcements
 
-```json
-"resonancePeakAlert": "Resonance peak detected at {{frequency}} Hz"
-```
+### BaseOscillatorScreenView.ts
+- ✅ Play/pause state announcements
+- ✅ Gravity toggle announcements
+- ✅ Resonator count change announcements
 
-This can be added to `ResonanceSonification.ts` (which already tracks `isAtResonanceProperty`) or `ChladniScreenView.ts`.
+### ExcitationMarkerNode.ts
+- ✅ Voicing mixin applied
+- ✅ voicingNameResponse and voicingHintResponse set
+
+### KeyboardShortcutsNode.ts
+- ✅ SimulationShortcutsKeyboardHelpSection (Space, Arrows, R, Escape)
+- ✅ DragObjectsKeyboardHelpSection (Arrow keys, Shift+Arrows)
 
 ---
 
-## Files to Modify
+## Files Modified
 
 | File | Changes |
 |------|---------|
-| `ChladniScreenView.ts` | Add utterance alerts for resonance, sweep complete |
-| `BaseOscillatorScreenView.ts` | Add utterance for play/pause state |
-| `ExcitationMarkerNode.ts` | Add voicing responses |
-| `FrequencySection.ts` | Add voicing for frequency slider |
-| `KeyboardShortcutsNode.ts` | Add custom sections for Chladni shortcuts |
+| `ChladniScreenView.ts` | Added utterance alerts for resonance, sweep, play/pause, material |
+| `BaseOscillatorScreenView.ts` | Added utterance for play/pause, gravity, resonator count |
+| `ExcitationMarkerNode.ts` | Added Voicing mixin with spoken responses |
+| `KeyboardShortcutsNode.ts` | Added custom sections for simulation shortcuts |
+| `strings_en.json` | Added new a11y alert strings |
+| `strings_fr.json` | Added French translations for alerts |
 
 ---
 
