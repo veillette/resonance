@@ -43,6 +43,9 @@ export class PlaybackControlNode extends HBox {
         radioButtonOptions: {
           radius: ResonanceConstants.SPEED_RADIO_BUTTON_RADIUS,
         },
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.a11y.playbackControl.speedControlLabelStringProperty,
       },
     );
 
@@ -79,6 +82,12 @@ export class PlaybackControlNode extends HBox {
       spacing: ResonanceConstants.PLAYBACK_CONTROLS_SPACING,
       centerX: layoutBounds.centerX + ResonanceConstants.DRIVER_CENTER_X_OFFSET,
       bottom: layoutBounds.bottom - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN,
+      // Accessibility
+      tagName: "div",
+      labelTagName: "h3",
+      labelContent: ResonanceStrings.a11y.playbackControl.labelStringProperty,
+      descriptionContent:
+        ResonanceStrings.a11y.playbackControl.descriptionStringProperty,
     });
   }
 }

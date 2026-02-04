@@ -55,6 +55,9 @@ export class FrequencySection extends VBox {
         baseColor: ResonanceColors.subPanelFillProperty,
         textFill: sweepTextFillProperty,
         enabledProperty: sweepEnabledProperty,
+        // Accessibility
+        accessibleName:
+          ResonanceStrings.chladni.a11y.controlPanel.sweepButtonLabelStringProperty,
       },
     );
 

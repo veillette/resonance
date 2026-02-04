@@ -88,13 +88,13 @@ describe("ResonatorNodeBuilder", () => {
     });
 
     it("should create a spring node", () => {
-      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel, 0);
 
       expect(springNode).toBeDefined();
     });
 
     it("should create spring node with correct initial properties", () => {
-      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel, 0);
 
       expect(springNode.loopsProperty.value).toBe(
         ResonanceConstants.SPRING_LOOPS,
@@ -108,7 +108,7 @@ describe("ResonatorNodeBuilder", () => {
     });
 
     it("should update line width when spring constant changes", () => {
-      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel, 0);
 
       const initialLineWidth = springNode.lineWidthProperty.value;
 
@@ -123,7 +123,7 @@ describe("ResonatorNodeBuilder", () => {
     it("should have minimum line width at minimum spring constant", () => {
       resonatorModel.springConstantProperty.value =
         ResonanceConstants.SPRING_CONSTANT_RANGE.min;
-      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel, 0);
 
       expect(springNode.lineWidthProperty.value).toBe(
         ResonanceConstants.SPRING_LINE_WIDTH_MIN,
@@ -133,7 +133,7 @@ describe("ResonatorNodeBuilder", () => {
     it("should have maximum line width at maximum spring constant", () => {
       resonatorModel.springConstantProperty.value =
         ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel, 0);
 
       expect(springNode.lineWidthProperty.value).toBe(
         ResonanceConstants.SPRING_LINE_WIDTH_MAX,

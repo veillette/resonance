@@ -15,6 +15,7 @@ import ResonanceColors from "../../common/ResonanceColors.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
 import { CircularUpdateGuard } from "../../common/util/index.js";
 import { SimModel } from "../model/SimModel.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 /**
  * Context needed to build resonator nodes.
@@ -57,7 +58,21 @@ export class ResonatorNodeBuilder {
    */
   public static createSpringNode(
     resonatorModel: ResonanceModel,
+    index: number,
   ): ParametricSpringNode {
+    // Generate accessible label with resonator number
+    const springNumber = index + 1;
+    const springLabel =
+      ResonanceStrings.a11y.resonator.springLabelStringProperty.value.replace(
+        "{{number}}",
+        String(springNumber),
+      );
+    const springDescription =
+      ResonanceStrings.a11y.resonator.springDescriptionStringProperty.value.replace(
+        /\{\{number\}\}/g,
+        String(springNumber),
+      );
+
     const springNode = new ParametricSpringNode({
       frontColor: ResonanceColors.springProperty,
       middleColor: ResonanceColors.springProperty,
@@ -71,6 +86,11 @@ export class ResonatorNodeBuilder {
       rightEndLength: ResonanceConstants.SPRING_RIGHT_END_LENGTH,
       rotation: -Math.PI / 2,
       boundsMethod: "none",
+      // Accessibility
+      tagName: "div",
+      ariaRole: "img",
+      accessibleName: springLabel,
+      descriptionContent: springDescription,
     });
 
     // Line width varies with spring constant
@@ -222,9 +242,23 @@ export class ResonatorNodeBuilder {
     massNode.addInputListener(dragListener);
 
     // Make focusable for keyboard navigation (tab key)
+    // Generate accessible label and description with resonator number
+    const massNumber = index + 1;
+    const accessibleMassLabel =
+      ResonanceStrings.a11y.resonator.massLabelStringProperty.value.replace(
+        "{{number}}",
+        String(massNumber),
+      );
+    const accessibleMassDescription =
+      ResonanceStrings.a11y.resonator.massDescriptionStringProperty.value.replace(
+        /\{\{number\}\}/g,
+        String(massNumber),
+      );
+
     massNode.tagName = "div";
     massNode.focusable = true;
-    massNode.accessibleName = `Mass ${index + 1}`;
+    massNode.accessibleName = accessibleMassLabel;
+    massNode.descriptionContent = accessibleMassDescription;
 
     // KeyboardDragListener for keyboard navigation (vertical dragging)
     const keyboardDragListener = new KeyboardDragListener({
@@ -263,7 +297,7 @@ export class ResonatorNodeBuilder {
       }
 
       // Create spring node
-      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel);
+      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel, i);
       springNodes.push(springNode);
 
       // Create mass node

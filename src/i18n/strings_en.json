@@ -91,6 +91,50 @@
     "content": {
       "sampleText": "Content goes here"
     },
+    "a11y": {
+      "driverControl": {
+        "label": "Driver Control Box",
+        "description": "Controls for the oscillating driver plate that powers the resonators",
+        "powerToggleLabel": "Power Switch",
+        "powerToggleDescription": "Toggles the driving force on or off",
+        "frequencySliderLabel": "Driving Frequency",
+        "frequencySliderDescription": "Adjusts the frequency of the oscillating driver plate",
+        "amplitudeSliderLabel": "Driving Amplitude",
+        "amplitudeSliderDescription": "Adjusts the amplitude of the oscillating driver plate"
+      },
+      "playbackControl": {
+        "label": "Playback Controls",
+        "description": "Controls for simulation playback speed and play/pause",
+        "speedControlLabel": "Simulation Speed",
+        "speedControlDescription": "Choose between slow and normal simulation speed"
+      },
+      "resonatorPanel": {
+        "label": "Resonator Control Panel",
+        "description": "Controls for configuring resonators including mass, spring constant, and damping",
+        "resonatorCountLabel": "Number of Resonators",
+        "resonatorCountDescription": "Adjusts how many resonators are shown",
+        "configLabel": "Resonator Configuration",
+        "configDescription": "Choose how multiple resonators are configured",
+        "resonatorSelectorLabel": "Resonator Selector",
+        "resonatorSelectorDescription": "Select which resonator to adjust",
+        "massControlLabel": "Mass Control",
+        "massControlDescription": "Adjusts the mass of the selected resonator",
+        "springConstantControlLabel": "Spring Constant Control",
+        "springConstantControlDescription": "Adjusts the spring stiffness of the selected resonator",
+        "dampingControlLabel": "Damping Control",
+        "dampingControlDescription": "Adjusts the damping coefficient for all resonators",
+        "gravityToggleLabel": "Gravity Toggle",
+        "gravityToggleDescription": "Turns gravity on or off for the simulation",
+        "rulerCheckboxLabel": "Ruler Visibility",
+        "rulerCheckboxDescription": "Shows or hides the measurement ruler"
+      },
+      "resonator": {
+        "springLabel": "Spring {{number}}",
+        "springDescription": "Elastic spring connecting mass {{number}} to the driver plate",
+        "massLabel": "Mass {{number}}",
+        "massDescription": "Draggable mass on resonator {{number}}. Use arrow keys to move vertically."
+      }
+    },
     "presets": {
       "lightAndBouncy": "Light and Bouncy",
       "heavyAndSlow": "Heavy and Slow",
@@ -151,7 +195,29 @@
         "rulerLabel": "Measurement Ruler",
         "rulerDescription": "Ruler showing plate dimensions. Width: {{width}} cm, Height: {{height}} cm. Major tick marks every 5 cm.",
         "gridLabel": "Reference Grid",
-        "gridDescription": "Grid overlay for spatial reference on the {{width}} cm by {{height}} cm plate. Major grid lines every 5 cm, minor lines every 1 cm."
+        "gridDescription": "Grid overlay for spatial reference on the {{width}} cm by {{height}} cm plate. Major grid lines every 5 cm, minor lines every 1 cm.",
+        "controlPanel": {
+          "materialLabel": "Material Selection",
+          "materialDescription": "Choose the plate material which affects resonance frequencies",
+          "frequencyLabel": "Frequency Control",
+          "frequencyDescription": "Adjust the driving frequency of the plate",
+          "sweepButtonLabel": "Frequency Sweep",
+          "sweepButtonDescription": "Automatically sweep through the frequency range to find resonances",
+          "grainsLabel": "Grain Count",
+          "grainsDescription": "Select the number of particles on the plate",
+          "replenishButtonLabel": "Replenish Grains",
+          "replenishButtonDescription": "Reset particles to the selected count",
+          "boundaryModeLabel": "Boundary Mode",
+          "boundaryModeDescription": "Choose what happens to particles at plate edges",
+          "showResonanceCurveLabel": "Show Resonance Curve",
+          "showResonanceCurveDescription": "Toggle visibility of the resonance amplitude graph",
+          "showRulerLabel": "Show Ruler",
+          "showRulerDescription": "Toggle visibility of the measurement ruler",
+          "showGridLabel": "Show Grid",
+          "showGridDescription": "Toggle visibility of the reference grid",
+          "showColormapLabel": "Show Displacement",
+          "showColormapDescription": "Toggle visibility of the displacement colormap"
+        }
       }
     }
   }
