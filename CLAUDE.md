@@ -6,10 +6,14 @@ This document provides essential information for AI assistants working with the 
 
 Resonance is an interactive physics simulation demonstrating resonance phenomena in oscillating systems and Chladni plate vibration patterns. Built with [SceneryStack](https://scenerystack.org/), a simulation framework from PhET Interactive Simulations.
 
-**Two simulation screens:**
+**Four simulation screens:**
 
-1. **Oscillator Screen** - Driven, damped harmonic oscillators attached to an oscillating driver plate
-2. **Chladni Plate Screen** - Visualization of Chladni patterns showing 2D plate vibration modes
+1. **Single Oscillator** - A single driven, damped harmonic oscillator
+2. **Multiple Oscillators** - Multiple oscillators with different natural frequencies
+3. **Phase Analysis** - Phase relationships in driven oscillators
+4. **Chladni Patterns** - Visualization of Chladni patterns showing 2D plate vibration modes
+
+The first three screens share common base classes (`BaseOscillatorScreenModel`, `BaseOscillatorScreenView`) and can be customized independently.
 
 ## Technology Stack
 
@@ -54,23 +58,40 @@ resonance/
 │   │   │   ├── AdaptiveEulerSolver.ts # Adaptive Euler
 │   │   │   ├── ModifiedMidpointSolver.ts
 │   │   │   ├── BaseModel.ts           # Abstract model with time management
+│   │   │   ├── BaseOscillatorScreenModel.ts  # Shared oscillator screen model
 │   │   │   ├── ResonanceModel.ts      # Single oscillator physics
+│   │   │   ├── MeasurementLineModel.ts # Measurement line model
 │   │   │   └── SolverType.ts          # Solver enumeration
+│   │   ├── view/                 # Shared view components
+│   │   │   ├── BaseOscillatorScreenView.ts   # Shared oscillator screen view
+│   │   │   ├── OscillatorControlPanel.ts     # Shared control panel
+│   │   │   ├── OscillatorDriverControlNode.ts
+│   │   │   ├── OscillatorPlaybackControlNode.ts
+│   │   │   ├── OscillatorResonatorNodeBuilder.ts
+│   │   │   ├── OscillatorMeasurementLinesNode.ts
+│   │   │   └── KeyboardShortcutsNode.ts
 │   │   └── util/                 # Utility classes
 │   │       ├── ListenerTracker.ts
 │   │       └── CircularUpdateGuard.ts
-│   ├── screen-name/          # Oscillator screen
-│   │   ├── SimScreen.ts
+│   ├── single-oscillator/    # Single Oscillator screen
+│   │   ├── SingleOscillatorScreen.ts
 │   │   ├── model/
-│   │   │   ├── SimModel.ts           # Multi-oscillator model
-│   │   │   └── MeasurementLineModel.ts
+│   │   │   └── SingleOscillatorModel.ts  # Extends BaseOscillatorScreenModel
 │   │   └── view/
-│   │       ├── SimScreenView.ts      # Main view
-│   │       ├── ResonatorControlPanel.ts
-│   │       ├── ResonatorNodeBuilder.ts
-│   │       ├── DriverControlNode.ts
-│   │       └── PlaybackControlNode.ts
-│   ├── chladni/              # Chladni plate screen
+│   │       └── SingleOscillatorScreenView.ts  # Extends BaseOscillatorScreenView
+│   ├── multiple-oscillators/ # Multiple Oscillators screen
+│   │   ├── MultipleOscillatorsScreen.ts
+│   │   ├── model/
+│   │   │   └── MultipleOscillatorsModel.ts
+│   │   └── view/
+│   │       └── MultipleOscillatorsScreenView.ts
+│   ├── phase-analysis/       # Phase Analysis screen
+│   │   ├── PhaseAnalysisScreen.ts
+│   │   ├── model/
+│   │   │   └── PhaseAnalysisModel.ts
+│   │   └── view/
+│   │       └── PhaseAnalysisScreenView.ts
+│   ├── chladni-patterns/     # Chladni Patterns screen
 │   │   ├── ChladniScreen.ts
 │   │   ├── model/
 │   │   │   ├── ChladniModel.ts       # Plate physics and particles
@@ -214,7 +235,7 @@ Tests are co-located with source files in `__tests__/` directories:
 
 ```
 src/common/model/__tests__/ResonanceModel.test.ts
-src/screen-name/view/__tests__/SimScreenView.test.ts
+src/common/view/__tests__/OscillatorControlPanel.test.ts
 ```
 
 Test pattern:
@@ -333,15 +354,17 @@ callback: (_tandem: Tandem) => { ... }
 
 ## Key Files for Common Tasks
 
-| Task                      | Files                                                |
-| ------------------------- | ---------------------------------------------------- |
-| Add new physics parameter | `ResonanceModel.ts`, `ResonanceConstants.ts`         |
-| Add new color             | `ResonanceColors.ts`                                 |
-| Add new string            | `strings_en.json`, `ResonanceStrings.ts`             |
-| Modify control panel      | `ResonatorControlPanel.ts`, `ChladniControlPanel.ts` |
-| Change solver behavior    | `common/model/` solvers                              |
-| Add preference            | `ResonancePreferencesModel.ts`, `main.ts`            |
-| Add new screen            | Create directory in `src/`, register in `main.ts`    |
+| Task                        | Files                                                              |
+| --------------------------- | ------------------------------------------------------------------ |
+| Add new physics parameter   | `ResonanceModel.ts`, `ResonanceConstants.ts`                       |
+| Add new color               | `ResonanceColors.ts`                                               |
+| Add new string              | `strings_en.json`, `ResonanceStrings.ts`                           |
+| Modify oscillator controls  | `common/view/OscillatorControlPanel.ts`                            |
+| Modify Chladni controls     | `chladni-patterns/view/ChladniControlPanel.ts`                     |
+| Change solver behavior      | `common/model/` solvers                                            |
+| Add preference              | `ResonancePreferencesModel.ts`, `main.ts`                          |
+| Add new oscillator screen   | Extend `BaseOscillatorScreenModel`/`View`, register in `main.ts`   |
+| Customize oscillator screen | Override methods in screen-specific model/view classes             |
 
 ## Related Documentation
 
