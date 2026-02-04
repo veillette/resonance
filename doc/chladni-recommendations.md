@@ -6,16 +6,7 @@ This document outlines recommendations for improving the Chladni screen implemen
 
 ## Code Cleanup
 
-### 1. Remove Redundant Transform Utilities
-
-**Files affected**: `TransformManager.ts`, `ChladniTransformFactory.ts`
-
-`TransformManager.ts` appears to duplicate `ChladniTransformFactory` functionality but isn't actively used in `ChladniScreenView`. Consider:
-
-- Remove `TransformManager.ts` if unused
-- Or consolidate the two approaches into a single utility
-
-### 2. Complete Overlay System Implementation
+### 1. Complete Overlay System Implementation
 
 **File**: `view/ChladniOverlayNode.ts`
 
@@ -25,7 +16,7 @@ The abstract `updateDimensions()` method implementation appears incomplete. Revi
 
 ## Performance Optimizations
 
-### 3. Particle Memory Allocation
+### 2. Particle Memory Allocation
 
 **File**: `model/ParticleManager.ts`
 
@@ -41,7 +32,7 @@ this.particlePositions[i] = new Vector2(...);
 this.particlePositions[i].setXY(x, y);
 ```
 
-### 4. Canvas Renderer Optimization
+### 3. Canvas Renderer Optimization
 
 **File**: `view/renderers/CanvasParticleRenderer.ts`
 
@@ -53,7 +44,7 @@ The Canvas renderer redraws all particles every frame without dirty rectangle cu
 - Use WebGL exclusively when particle count exceeds 10k
 - Add automatic renderer switching based on performance metrics
 
-### 5. Progressive Resonance Curve Computation
+### 4. Progressive Resonance Curve Computation
 
 **File**: `model/ResonanceCurveCalculator.ts`
 
@@ -69,7 +60,7 @@ The entire frequency range is recomputed when material or excitation position ch
 
 ## Feature Enhancements
 
-### 6. Configurable Frequency Sweep Rate
+### 5. Configurable Frequency Sweep Rate
 
 **File**: `model/FrequencySweepController.ts`
 
@@ -82,7 +73,7 @@ The sweep rate is currently hardcoded at 66 Hz/s.
 - Fast sweep (132 Hz/s) for quick overview
 - Custom range sweep (start/end frequency)
 
-### 7. Automatic Particle Replenishment
+### 6. Automatic Particle Replenishment
 
 **Files**: `model/ParticleManager.ts`, `view/controls/GrainSection.ts`
 
@@ -94,7 +85,7 @@ In "remove" boundary mode, particle count can drop significantly over time.
 - Show warning indicator when particle count is low
 - Track and display cumulative particle loss statistics
 
-### 8. Plate Dimension Presets
+### 7. Plate Dimension Presets
 
 **File**: `view/ChladniScreenView.ts` (resize handle)
 
@@ -111,7 +102,7 @@ Currently the plate can be freely resized.
 
 ## Visualization Enhancements
 
-### 9. Displacement Colormap Visualization
+### 8. Displacement Colormap Visualization
 
 Add an optional colormap overlay showing displacement magnitude across the plate surface. This would be educational for understanding the nodal patterns.
 
@@ -121,7 +112,7 @@ Add an optional colormap overlay showing displacement magnitude across the plate
 - Use gradient colors (blue-white-red) for negative-zero-positive displacement
 - Add toggle in Display Options section
 
-### 10. Modal Shape Visualization Mode
+### 9. Modal Shape Visualization Mode
 
 Add a mode to visualize individual modal shapes (m,n patterns) to help users understand how the superposition creates the final pattern.
 
@@ -131,7 +122,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 - Show contribution strength of each mode at current frequency
 - Animate between modes to show constructive/destructive interference
 
-### 11. Resonance Curve Enhancements
+### 10. Resonance Curve Enhancements
 
 **File**: `view/ResonanceCurveNode.ts`
 
@@ -144,7 +135,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 
 ## User Experience Improvements
 
-### 12. Enhanced Excitation Marker Interaction
+### 11. Enhanced Excitation Marker Interaction
 
 **File**: `view/ExcitationMarkerNode.ts`
 
@@ -152,7 +143,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 - Show coordinate readout during drag
 - Add symmetry modes (mirror excitation position)
 
-### 13. Control Panel Organization
+### 12. Control Panel Organization
 
 **File**: `view/ChladniControlPanel.ts`
 
@@ -160,7 +151,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 - Show actual vs. target particle count as percentage
 - Group related controls more clearly
 
-### 14. Keyboard Accessibility
+### 13. Keyboard Accessibility
 
 Add keyboard controls for:
 
@@ -173,7 +164,7 @@ Add keyboard controls for:
 
 ## Documentation Improvements
 
-### 15. Physics Documentation
+### 14. Physics Documentation
 
 Add inline documentation for:
 
@@ -181,7 +172,7 @@ Add inline documentation for:
 - `SOURCE_THRESHOLD` value selection criteria
 - `ParticleManager.step()` timeScale calculation explanation
 
-### 16. Architecture Decision Records
+### 15. Architecture Decision Records
 
 Document key design decisions:
 
@@ -193,18 +184,17 @@ Document key design decisions:
 
 ## Priority Matrix
 
-| Recommendation                    | Impact | Effort | Priority |
-| --------------------------------- | ------ | ------ | -------- |
-| Remove redundant TransformManager | Low    | Low    | P3       |
-| Particle memory optimization      | Medium | Medium | P2       |
-| Configurable sweep rate           | Medium | Low    | P2       |
-| Auto particle replenishment       | Medium | Low    | P2       |
-| Displacement colormap             | High   | Medium | P1       |
-| Modal shape visualization         | High   | High   | P2       |
-| Keyboard accessibility            | Medium | Medium | P2       |
-| Physics documentation             | Low    | Low    | P3       |
-| Progressive curve computation     | Low    | High   | P3       |
-| Plate dimension presets           | Low    | Low    | P3       |
+| Recommendation                | Impact | Effort | Priority |
+| ----------------------------- | ------ | ------ | -------- |
+| Displacement colormap         | High   | Medium | P1       |
+| Particle memory optimization  | Medium | Medium | P2       |
+| Configurable sweep rate       | Medium | Low    | P2       |
+| Auto particle replenishment   | Medium | Low    | P2       |
+| Modal shape visualization     | High   | High   | P2       |
+| Keyboard accessibility        | Medium | Medium | P2       |
+| Progressive curve computation | Low    | High   | P3       |
+| Plate dimension presets       | Low    | Low    | P3       |
+| Physics documentation         | Low    | Low    | P3       |
 
 ---
 
