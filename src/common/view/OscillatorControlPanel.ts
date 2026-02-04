@@ -1,5 +1,5 @@
 /**
- * ResonatorControlPanel is the green panel on the right side of the simulation.
+ * OscillatorControlPanel is the green panel on the right side of oscillator screens.
  * It contains controls for:
  * - Number of resonators
  * - Resonator configuration mode (combo box)
@@ -9,6 +9,11 @@
  * - Damping control
  * - Gravity toggle
  * - Ruler visibility checkbox
+ *
+ * This is a shared control panel used by all oscillator-based screens:
+ * - Single Oscillator
+ * - Multiple Oscillators
+ * - Phase Analysis
  */
 
 import {
@@ -31,16 +36,16 @@ import {
 import type { ComboBoxItem } from "scenerystack/sun";
 import { Property, NumberProperty } from "scenerystack/axon";
 import { Range, Bounds2 } from "scenerystack/dot";
-import { SimModel } from "../model/SimModel.js";
-import { ResonatorConfigMode } from "../../common/model/ResonatorConfigMode.js";
-import type { ResonatorConfigModeType } from "../../common/model/ResonatorConfigMode.js";
-import ResonanceColors from "../../common/ResonanceColors.js";
-import ResonanceConstants from "../../common/ResonanceConstants.js";
+import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
+import { ResonatorConfigMode } from "../model/ResonatorConfigMode.js";
+import type { ResonatorConfigModeType } from "../model/ResonatorConfigMode.js";
+import ResonanceColors from "../ResonanceColors.js";
+import ResonanceConstants from "../ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
-import { ListenerTracker } from "../../common/util/index.js";
-import { NumberControlFactory } from "../../common/view/NumberControlFactory.js";
+import { ListenerTracker } from "../util/index.js";
+import { NumberControlFactory } from "./NumberControlFactory.js";
 
-export class ResonatorControlPanel extends Panel {
+export class OscillatorControlPanel extends Panel {
   /**
    * The combo box list parent node. Must be added to the scene graph above the panel
    * so the popup list renders on top.
@@ -50,7 +55,7 @@ export class ResonatorControlPanel extends Panel {
   public readonly gravityEnabledProperty: Property<boolean>;
   public readonly rulerVisibleProperty: Property<boolean>;
 
-  private readonly model: SimModel;
+  private readonly model: BaseOscillatorScreenModel;
   private readonly listenerTracker = new ListenerTracker();
 
   // Internal display properties for controls
@@ -72,7 +77,7 @@ export class ResonatorControlPanel extends Panel {
   private readonly naturalFrequencyText: Text;
 
   public constructor(
-    model: SimModel,
+    model: BaseOscillatorScreenModel,
     layoutBounds: Bounds2,
     rulerVisibleProperty: Property<boolean>,
   ) {
@@ -81,13 +86,13 @@ export class ResonatorControlPanel extends Panel {
 
     // --- Create all controls using extracted methods ---
     const gravityEnabledProperty =
-      ResonatorControlPanel.createGravityProperty(tempModel);
+      OscillatorControlPanel.createGravityProperty(tempModel);
 
     const resonatorCountControl =
-      ResonatorControlPanel.createResonatorCountControl(tempModel);
+      OscillatorControlPanel.createResonatorCountControl(tempModel);
 
     const { configBox, comboBoxListParent } =
-      ResonatorControlPanel.createConfigurationControls(tempModel);
+      OscillatorControlPanel.createConfigurationControls(tempModel);
 
     // Measure configBox size to create matching strut for layout preservation
     // Add to temporary container to force layout calculation
@@ -108,27 +113,27 @@ export class ResonatorControlPanel extends Panel {
     configBoxStrut.visible = !configBox.visible;
 
     const { resonatorSelectionBox, displayResonatorNumberProperty } =
-      ResonatorControlPanel.createResonatorSelectionControls(tempModel);
+      OscillatorControlPanel.createResonatorSelectionControls(tempModel);
 
     const {
       massControl,
       springConstantControl,
       displayMassProperty,
       displaySpringConstantProperty,
-    } = ResonatorControlPanel.createMassSpringControls(tempModel);
+    } = OscillatorControlPanel.createMassSpringControls(tempModel);
 
     const { naturalFrequencyText, naturalFrequencyBox } =
-      ResonatorControlPanel.createNaturalFrequencyReadout(tempModel);
+      OscillatorControlPanel.createNaturalFrequencyReadout(tempModel);
 
     const dampingControl =
-      ResonatorControlPanel.createDampingControl(tempModel);
+      OscillatorControlPanel.createDampingControl(tempModel);
 
-    const gravityBox = ResonatorControlPanel.createGravityToggle(
+    const gravityBox = OscillatorControlPanel.createGravityToggle(
       gravityEnabledProperty,
     );
 
     const rulerCheckbox =
-      ResonatorControlPanel.createRulerCheckbox(rulerVisibleProperty);
+      OscillatorControlPanel.createRulerCheckbox(rulerVisibleProperty);
 
     // --- Create sub-panel for mass/spring/resonator/frequency controls ---
     // Use a light blue color to contrast with the green main panel
@@ -217,7 +222,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the gravity enabled property that syncs with the model.
    */
-  private static createGravityProperty(model: SimModel): Property<boolean> {
+  private static createGravityProperty(model: BaseOscillatorScreenModel): Property<boolean> {
     const gravityEnabledProperty = new Property<boolean>(
       model.resonanceModel.gravityProperty.value > 0,
     );
@@ -232,7 +237,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the resonator count slider control.
    */
-  private static createResonatorCountControl(model: SimModel): NumberControl {
+  private static createResonatorCountControl(model: BaseOscillatorScreenModel): NumberControl {
     return NumberControlFactory.create({
       titleProperty: ResonanceStrings.controls.resonatorsStringProperty,
       numberProperty: model.resonatorCountProperty,
@@ -262,7 +267,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the resonator configuration combo box and its container.
    */
-  private static createConfigurationControls(model: SimModel): {
+  private static createConfigurationControls(model: BaseOscillatorScreenModel): {
     configBox: VBox;
     comboBoxListParent: Node;
   } {
@@ -337,7 +342,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the resonator selection spinner and label.
    */
-  private static createResonatorSelectionControls(model: SimModel): {
+  private static createResonatorSelectionControls(model: BaseOscillatorScreenModel): {
     resonatorSelectionBox: HBox;
     displayResonatorNumberProperty: NumberProperty;
   } {
@@ -389,7 +394,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the mass and spring constant controls.
    */
-  private static createMassSpringControls(model: SimModel): {
+  private static createMassSpringControls(model: BaseOscillatorScreenModel): {
     massControl: NumberControl;
     springConstantControl: NumberControl;
     displayMassProperty: NumberProperty;
@@ -432,7 +437,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the natural frequency readout text and container.
    */
-  private static createNaturalFrequencyReadout(model: SimModel): {
+  private static createNaturalFrequencyReadout(model: BaseOscillatorScreenModel): {
     naturalFrequencyText: Text;
     naturalFrequencyBox: AlignBox;
   } {
@@ -460,7 +465,7 @@ export class ResonatorControlPanel extends Panel {
   /**
    * Creates the damping slider control.
    */
-  private static createDampingControl(model: SimModel): NumberControl {
+  private static createDampingControl(model: BaseOscillatorScreenModel): NumberControl {
     return NumberControlFactory.create({
       titleProperty: ResonanceStrings.controls.dampingStringProperty,
       numberProperty: model.resonanceModel.dampingProperty,

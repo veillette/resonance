@@ -1,6 +1,11 @@
 /**
- * ResonatorNodeBuilder creates spring and mass nodes for resonators.
+ * OscillatorResonatorNodeBuilder creates spring and mass nodes for resonators.
  * All nodes are created once at startup and visibility is controlled by count.
+ *
+ * This is a shared builder used by all oscillator-based screens:
+ * - Single Oscillator
+ * - Multiple Oscillators
+ * - Phase Analysis
  */
 
 import { Node, Text, Rectangle } from "scenerystack/scenery";
@@ -10,11 +15,11 @@ import { Vector2Property } from "scenerystack/dot";
 import { Vector2, Bounds2 } from "scenerystack/dot";
 import { Property, NumberProperty } from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { ResonanceModel } from "../../common/model/index.js";
-import ResonanceColors from "../../common/ResonanceColors.js";
-import ResonanceConstants from "../../common/ResonanceConstants.js";
-import { CircularUpdateGuard } from "../../common/util/index.js";
-import { SimModel } from "../model/SimModel.js";
+import { ResonanceModel } from "../model/index.js";
+import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
+import ResonanceColors from "../ResonanceColors.js";
+import ResonanceConstants from "../ResonanceConstants.js";
+import { CircularUpdateGuard } from "../util/index.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 /**
@@ -35,7 +40,7 @@ export interface ResonatorBuildResult {
   massNodes: Node[];
 }
 
-export class ResonatorNodeBuilder {
+export class OscillatorResonatorNodeBuilder {
   /**
    * Calculate mass box size based on mass value using surface area scaling.
    * Surface area scales linearly with mass, so side length scales with √mass.
@@ -125,7 +130,7 @@ export class ResonatorNodeBuilder {
     } = context;
 
     const massNode = new Node();
-    const initialMassSize = ResonatorNodeBuilder.calculateMassSize(
+    const initialMassSize = OscillatorResonatorNodeBuilder.calculateMassSize(
       resonatorModel.massProperty.value,
     );
     const massBox = new Rectangle(0, 0, initialMassSize, initialMassSize, {
@@ -140,7 +145,7 @@ export class ResonatorNodeBuilder {
         size: Math.max(
           ResonanceConstants.MASS_LABEL_FONT_SIZE_MIN,
           ResonanceConstants.MASS_LABEL_FONT_SIZE_BASE -
-            SimModel.MAX_RESONATORS * 2,
+            BaseOscillatorScreenModel.MAX_RESONATORS * 2,
         ),
         weight: "bold",
       }),
@@ -152,7 +157,7 @@ export class ResonatorNodeBuilder {
 
     // Update mass box size when mass changes
     resonatorModel.massProperty.link((mass: number) => {
-      const newSize = ResonatorNodeBuilder.calculateMassSize(mass);
+      const newSize = OscillatorResonatorNodeBuilder.calculateMassSize(mass);
       massBox.setRect(0, 0, newSize, newSize);
       massLabel.center = massBox.center;
     });
@@ -290,18 +295,18 @@ export class ResonatorNodeBuilder {
     const springNodes: ParametricSpringNode[] = [];
     const massNodes: Node[] = [];
 
-    for (let i = 0; i < SimModel.MAX_RESONATORS; i++) {
+    for (let i = 0; i < BaseOscillatorScreenModel.MAX_RESONATORS; i++) {
       const resonatorModel = resonatorModels[i];
       if (resonatorModel === undefined) {
         throw new Error(`Resonator index ${i} out of range`);
       }
 
       // Create spring node
-      const springNode = ResonatorNodeBuilder.createSpringNode(resonatorModel, i);
+      const springNode = OscillatorResonatorNodeBuilder.createSpringNode(resonatorModel, i);
       springNodes.push(springNode);
 
       // Create mass node
-      const massNode = ResonatorNodeBuilder.createMassNode(
+      const massNode = OscillatorResonatorNodeBuilder.createMassNode(
         resonatorModel,
         i,
         context,

@@ -16,7 +16,7 @@ export class ChladniScreen extends Screen<ChladniModel, ChladniScreenView> {
       (model: ChladniModel) => new ChladniScreenView(model, preferencesModel),
       {
         ...options,
-        name: ResonanceStrings.screens.chladniStringProperty,
+        name: ResonanceStrings.screens.chladniPatternsStringProperty,
         backgroundColorProperty: ResonanceColors.backgroundProperty,
         createKeyboardHelpNode: () => new KeyboardShortcutsNode(),
       },

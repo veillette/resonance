@@ -1,7 +1,12 @@
 /**
- * MeasurementLinesNode - View for two horizontal dashed lines that span the driver width.
+ * OscillatorMeasurementLinesNode - View for two horizontal dashed lines that span the driver width.
  * Each line is vertically draggable for measuring heights above the driver plate.
  * Uses MeasurementLinesModel for the underlying model state.
+ *
+ * This is a shared view component used by all oscillator-based screens:
+ * - Single Oscillator
+ * - Multiple Oscillators
+ * - Phase Analysis
  */
 
 import { Node, Line, Rectangle } from "scenerystack/scenery";
@@ -12,7 +17,7 @@ import {
   MeasurementLineModel,
   MeasurementLinesModel,
 } from "../model/MeasurementLineModel.js";
-import ResonanceColors from "../../common/ResonanceColors.js";
+import ResonanceColors from "../ResonanceColors.js";
 
 /**
  * View for a single draggable measurement line with a handle.
@@ -94,7 +99,7 @@ class MeasurementLineNode extends Node {
 /**
  * Container view for the two measurement lines.
  */
-export class MeasurementLinesNode extends Node {
+export class OscillatorMeasurementLinesNode extends Node {
   private readonly line1Node: MeasurementLineNode;
   private readonly line2Node: MeasurementLineNode;
   public readonly model: MeasurementLinesModel;

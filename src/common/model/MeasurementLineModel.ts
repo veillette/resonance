@@ -1,6 +1,11 @@
 /**
  * MeasurementLineModel - Model for a single measurement line.
  * Stores the position in model coordinates with constrained bounds.
+ *
+ * This is a shared model used by all oscillator-based screens:
+ * - Single Oscillator
+ * - Multiple Oscillators
+ * - Phase Analysis
  */
 
 import { Property } from "scenerystack/axon";

@@ -3,7 +3,11 @@
     "title": "Resonance",
     "screens": {
       "sim": "Simulation",
-      "chladni": "Chladni"
+      "chladni": "Chladni",
+      "singleOscillator": "Single Oscillator",
+      "multipleOscillators": "Multiple Oscillators",
+      "phaseAnalysis": "Phase Analysis",
+      "chladniPatterns": "Chladni Patterns"
     },
     "controls": {
       "springConstant": "Spring Constant (k)",
