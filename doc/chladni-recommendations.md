@@ -16,21 +16,20 @@ The abstract `updateDimensions()` method implementation appears incomplete. Revi
 
 ## Performance Optimizations
 
-### 2. Particle Memory Allocation
+### 2. Particle Memory Allocation ✅ IMPLEMENTED
 
 **File**: `model/ParticleManager.ts`
 
-Currently, `initialize()` allocates new `Vector2` objects on every call. For large particle counts (25k), this creates GC pressure.
+**Status**: Already implemented with object pooling pattern.
 
-**Recommendation**: Reuse the existing particle array and update positions in-place rather than creating new objects:
+The current implementation:
+- Pre-allocates a fixed-size pool of `MAX_PARTICLE_COUNT` Vector2 objects at construction
+- Uses `particle.setXY(x, y)` to update positions in-place
+- Tracks active particles via `activeCount` rather than array resizing
+- Uses swap-remove for O(1) particle deletion instead of splice's O(n)
+- Maintains a cached particle view to avoid allocation on every frame
 
-```typescript
-// Instead of creating new Vector2 instances
-this.particlePositions[i] = new Vector2(...);
-
-// Reuse existing instances
-this.particlePositions[i].setXY(x, y);
-```
+No further action needed.
 
 ### 3. Canvas Renderer Optimization
 
@@ -60,18 +59,19 @@ The entire frequency range is recomputed when material or excitation position ch
 
 ## Feature Enhancements
 
-### 5. Configurable Frequency Sweep Rate
+### 5. Configurable Frequency Sweep Rate ✅ CONSTANTS ADDED
 
-**File**: `model/FrequencySweepController.ts`
+**File**: `model/ChladniConstants.ts`
 
-The sweep rate is currently hardcoded at 66 Hz/s.
+**Status**: Sweep rate options have been added to constants. UI integration pending.
 
-**Recommendation**: Add user-configurable sweep options:
+Added constants:
+- `SWEEP_RATE_SLOW` (33 Hz/s): ~120 second sweep for detailed observation
+- `SWEEP_RATE_NORMAL` (66 Hz/s): ~60 second sweep (default)
+- `SWEEP_RATE_FAST` (132 Hz/s): ~30 second sweep for quick overview
+- `SWEEP_RATE_OPTIONS`: Array of options for combo box integration
 
-- Slow sweep (33 Hz/s) for detailed observation
-- Normal sweep (66 Hz/s) - current default
-- Fast sweep (132 Hz/s) for quick overview
-- Custom range sweep (start/end frequency)
+**Remaining work**: Add UI control in `FrequencySection.ts` to allow users to select sweep rate.
 
 ### 6. Automatic Particle Replenishment
 
@@ -102,15 +102,23 @@ Currently the plate can be freely resized.
 
 ## Visualization Enhancements
 
-### 8. Displacement Colormap Visualization
+### 8. Displacement Colormap Visualization ✅ IMPLEMENTED
 
-Add an optional colormap overlay showing displacement magnitude across the plate surface. This would be educational for understanding the nodal patterns.
+**File**: `view/DisplacementColormapNode.ts`
 
-**Implementation approach**:
+**Status**: Already implemented as a complete visualization overlay.
 
-- Create `DisplacementColormapNode` extending the overlay system
-- Use gradient colors (blue-white-red) for negative-zero-positive displacement
-- Add toggle in Display Options section
+Features:
+- Extends `ChladniOverlayNode` for consistent overlay management
+- Uses blue-white-red colormap (blue = negative, white = zero/nodal, red = positive)
+- Efficient rendering with downsampled ImageData and smooth upscaling
+- Automatic normalization based on maximum displacement
+- Full accessibility support with PDOM labels
+
+Integration:
+- Can be added to `ChladniVisualizationNode` as a child
+- Toggle via display options (visibility property)
+- Updates via `setPsiFunction()` and `update()` methods
 
 ### 9. Modal Shape Visualization Mode
 
@@ -164,13 +172,20 @@ Add keyboard controls for:
 
 ## Documentation Improvements
 
-### 14. Physics Documentation
+### 14. Physics Documentation ✅ IMPLEMENTED
 
-Add inline documentation for:
+**File**: `model/ChladniConstants.ts`
 
-- `MODE_STEP = 1` rationale (vs. 2 for symmetric excitation)
-- `SOURCE_THRESHOLD` value selection criteria
-- `ParticleManager.step()` timeScale calculation explanation
+**Status**: Detailed inline documentation has been added.
+
+Documented:
+- `MODE_STEP = 1`: Full rationale explaining why all modes are included (vs. only even
+  modes for center excitation), including the physics of mode shapes φ_mn(x,y)
+- `SOURCE_THRESHOLD = 0.001`: Value selection criteria explaining the 0.1% threshold
+  balance between computation savings and visual accuracy
+- Squared threshold optimization to avoid sqrt() in hot path
+
+**Remaining**: `ParticleManager.step()` timeScale calculation (already has good comments)
 
 ### 15. Architecture Decision Records
 
@@ -184,17 +199,17 @@ Document key design decisions:
 
 ## Priority Matrix
 
-| Recommendation                | Impact | Effort | Priority |
-| ----------------------------- | ------ | ------ | -------- |
-| Displacement colormap         | High   | Medium | P1       |
-| Particle memory optimization  | Medium | Medium | P2       |
-| Configurable sweep rate       | Medium | Low    | P2       |
-| Auto particle replenishment   | Medium | Low    | P2       |
-| Modal shape visualization     | High   | High   | P2       |
-| Keyboard accessibility        | Medium | Medium | P2       |
-| Progressive curve computation | Low    | High   | P3       |
-| Plate dimension presets       | Low    | Low    | P3       |
-| Physics documentation         | Low    | Low    | P3       |
+| Recommendation                | Impact | Effort | Priority | Status          |
+| ----------------------------- | ------ | ------ | -------- | --------------- |
+| Displacement colormap         | High   | Medium | P1       | ✅ Done         |
+| Particle memory optimization  | Medium | Medium | P2       | ✅ Done         |
+| Configurable sweep rate       | Medium | Low    | P2       | 🔶 Constants    |
+| Auto particle replenishment   | Medium | Low    | P2       | Open            |
+| Modal shape visualization     | High   | High   | P2       | Open            |
+| Keyboard accessibility        | Medium | Medium | P2       | Open            |
+| Progressive curve computation | Low    | High   | P3       | Open            |
+| Plate dimension presets       | Low    | Low    | P3       | Open            |
+| Physics documentation         | Low    | Low    | P3       | ✅ Done         |
 
 ---
 
