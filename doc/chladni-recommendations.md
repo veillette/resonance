@@ -6,16 +6,7 @@ This document outlines recommendations for improving the Chladni screen implemen
 
 ## Code Cleanup
 
-### 1. Remove Redundant Transform Utilities
-
-**Files affected**: `TransformManager.ts`, `ChladniTransformFactory.ts`
-
-`TransformManager.ts` appears to duplicate `ChladniTransformFactory` functionality but isn't actively used in `ChladniScreenView`. Consider:
-
-- Remove `TransformManager.ts` if unused
-- Or consolidate the two approaches into a single utility
-
-### 2. Complete Overlay System Implementation
+### 1. Complete Overlay System Implementation
 
 **File**: `view/ChladniOverlayNode.ts`
 
@@ -25,23 +16,22 @@ The abstract `updateDimensions()` method implementation appears incomplete. Revi
 
 ## Performance Optimizations
 
-### 3. Particle Memory Allocation
+### 2. Particle Memory Allocation ✅ IMPLEMENTED
 
 **File**: `model/ParticleManager.ts`
 
-Currently, `initialize()` allocates new `Vector2` objects on every call. For large particle counts (25k), this creates GC pressure.
+**Status**: Already implemented with object pooling pattern.
 
-**Recommendation**: Reuse the existing particle array and update positions in-place rather than creating new objects:
+The current implementation:
+- Pre-allocates a fixed-size pool of `MAX_PARTICLE_COUNT` Vector2 objects at construction
+- Uses `particle.setXY(x, y)` to update positions in-place
+- Tracks active particles via `activeCount` rather than array resizing
+- Uses swap-remove for O(1) particle deletion instead of splice's O(n)
+- Maintains a cached particle view to avoid allocation on every frame
 
-```typescript
-// Instead of creating new Vector2 instances
-this.particlePositions[i] = new Vector2(...);
+No further action needed.
 
-// Reuse existing instances
-this.particlePositions[i].setXY(x, y);
-```
-
-### 4. Canvas Renderer Optimization
+### 3. Canvas Renderer Optimization
 
 **File**: `view/renderers/CanvasParticleRenderer.ts`
 
@@ -53,7 +43,7 @@ The Canvas renderer redraws all particles every frame without dirty rectangle cu
 - Use WebGL exclusively when particle count exceeds 10k
 - Add automatic renderer switching based on performance metrics
 
-### 5. Progressive Resonance Curve Computation
+### 4. Progressive Resonance Curve Computation
 
 **File**: `model/ResonanceCurveCalculator.ts`
 
@@ -69,20 +59,21 @@ The entire frequency range is recomputed when material or excitation position ch
 
 ## Feature Enhancements
 
-### 6. Configurable Frequency Sweep Rate
+### 5. Configurable Frequency Sweep Rate ✅ CONSTANTS ADDED
 
-**File**: `model/FrequencySweepController.ts`
+**File**: `model/ChladniConstants.ts`
 
-The sweep rate is currently hardcoded at 66 Hz/s.
+**Status**: Sweep rate options have been added to constants. UI integration pending.
 
-**Recommendation**: Add user-configurable sweep options:
+Added constants:
+- `SWEEP_RATE_SLOW` (33 Hz/s): ~120 second sweep for detailed observation
+- `SWEEP_RATE_NORMAL` (66 Hz/s): ~60 second sweep (default)
+- `SWEEP_RATE_FAST` (132 Hz/s): ~30 second sweep for quick overview
+- `SWEEP_RATE_OPTIONS`: Array of options for combo box integration
 
-- Slow sweep (33 Hz/s) for detailed observation
-- Normal sweep (66 Hz/s) - current default
-- Fast sweep (132 Hz/s) for quick overview
-- Custom range sweep (start/end frequency)
+**Remaining work**: Add UI control in `FrequencySection.ts` to allow users to select sweep rate.
 
-### 7. Automatic Particle Replenishment
+### 6. Automatic Particle Replenishment
 
 **Files**: `model/ParticleManager.ts`, `view/controls/GrainSection.ts`
 
@@ -94,7 +85,7 @@ In "remove" boundary mode, particle count can drop significantly over time.
 - Show warning indicator when particle count is low
 - Track and display cumulative particle loss statistics
 
-### 8. Plate Dimension Presets
+### 7. Plate Dimension Presets
 
 **File**: `view/ChladniScreenView.ts` (resize handle)
 
@@ -111,17 +102,25 @@ Currently the plate can be freely resized.
 
 ## Visualization Enhancements
 
-### 9. Displacement Colormap Visualization
+### 8. Displacement Colormap Visualization ✅ IMPLEMENTED
 
-Add an optional colormap overlay showing displacement magnitude across the plate surface. This would be educational for understanding the nodal patterns.
+**File**: `view/DisplacementColormapNode.ts`
 
-**Implementation approach**:
+**Status**: Already implemented as a complete visualization overlay.
 
-- Create `DisplacementColormapNode` extending the overlay system
-- Use gradient colors (blue-white-red) for negative-zero-positive displacement
-- Add toggle in Display Options section
+Features:
+- Extends `ChladniOverlayNode` for consistent overlay management
+- Uses blue-white-red colormap (blue = negative, white = zero/nodal, red = positive)
+- Efficient rendering with downsampled ImageData and smooth upscaling
+- Automatic normalization based on maximum displacement
+- Full accessibility support with PDOM labels
 
-### 10. Modal Shape Visualization Mode
+Integration:
+- Can be added to `ChladniVisualizationNode` as a child
+- Toggle via display options (visibility property)
+- Updates via `setPsiFunction()` and `update()` methods
+
+### 9. Modal Shape Visualization Mode
 
 Add a mode to visualize individual modal shapes (m,n patterns) to help users understand how the superposition creates the final pattern.
 
@@ -131,7 +130,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 - Show contribution strength of each mode at current frequency
 - Animate between modes to show constructive/destructive interference
 
-### 11. Resonance Curve Enhancements
+### 10. Resonance Curve Enhancements
 
 **File**: `view/ResonanceCurveNode.ts`
 
@@ -144,7 +143,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 
 ## User Experience Improvements
 
-### 12. Enhanced Excitation Marker Interaction
+### 11. Enhanced Excitation Marker Interaction
 
 **File**: `view/ExcitationMarkerNode.ts`
 
@@ -152,7 +151,7 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 - Show coordinate readout during drag
 - Add symmetry modes (mirror excitation position)
 
-### 13. Control Panel Organization
+### 12. Control Panel Organization
 
 **File**: `view/ChladniControlPanel.ts`
 
@@ -160,28 +159,45 @@ Add a mode to visualize individual modal shapes (m,n patterns) to help users und
 - Show actual vs. target particle count as percentage
 - Group related controls more clearly
 
-### 14. Keyboard Accessibility
+### 13. Keyboard Accessibility ✅ IMPLEMENTED
 
-Add keyboard controls for:
+**Files**: `ChladniScreenView.ts`, `KeyboardShortcutsNode.ts`
 
-- Arrow keys to adjust frequency in small increments
-- Space to toggle play/pause
-- Tab navigation through control sections
-- Escape to reset view/zoom
+**Status**: Keyboard controls implemented and documented in help dialog.
+
+Implemented:
+- Space: Toggle play/pause
+- Left/Right arrows: Adjust frequency (10 Hz steps)
+- Shift + Left/Right: 100 Hz steps
+- Up/Down arrows: 100 Hz steps
+- Shift + Up/Down: 500 Hz steps
+- R: Reset simulation
+- Escape: Stop frequency sweep
+- Tab navigation through all controls
+- Arrow keys for dragging masses and excitation marker
+
+Custom keyboard help sections added to `KeyboardShortcutsNode.ts`.
 
 ---
 
 ## Documentation Improvements
 
-### 15. Physics Documentation
+### 14. Physics Documentation ✅ IMPLEMENTED
 
-Add inline documentation for:
+**File**: `model/ChladniConstants.ts`
 
-- `MODE_STEP = 1` rationale (vs. 2 for symmetric excitation)
-- `SOURCE_THRESHOLD` value selection criteria
-- `ParticleManager.step()` timeScale calculation explanation
+**Status**: Detailed inline documentation has been added.
 
-### 16. Architecture Decision Records
+Documented:
+- `MODE_STEP = 1`: Full rationale explaining why all modes are included (vs. only even
+  modes for center excitation), including the physics of mode shapes φ_mn(x,y)
+- `SOURCE_THRESHOLD = 0.001`: Value selection criteria explaining the 0.1% threshold
+  balance between computation savings and visual accuracy
+- Squared threshold optimization to avoid sqrt() in hot path
+
+**Remaining**: `ParticleManager.step()` timeScale calculation (already has good comments)
+
+### 15. Architecture Decision Records
 
 Document key design decisions:
 
@@ -193,18 +209,17 @@ Document key design decisions:
 
 ## Priority Matrix
 
-| Recommendation                    | Impact | Effort | Priority |
-| --------------------------------- | ------ | ------ | -------- |
-| Remove redundant TransformManager | Low    | Low    | P3       |
-| Particle memory optimization      | Medium | Medium | P2       |
-| Configurable sweep rate           | Medium | Low    | P2       |
-| Auto particle replenishment       | Medium | Low    | P2       |
-| Displacement colormap             | High   | Medium | P1       |
-| Modal shape visualization         | High   | High   | P2       |
-| Keyboard accessibility            | Medium | Medium | P2       |
-| Physics documentation             | Low    | Low    | P3       |
-| Progressive curve computation     | Low    | High   | P3       |
-| Plate dimension presets           | Low    | Low    | P3       |
+| Recommendation                | Impact | Effort | Priority | Status          |
+| ----------------------------- | ------ | ------ | -------- | --------------- |
+| Displacement colormap         | High   | Medium | P1       | ✅ Done         |
+| Particle memory optimization  | Medium | Medium | P2       | ✅ Done         |
+| Configurable sweep rate       | Medium | Low    | P2       | 🔶 Constants    |
+| Auto particle replenishment   | Medium | Low    | P2       | Open            |
+| Modal shape visualization     | High   | High   | P2       | Open            |
+| Keyboard accessibility        | Medium | Medium | P2       | ✅ Done         |
+| Progressive curve computation | Low    | High   | P3       | Open            |
+| Plate dimension presets       | Low    | Low    | P3       | Open            |
+| Physics documentation         | Low    | Low    | P3       | ✅ Done         |
 
 ---
 

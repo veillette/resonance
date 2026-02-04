@@ -16,6 +16,7 @@
  */
 
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
+import { Utterance, utteranceQueue } from "scenerystack/utterance-queue";
 import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
 import {
   ResetAllButton,
@@ -163,8 +164,61 @@ export class BaseOscillatorScreenView extends ScreenView {
       this.measurementLinesNode.visible = visible;
     });
 
+    // Set up accessibility alerts
+    this.setupAccessibilityAlerts();
+
     // Initial spring/mass update
     this.updateSpringAndMass();
+  }
+
+  /**
+   * Set up screen reader alerts for important state changes.
+   */
+  protected setupAccessibilityAlerts(): void {
+    const alerts = ResonanceStrings.a11y.alerts;
+
+    // Announce play/pause state changes
+    this.model.isPlayingProperty.lazyLink((isPlaying) => {
+      const alertString = isPlaying
+        ? alerts.simulationPlayingStringProperty.value
+        : alerts.simulationPausedStringProperty.value;
+      utteranceQueue.addToBack(
+        new Utterance({
+          alert: alertString,
+          priority: Utterance.LOW_PRIORITY,
+        }),
+      );
+    });
+
+    // Announce gravity toggle
+    this.model.resonanceModel.gravityProperty.lazyLink((gravity) => {
+      const alertString =
+        gravity > 0
+          ? alerts.gravityOnStringProperty.value
+          : alerts.gravityOffStringProperty.value;
+      utteranceQueue.addToBack(
+        new Utterance({
+          alert: alertString,
+          priority: Utterance.LOW_PRIORITY,
+        }),
+      );
+    });
+
+    // Announce resonator count changes (only for multi-oscillator screens)
+    if (!this.model.singleOscillatorMode) {
+      this.model.resonatorCountProperty.lazyLink((count) => {
+        const alertString = alerts.resonatorCountStringProperty.value.replace(
+          "{{count}}",
+          String(count),
+        );
+        utteranceQueue.addToBack(
+          new Utterance({
+            alert: alertString,
+            priority: Utterance.LOW_PRIORITY,
+          }),
+        );
+      });
+    }
   }
 
   /**

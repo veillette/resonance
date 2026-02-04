@@ -137,6 +137,13 @@
         "springDescription": "Elastic spring connecting mass {{number}} to the driver plate",
         "massLabel": "Mass {{number}}",
         "massDescription": "Draggable mass on resonator {{number}}. Use arrow keys to move vertically."
+      },
+      "alerts": {
+        "simulationPlaying": "Simulation playing",
+        "simulationPaused": "Simulation paused",
+        "gravityOn": "Gravity enabled",
+        "gravityOff": "Gravity disabled",
+        "resonatorCount": "{{count}} resonators"
       }
     },
     "presets": {
@@ -189,6 +196,11 @@
         "excitationMarkerLabel": "Excitation Point",
         "excitationMarkerDescription": "Draggable marker showing where the plate is driven. Use arrow keys to move. Hold Shift for fine control.",
         "resonancePeakAlert": "Resonance peak detected at {{frequency}} Hz",
+        "sweepCompleteAlert": "Frequency sweep complete",
+        "simulationPlayingAlert": "Simulation playing",
+        "simulationPausedAlert": "Simulation paused",
+        "frequencyChangedAlert": "Frequency {{frequency}} Hz",
+        "materialChangedAlert": "Material changed to {{material}}",
         "nearResonance": "Near resonance",
         "atResonance": "At resonance peak",
         "resonanceCurveLabel": "Resonance Curve Graph",

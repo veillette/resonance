@@ -94,14 +94,25 @@ resonance/
 │   ├── chladni-patterns/     # Chladni Patterns screen
 │   │   ├── ChladniScreen.ts
 │   │   ├── model/
-│   │   │   ├── ChladniModel.ts       # Plate physics and particles
-│   │   │   ├── ModalCalculator.ts    # Wave equation solution
-│   │   │   ├── ParticleManager.ts    # Particle simulation
-│   │   │   └── Material.ts           # Material properties
+│   │   │   ├── ChladniModel.ts           # Plate physics and particles
+│   │   │   ├── ChladniConstants.ts       # Physics constants and config
+│   │   │   ├── ModalCalculator.ts        # Wave equation solution
+│   │   │   ├── ParticleManager.ts        # Particle simulation with object pooling
+│   │   │   ├── Material.ts               # Material properties (dispersion)
+│   │   │   ├── PlateGeometry.ts          # Plate dimension management
+│   │   │   ├── FrequencySweepController.ts  # Frequency sweep animation
+│   │   │   ├── ResonanceCurveCalculator.ts  # Precomputed resonance data
+│   │   │   ├── PlaybackStateMachine.ts   # Animation state management
+│   │   │   └── FrequencyRange.ts         # Frequency range utilities
 │   │   └── view/
 │   │       ├── ChladniScreenView.ts
 │   │       ├── ChladniControlPanel.ts
-│   │       └── renderers/            # Canvas/WebGL particle rendering
+│   │       ├── ChladniVisualizationNode.ts  # Particle display
+│   │       ├── ResonanceCurveNode.ts     # Frequency response graph
+│   │       ├── DisplacementColormapNode.ts  # Colormap overlay
+│   │       ├── ExcitationMarkerNode.ts   # Draggable excitation point
+│   │       ├── controls/                 # Control panel sections
+│   │       └── renderers/                # Canvas/WebGL particle rendering
 │   ├── i18n/                 # Internationalization
 │   │   ├── ResonanceStrings.ts
 │   │   ├── StringManager.ts

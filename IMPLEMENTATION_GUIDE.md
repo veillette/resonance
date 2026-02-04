@@ -15,28 +15,31 @@ The implementation is based on the spring model from veillette's classical mecha
 
 ## Architecture Overview
 
-The implementation follows a clean, modular architecture with support for multiple coupled oscillators:
+The implementation follows a clean, modular architecture with four screens and shared base classes:
 
 ```
 src/
 ├── common/
-│   └── model/
-│       ├── ODESolver.ts              # Abstract solver interface
-│       ├── RungeKuttaSolver.ts       # RK4 implementation (default)
-│       ├── AdaptiveEulerSolver.ts    # Adaptive Euler method
-│       ├── AdaptiveRK45Solver.ts     # Adaptive Runge-Kutta 4/5
-│       ├── ModifiedMidpointSolver.ts # Modified midpoint method
-│       ├── SolverType.ts             # Solver enumeration
-│       ├── BaseModel.ts              # Abstract base with time management
-│       ├── ResonanceModel.ts         # Single oscillator physics model
+│   ├── model/
+│   │   ├── ODESolver.ts              # Abstract solver interface
+│   │   ├── RungeKuttaSolver.ts       # RK4 implementation (default)
+│   │   ├── AdaptiveEulerSolver.ts    # Adaptive Euler method
+│   │   ├── AdaptiveRK45Solver.ts     # Adaptive Runge-Kutta 4/5
+│   │   ├── ModifiedMidpointSolver.ts # Modified midpoint method
+│   │   ├── SolverType.ts             # Solver enumeration
+│   │   ├── BaseModel.ts              # Abstract base with time management
+│   │   ├── BaseOscillatorScreenModel.ts  # Shared oscillator screen model
+│   │   ├── ResonanceModel.ts         # Single oscillator physics model
+│   │   └── index.ts                  # Barrel exports
+│   └── view/
+│       ├── BaseOscillatorScreenView.ts   # Shared oscillator screen view
 │       └── index.ts                  # Barrel exports
 ├── preferences/
 │   └── ResonancePreferencesModel.ts  # Includes solver selection
-└── screen-name/
-    ├── model/
-    │   └── SimModel.ts               # Manages multiple ResonanceModel instances
-    └── view/
-        └── SimScreenView.ts          # Visualizes driver plate and oscillators
+├── single-oscillator/                # Single Oscillator screen
+├── multiple-oscillators/             # Multiple Oscillators screen
+├── phase-analysis/                   # Phase Analysis screen
+└── chladni-patterns/                 # Chladni Patterns screen
 ```
 
 ## Components
@@ -265,9 +268,9 @@ getDerivatives(t: number, state: number[]): number[] {
 }
 ```
 
-### 6. Multiple Oscillator System (SimModel)
+### 6. Multiple Oscillator System (BaseOscillatorScreenModel)
 
-The `SimModel` wraps and manages multiple `ResonanceModel` instances, allowing for comparative study of resonance phenomena.
+The `BaseOscillatorScreenModel` wraps and manages multiple `ResonanceModel` instances, allowing for comparative study of resonance phenomena.
 
 #### Configuration Modes
 
@@ -306,12 +309,13 @@ Five preset modes determine how multiple oscillators' parameters are distributed
 ```typescript
 // User-facing: 1-indexed display (Resonator 1, 2, 3...)
 // Internal: 0-indexed arrays
-resonatorSelectionProperty: NumberProperty; // Which oscillator to view/edit
+selectedResonatorIndexProperty: NumberProperty; // Which oscillator to view/edit (0-indexed)
 
-// Dynamic property binding
-displayedMassProperty: TReadOnlyProperty<number>;
-displayedSpringConstantProperty: TReadOnlyProperty<number>;
-// etc.
+// Access properties via getter method
+const resonator = model.getResonatorModel(index);
+const mass = resonator.massProperty.value;
+const springConstant = resonator.springConstantProperty.value;
+const naturalFrequencyHz = resonator.naturalFrequencyHzProperty.value;
 ```
 
 **Editing Rules:**
@@ -333,19 +337,26 @@ All oscillators share:
 #### Implementation Pattern
 
 ```typescript
-class SimModel extends BaseModel {
-  resonators: ResonanceModel[]; // Array of 1-10 oscillators
+class BaseOscillatorScreenModel {
+  resonanceModel: ResonanceModel;        // Reference model for shared parameters
+  resonatorModels: ResonanceModel[];     // Array of 1-10 oscillators
+  resonatorConfigProperty: Property<ResonatorConfigModeType>;
+  resonatorCountProperty: NumberProperty;
 
-  step(dt: number, forceStep?: boolean): void {
-    // Step all oscillators with same driver plate position
-    for (const resonator of this.resonators) {
-      resonator.step(dt, forceStep);
+  step(dt: number): void {
+    // Step all active oscillators
+    const count = this.resonatorCountProperty.value;
+    for (let i = 0; i < count; i++) {
+      const model = this.getResonatorModel(i);
+      if (!model.isDraggingProperty.value) {
+        model.step(dt);
+      }
     }
   }
 
-  updateDerivedResonators(): void {
-    // Called when base oscillator or mode changes
-    // Recalculates masses/spring constants for derived oscillators
+  getResonatorModel(index: number): ResonanceModel {
+    // Type-safe access with bounds checking
+    return this.resonatorModels[index];
   }
 }
 ```
@@ -599,33 +610,34 @@ const dampingRatio = model.dampingRatioProperty.value;
 model.setPreset(ResonancePresets[5]); // Resonance Demo
 ```
 
-#### Multiple Oscillator Usage (SimModel)
+#### Multiple Oscillator Usage (BaseOscillatorScreenModel)
 
 ```typescript
-import { SimModel } from "./screen-name/model/SimModel.js";
-import { ConfigurationMode } from "./screen-name/model/ConfigurationMode.js";
+import { BaseOscillatorScreenModel } from "./common/model/index.js";
+import { ResonatorConfigMode } from "./common/model/ResonatorConfigMode.js";
 
 // Create model with multiple oscillators
-const simModel = new SimModel(preferencesModel);
+const model = new BaseOscillatorScreenModel(preferencesModel);
 
 // Configure oscillator system
-simModel.resonatorCountProperty.value = 5; // 5 oscillators
-simModel.configurationModeProperty.value = ConfigurationMode.SAME_MASS;
+model.resonatorCountProperty.value = 5; // 5 oscillators
+model.resonatorConfigProperty.value = ResonatorConfigMode.SAME_MASS;
 
-// Set driving parameters (shared by all oscillators)
-simModel.drivingFrequencyProperty.value = 2.0; // Hz
-simModel.amplitudeCmProperty.value = 1.0; // cm (displayed in UI)
+// Set driving parameters (shared by all oscillators via resonanceModel)
+model.resonanceModel.drivingFrequencyProperty.value = 2.0; // Hz
+model.resonanceModel.drivingAmplitudeProperty.value = 0.01; // 1 cm in meters
 
 // Select oscillator to view/edit
-simModel.resonatorSelectionProperty.value = 1; // View oscillator 2 (0-indexed)
+model.selectedResonatorIndexProperty.value = 1; // View oscillator 2 (0-indexed)
 
-// Access displayed properties (synced with selected oscillator)
-const mass = simModel.displayedMassProperty.value;
-const k = simModel.displayedSpringConstantProperty.value;
-const f0 = simModel.displayedNaturalFrequencyHzProperty.value;
+// Access properties for a specific resonator
+const resonator = model.getResonatorModel(1);
+const mass = resonator.massProperty.value;
+const k = resonator.springConstantProperty.value;
+const f0 = resonator.naturalFrequencyHzProperty.value;
 
 // Step all oscillators
-simModel.step(dt);
+model.step(dt);
 ```
 
 ## Implementation Notes
