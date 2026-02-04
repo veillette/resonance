@@ -292,6 +292,34 @@ const ResonanceColors = {
     },
   ),
 
+  // Vector arrow colors (for velocity, acceleration, force visualization)
+  velocityVectorProperty: new ProfileColorProperty(
+    resonance,
+    "velocityVector",
+    {
+      default: new Color(0, 255, 0), // Bright green
+      projector: new Color(0, 180, 0),
+    },
+  ),
+
+  accelerationVectorProperty: new ProfileColorProperty(
+    resonance,
+    "accelerationVector",
+    {
+      default: new Color(255, 255, 0), // Yellow
+      projector: new Color(200, 180, 0),
+    },
+  ),
+
+  appliedForceVectorProperty: new ProfileColorProperty(
+    resonance,
+    "appliedForceVector",
+    {
+      default: new Color(255, 165, 0), // Orange
+      projector: new Color(255, 140, 0),
+    },
+  ),
+
   // Displacement colormap colors (blue-white-red gradient)
   colormapNegativeProperty: new ProfileColorProperty(
     resonance,
