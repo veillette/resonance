@@ -37,7 +37,10 @@
       "frequencyEquals": "fréquence =",
       "slow": "Lent",
       "normal": "Normal",
-      "close": "Fermer"
+      "close": "Fermer",
+      "velocity": "Vitesse",
+      "acceleration": "Accélération",
+      "appliedForce": "Force Appliquée"
     },
     "preferences": {
       "title": "Préférences",
