@@ -129,6 +129,7 @@ export class BaseOscillatorScreenView extends ScreenView {
       model,
       this.layoutBounds,
       this.rulerVisibleProperty,
+      { singleOscillatorMode: model.singleOscillatorMode },
     );
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);

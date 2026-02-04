@@ -26,6 +26,14 @@ import { Property, NumberProperty } from "scenerystack/axon";
 import { TimeSpeed } from "./BaseModel.js";
 import { CircularUpdateGuard } from "../util/index.js";
 
+export type BaseOscillatorScreenModelOptions = {
+  /**
+   * When true, the model only supports a single oscillator.
+   * This affects the UI to hide multi-oscillator controls.
+   */
+  singleOscillatorMode?: boolean;
+};
+
 export class BaseOscillatorScreenModel {
   // The first resonance model acts as the "reference" model that controls
   // drive parameters, damping, gravity, etc. shared across all resonators.
@@ -51,8 +59,18 @@ export class BaseOscillatorScreenModel {
   // Maximum number of resonators supported
   public static readonly MAX_RESONATORS = 10;
 
-  public constructor(preferencesModel: ResonancePreferencesModel) {
+  /**
+   * When true, the model only supports a single oscillator.
+   * This is used by the view to hide multi-oscillator controls.
+   */
+  public readonly singleOscillatorMode: boolean;
+
+  public constructor(
+    preferencesModel: ResonancePreferencesModel,
+    options?: BaseOscillatorScreenModelOptions,
+  ) {
     this.preferencesModel = preferencesModel;
+    this.singleOscillatorMode = options?.singleOscillatorMode ?? false;
     this.resonanceModel = new ResonanceModel(preferencesModel);
     this.resonatorModels = [this.resonanceModel];
 
