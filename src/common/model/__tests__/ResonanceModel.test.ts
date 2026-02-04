@@ -26,13 +26,15 @@ describe("ResonanceModel", () => {
 
   describe("natural frequency", () => {
     it("should calculate omega_0 = sqrt(k/m) for default values", () => {
-      // Default: k=100, m=0.25 -> omega_0 = sqrt(100/0.25) = 20 rad/s
-      expect(model.naturalFrequencyProperty.value).toBeCloseTo(20, 5);
+      // Default: k=100, m=2.53 -> omega_0 = sqrt(100/2.53) ≈ 6.287 rad/s
+      const expected = Math.sqrt(100 / 2.53);
+      expect(model.naturalFrequencyProperty.value).toBeCloseTo(expected, 5);
     });
 
     it("should convert to Hz correctly: f_0 = omega_0/(2*pi)", () => {
-      // omega_0 = 20 rad/s -> f_0 = 20/(2*pi) ≈ 3.183 Hz
-      const expectedHz = 20 / (2 * Math.PI);
+      // omega_0 = sqrt(100/2.53) rad/s -> f_0 = omega_0/(2*pi) Hz
+      const omega0 = Math.sqrt(100 / 2.53);
+      const expectedHz = omega0 / (2 * Math.PI);
       expect(model.naturalFrequencyHzProperty.value).toBeCloseTo(expectedHz, 4);
     });
 
@@ -42,6 +44,7 @@ describe("ResonanceModel", () => {
     });
 
     it("should update when spring constant changes", () => {
+      model.massProperty.value = 0.25; // Set mass to 0.25 first
       model.springConstantProperty.value = 25; // k=25, m=0.25 -> omega_0 = 10 rad/s
       expect(model.naturalFrequencyProperty.value).toBeCloseTo(10, 5);
     });
@@ -56,8 +59,9 @@ describe("ResonanceModel", () => {
 
   describe("damping ratio", () => {
     it("should calculate zeta = b/(2*sqrt(m*k))", () => {
-      // Default: b=0.5, m=0.25, k=100 -> zeta = 0.5/(2*sqrt(25)) = 0.5/10 = 0.05
-      expect(model.dampingRatioProperty.value).toBeCloseTo(0.05, 5);
+      // Default: b=1.0, m=2.53, k=100 -> zeta = 1.0/(2*sqrt(253)) ≈ 0.0314
+      const expected = 1.0 / (2 * Math.sqrt(2.53 * 100));
+      expect(model.dampingRatioProperty.value).toBeCloseTo(expected, 5);
     });
 
     it("should identify underdamped (zeta < 1)", () => {
@@ -67,13 +71,15 @@ describe("ResonanceModel", () => {
 
     it("should identify critically damped (zeta = 1)", () => {
       // For critical damping: b = 2*sqrt(m*k)
-      // With m=0.25, k=100: b = 2*sqrt(25) = 10
-      model.dampingProperty.value = 10.0;
+      // With m=2.53, k=100: b = 2*sqrt(253) ≈ 31.81
+      const criticalDamping = 2 * Math.sqrt(2.53 * 100);
+      model.dampingProperty.value = criticalDamping;
       expect(model.dampingRatioProperty.value).toBeCloseTo(1.0, 5);
     });
 
     it("should identify overdamped (zeta > 1)", () => {
-      model.dampingProperty.value = 20.0;
+      // Need b > 2*sqrt(m*k) ≈ 31.81 for overdamping
+      model.dampingProperty.value = 40.0;
       expect(model.dampingRatioProperty.value).toBeGreaterThan(1);
     });
 
@@ -85,8 +91,10 @@ describe("ResonanceModel", () => {
 
   describe("kinetic energy", () => {
     it("should calculate KE = 0.5 * m * v^2", () => {
-      model.velocityProperty.value = 2.0; // m=0.25, v=2 -> KE = 0.5*0.25*4 = 0.5 J
-      expect(model.kineticEnergyProperty.value).toBeCloseTo(0.5, 5);
+      // Default m=2.53, v=2 -> KE = 0.5*2.53*4 = 5.06 J
+      model.velocityProperty.value = 2.0;
+      const expected = 0.5 * 2.53 * 4;
+      expect(model.kineticEnergyProperty.value).toBeCloseTo(expected, 5);
     });
 
     it("should be zero when velocity is zero", () => {
@@ -100,10 +108,11 @@ describe("ResonanceModel", () => {
     });
 
     it("should scale with mass", () => {
+      model.massProperty.value = 1.0;
       model.velocityProperty.value = 2.0;
       const ke1 = model.kineticEnergyProperty.value;
 
-      model.massProperty.value = 0.5; // Double the mass
+      model.massProperty.value = 2.0; // Double the mass
       const ke2 = model.kineticEnergyProperty.value;
 
       expect(ke2).toBeCloseTo(ke1 * 2, 5);
@@ -126,8 +135,9 @@ describe("ResonanceModel", () => {
     it("should include gravitational potential: PE = 0.5*k*x^2 - m*g*x", () => {
       model.gravityProperty.value = 10;
       model.positionProperty.value = 0.1;
-      // PE = 0.5*100*0.01 - 0.25*10*0.1 = 0.5 - 0.25 = 0.25 J
-      expect(model.potentialEnergyProperty.value).toBeCloseTo(0.25, 5);
+      // PE = 0.5*100*0.01 - 2.53*10*0.1 = 0.5 - 2.53 = -2.03 J
+      const expected = 0.5 * 100 * 0.01 - 2.53 * 10 * 0.1;
+      expect(model.potentialEnergyProperty.value).toBeCloseTo(expected, 5);
     });
   });
 
@@ -281,8 +291,9 @@ describe("ResonanceModel", () => {
       const state = [0.1, 0, 0]; // position=0.1, velocity=0
       const derivatives = model.getDerivatives(0, state);
 
-      // a = -k*x/m = -100*0.1/0.25 = -40 m/s^2
-      expect(derivatives[1]).toBeCloseTo(-40, 5);
+      // a = -k*x/m = -100*0.1/2.53 ≈ -3.953 m/s^2
+      const expected = -100 * 0.1 / 2.53;
+      expect(derivatives[1]).toBeCloseTo(expected, 5);
     });
 
     it("should calculate damping force correctly: F_damp = -b*v", () => {
@@ -294,8 +305,9 @@ describe("ResonanceModel", () => {
       const state = [0, 1.0, 0]; // position=0, velocity=1.0
       const derivatives = model.getDerivatives(0, state);
 
-      // a = -b*v/m = -2.0*1.0/0.25 = -8 m/s^2
-      expect(derivatives[1]).toBeCloseTo(-8, 5);
+      // a = -b*v/m = -2.0*1.0/2.53 ≈ -0.791 m/s^2
+      const expected = -2.0 * 1.0 / 2.53;
+      expect(derivatives[1]).toBeCloseTo(expected, 5);
     });
 
     it("should calculate gravitational force correctly: F_grav = m*g", () => {
@@ -325,8 +337,9 @@ describe("ResonanceModel", () => {
       const derivatives = model.getDerivatives(0, state);
 
       // F_drive = k * A * sin(phase) = 1 * 1 * 1 = 1 N
-      // a = F_drive / m = 1 / 0.25 = 4 m/s^2
-      expect(derivatives[1]).toBeCloseTo(4, 5);
+      // a = F_drive / m = 1 / 2.53 ≈ 0.395 m/s^2
+      const expected = 1.0 / 2.53;
+      expect(derivatives[1]).toBeCloseTo(expected, 5);
     });
 
     it("should not apply driving force when disabled", () => {
@@ -372,22 +385,22 @@ describe("ResonanceModel", () => {
 
       model.reset();
 
-      expect(model.massProperty.value).toBe(0.25);
+      expect(model.massProperty.value).toBe(2.53);
       expect(model.springConstantProperty.value).toBe(100.0);
-      expect(model.dampingProperty.value).toBe(0.5);
+      expect(model.dampingProperty.value).toBe(1.0);
     });
 
     it("should reset driving parameters to defaults", () => {
       model.drivingAmplitudeProperty.value = 10.0;
       model.drivingFrequencyProperty.value = 5.0;
-      model.drivingEnabledProperty.value = false;
+      model.drivingEnabledProperty.value = true;
       model.drivingPhaseProperty.value = 3.14;
 
       model.reset();
 
-      expect(model.drivingAmplitudeProperty.value).toBe(0.01);
+      expect(model.drivingAmplitudeProperty.value).toBe(0.005);
       expect(model.drivingFrequencyProperty.value).toBe(1.0);
-      expect(model.drivingEnabledProperty.value).toBe(true);
+      expect(model.drivingEnabledProperty.value).toBe(false);
       expect(model.drivingPhaseProperty.value).toBe(0.0);
     });
 
