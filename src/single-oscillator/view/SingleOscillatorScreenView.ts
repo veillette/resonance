@@ -51,16 +51,17 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
   }
 
   /**
-   * Update the position of the vector node to match the mass center.
+   * Update the position of the vector node to match the mass bottom.
+   * The vectors originate from the bottom of the mass (the spring connection point).
    */
   private updateVectorPosition(): void {
     const massNode = this.massNodes[0];
     if (massNode) {
-      // Get the center of the mass node in parent coordinates
-      const massSize = massNode.width;
-      const massCenterX = massNode.x;
-      const massCenterY = massNode.y - massSize / 2; // Mass origin is at bottom, so center is up
-      this.vectorNode.setMassCenter(massCenterX, massCenterY);
+      // Get the bottom of the mass node in parent coordinates
+      // massNode.y is already the bottom of the mass (local origin is at bottom)
+      const massBottomX = massNode.x;
+      const massBottomY = massNode.y;
+      this.vectorNode.setMassBottom(massBottomX, massBottomY);
     }
   }
 

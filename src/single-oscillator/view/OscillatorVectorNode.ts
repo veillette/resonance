@@ -1,7 +1,7 @@
 /**
  * OscillatorVectorNode displays velocity, acceleration, and applied force vectors
  * on the oscillator mass. Each vector is shown as an arrow originating from the
- * center of the mass, with length proportional to the magnitude of the quantity.
+ * bottom of the mass, with length proportional to the magnitude of the quantity.
  *
  * The vectors are:
  * - Velocity (green): points in the direction of motion
@@ -9,17 +9,17 @@
  * - Applied Force (orange): the spring force from the driver
  */
 
-import { Node } from "scenerystack/scenery";
-import { ArrowNode } from "scenerystack/scenery-phet";
+import { Node, Text } from "scenerystack/scenery";
+import { ArrowNode, PhetFont } from "scenerystack/scenery-phet";
 import { BooleanProperty, TReadOnlyProperty, Multilink, UnknownMultilink } from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceModel } from "../../common/model/ResonanceModel.js";
 
 // Scale factors to convert physics values to pixel lengths
-const VELOCITY_SCALE = 50; // pixels per m/s
-const ACCELERATION_SCALE = 2; // pixels per m/s^2
-const FORCE_SCALE = 0.5; // pixels per Newton
+const VELOCITY_SCALE = 200; // pixels per m/s (increased for visibility)
+const ACCELERATION_SCALE = 8; // pixels per m/s^2 (increased for visibility)
+const FORCE_SCALE = 2; // pixels per Newton (increased for visibility)
 
 // Minimum length threshold to display vectors (pixels)
 const MIN_VECTOR_LENGTH = 2;
@@ -28,6 +28,13 @@ const MIN_VECTOR_LENGTH = 2;
 const ARROW_HEAD_WIDTH = 12;
 const ARROW_HEAD_HEIGHT = 10;
 const ARROW_TAIL_WIDTH = 5;
+
+// Horizontal spacing between vectors (pixels)
+const VECTOR_SPACING = 12;
+
+// Label styling
+const LABEL_FONT = new PhetFont({ size: 12, weight: "bold" });
+const LABEL_OFFSET_X = 4; // horizontal offset from arrow
 
 export type OscillatorVectorNodeOptions = {
   velocityVisibleProperty: BooleanProperty;
@@ -39,6 +46,12 @@ export class OscillatorVectorNode extends Node {
   private readonly velocityArrow: ArrowNode;
   private readonly accelerationArrow: ArrowNode;
   private readonly appliedForceArrow: ArrowNode;
+  private readonly velocityContainer: Node;
+  private readonly accelerationContainer: Node;
+  private readonly appliedForceContainer: Node;
+  private readonly velocityLabel: Text;
+  private readonly accelerationLabel: Text;
+  private readonly appliedForceLabel: Text;
   private readonly model: ResonanceModel;
   private readonly _modelViewTransform: ModelViewTransform2;
   private readonly multilink: UnknownMultilink;
@@ -53,7 +66,8 @@ export class OscillatorVectorNode extends Node {
     this.model = model;
     this._modelViewTransform = modelViewTransform;
 
-    // Create velocity arrow (green)
+    // Create velocity arrow container (green) - leftmost position
+    this.velocityContainer = new Node({ x: -VECTOR_SPACING });
     this.velocityArrow = new ArrowNode(0, 0, 0, 0, {
       fill: ResonanceColors.velocityVectorProperty,
       stroke: null,
@@ -61,9 +75,16 @@ export class OscillatorVectorNode extends Node {
       headHeight: ARROW_HEAD_HEIGHT,
       tailWidth: ARROW_TAIL_WIDTH,
     });
-    this.addChild(this.velocityArrow);
+    this.velocityLabel = new Text("v", {
+      font: LABEL_FONT,
+      fill: ResonanceColors.velocityVectorProperty,
+    });
+    this.velocityContainer.addChild(this.velocityArrow);
+    this.velocityContainer.addChild(this.velocityLabel);
+    this.addChild(this.velocityContainer);
 
-    // Create acceleration arrow (yellow)
+    // Create acceleration arrow container (yellow) - center position
+    this.accelerationContainer = new Node({ x: 0 });
     this.accelerationArrow = new ArrowNode(0, 0, 0, 0, {
       fill: ResonanceColors.accelerationVectorProperty,
       stroke: null,
@@ -71,9 +92,16 @@ export class OscillatorVectorNode extends Node {
       headHeight: ARROW_HEAD_HEIGHT,
       tailWidth: ARROW_TAIL_WIDTH,
     });
-    this.addChild(this.accelerationArrow);
+    this.accelerationLabel = new Text("a", {
+      font: LABEL_FONT,
+      fill: ResonanceColors.accelerationVectorProperty,
+    });
+    this.accelerationContainer.addChild(this.accelerationArrow);
+    this.accelerationContainer.addChild(this.accelerationLabel);
+    this.addChild(this.accelerationContainer);
 
-    // Create applied force arrow (orange)
+    // Create applied force arrow container (orange) - rightmost position
+    this.appliedForceContainer = new Node({ x: VECTOR_SPACING });
     this.appliedForceArrow = new ArrowNode(0, 0, 0, 0, {
       fill: ResonanceColors.appliedForceVectorProperty,
       stroke: null,
@@ -81,19 +109,25 @@ export class OscillatorVectorNode extends Node {
       headHeight: ARROW_HEAD_HEIGHT,
       tailWidth: ARROW_TAIL_WIDTH,
     });
-    this.addChild(this.appliedForceArrow);
+    this.appliedForceLabel = new Text("F", {
+      font: LABEL_FONT,
+      fill: ResonanceColors.appliedForceVectorProperty,
+    });
+    this.appliedForceContainer.addChild(this.appliedForceArrow);
+    this.appliedForceContainer.addChild(this.appliedForceLabel);
+    this.addChild(this.appliedForceContainer);
 
     // Link visibility to the control properties
     options.velocityVisibleProperty.linkAttribute(
-      this.velocityArrow,
+      this.velocityContainer,
       "visible",
     );
     options.accelerationVisibleProperty.linkAttribute(
-      this.accelerationArrow,
+      this.accelerationContainer,
       "visible",
     );
     options.appliedForceVisibleProperty.linkAttribute(
-      this.appliedForceArrow,
+      this.appliedForceContainer,
       "visible",
     );
 
@@ -158,8 +192,13 @@ export class OscillatorVectorNode extends Node {
     const velocityTipY = -velocityPixels;
     if (Math.abs(velocityPixels) > MIN_VECTOR_LENGTH) {
       this.velocityArrow.setTailAndTip(0, 0, 0, velocityTipY);
+      // Position label at the tip of the arrow, offset to the side
+      this.velocityLabel.visible = true;
+      this.velocityLabel.x = LABEL_OFFSET_X;
+      this.velocityLabel.centerY = velocityTipY;
     } else {
       this.velocityArrow.setTailAndTip(0, 0, 0, 0);
+      this.velocityLabel.visible = false;
     }
 
     // Update acceleration arrow
@@ -168,8 +207,13 @@ export class OscillatorVectorNode extends Node {
     const accelerationTipY = -accelerationPixels;
     if (Math.abs(accelerationPixels) > MIN_VECTOR_LENGTH) {
       this.accelerationArrow.setTailAndTip(0, 0, 0, accelerationTipY);
+      // Position label at the tip of the arrow, offset to the side
+      this.accelerationLabel.visible = true;
+      this.accelerationLabel.x = LABEL_OFFSET_X;
+      this.accelerationLabel.centerY = accelerationTipY;
     } else {
       this.accelerationArrow.setTailAndTip(0, 0, 0, 0);
+      this.accelerationLabel.visible = false;
     }
 
     // Update applied force arrow
@@ -178,15 +222,22 @@ export class OscillatorVectorNode extends Node {
     const forceTipY = -forcePixels;
     if (Math.abs(forcePixels) > MIN_VECTOR_LENGTH) {
       this.appliedForceArrow.setTailAndTip(0, 0, 0, forceTipY);
+      // Position label at the tip of the arrow, offset to the side
+      this.appliedForceLabel.visible = true;
+      this.appliedForceLabel.x = LABEL_OFFSET_X;
+      this.appliedForceLabel.centerY = forceTipY;
     } else {
       this.appliedForceArrow.setTailAndTip(0, 0, 0, 0);
+      this.appliedForceLabel.visible = false;
     }
   }
 
   /**
-   * Set the position of this node (center of the mass in view coordinates).
+   * Set the position of this node (bottom of the mass in view coordinates).
+   * Vectors originate from the bottom of the mass, which is the connection
+   * point between the spring and mass.
    */
-  public setMassCenter(x: number, y: number): void {
+  public setMassBottom(x: number, y: number): void {
     this.x = x;
     this.y = y;
   }

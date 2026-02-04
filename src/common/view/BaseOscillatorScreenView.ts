@@ -105,10 +105,12 @@ export class BaseOscillatorScreenView extends ScreenView {
 
     // ===== MEASUREMENT LINES =====
     // Must be created before resonators since measurement lines appear behind them
+    const naturalLength = this.model.resonanceModel.naturalLengthProperty.value;
     this.measurementLinesNode = new OscillatorMeasurementLinesNode(
       this.driverPlate.centerX,
       this.driverPlate.top,
       ResonanceConstants.DRIVER_BOX_WIDTH,
+      naturalLength,
       this.modelViewTransform,
       this.layoutBounds,
     );
