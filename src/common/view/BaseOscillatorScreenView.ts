@@ -16,7 +16,8 @@
  */
 
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
-import { Utterance, utteranceQueue } from "scenerystack/utterance-queue";
+import { Utterance } from "scenerystack/utterance-queue";
+import { utteranceQueue } from "../util/utteranceQueue.js";
 import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
 import {
   ResetAllButton,
@@ -175,10 +176,17 @@ export class BaseOscillatorScreenView extends ScreenView {
    * Set up screen reader alerts for important state changes.
    */
   protected setupAccessibilityAlerts(): void {
-    const alerts = ResonanceStrings.a11y.alerts;
+    // Get alert string properties (with type assertion to work around deeply nested type inference)
+    const alerts = ResonanceStrings.a11y.alerts as unknown as {
+      simulationPlayingStringProperty: { value: string };
+      simulationPausedStringProperty: { value: string };
+      gravityOnStringProperty: { value: string };
+      gravityOffStringProperty: { value: string };
+      resonatorCountStringProperty: { value: string };
+    };
 
     // Announce play/pause state changes
-    this.model.isPlayingProperty.lazyLink((isPlaying) => {
+    this.model.isPlayingProperty.lazyLink((isPlaying: boolean) => {
       const alertString = isPlaying
         ? alerts.simulationPlayingStringProperty.value
         : alerts.simulationPausedStringProperty.value;
@@ -191,7 +199,7 @@ export class BaseOscillatorScreenView extends ScreenView {
     });
 
     // Announce gravity toggle
-    this.model.resonanceModel.gravityProperty.lazyLink((gravity) => {
+    this.model.resonanceModel.gravityProperty.lazyLink((gravity: number) => {
       const alertString =
         gravity > 0
           ? alerts.gravityOnStringProperty.value
@@ -206,7 +214,7 @@ export class BaseOscillatorScreenView extends ScreenView {
 
     // Announce resonator count changes (only for multi-oscillator screens)
     if (!this.model.singleOscillatorMode) {
-      this.model.resonatorCountProperty.lazyLink((count) => {
+      this.model.resonatorCountProperty.lazyLink((count: number) => {
         const alertString = alerts.resonatorCountStringProperty.value.replace(
           "{{count}}",
           String(count),

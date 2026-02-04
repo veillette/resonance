@@ -105,6 +105,11 @@ export class ChladniModel {
     return this.sweepController.isSweepingProperty;
   }
 
+  // Frequency sweep completion emitter (from sweep controller)
+  public get sweepCompletedEmitter() {
+    return this.sweepController.sweepCompletedEmitter;
+  }
+
   // Plate dimensions (from plate geometry)
   public get plateWidthProperty() {
     return this.plateGeometry.widthProperty;

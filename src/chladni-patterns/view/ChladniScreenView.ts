@@ -19,7 +19,8 @@
  */
 
 import { Multilink } from "scenerystack/axon";
-import { Utterance, utteranceQueue } from "scenerystack/utterance-queue";
+import { Utterance } from "scenerystack/utterance-queue";
+import { utteranceQueue } from "../../common/util/utteranceQueue.js";
 import { ScreenView, ScreenViewOptions, audioManager } from "scenerystack/sim";
 import {
   DragListener,
@@ -319,7 +320,7 @@ export class ChladniScreenView extends ScreenView {
     });
 
     // Announce when frequency sweep completes
-    this.model.sweepController.sweepCompletedEmitter.addListener(() => {
+    this.model.sweepCompletedEmitter.addListener(() => {
       utteranceQueue.addToBack(
         new Utterance({
           alert: a11y.sweepCompleteAlertStringProperty.value,

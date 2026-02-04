@@ -10,11 +10,10 @@ import {
   BasicActionsKeyboardHelpSection,
   KeyboardHelpSection,
   KeyboardHelpSectionRow,
+  KeyboardHelpIconFactory,
   TextKeyNode,
   LetterKeyNode,
-  ArrowKeyNode,
 } from "scenerystack/scenery-phet";
-import { HBox } from "scenerystack/scenery";
 import resonance from "../ResonanceNamespace.js";
 
 /**
@@ -31,18 +30,13 @@ class SimulationShortcutsKeyboardHelpSection extends KeyboardHelpSection {
     // Adjust frequency with arrow keys
     const frequencyRow = KeyboardHelpSectionRow.labelWithIcon(
       "Adjust Frequency",
-      new HBox({
-        children: [
-          ArrowKeyNode.leftRight(),
-        ],
-        spacing: 2,
-      }),
+      KeyboardHelpIconFactory.leftRightArrowKeysRowIcon(),
     );
 
     // Large frequency steps with Shift + arrows
     const largeStepRow = KeyboardHelpSectionRow.labelWithIcon(
       "Large Frequency Steps",
-      KeyboardHelpSectionRow.shiftPlusIcon(ArrowKeyNode.upDown()),
+      KeyboardHelpIconFactory.shiftPlusIcon(KeyboardHelpIconFactory.upDownArrowKeysRowIcon()),
     );
 
     // Reset with R key
@@ -75,13 +69,13 @@ class DragObjectsKeyboardHelpSection extends KeyboardHelpSection {
     // Move with arrow keys
     const moveRow = KeyboardHelpSectionRow.labelWithIcon(
       "Move Objects",
-      ArrowKeyNode.arrowOrWasdKeys(),
+      KeyboardHelpIconFactory.arrowOrWasdKeysRowIcon(),
     );
 
     // Fine control with Shift
     const fineRow = KeyboardHelpSectionRow.labelWithIcon(
       "Fine Movement",
-      KeyboardHelpSectionRow.shiftPlusIcon(ArrowKeyNode.arrowOrWasdKeys()),
+      KeyboardHelpIconFactory.shiftPlusIcon(KeyboardHelpIconFactory.arrowOrWasdKeysRowIcon()),
     );
 
     super("Drag Controls", [moveRow, fineRow]);

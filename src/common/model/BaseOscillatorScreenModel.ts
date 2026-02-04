@@ -65,6 +65,14 @@ export class BaseOscillatorScreenModel {
    */
   public readonly singleOscillatorMode: boolean;
 
+  /**
+   * Property controlling whether the simulation is playing.
+   * Delegates to the reference resonance model.
+   */
+  public get isPlayingProperty() {
+    return this.resonanceModel.isPlayingProperty;
+  }
+
   public constructor(
     preferencesModel: ResonancePreferencesModel,
     options?: BaseOscillatorScreenModelOptions,
