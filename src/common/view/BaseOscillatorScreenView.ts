@@ -417,6 +417,7 @@ export class BaseOscillatorScreenView extends ScreenView {
 
   /**
    * Update spring and mass positions each frame.
+   * Uses model coordinates for computing positions, then converts to view.
    */
   protected updateSpringAndMass(): void {
     const count = this.model.resonatorCountProperty.value;
@@ -424,71 +425,61 @@ export class BaseOscillatorScreenView extends ScreenView {
       return;
     }
 
-    // Update driver plate position based on driving force
+    // Get driver model parameters
     const driverModel = this.model.resonanceModel;
+    const phase = driverModel.drivingPhaseProperty.value;
+    const drivingAmplitude = driverModel.drivingAmplitudeProperty.value;
+    const naturalLength = driverModel.naturalLengthProperty.value;
+
+    // Compute driver plate displacement in MODEL coordinates
+    // driverPlateDisplacementModel: positive = upward in model
+    let driverPlateDisplacementModel = 0;
     if (driverModel.drivingEnabledProperty.value) {
-      const phase = driverModel.drivingPhaseProperty.value;
-      const drivingAmplitude = driverModel.drivingAmplitudeProperty.value;
-      const amplitudeViewDisplacement = Math.abs(
-        this.modelViewTransform.modelToViewDeltaY(drivingAmplitude),
-      );
-      const viewDisplacement = amplitudeViewDisplacement * Math.sin(phase);
-
-      const driverPlateBaseY =
-        this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
-      this.driverPlate.y = driverPlateBaseY + viewDisplacement;
-
-      const rodHeight = Math.max(
-        ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT,
-        ResonanceConstants.CONNECTION_ROD_HEIGHT - viewDisplacement,
-      );
-      this.connectionRod.setRect(
-        0,
-        0,
-        ResonanceConstants.CONNECTION_ROD_WIDTH,
-        rodHeight,
-      );
-      this.connectionRod.bottom = this.driverNode.top;
-    } else {
-      const driverPlateBaseY =
-        this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
-      this.driverPlate.y = driverPlateBaseY;
-
-      this.connectionRod.setRect(
-        0,
-        0,
-        ResonanceConstants.CONNECTION_ROD_WIDTH,
-        ResonanceConstants.CONNECTION_ROD_HEIGHT,
-      );
-      this.connectionRod.bottom = this.driverNode.top;
+      // Driver oscillates: A * sin(phase) in model coordinates
+      driverPlateDisplacementModel = drivingAmplitude * Math.sin(phase);
     }
+
+    // Convert driver displacement to VIEW coordinates for plate positioning
+    const driverPlateBaseY =
+      this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
+    // Note: positive model displacement = upward = negative view Y change
+    const viewDisplacement = this.modelViewTransform.modelToViewDeltaY(
+      driverPlateDisplacementModel,
+    );
+    this.driverPlate.y = driverPlateBaseY - viewDisplacement;
+
+    // Update connection rod
+    const rodHeight = Math.max(
+      ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT,
+      ResonanceConstants.CONNECTION_ROD_HEIGHT + viewDisplacement,
+    );
+    this.connectionRod.setRect(
+      0,
+      0,
+      ResonanceConstants.CONNECTION_ROD_WIDTH,
+      rodHeight,
+    );
+    this.connectionRod.bottom = this.driverNode.top;
 
     // Note: Measurement lines stay fixed relative to driver plate rest position
     // They do not move with the oscillating driver plate
 
     // Position springs and masses (only visible ones need positioning)
-    const driverTopY = this.driverPlate.top;
     const driverCenterX = this.driverPlate.centerX;
     const spacing = ResonanceConstants.DRIVER_BOX_WIDTH / (count + 1);
 
-    const naturalLength = this.model.resonanceModel.naturalLengthProperty.value;
-    const naturalLengthView = Math.abs(
-      this.modelViewTransform.modelToViewDeltaY(naturalLength),
-    );
-    const equilibriumY = driverTopY - naturalLengthView;
-
     // Convert spring end lengths from model to view coordinates
-    const endLengths =
-      Math.abs(
-        this.modelViewTransform.modelToViewDeltaY(
-          ResonanceConstants.SPRING_LEFT_END_LENGTH_MODEL,
-        ),
-      ) +
-      Math.abs(
-        this.modelViewTransform.modelToViewDeltaY(
-          ResonanceConstants.SPRING_RIGHT_END_LENGTH_MODEL,
-        ),
-      );
+    const leftEndLengthView = Math.abs(
+      this.modelViewTransform.modelToViewDeltaY(
+        ResonanceConstants.SPRING_LEFT_END_LENGTH_MODEL,
+      ),
+    );
+    const rightEndLengthView = Math.abs(
+      this.modelViewTransform.modelToViewDeltaY(
+        ResonanceConstants.SPRING_RIGHT_END_LENGTH_MODEL,
+      ),
+    );
+    const endLengths = leftEndLengthView + rightEndLengthView;
 
     for (let i = 0; i < count; i++) {
       const xCenter =
@@ -497,37 +488,54 @@ export class BaseOscillatorScreenView extends ScreenView {
         spacing * (i + 1);
 
       const resonatorModel = this.model.getResonatorModel(i);
-      const modelY = resonatorModel.positionProperty.value;
-      const viewYOffset = this.modelViewTransform.modelToViewDeltaY(modelY);
 
-      // With inverted Y transform: positive position = upward (spring stretched)
-      // modelToViewDeltaY(positive) returns negative, so junctionY decreases (moves up on screen)
-      const junctionY = equilibriumY + viewYOffset;
-      // The mass bottom is at the junction point (local origin is at bottom of mass box)
-      const massBottomY = junctionY;
+      // MASS POSITION in model coordinates:
+      // positionProperty.value = displacement from equilibrium (natural length from rest driver)
+      // Positive = mass displaced downward in model (stretched spring)
+      const massDisplacementModel = resonatorModel.positionProperty.value;
 
+      // SPRING ENDPOINTS in model coordinates:
+      // Driver plate top (spring attachment point): driverPlateDisplacementModel from rest
+      // Mass bottom (spring attachment point): at naturalLength + massDisplacement from driver rest position
+      //
+      // In model coordinates (positive = upward):
+      // - Driver plate top at: driverPlateDisplacementModel (relative to rest)
+      // - Mass bottom at: naturalLength + massDisplacementModel (relative to rest driver position)
+      //
+      // Spring length in model = distance between these points:
+      const springLengthModel =
+        naturalLength + massDisplacementModel - driverPlateDisplacementModel;
+
+      // Convert to VIEW coordinates for rendering
+      // Driver plate top position in view
+      const driverTopY = this.driverPlate.top;
+
+      // Mass bottom position in view: driver top - spring length (spring extends upward in view)
+      const springLengthView = Math.abs(
+        this.modelViewTransform.modelToViewDeltaY(springLengthModel),
+      );
+      const massBottomY = driverTopY - springLengthView;
+
+      // Position mass node (local origin is at bottom of mass box)
       this.massNodes[i]!.x = xCenter;
       this.massNodes[i]!.y = massBottomY;
 
-      const springStartY = driverTopY;
-      const springEndY = junctionY;
-      const springLength = Math.abs(springEndY - springStartY);
-
+      // Configure spring to connect driver plate top to mass bottom
       const springNode = this.springNodes[i]!;
-      // Use the actual radius from this spring node (varies with spring constant)
       const springRadius = springNode.radiusProperty.value;
       const loopsTimesRadius = ResonanceConstants.SPRING_LOOPS * springRadius;
 
+      // Calculate xScale to make spring fill the visual distance
       const xScale = Math.max(
         ResonanceConstants.MIN_SPRING_XSCALE,
-        (springLength - endLengths - 2 * springRadius) / loopsTimesRadius,
+        (springLengthView - endLengths - 2 * springRadius) / loopsTimesRadius,
       );
 
       springNode.xScaleProperty.value = xScale;
-      springNode.rotation =
-        springEndY < springStartY ? -Math.PI / 2 : Math.PI / 2;
+      // Spring extends upward from driver plate to mass
+      springNode.rotation = -Math.PI / 2;
       springNode.x = xCenter;
-      springNode.y = springStartY;
+      springNode.y = driverTopY; // Start at driver plate top
     }
   }
 
