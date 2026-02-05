@@ -230,13 +230,15 @@ describe("ResonanceModel", () => {
       expect(model.phaseAngleProperty.value).toBeLessThan(Math.PI / 2);
     });
 
-    it("should be negative when driving above natural frequency", () => {
+    it("should be between pi/2 and pi when driving above natural frequency", () => {
       const naturalFreq = model.naturalFrequencyHzProperty.value;
       model.drivingFrequencyProperty.value = naturalFreq * 2;
       model.drivingEnabledProperty.value = true;
 
-      // Above resonance, phase is negative
-      expect(model.phaseAngleProperty.value).toBeLessThan(0);
+      // Above resonance, phase is between pi/2 and pi (standard physics convention)
+      // The displacement lags the driving force by more than 90 degrees
+      expect(model.phaseAngleProperty.value).toBeGreaterThan(Math.PI / 2);
+      expect(model.phaseAngleProperty.value).toBeLessThan(Math.PI);
     });
   });
 

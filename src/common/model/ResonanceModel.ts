@@ -62,6 +62,18 @@ export class ResonanceModel extends BaseModel {
   // Phase relationship (angle between displacement and driving force)
   public readonly phaseAngleProperty: TReadOnlyProperty<number>; // radians
 
+  // Steady-state amplitudes
+  public readonly displacementAmplitudeProperty: TReadOnlyProperty<number>; // meters
+  public readonly velocityAmplitudeProperty: TReadOnlyProperty<number>; // m/s
+  public readonly accelerationAmplitudeProperty: TReadOnlyProperty<number>; // m/s²
+  public readonly forceAmplitudeProperty: TReadOnlyProperty<number>; // N (driving force amplitude)
+
+  // Phase relationships (radians, relative to driving force)
+  public readonly displacementPhaseProperty: TReadOnlyProperty<number>; // same as phaseAngleProperty
+  public readonly velocityPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π/2
+  public readonly accelerationPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π
+  public readonly appliedForcePhaseProperty: TReadOnlyProperty<number>; // always 0 (reference)
+
   public constructor(preferencesModel: {
     solverTypeProperty: Property<SolverType>;
   }) {
@@ -129,30 +141,154 @@ export class ResonanceModel extends BaseModel {
     );
 
     // Compute phase angle between displacement and driving force
-    // This is a simplified calculation - for accurate phase, we'd need to track
-    // the driving force phase and compare with displacement
+    // Phase lag formula: φ = arctan(bω / (k - mω²))
+    // When ω < ω₀: φ is small (displacement nearly in phase with force)
+    // When ω = ω₀: φ = π/2 (displacement lags by 90°)
+    // When ω > ω₀: φ approaches π (displacement nearly opposite to force)
     this.phaseAngleProperty = new DerivedProperty(
       [
         this.drivingFrequencyProperty,
-        this.naturalFrequencyProperty,
-        this.dampingRatioProperty,
+        this.springConstantProperty,
+        this.massProperty,
+        this.dampingProperty,
         this.drivingEnabledProperty,
       ],
-      (omega: number, omega0: number, zeta: number, enabled: boolean) => {
+      (
+        freqHz: number,
+        k: number,
+        m: number,
+        b: number,
+        enabled: boolean,
+      ) => {
         if (!enabled) return 0;
 
-        // Theoretical phase lag: φ = arctan(2ζω/(ω₀²-ω²))
-        const omegaRad = omega * 2 * Math.PI;
-        const numerator = 2 * zeta * omegaRad * omega0;
-        const denominator = omega0 * omega0 - omegaRad * omegaRad;
+        const omega = freqHz * 2 * Math.PI; // Convert Hz to rad/s
+        const numerator = b * omega;
+        const denominator = k - m * omega * omega;
 
         // Handle resonance case (denominator near zero)
-        if (Math.abs(denominator) < 0.001) {
+        if (Math.abs(denominator) < 1e-10) {
           return Math.PI / 2;
         }
 
-        return Math.atan(numerator / denominator);
+        // atan2 gives us the correct quadrant
+        // For ω < ω₀: denominator > 0, phase is small positive
+        // For ω > ω₀: denominator < 0, we need phase to approach π
+        let phase = Math.atan(numerator / denominator);
+
+        // When denominator is negative (ω > ω₀), we need to add π to get phase in (π/2, π)
+        if (denominator < 0) {
+          phase += Math.PI;
+        }
+
+        return phase;
       },
+    );
+
+    // Displacement phase is the same as phase angle (for compatibility)
+    this.displacementPhaseProperty = this.phaseAngleProperty;
+
+    // Steady-state displacement amplitude: X₀ = kA / √[(k - mω²)² + (bω)²]
+    // where A is the driver amplitude and k*A is the driving force amplitude
+    this.displacementAmplitudeProperty = new DerivedProperty(
+      [
+        this.drivingAmplitudeProperty,
+        this.drivingFrequencyProperty,
+        this.springConstantProperty,
+        this.massProperty,
+        this.dampingProperty,
+        this.drivingEnabledProperty,
+      ],
+      (
+        A: number,
+        freqHz: number,
+        k: number,
+        m: number,
+        b: number,
+        enabled: boolean,
+      ) => {
+        if (!enabled) return 0;
+
+        const omega = freqHz * 2 * Math.PI;
+        const F0 = k * A; // Driving force amplitude
+        const term1 = k - m * omega * omega;
+        const term2 = b * omega;
+        const denominator = Math.sqrt(term1 * term1 + term2 * term2);
+
+        if (denominator < 1e-10) {
+          // At exact resonance with zero damping, amplitude would be infinite
+          // Return a large but finite value
+          return F0 / 1e-10;
+        }
+
+        return F0 / denominator;
+      },
+    );
+
+    // Velocity amplitude: A_v = ω × X₀
+    this.velocityAmplitudeProperty = new DerivedProperty(
+      [this.displacementAmplitudeProperty, this.drivingFrequencyProperty],
+      (X0: number, freqHz: number) => {
+        const omega = freqHz * 2 * Math.PI;
+        return omega * X0;
+      },
+    );
+
+    // Acceleration amplitude: A_a = ω² × X₀
+    this.accelerationAmplitudeProperty = new DerivedProperty(
+      [this.displacementAmplitudeProperty, this.drivingFrequencyProperty],
+      (X0: number, freqHz: number) => {
+        const omega = freqHz * 2 * Math.PI;
+        return omega * omega * X0;
+      },
+    );
+
+    // Driving force amplitude: F₀ = k × A (spring constant × driver amplitude)
+    this.forceAmplitudeProperty = new DerivedProperty(
+      [
+        this.springConstantProperty,
+        this.drivingAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (k: number, A: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return k * A;
+      },
+    );
+
+    // Velocity phase: leads displacement by 90° (π/2)
+    // Since x(t) = X₀ cos(ωt - φ), v(t) = -ωX₀ sin(ωt - φ) = ωX₀ cos(ωt - φ + π/2)
+    // So velocity phase relative to driving force = φ - π/2
+    this.velocityPhaseProperty = new DerivedProperty(
+      [this.displacementPhaseProperty],
+      (displacementPhase: number) => {
+        // Normalize to [-π, π]
+        let phase = displacementPhase - Math.PI / 2;
+        while (phase < -Math.PI) phase += 2 * Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // Acceleration phase: leads displacement by 180° (π)
+    // Since a(t) = -ω²X₀ cos(ωt - φ) = ω²X₀ cos(ωt - φ + π)
+    // So acceleration phase relative to driving force = φ - π
+    this.accelerationPhaseProperty = new DerivedProperty(
+      [this.displacementPhaseProperty],
+      (displacementPhase: number) => {
+        // Normalize to [-π, π]
+        let phase = displacementPhase - Math.PI;
+        while (phase < -Math.PI) phase += 2 * Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // Applied force phase: always 0 (this is our reference)
+    // The driving force is F(t) = F₀ sin(ωt) or F₀ cos(ωt)
+    this.appliedForcePhaseProperty = new DerivedProperty(
+      [this.drivingEnabledProperty],
+      (_enabled: boolean) => 0,
     );
   }
 
@@ -174,6 +310,78 @@ export class ResonanceModel extends BaseModel {
     this.positionProperty.value = state[0]!;
     this.velocityProperty.value = state[1]!;
     this.drivingPhaseProperty.value = state[2]!;
+  }
+
+  // ============================================
+  // Phase getter methods (radians, relative to driving force)
+  // ============================================
+
+  /**
+   * Get the phase of displacement relative to the driving force.
+   * Range: [0, π] where 0 = in phase, π/2 = at resonance, π = anti-phase
+   */
+  public getDisplacementPhase(): number {
+    return this.displacementPhaseProperty.value;
+  }
+
+  /**
+   * Get the phase of velocity relative to the driving force.
+   * Velocity leads displacement by 90° (π/2).
+   */
+  public getVelocityPhase(): number {
+    return this.velocityPhaseProperty.value;
+  }
+
+  /**
+   * Get the phase of acceleration relative to the driving force.
+   * Acceleration leads displacement by 180° (π).
+   */
+  public getAccelerationPhase(): number {
+    return this.accelerationPhaseProperty.value;
+  }
+
+  /**
+   * Get the phase of the applied (driving) force.
+   * This is always 0 as it serves as the reference phase.
+   */
+  public getAppliedForcePhase(): number {
+    return this.appliedForcePhaseProperty.value;
+  }
+
+  // ============================================
+  // Amplitude getter methods (steady-state values)
+  // ============================================
+
+  /**
+   * Get the steady-state displacement amplitude (meters).
+   * X₀ = F₀ / √[(k - mω²)² + (bω)²]
+   */
+  public getDisplacementAmplitude(): number {
+    return this.displacementAmplitudeProperty.value;
+  }
+
+  /**
+   * Get the steady-state velocity amplitude (m/s).
+   * A_v = ω × X₀
+   */
+  public getVelocityAmplitude(): number {
+    return this.velocityAmplitudeProperty.value;
+  }
+
+  /**
+   * Get the steady-state acceleration amplitude (m/s²).
+   * A_a = ω² × X₀
+   */
+  public getAccelerationAmplitude(): number {
+    return this.accelerationAmplitudeProperty.value;
+  }
+
+  /**
+   * Get the driving force amplitude (N).
+   * F₀ = k × A (spring constant × driver amplitude)
+   */
+  public getForceAmplitude(): number {
+    return this.forceAmplitudeProperty.value;
   }
 
   /**
