@@ -294,7 +294,7 @@ describe("ResonanceModel", () => {
       const derivatives = model.getDerivatives(0, state);
 
       // a = -k*x/m = -100*0.1/2.53 ≈ -3.953 m/s^2
-      const expected = -100 * 0.1 / 2.53;
+      const expected = (-100 * 0.1) / 2.53;
       expect(derivatives[1]).toBeCloseTo(expected, 5);
     });
 
@@ -308,7 +308,7 @@ describe("ResonanceModel", () => {
       const derivatives = model.getDerivatives(0, state);
 
       // a = -b*v/m = -2.0*1.0/2.53 ≈ -0.791 m/s^2
-      const expected = -2.0 * 1.0 / 2.53;
+      const expected = (-2.0 * 1.0) / 2.53;
       expect(derivatives[1]).toBeCloseTo(expected, 5);
     });
 

@@ -11,7 +11,9 @@ describe("ResonanceConstants", () => {
   describe("physics ranges", () => {
     describe("FREQUENCY_RANGE", () => {
       it("should have non-negative minimum", () => {
-        expect(ResonanceConstants.FREQUENCY_RANGE.min).toBeGreaterThanOrEqual(0);
+        expect(ResonanceConstants.FREQUENCY_RANGE.min).toBeGreaterThanOrEqual(
+          0,
+        );
       });
 
       it("should have maximum greater than minimum", () => {
@@ -38,7 +40,9 @@ describe("ResonanceConstants", () => {
 
     describe("AMPLITUDE_RANGE", () => {
       it("should have non-negative minimum", () => {
-        expect(ResonanceConstants.AMPLITUDE_RANGE.min).toBeGreaterThanOrEqual(0);
+        expect(ResonanceConstants.AMPLITUDE_RANGE.min).toBeGreaterThanOrEqual(
+          0,
+        );
       });
 
       it("should have maximum greater than minimum", () => {
@@ -55,7 +59,9 @@ describe("ResonanceConstants", () => {
 
       it("should represent centimeter-scale oscillations", () => {
         // Min can be 0 (no amplitude)
-        expect(ResonanceConstants.AMPLITUDE_RANGE.min).toBeGreaterThanOrEqual(0);
+        expect(ResonanceConstants.AMPLITUDE_RANGE.min).toBeGreaterThanOrEqual(
+          0,
+        );
         // Max should be around 2 cm = 0.02 m
         expect(ResonanceConstants.AMPLITUDE_RANGE.max).toBeLessThanOrEqual(
           0.05,

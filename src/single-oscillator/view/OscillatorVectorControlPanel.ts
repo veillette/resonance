@@ -60,8 +60,7 @@ export class OscillatorVectorControlPanel extends Panel {
       velocityLabel,
       {
         boxWidth: CHECKBOX_BOX_WIDTH,
-        accessibleName:
-          ResonanceStrings.controls.velocityStringProperty,
+        accessibleName: ResonanceStrings.controls.velocityStringProperty,
       },
     );
 
@@ -90,8 +89,7 @@ export class OscillatorVectorControlPanel extends Panel {
       accelerationLabel,
       {
         boxWidth: CHECKBOX_BOX_WIDTH,
-        accessibleName:
-          ResonanceStrings.controls.accelerationStringProperty,
+        accessibleName: ResonanceStrings.controls.accelerationStringProperty,
       },
     );
 
@@ -120,8 +118,7 @@ export class OscillatorVectorControlPanel extends Panel {
       appliedForceLabel,
       {
         boxWidth: CHECKBOX_BOX_WIDTH,
-        accessibleName:
-          ResonanceStrings.controls.appliedForceStringProperty,
+        accessibleName: ResonanceStrings.controls.appliedForceStringProperty,
       },
     );
 

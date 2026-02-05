@@ -184,8 +184,8 @@ const ResonanceColors = {
 
   // Grid and axes
   gridLinesProperty: new ProfileColorProperty(resonance, "gridLines", {
-    default: new Color(60, 60, 60),
-    projector: new Color(224, 224, 224),
+    default: new Color(100, 100, 100),
+    projector: new Color(160, 160, 160),
   }),
 
   axesProperty: new ProfileColorProperty(resonance, "axes", {

@@ -35,7 +35,8 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
       model.resonanceModel,
       this.modelViewTransform,
       {
-        velocityVisibleProperty: this.vectorControlPanel.velocityVisibleProperty,
+        velocityVisibleProperty:
+          this.vectorControlPanel.velocityVisibleProperty,
         accelerationVisibleProperty:
           this.vectorControlPanel.accelerationVisibleProperty,
         appliedForceVisibleProperty:

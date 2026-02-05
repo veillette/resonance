@@ -26,7 +26,7 @@ import {
   VStrut,
   voicingUtteranceQueue,
 } from "scenerystack/scenery";
-import { NumberControl } from "scenerystack/scenery-phet";
+import { NumberControl, GridIcon } from "scenerystack/scenery-phet";
 import {
   Panel,
   ComboBox,
@@ -63,6 +63,7 @@ export class OscillatorControlPanel extends Panel {
 
   public readonly gravityEnabledProperty: Property<boolean>;
   public readonly rulerVisibleProperty: Property<boolean>;
+  public readonly gridVisibleProperty: Property<boolean>;
 
   private readonly model: BaseOscillatorScreenModel;
   private readonly listenerTracker = new ListenerTracker();
@@ -92,6 +93,7 @@ export class OscillatorControlPanel extends Panel {
     model: BaseOscillatorScreenModel,
     layoutBounds: Bounds2,
     rulerVisibleProperty: Property<boolean>,
+    gridVisibleProperty: Property<boolean>,
     options?: OscillatorControlPanelOptions,
   ) {
     // Store model reference for use in methods
@@ -149,6 +151,9 @@ export class OscillatorControlPanel extends Panel {
     const rulerCheckbox =
       OscillatorControlPanel.createRulerCheckbox(rulerVisibleProperty);
 
+    const gridCheckbox =
+      OscillatorControlPanel.createGridCheckbox(gridVisibleProperty);
+
     // --- Create sub-panel for mass/spring/resonator/frequency controls ---
     // Use a light blue color to contrast with the green main panel
     // In single oscillator mode, hide the resonator selection box
@@ -202,6 +207,7 @@ export class OscillatorControlPanel extends Panel {
           bottomSeparator,
           gravityBox,
           rulerCheckbox,
+          gridCheckbox,
         ]
       : [
           // Multiple oscillators mode: full controls
@@ -213,6 +219,7 @@ export class OscillatorControlPanel extends Panel {
           bottomSeparator,
           gravityBox,
           rulerCheckbox,
+          gridCheckbox,
         ];
 
     const controlPanelContent = new VBox({
@@ -243,6 +250,7 @@ export class OscillatorControlPanel extends Panel {
     this.comboBoxListParent = comboBoxListParent;
     this.gravityEnabledProperty = gravityEnabledProperty;
     this.rulerVisibleProperty = rulerVisibleProperty;
+    this.gridVisibleProperty = gridVisibleProperty;
     this.displayResonatorNumberProperty = displayResonatorNumberProperty;
     this.displayMassProperty = displayMassProperty;
     this.displaySpringConstantProperty = displaySpringConstantProperty;
@@ -619,6 +627,36 @@ export class OscillatorControlPanel extends Panel {
     // Announce visibility changes via voicing
     rulerVisibleProperty.lazyLink((visible: boolean) => {
       const announcement = visible ? "Ruler shown" : "Ruler hidden";
+      voicingUtteranceQueue.addToBack(announcement);
+    });
+
+    return checkbox;
+  }
+
+  /**
+   * Creates the grid visibility checkbox with a grid icon and voicing support.
+   */
+  private static createGridCheckbox(
+    gridVisibleProperty: Property<boolean>,
+  ): Checkbox {
+    // Use GridIcon instead of text
+    const gridIcon = new GridIcon({
+      size: 24,
+      numberOfRows: 4,
+    });
+
+    const checkbox = new Checkbox(gridVisibleProperty, gridIcon, {
+      boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
+      // Accessibility
+      accessibleName: "Grid",
+      // Voicing support
+      voicingNameResponse: "Grid",
+      voicingHintResponse: "Toggle grid visibility",
+    });
+
+    // Announce visibility changes via voicing
+    gridVisibleProperty.lazyLink((visible: boolean) => {
+      const announcement = visible ? "Grid shown" : "Grid hidden";
       voicingUtteranceQueue.addToBack(announcement);
     });
 

@@ -11,7 +11,6 @@
 
 import { Node, Line, Rectangle } from "scenerystack/scenery";
 import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
-import { Bounds2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import {
   MeasurementLineModel,
@@ -27,7 +26,6 @@ class MeasurementLineNode extends Node {
     model: MeasurementLineModel,
     driverWidth: number,
     driverCenterX: number,
-    equilibriumY: number,
     modelViewTransform: ModelViewTransform2,
     lineNumber: number,
   ) {
@@ -69,14 +67,11 @@ class MeasurementLineNode extends Node {
     this.focusable = true;
     this.accessibleName = `Measurement Line ${lineNumber}`;
 
-    // Position the node based on model position relative to equilibrium
-    // The model position y is displacement from equilibrium (positive = above equilibrium)
+    // Position the node based on model position
+    // With isometric transform, model Y=0 is equilibrium, use modelToViewY directly
     model.positionProperty.link((position) => {
-      // Convert displacement to view delta (positive displacement = above equilibrium = negative Y in view)
-      const viewYOffset = modelViewTransform.modelToViewDeltaY(position.y);
       this.x = driverCenterX;
-      // equilibriumY is where model y=0 should appear, and viewYOffset is negative for positive displacements
-      this.y = equilibriumY + viewYOffset;
+      this.y = modelViewTransform.modelToViewY(position.y);
     });
 
     // DragListener uses model's positionProperty directly with transform and bounds
@@ -110,11 +105,8 @@ export class OscillatorMeasurementLinesNode extends Node {
 
   public constructor(
     driverCenterX: number,
-    driverTopY: number,
     driverWidth: number,
-    naturalLength: number,
     modelViewTransform: ModelViewTransform2,
-    _layoutBounds: Bounds2,
   ) {
     super();
 
@@ -131,19 +123,12 @@ export class OscillatorMeasurementLinesNode extends Node {
       0.14,
     );
 
-    // Calculate equilibrium Y position in view coordinates
-    // Equilibrium is where the mass sits at rest (natural spring length above driver plate)
-    const naturalLengthView = Math.abs(
-      modelViewTransform.modelToViewDeltaY(naturalLength),
-    );
-    const equilibriumY = driverTopY - naturalLengthView;
-
     // Create view nodes for each line
+    // With isometric transform, equilibrium is handled by modelViewTransform directly
     this.line1Node = new MeasurementLineNode(
       this.model.line1,
       driverWidth,
       driverCenterX,
-      equilibriumY,
       modelViewTransform,
       1,
     );
@@ -151,7 +136,6 @@ export class OscillatorMeasurementLinesNode extends Node {
       this.model.line2,
       driverWidth,
       driverCenterX,
-      equilibriumY,
       modelViewTransform,
       2,
     );

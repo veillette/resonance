@@ -28,7 +28,6 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 export interface ResonatorBuildContext {
   modelViewTransform: ModelViewTransform2;
   layoutBounds: Bounds2;
-  driverPlate: Rectangle;
   selectedResonatorIndexProperty: NumberProperty;
 }
 
@@ -135,12 +134,8 @@ export class OscillatorResonatorNodeBuilder {
     index: number,
     context: ResonatorBuildContext,
   ): Node {
-    const {
-      modelViewTransform,
-      layoutBounds,
-      driverPlate,
-      selectedResonatorIndexProperty,
-    } = context;
+    const { modelViewTransform, layoutBounds, selectedResonatorIndexProperty } =
+      context;
 
     const massNode = new Node();
     const initialMassSize = OscillatorResonatorNodeBuilder.calculateMassSize(
@@ -200,31 +195,21 @@ export class OscillatorResonatorNodeBuilder {
     const positionGuard = new CircularUpdateGuard();
 
     // Bidirectional sync: model position -> view position
+    // With isometric transform, model Y=0 is equilibrium, so we use modelToViewY directly
     // Only update view from model when NOT dragging
-    // The mass bottom (junction point) is at the local origin (y=0)
     resonatorModel.positionProperty.link((modelPosition: number) => {
       // Skip model->view updates while dragging (user controls position)
       if (resonatorModel.isDraggingProperty.value) {
         return;
       }
       positionGuard.run(() => {
-        const naturalLength = resonatorModel.naturalLengthProperty.value;
-        const naturalLengthView = Math.abs(
-          modelViewTransform.modelToViewDeltaY(naturalLength),
-        );
-        const driverTopY = driverPlate.top;
-        const equilibriumY = driverTopY - naturalLengthView;
-        const viewYOffset = modelViewTransform.modelToViewDeltaY(modelPosition);
-        // With inverted Y transform: positive position = upward (spring stretched)
-        // modelToViewDeltaY(positive) returns negative, so junctionY decreases (moves up on screen)
-        const junctionY = equilibriumY + viewYOffset;
-        // The mass bottom is at the junction point (local origin is at bottom)
-        const massBottomY = junctionY;
+        // Convert model position directly to view Y using the transform
+        const viewY = modelViewTransform.modelToViewY(modelPosition);
 
         // Keep x fixed, only update y (this is the bottom position)
         massPositionProperty.value = new Vector2(
           massPositionProperty.value.x,
-          massBottomY,
+          viewY,
         );
       });
     });
@@ -232,19 +217,8 @@ export class OscillatorResonatorNodeBuilder {
     // View position -> model position (only active during drag)
     massPositionProperty.lazyLink((viewPosition: Vector2) => {
       positionGuard.run(() => {
-        // The view position y is the mass bottom (junction point)
-        const junctionY = viewPosition.y;
-
-        const naturalLength = resonatorModel.naturalLengthProperty.value;
-        const naturalLengthView = Math.abs(
-          modelViewTransform.modelToViewDeltaY(naturalLength),
-        );
-        const driverTopY = driverPlate.top;
-        const equilibriumY = driverTopY - naturalLengthView;
-        // Inverse of model->view: if junctionY < equilibriumY (mass above), viewYOffset is negative
-        // viewToModelDeltaY(negative) returns positive (upward in model)
-        const viewYOffset = junctionY - equilibriumY;
-        const modelPosition = modelViewTransform.viewToModelDeltaY(viewYOffset);
+        // Convert view Y directly to model position using the transform
+        const modelPosition = modelViewTransform.viewToModelY(viewPosition.y);
 
         resonatorModel.positionProperty.value = modelPosition;
         resonatorModel.velocityProperty.value = 0;

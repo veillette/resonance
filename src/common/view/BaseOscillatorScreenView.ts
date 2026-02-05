@@ -38,6 +38,7 @@ import { OscillatorPlaybackControlNode } from "./OscillatorPlaybackControlNode.j
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { OscillatorResonatorNodeBuilder } from "./OscillatorResonatorNodeBuilder.js";
 import { OscillatorMeasurementLinesNode } from "./OscillatorMeasurementLinesNode.js";
+import { OscillatorGridNode } from "./OscillatorGridNode.js";
 
 export class BaseOscillatorScreenView extends ScreenView {
   protected readonly model: BaseOscillatorScreenModel;
@@ -48,6 +49,8 @@ export class BaseOscillatorScreenView extends ScreenView {
   protected readonly rulerNode: RulerNode;
   protected readonly rulerVisibleProperty: Property<boolean>;
   protected readonly rulerPositionProperty: Vector2Property;
+  protected readonly gridNode: OscillatorGridNode;
+  protected readonly gridVisibleProperty: Property<boolean>;
   protected readonly measurementLinesNode: OscillatorMeasurementLinesNode;
   protected readonly controlPanel: OscillatorControlPanel;
   protected readonly driverNode: OscillatorDriverControlNode;
@@ -62,19 +65,17 @@ export class BaseOscillatorScreenView extends ScreenView {
 
     this.model = model;
 
-    // Initialize ModelViewTransform with inverted Y axis
-    // This makes positive Y in model = upward on screen (natural physics convention)
-    const transformModelBounds = new Bounds2(
-      ResonanceConstants.MODEL_BOUNDS_MIN,
-      ResonanceConstants.MODEL_BOUNDS_MIN,
-      ResonanceConstants.MODEL_BOUNDS_MAX,
-      ResonanceConstants.MODEL_BOUNDS_MAX,
-    );
-    const viewBounds = this.layoutBounds;
+    // Initialize ModelViewTransform with isometric scaling and inverted Y axis
+    // Model origin (0, 0) = equilibrium position of single mass
+    // Positive Y in model = upward on screen (natural physics convention)
     this.modelViewTransform =
-      ModelViewTransform2.createRectangleInvertedYMapping(
-        transformModelBounds,
-        viewBounds,
+      ModelViewTransform2.createSinglePointScaleInvertedYMapping(
+        new Vector2(0, 0), // Model equilibrium point
+        new Vector2(
+          ResonanceConstants.EQUILIBRIUM_VIEW_X,
+          ResonanceConstants.EQUILIBRIUM_VIEW_Y,
+        ), // View equilibrium point
+        ResonanceConstants.MODEL_VIEW_SCALE, // pixels per meter (isometric)
       );
 
     // Initialize ruler properties
@@ -89,15 +90,38 @@ export class BaseOscillatorScreenView extends ScreenView {
       new Vector2(initialModelX, initialModelY),
     );
 
+    // Initialize grid properties
+    this.gridVisibleProperty = new Property<boolean>(false);
+
     // Create simulation area container
     const simulationArea = new Node();
 
     // ===== DRIVER CONTROL BOX =====
+    // Create driver node first to get its position for grid centering
     this.driverNode = new OscillatorDriverControlNode(model);
     this.driverNode.centerX =
       this.layoutBounds.centerX + ResonanceConstants.DRIVER_CENTER_X_OFFSET;
     this.driverNode.bottom =
       this.layoutBounds.bottom - ResonanceConstants.DRIVER_BOTTOM_MARGIN;
+
+    // ===== GRID =====
+    // Added FIRST to be behind everything else
+    this.gridNode = new OscillatorGridNode(
+      this.modelViewTransform,
+      this.layoutBounds,
+      {
+        majorSpacing: 0.05, // 5 cm between major lines
+        minorDivisionsPerMajor: 5, // 1 cm minor lines
+        gridWidth: 550,
+        gridTopModel: 0.2, // 20 cm above equilibrium
+        gridBottomModel: -0.25, // 25 cm below equilibrium
+        gridCenterX: this.driverNode.centerX,
+      },
+    );
+    this.gridNode.visible = false;
+    simulationArea.addChild(this.gridNode);
+
+    // Now add the driver node (on top of grid)
     simulationArea.addChild(this.driverNode);
 
     // ===== DRIVER PLATE & CONNECTION ROD =====
@@ -105,14 +129,10 @@ export class BaseOscillatorScreenView extends ScreenView {
 
     // ===== MEASUREMENT LINES =====
     // Must be created before resonators since measurement lines appear behind them
-    const naturalLength = this.model.resonanceModel.naturalLengthProperty.value;
     this.measurementLinesNode = new OscillatorMeasurementLinesNode(
       this.driverPlate.centerX,
-      this.driverPlate.top,
       ResonanceConstants.DRIVER_BOX_WIDTH,
-      naturalLength,
       this.modelViewTransform,
-      this.layoutBounds,
     );
     this.measurementLinesNode.visible = false;
     simulationArea.addChild(this.measurementLinesNode);
@@ -136,6 +156,7 @@ export class BaseOscillatorScreenView extends ScreenView {
       model,
       this.layoutBounds,
       this.rulerVisibleProperty,
+      this.gridVisibleProperty,
       { singleOscillatorMode: model.singleOscillatorMode },
     );
     this.addChild(this.controlPanel);
@@ -171,6 +192,11 @@ export class BaseOscillatorScreenView extends ScreenView {
     this.rulerVisibleProperty.link((visible: boolean) => {
       this.rulerNode.visible = visible;
       this.measurementLinesNode.visible = visible;
+    });
+
+    // Update grid visibility from the shared property
+    this.gridVisibleProperty.link((visible: boolean) => {
+      this.gridNode.visible = visible;
     });
 
     // Set up accessibility alerts
@@ -380,7 +406,6 @@ export class BaseOscillatorScreenView extends ScreenView {
     const context = {
       modelViewTransform: this.modelViewTransform,
       layoutBounds: this.layoutBounds,
-      driverPlate: this.driverPlate,
       selectedResonatorIndexProperty: this.model.selectedResonatorIndexProperty,
     };
 
@@ -418,13 +443,15 @@ export class BaseOscillatorScreenView extends ScreenView {
   /**
    * Update spring and mass positions each frame.
    *
-   * Model coordinate system (consistent with physics model):
+   * Model coordinate system:
    * - Y = 0 at equilibrium (mass at rest position)
    * - Positive Y = upward
    * - Driver plate top at Y = -naturalLength (at rest), oscillates around that
    * - Mass position = positionProperty.value (displacement from equilibrium)
    *
-   * The modelViewTransform maps model Y=0 to the equilibrium view position.
+   * With isometric modelViewTransform:
+   * - modelViewTransform.modelToViewY(modelY) gives exact view position
+   * - No manual equilibrium offset calculations needed
    */
   protected updateSpringAndMass(): void {
     const count = this.model.resonatorCountProperty.value;
@@ -438,7 +465,6 @@ export class BaseOscillatorScreenView extends ScreenView {
     const drivingAmplitude = driverModel.drivingAmplitudeProperty.value;
     const naturalLength = driverModel.naturalLengthProperty.value;
 
-    // === MODEL COORDINATES ===
     // Driver plate top position in model coordinates
     // At rest: Y = -naturalLength (e.g., -0.2m = -20cm below equilibrium)
     // When oscillating: Y = -naturalLength + A*sin(phase)
@@ -447,26 +473,18 @@ export class BaseOscillatorScreenView extends ScreenView {
       driverTopModelY += drivingAmplitude * Math.sin(phase);
     }
 
-    // === VIEW COORDINATES ===
-    // Equilibrium position in view (where model Y=0 maps to)
-    const driverPlateRestViewY =
-      this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
-    const naturalLengthView = Math.abs(
-      this.modelViewTransform.modelToViewDeltaY(naturalLength),
-    );
-    const equilibriumViewY = driverPlateRestViewY - naturalLengthView;
-
-    // Convert driver plate top from model to view
-    // driverTopModelY is negative (below equilibrium), so viewDelta is positive (below equilibrium in view)
+    // Convert driver plate top from model to view using transform directly
     const driverTopViewY =
-      equilibriumViewY + this.modelViewTransform.modelToViewDeltaY(driverTopModelY);
+      this.modelViewTransform.modelToViewY(driverTopModelY);
 
     // Position driver plate (its .y property is its top edge)
     this.driverPlate.y = driverTopViewY;
 
     // Update connection rod to stretch/compress with driver movement
-    const driverDisplacementFromRest = driverTopModelY - (-naturalLength);
-    const viewDisplacement = this.modelViewTransform.modelToViewDeltaY(driverDisplacementFromRest);
+    const driverDisplacementFromRest = driverTopModelY - -naturalLength;
+    const viewDisplacement = this.modelViewTransform.modelToViewDeltaY(
+      driverDisplacementFromRest,
+    );
     const rodHeight = Math.max(
       ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT,
       ResonanceConstants.CONNECTION_ROD_HEIGHT - viewDisplacement,
@@ -483,7 +501,7 @@ export class BaseOscillatorScreenView extends ScreenView {
     const driverCenterX = this.driverPlate.centerX;
     const spacing = ResonanceConstants.DRIVER_BOX_WIDTH / (count + 1);
 
-    // Spring stem lengths in view coordinates
+    // Spring stem lengths in view coordinates (use modelToViewDeltaY for lengths)
     const leftEndLengthView = Math.abs(
       this.modelViewTransform.modelToViewDeltaY(
         ResonanceConstants.SPRING_LEFT_END_LENGTH_MODEL,
@@ -504,17 +522,14 @@ export class BaseOscillatorScreenView extends ScreenView {
 
       const resonatorModel = this.model.getResonatorModel(i);
 
-      // === MODEL COORDINATES ===
-      // Mass position is directly the displacement from equilibrium (Y=0)
+      // Mass position is directly the displacement from equilibrium (Y=0 in model)
       const massModelY = resonatorModel.positionProperty.value;
 
-      // Spring length = distance from driver top to mass bottom
+      // Spring length = distance from driver top to mass bottom (both in model coordinates)
       const springLengthModel = massModelY - driverTopModelY;
 
-      // === VIEW COORDINATES ===
-      // Mass bottom position in view (convert from model Y=0 reference)
-      const massBottomViewY =
-        equilibriumViewY + this.modelViewTransform.modelToViewDeltaY(massModelY);
+      // Convert mass position to view using transform directly
+      const massBottomViewY = this.modelViewTransform.modelToViewY(massModelY);
 
       // Position mass node (local origin is at bottom of mass box)
       this.massNodes[i]!.x = xCenter;
@@ -525,10 +540,9 @@ export class BaseOscillatorScreenView extends ScreenView {
       const springRadius = springNode.radiusProperty.value;
       const loopsTimesRadius = ResonanceConstants.SPRING_LOOPS * springRadius;
 
-      // Spring length in view
-      const springLengthView = Math.abs(
-        this.modelViewTransform.modelToViewDeltaY(springLengthModel),
-      );
+      // Spring length in view - use absolute value for rendering
+      const springLengthView =
+        Math.abs(springLengthModel) * ResonanceConstants.MODEL_VIEW_SCALE;
 
       // Calculate xScale to make spring coils fill the visual distance
       const xScale = Math.max(
@@ -539,17 +553,21 @@ export class BaseOscillatorScreenView extends ScreenView {
       springNode.xScaleProperty.value = xScale;
 
       // Position spring to connect driver plate top to mass bottom
-      // Spring is rotated -90° so it extends upward (negative Y in view)
-      // Offset by leftEndLengthView so the stem end attaches to driver plate top
-      springNode.rotation = -Math.PI / 2;
+      // Normal case: mass above driver, spring extends upward (rotation -90°)
+      // Abnormal case: mass below driver, spring extends downward (rotation +90°)
+      const massAboveDriver = springLengthModel > 0;
+      springNode.rotation = massAboveDriver ? -Math.PI / 2 : Math.PI / 2;
       springNode.x = xCenter;
-      springNode.y = driverTopViewY - leftEndLengthView;
+      springNode.y = massAboveDriver
+        ? driverTopViewY - leftEndLengthView
+        : driverTopViewY + leftEndLengthView;
     }
   }
 
   public reset(): void {
     this.rulerVisibleProperty.reset();
     this.rulerPositionProperty.reset();
+    this.gridVisibleProperty.reset();
     this.measurementLinesNode.reset();
     this.controlPanel.reset();
   }

@@ -11,7 +11,12 @@
 
 import { Node, Text } from "scenerystack/scenery";
 import { ArrowNode, PhetFont } from "scenerystack/scenery-phet";
-import { BooleanProperty, TReadOnlyProperty, Multilink, UnknownMultilink } from "scenerystack/axon";
+import {
+  BooleanProperty,
+  TReadOnlyProperty,
+  Multilink,
+  UnknownMultilink,
+} from "scenerystack/axon";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import ResonanceColors from "../../common/ResonanceColors.js";
 import { ResonanceModel } from "../../common/model/ResonanceModel.js";
@@ -177,7 +182,10 @@ export class OscillatorVectorNode extends Node {
     // Calculate acceleration from the equation of motion:
     // m*a = -k*x - b*v - m*g + F_drive
     const acceleration =
-      (-springConstant * position - damping * velocity - mass * gravity + drivingForce) /
+      (-springConstant * position -
+        damping * velocity -
+        mass * gravity +
+        drivingForce) /
       mass;
 
     // The applied force is the spring force from the driver (the driving term)

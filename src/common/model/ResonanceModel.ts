@@ -153,13 +153,7 @@ export class ResonanceModel extends BaseModel {
         this.dampingProperty,
         this.drivingEnabledProperty,
       ],
-      (
-        freqHz: number,
-        k: number,
-        m: number,
-        b: number,
-        enabled: boolean,
-      ) => {
+      (freqHz: number, k: number, m: number, b: number, enabled: boolean) => {
         if (!enabled) return 0;
 
         const omega = freqHz * 2 * Math.PI; // Convert Hz to rad/s

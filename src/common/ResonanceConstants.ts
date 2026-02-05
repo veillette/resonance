@@ -52,7 +52,15 @@ const SPRING_CONSTANT_RANGE = new Range(10, 1200); // 10 N/m to 1200 N/m
 const DAMPING_RANGE = new Range(0.0, 5); // 0 N·s/m to 5 N·s/m
 
 // ===== MODEL-VIEW TRANSFORM =====
+// Using isometric scaling with inverted Y axis
+// Model origin (0, 0) = equilibrium position of single mass
+// Positive Y in model = upward on screen
 
+const MODEL_VIEW_SCALE = 600; // pixels per meter (isometric scaling)
+const EQUILIBRIUM_VIEW_X = 412; // view X coordinate of model (0, 0)
+const EQUILIBRIUM_VIEW_Y = 280; // view Y coordinate of model (0, 0)
+
+// Legacy bounds (kept for reference, may be removed later)
 const MODEL_BOUNDS_MIN = -0.5; // meters (symmetric: -0.5 m to +0.5 m = 1 m total)
 const MODEL_BOUNDS_MAX = 0.5; // meters
 
@@ -174,6 +182,9 @@ const ResonanceConstants = {
   DAMPING_RANGE,
 
   // Model-view transform
+  MODEL_VIEW_SCALE,
+  EQUILIBRIUM_VIEW_X,
+  EQUILIBRIUM_VIEW_Y,
   MODEL_BOUNDS_MIN,
   MODEL_BOUNDS_MAX,
 
