@@ -24,6 +24,7 @@ import {
   HBox,
   AlignBox,
   VStrut,
+  voicingUtteranceQueue,
 } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
 import {
@@ -421,6 +422,13 @@ export class OscillatorControlPanel extends Panel {
         accessibleName:
           ResonanceStrings.a11y.resonatorPanel
             .resonatorSelectorLabelStringProperty,
+        // Voicing support
+        voicingNameResponse:
+          ResonanceStrings.a11y.resonatorPanel
+            .resonatorSelectorLabelStringProperty,
+        voicingHintResponse:
+          ResonanceStrings.a11y.resonatorPanel
+            .resonatorSelectorDescriptionStringProperty,
       },
     );
 
@@ -530,7 +538,7 @@ export class OscillatorControlPanel extends Panel {
   }
 
   /**
-   * Creates the gravity toggle switch and label.
+   * Creates the gravity toggle switch and label with voicing support.
    */
   private static createGravityToggle(
     gravityEnabledProperty: Property<boolean>,
@@ -546,8 +554,27 @@ export class OscillatorControlPanel extends Panel {
         // Accessibility
         accessibleName:
           ResonanceStrings.a11y.resonatorPanel.gravityToggleLabelStringProperty,
+        // Voicing support - announce name on focus
+        voicingNameResponse:
+          ResonanceStrings.a11y.resonatorPanel.gravityToggleLabelStringProperty,
+        voicingHintResponse:
+          ResonanceStrings.a11y.resonatorPanel
+            .gravityToggleDescriptionStringProperty,
       },
     );
+
+    // Announce state changes via voicing
+    // Type assertion to work around deeply nested type inference
+    const alerts = ResonanceStrings.a11y.alerts as unknown as {
+      gravityOnStringProperty: { value: string };
+      gravityOffStringProperty: { value: string };
+    };
+    gravityEnabledProperty.lazyLink((enabled: boolean) => {
+      const announcement = enabled
+        ? alerts.gravityOnStringProperty.value
+        : alerts.gravityOffStringProperty.value;
+      voicingUtteranceQueue.addToBack(announcement);
+    });
 
     const gravityLabel = new Text(
       ResonanceStrings.controls.gravityStringProperty,
@@ -564,12 +591,12 @@ export class OscillatorControlPanel extends Panel {
   }
 
   /**
-   * Creates the ruler visibility checkbox.
+   * Creates the ruler visibility checkbox with voicing support.
    */
   private static createRulerCheckbox(
     rulerVisibleProperty: Property<boolean>,
   ): Checkbox {
-    return new Checkbox(
+    const checkbox = new Checkbox(
       rulerVisibleProperty,
       new Text(ResonanceStrings.controls.rulerStringProperty, {
         font: ResonanceConstants.CONTROL_FONT,
@@ -580,8 +607,22 @@ export class OscillatorControlPanel extends Panel {
         // Accessibility
         accessibleName:
           ResonanceStrings.a11y.resonatorPanel.rulerCheckboxLabelStringProperty,
+        // Voicing support
+        voicingNameResponse:
+          ResonanceStrings.a11y.resonatorPanel.rulerCheckboxLabelStringProperty,
+        voicingHintResponse:
+          ResonanceStrings.a11y.resonatorPanel
+            .rulerCheckboxDescriptionStringProperty,
       },
     );
+
+    // Announce visibility changes via voicing
+    rulerVisibleProperty.lazyLink((visible: boolean) => {
+      const announcement = visible ? "Ruler shown" : "Ruler hidden";
+      voicingUtteranceQueue.addToBack(announcement);
+    });
+
+    return checkbox;
   }
 
   /**
