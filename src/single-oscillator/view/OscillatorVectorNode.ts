@@ -18,8 +18,8 @@ import { ResonanceModel } from "../../common/model/ResonanceModel.js";
 
 // Scale factors to convert physics values to pixel lengths
 const VELOCITY_SCALE = 200; // pixels per m/s (increased for visibility)
-const ACCELERATION_SCALE = 8; // pixels per m/s^2 (increased for visibility)
-const FORCE_SCALE = 2; // pixels per Newton (increased for visibility)
+const ACCELERATION_SCALE = 20; // pixels per m/s^2
+const FORCE_SCALE = 10; // pixels per Newton
 
 // Minimum length threshold to display vectors (pixels)
 const MIN_VECTOR_LENGTH = 2;
