@@ -23,6 +23,7 @@ onReadyToLaunch(() => {
 
   const simOptions = {
     webgl: true,
+    hasKeyboardHelpContent: true,
     preferencesModel: new PreferencesModel({
       visualOptions: {
         supportsProjectorMode: true,
@@ -37,6 +38,7 @@ onReadyToLaunch(() => {
       },
       localizationOptions: {
         supportsDynamicLocale: true,
+        includeLocalePanel: true,
       },
       simulationOptions: {
         customPreferences: [
