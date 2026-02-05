@@ -38,7 +38,6 @@ onReadyToLaunch(() => {
       },
       localizationOptions: {
         supportsDynamicLocale: true,
-        includeLocales: ["en", "es", "fr"],
       },
       simulationOptions: {
         customPreferences: [
