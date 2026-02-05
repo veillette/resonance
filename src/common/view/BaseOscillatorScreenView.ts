@@ -417,7 +417,14 @@ export class BaseOscillatorScreenView extends ScreenView {
 
   /**
    * Update spring and mass positions each frame.
-   * Uses model coordinates for computing positions, then converts to view.
+   *
+   * Model coordinate system (consistent with physics model):
+   * - Y = 0 at equilibrium (mass at rest position)
+   * - Positive Y = upward
+   * - Driver plate top at Y = -naturalLength (at rest), oscillates around that
+   * - Mass position = positionProperty.value (displacement from equilibrium)
+   *
+   * The modelViewTransform maps model Y=0 to the equilibrium view position.
    */
   protected updateSpringAndMass(): void {
     const count = this.model.resonatorCountProperty.value;
@@ -431,27 +438,38 @@ export class BaseOscillatorScreenView extends ScreenView {
     const drivingAmplitude = driverModel.drivingAmplitudeProperty.value;
     const naturalLength = driverModel.naturalLengthProperty.value;
 
-    // Compute driver plate displacement in MODEL coordinates
-    // driverPlateDisplacementModel: positive = upward in model
-    let driverPlateDisplacementModel = 0;
+    // === MODEL COORDINATES ===
+    // Driver plate top position in model coordinates
+    // At rest: Y = -naturalLength (e.g., -0.2m = -20cm below equilibrium)
+    // When oscillating: Y = -naturalLength + A*sin(phase)
+    let driverTopModelY = -naturalLength;
     if (driverModel.drivingEnabledProperty.value) {
-      // Driver oscillates: A * sin(phase) in model coordinates
-      driverPlateDisplacementModel = drivingAmplitude * Math.sin(phase);
+      driverTopModelY += drivingAmplitude * Math.sin(phase);
     }
 
-    // Convert driver displacement to VIEW coordinates for plate positioning
-    const driverPlateBaseY =
+    // === VIEW COORDINATES ===
+    // Equilibrium position in view (where model Y=0 maps to)
+    const driverPlateRestViewY =
       this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
-    // Note: positive model displacement = upward = negative view Y change
-    const viewDisplacement = this.modelViewTransform.modelToViewDeltaY(
-      driverPlateDisplacementModel,
+    const naturalLengthView = Math.abs(
+      this.modelViewTransform.modelToViewDeltaY(naturalLength),
     );
-    this.driverPlate.y = driverPlateBaseY - viewDisplacement;
+    const equilibriumViewY = driverPlateRestViewY - naturalLengthView;
 
-    // Update connection rod
+    // Convert driver plate top from model to view
+    // driverTopModelY is negative (below equilibrium), so viewDelta is positive (below equilibrium in view)
+    const driverTopViewY =
+      equilibriumViewY + this.modelViewTransform.modelToViewDeltaY(driverTopModelY);
+
+    // Position driver plate (its .y property is its top edge)
+    this.driverPlate.y = driverTopViewY;
+
+    // Update connection rod to stretch/compress with driver movement
+    const driverDisplacementFromRest = driverTopModelY - (-naturalLength);
+    const viewDisplacement = this.modelViewTransform.modelToViewDeltaY(driverDisplacementFromRest);
     const rodHeight = Math.max(
       ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT,
-      ResonanceConstants.CONNECTION_ROD_HEIGHT + viewDisplacement,
+      ResonanceConstants.CONNECTION_ROD_HEIGHT - viewDisplacement,
     );
     this.connectionRod.setRect(
       0,
@@ -461,14 +479,11 @@ export class BaseOscillatorScreenView extends ScreenView {
     );
     this.connectionRod.bottom = this.driverNode.top;
 
-    // Note: Measurement lines stay fixed relative to driver plate rest position
-    // They do not move with the oscillating driver plate
-
-    // Position springs and masses (only visible ones need positioning)
+    // Position springs and masses
     const driverCenterX = this.driverPlate.centerX;
     const spacing = ResonanceConstants.DRIVER_BOX_WIDTH / (count + 1);
 
-    // Convert spring end lengths from model to view coordinates
+    // Spring stem lengths in view coordinates
     const leftEndLengthView = Math.abs(
       this.modelViewTransform.modelToViewDeltaY(
         ResonanceConstants.SPRING_LEFT_END_LENGTH_MODEL,
@@ -489,53 +504,46 @@ export class BaseOscillatorScreenView extends ScreenView {
 
       const resonatorModel = this.model.getResonatorModel(i);
 
-      // MASS POSITION in model coordinates:
-      // positionProperty.value = displacement from equilibrium (natural length from rest driver)
-      // Positive = mass displaced downward in model (stretched spring)
-      const massDisplacementModel = resonatorModel.positionProperty.value;
+      // === MODEL COORDINATES ===
+      // Mass position is directly the displacement from equilibrium (Y=0)
+      const massModelY = resonatorModel.positionProperty.value;
 
-      // SPRING ENDPOINTS in model coordinates:
-      // Driver plate top (spring attachment point): driverPlateDisplacementModel from rest
-      // Mass bottom (spring attachment point): at naturalLength + massDisplacement from driver rest position
-      //
-      // In model coordinates (positive = upward):
-      // - Driver plate top at: driverPlateDisplacementModel (relative to rest)
-      // - Mass bottom at: naturalLength + massDisplacementModel (relative to rest driver position)
-      //
-      // Spring length in model = distance between these points:
-      const springLengthModel =
-        naturalLength + massDisplacementModel - driverPlateDisplacementModel;
+      // Spring length = distance from driver top to mass bottom
+      const springLengthModel = massModelY - driverTopModelY;
 
-      // Convert to VIEW coordinates for rendering
-      // Driver plate top position in view
-      const driverTopY = this.driverPlate.top;
-
-      // Mass bottom position in view: driver top - spring length (spring extends upward in view)
-      const springLengthView = Math.abs(
-        this.modelViewTransform.modelToViewDeltaY(springLengthModel),
-      );
-      const massBottomY = driverTopY - springLengthView;
+      // === VIEW COORDINATES ===
+      // Mass bottom position in view (convert from model Y=0 reference)
+      const massBottomViewY =
+        equilibriumViewY + this.modelViewTransform.modelToViewDeltaY(massModelY);
 
       // Position mass node (local origin is at bottom of mass box)
       this.massNodes[i]!.x = xCenter;
-      this.massNodes[i]!.y = massBottomY;
+      this.massNodes[i]!.y = massBottomViewY;
 
-      // Configure spring to connect driver plate top to mass bottom
+      // Configure spring
       const springNode = this.springNodes[i]!;
       const springRadius = springNode.radiusProperty.value;
       const loopsTimesRadius = ResonanceConstants.SPRING_LOOPS * springRadius;
 
-      // Calculate xScale to make spring fill the visual distance
+      // Spring length in view
+      const springLengthView = Math.abs(
+        this.modelViewTransform.modelToViewDeltaY(springLengthModel),
+      );
+
+      // Calculate xScale to make spring coils fill the visual distance
       const xScale = Math.max(
         ResonanceConstants.MIN_SPRING_XSCALE,
         (springLengthView - endLengths - 2 * springRadius) / loopsTimesRadius,
       );
 
       springNode.xScaleProperty.value = xScale;
-      // Spring extends upward from driver plate to mass
+
+      // Position spring to connect driver plate top to mass bottom
+      // Spring is rotated -90° so it extends upward (negative Y in view)
+      // Offset by leftEndLengthView so the stem end attaches to driver plate top
       springNode.rotation = -Math.PI / 2;
       springNode.x = xCenter;
-      springNode.y = driverTopY; // Start at driver plate top
+      springNode.y = driverTopViewY - leftEndLengthView;
     }
   }
 

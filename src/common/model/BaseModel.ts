@@ -34,7 +34,7 @@ export abstract class BaseModel implements ODEModel {
 
   // Time speed multipliers
   private readonly timeSpeedMultipliers: Record<TimeSpeed, number> = {
-    slow: 0.5,
+    slow: 0.1,
     normal: 1.0,
     fast: 2.0,
   };

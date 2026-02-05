@@ -30,10 +30,10 @@ export class OscillatorVectorControlPanel extends Panel {
   public readonly appliedForceVisibleProperty: BooleanProperty;
 
   public constructor() {
-    // Create visibility properties for each vector type
-    const velocityVisibleProperty = new BooleanProperty(true);
-    const accelerationVisibleProperty = new BooleanProperty(true);
-    const appliedForceVisibleProperty = new BooleanProperty(true);
+    // Create visibility properties for each vector type (off by default)
+    const velocityVisibleProperty = new BooleanProperty(false);
+    const accelerationVisibleProperty = new BooleanProperty(false);
+    const appliedForceVisibleProperty = new BooleanProperty(false);
 
     // Create velocity checkbox with green arrow icon
     const velocityArrowIcon = new ArrowNode(0, 0, ICON_ARROW_LENGTH, 0, {
