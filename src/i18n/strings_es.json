@@ -140,6 +140,13 @@
         "springDescription": "Resorte elástico que conecta la masa {{number}} a la placa conductora",
         "massLabel": "Masa {{number}}",
         "massDescription": "Masa arrastrable en el resonador {{number}}. Use las teclas de flecha para mover verticalmente."
+      },
+      "alerts": {
+        "simulationPlaying": "Simulación reproduciendo",
+        "simulationPaused": "Simulación pausada",
+        "gravityOn": "Gravedad activada",
+        "gravityOff": "Gravedad desactivada",
+        "resonatorCount": "{{count}} resonadores"
       }
     },
     "presets": {
@@ -193,6 +200,10 @@
         "excitationMarkerDescription": "Marcador arrastrable que muestra dónde se excita la placa. Use las teclas de flecha para mover. Mantenga presionado Shift para control fino.",
         "resonancePeakAlert": "Pico de resonancia detectado a {{frequency}} Hz",
         "sweepCompleteAlert": "Barrido de frecuencia completado",
+        "simulationPlayingAlert": "Simulación reproduciendo",
+        "simulationPausedAlert": "Simulación pausada",
+        "frequencyChangedAlert": "Frecuencia {{frequency}} Hz",
+        "materialChangedAlert": "Material cambiado a {{material}}",
         "nearResonance": "Cerca de resonancia",
         "atResonance": "En pico de resonancia",
         "resonanceCurveLabel": "Gráfico de Curva de Resonancia",
