@@ -282,22 +282,24 @@ FUZZ_DURATION=300 npm run test:fuzz      # 5 minute test
 ### Oscillator Equation of Motion
 
 ```
-m·a = -k·(x - x_plate(t)) - b·v + m·g
+m·a = -k·(x - x_plate(t)) - b·v - m·g
 ```
+
+The model defines **positive x = upward** (away from the driver plate).
 
 Where:
 
 - `x_plate(t) = A·sin(ω·t)` - driver plate position
 - `-k·x` - spring restoring force (Hooke's Law)
 - `-b·v` - damping force
-- `m·g` - gravity (optional, default OFF)
+- `-m·g` - gravity, acts downward (optional, default OFF)
 
 ### Key Derived Values
 
 - **Natural frequency**: `ω₀ = √(k/m)` rad/s, `f₀ = ω₀/(2π)` Hz
 - **Damping ratio**: `ζ = b/(2√(mk))`
 - **Kinetic energy**: `KE = ½mv²`
-- **Potential energy**: `PE = ½kx² - mgx`
+- **Potential energy**: `PE = ½kx² + mgx`
 
 ### Parameter Ranges (from ResonanceConstants)
 

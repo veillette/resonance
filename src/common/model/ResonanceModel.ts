@@ -29,8 +29,8 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
 export class ResonanceModel extends BaseModel {
   // State variables
-  public readonly positionProperty: NumberProperty; // displacement from natural length (m, positive = downward)
-  public readonly velocityProperty: NumberProperty; // velocity (m/s, positive = downward)
+  public readonly positionProperty: NumberProperty; // displacement from equilibrium (m, positive = upward)
+  public readonly velocityProperty: NumberProperty; // velocity (m/s, positive = upward)
 
   // Drag state - when true, this resonator is being dragged by the user
   // and should not be updated by the physics simulation
@@ -121,8 +121,9 @@ export class ResonanceModel extends BaseModel {
       (m: number, v: number) => 0.5 * m * v * v,
     );
 
-    // Compute potential energy: PE = ½kx² - mgx
-    // (Spring potential + gravitational potential with reference at natural length)
+    // Compute potential energy: PE = ½kx² + mgx
+    // (Spring potential + gravitational potential with reference at equilibrium)
+    // With positive x = upward, gravitational PE increases with height: U_g = mgx
     this.potentialEnergyProperty = new DerivedProperty(
       [
         this.springConstantProperty,
@@ -131,7 +132,7 @@ export class ResonanceModel extends BaseModel {
         this.gravityProperty,
       ],
       (k: number, x: number, m: number, g: number) =>
-        0.5 * k * x * x - m * g * x,
+        0.5 * k * x * x + m * g * x,
     );
 
     // Compute total energy: E = KE + PE
@@ -422,7 +423,7 @@ export class ResonanceModel extends BaseModel {
     }
 
     // Calculate acceleration: a = F_total / m
-    // F_total = -k*x (spring) - b*v (damping) - m*g (gravity, downward) + F_drive
+    // F_total = -k*x (spring) - b*v (damping) - m*g (gravity, downward in upward-positive coords) + F_drive
     const acceleration = (-k * x - b * v - m * g + F_drive) / m;
 
     return [
