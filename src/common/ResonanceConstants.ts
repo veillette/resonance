@@ -32,10 +32,10 @@ const DRIVER_BOX_TOP_MODEL_Y = -0.27; // 27 cm below equilibrium in model coords
 const DRIVER_PLATE_HEIGHT = 20;
 const DRIVER_PLATE_VERTICAL_OFFSET = 30; // distance above driver box top
 const DRIVER_PLATE_CORNER_RADIUS = 5;
-const CONNECTION_ROD_WIDTH = 15;
+const CONNECTION_ROD_WIDTH = 20; // wider for better visibility
 const CONNECTION_ROD_HEIGHT = 30; // base height when not oscillating
 const CONNECTION_ROD_MIN_HEIGHT = 10; // minimum height during oscillation
-const CONNECTION_ROD_CORNER_RADIUS = 7.5;
+const CONNECTION_ROD_CORNER_RADIUS = 0; // no corner radius - true rectangle
 
 // ===== DRIVER CONTROLS =====
 
