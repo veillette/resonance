@@ -40,7 +40,8 @@
       "close": "Fermer",
       "velocity": "Vitesse",
       "acceleration": "Accélération",
-      "appliedForce": "Force Appliquée"
+      "appliedForce": "Force Appliquée",
+      "sweep": "Balayer"
     },
     "preferences": {
       "title": "Préférences",
@@ -107,7 +108,9 @@
         "frequencySliderLabel": "Fréquence de Conduite",
         "frequencySliderDescription": "Ajuste la fréquence de la plaque conductrice oscillante",
         "amplitudeSliderLabel": "Amplitude de Conduite",
-        "amplitudeSliderDescription": "Ajuste l'amplitude de la plaque conductrice oscillante"
+        "amplitudeSliderDescription": "Ajuste l'amplitude de la plaque conductrice oscillante",
+        "sweepButtonLabel": "Balayage de Fréquence",
+        "sweepButtonDescription": "Balaye automatiquement la plage de fréquence du minimum au maximum"
       },
       "playbackControl": {
         "label": "Contrôles de Lecture",

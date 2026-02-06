@@ -22,6 +22,10 @@ import { SWEEP_RATE } from "./ChladniConstants.js";
 export interface FrequencySweepControllerOptions {
   frequencyProperty: NumberProperty;
   frequencyRange: Range;
+  /**
+   * Optional sweep rate in Hz per second. Defaults to ChladniConstants.SWEEP_RATE.
+   */
+  sweepRate?: number;
 }
 
 /**
@@ -64,8 +68,8 @@ export class FrequencySweepController {
     // Initialize sweep state
     this.isSweepingProperty = new BooleanProperty(false);
 
-    // Sweep rate from constants
-    this.sweepRate = SWEEP_RATE;
+    // Sweep rate from options or default from constants
+    this.sweepRate = options.sweepRate ?? SWEEP_RATE;
 
     // Create emitter for sweep completion
     this.sweepCompletedEmitter = new Emitter();

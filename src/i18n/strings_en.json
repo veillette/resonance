@@ -40,7 +40,8 @@
       "close": "Close",
       "velocity": "Velocity",
       "acceleration": "Acceleration",
-      "appliedForce": "Applied Force"
+      "appliedForce": "Applied Force",
+      "sweep": "Sweep"
     },
     "preferences": {
       "title": "Preferences",
@@ -107,7 +108,9 @@
         "frequencySliderLabel": "Driving Frequency",
         "frequencySliderDescription": "Adjusts the frequency of the oscillating driver plate",
         "amplitudeSliderLabel": "Driving Amplitude",
-        "amplitudeSliderDescription": "Adjusts the amplitude of the oscillating driver plate"
+        "amplitudeSliderDescription": "Adjusts the amplitude of the oscillating driver plate",
+        "sweepButtonLabel": "Frequency Sweep",
+        "sweepButtonDescription": "Automatically sweeps through the frequency range from minimum to maximum"
       },
       "playbackControl": {
         "label": "Playback Controls",

@@ -147,6 +147,12 @@ const SPEED_CONTROL_SPACING = 5;
 const SPEED_RADIO_BUTTON_RADIUS = 8;
 const PLAYBACK_BOTTOM_MARGIN = 20;
 
+// ===== FREQUENCY SWEEP =====
+
+// Sweep rate for oscillator screens (Hz per second)
+// The frequency range is 0-6 Hz, so at 0.2 Hz/s, a full sweep takes 30 seconds
+const OSCILLATOR_SWEEP_RATE = 0.2;
+
 const ResonanceConstants = {
   // Fonts
   LABEL_FONT,
@@ -256,6 +262,9 @@ const ResonanceConstants = {
   SPEED_CONTROL_SPACING,
   SPEED_RADIO_BUTTON_RADIUS,
   PLAYBACK_BOTTOM_MARGIN,
+
+  // Frequency sweep
+  OSCILLATOR_SWEEP_RATE,
 };
 
 export default ResonanceConstants;

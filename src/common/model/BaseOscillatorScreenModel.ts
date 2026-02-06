@@ -25,6 +25,8 @@ import { ResonancePreferencesModel } from "../../preferences/ResonancePreference
 import { Property, NumberProperty } from "scenerystack/axon";
 import { TimeSpeed } from "./BaseModel.js";
 import { CircularUpdateGuard } from "../util/index.js";
+import { FrequencySweepController } from "../../chladni-patterns/model/FrequencySweepController.js";
+import ResonanceConstants from "../ResonanceConstants.js";
 
 export type BaseOscillatorScreenModelOptions = {
   /**
@@ -50,6 +52,9 @@ export class BaseOscillatorScreenModel {
 
   // Index of the currently selected resonator for editing (0-indexed)
   public readonly selectedResonatorIndexProperty: NumberProperty;
+
+  // Frequency sweep controller for automatic frequency sweeping
+  public readonly sweepController: FrequencySweepController;
 
   protected readonly preferencesModel: ResonancePreferencesModel;
 
@@ -88,6 +93,13 @@ export class BaseOscillatorScreenModel {
 
     this.resonatorCountProperty = new NumberProperty(1);
     this.selectedResonatorIndexProperty = new NumberProperty(0); // Start with first resonator selected
+
+    // Initialize frequency sweep controller
+    this.sweepController = new FrequencySweepController({
+      frequencyProperty: this.resonanceModel.drivingFrequencyProperty,
+      frequencyRange: ResonanceConstants.FREQUENCY_RANGE,
+      sweepRate: ResonanceConstants.OSCILLATOR_SWEEP_RATE,
+    });
 
     // Pre-create all resonator models
     for (let i = 1; i < BaseOscillatorScreenModel.MAX_RESONATORS; i++) {
@@ -312,6 +324,7 @@ export class BaseOscillatorScreenModel {
   }
 
   public reset(): void {
+    this.sweepController.reset();
     this.resonatorConfigProperty.reset();
     this.resonatorCountProperty.reset();
     this.selectedResonatorIndexProperty.reset();

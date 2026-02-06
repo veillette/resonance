@@ -15,9 +15,14 @@ import {
   VBox,
   Path,
   TColor,
+  Color,
 } from "scenerystack/scenery";
-import { ToggleSwitch } from "scenerystack/sun";
-import { NumberProperty } from "scenerystack/axon";
+import {
+  ToggleSwitch,
+  RectangularPushButton,
+  FlatAppearanceStrategy,
+} from "scenerystack/sun";
+import { DerivedProperty, NumberProperty } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
@@ -26,6 +31,54 @@ import ResonanceConstants from "../ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { CircularUpdateGuard } from "../util/index.js";
 import { NumberControlFactory } from "./NumberControlFactory.js";
+
+/**
+ * Creates a frequency sweep icon - a sinusoidal wave that gets more compressed from left to right,
+ * representing increasing frequency during a sweep.
+ */
+function createSweepIconNode(options: {
+  width?: number;
+  height?: number;
+  lineWidth?: number;
+  stroke?: TColor;
+}): Node {
+  const width = options.width ?? 30;
+  const height = options.height ?? 16;
+  const lineWidth = options.lineWidth ?? 2;
+  const stroke = options.stroke ?? "#666";
+
+  // Create a sinusoidal wave with increasing frequency (chirp)
+  // The frequency increases quadratically from left to right
+  const shape = new Shape();
+  const numPoints = 60;
+
+  for (let i = 0; i <= numPoints; i++) {
+    const t = i / numPoints; // 0 to 1 across the width
+    const x = t * width;
+
+    // Quadratic chirp: frequency increases with position
+    // phase = 2π * (f0 * t + (f1 - f0) * t² / 2)
+    // where f0 = 1.5 cycles, f1 = 6 cycles over the width
+    const f0 = 1.5;
+    const f1 = 6;
+    const phase = 2 * Math.PI * (f0 * t + ((f1 - f0) * t * t) / 2);
+
+    const y = (height / 2) * Math.sin(phase);
+
+    if (i === 0) {
+      shape.moveTo(x, y);
+    } else {
+      shape.lineTo(x, y);
+    }
+  }
+
+  return new Path(shape, {
+    stroke: stroke,
+    lineWidth: lineWidth,
+    lineCap: "round",
+    lineJoin: "round",
+  });
+}
 
 /**
  * Creates a power symbol (IEC 5009) - a circle with a vertical line through the top.
@@ -183,9 +236,42 @@ export class OscillatorDriverControlNode extends Node {
       minorTickSpacing: 0.2,
     });
 
-    // Container for all three controls in a row
+    // Sweep button - enabled only when not currently sweeping
+    const sweepEnabledProperty = new DerivedProperty(
+      [model.sweepController.isSweepingProperty],
+      (isSweeping) => !isSweeping,
+    );
+
+    const sweepIcon = createSweepIconNode({
+      width: 30,
+      height: 16,
+      lineWidth: 2,
+      stroke: ResonanceColors.driverTextProperty,
+    });
+
+    const sweepButton = new RectangularPushButton({
+      content: sweepIcon,
+      listener: () => {
+        model.sweepController.startSweep();
+      },
+      baseColor: ResonanceColors.subPanelFillProperty,
+      disabledColor: new Color(90, 90, 90),
+      buttonAppearanceStrategy: FlatAppearanceStrategy,
+      xMargin: 8,
+      yMargin: 6,
+      enabledProperty: sweepEnabledProperty,
+      accessibleName:
+        ResonanceStrings.a11y.driverControl.sweepButtonLabelStringProperty,
+    });
+
+    // Container for all controls in a row
     const controlsBox = new HBox({
-      children: [powerToggleBox, frequencyControl, amplitudeControl],
+      children: [
+        powerToggleBox,
+        frequencyControl,
+        sweepButton,
+        amplitudeControl,
+      ],
       spacing: 25,
     });
     controlsBox.center = driverBox.center;
