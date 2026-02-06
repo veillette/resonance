@@ -8,7 +8,7 @@ import { PhetFont } from "scenerystack/scenery-phet";
 
 // ===== FONTS =====
 
-const LABEL_FONT = new PhetFont({ size: 13, weight: "bold" });
+const LABEL_FONT = new PhetFont({ size: 15, weight: "bold" });
 const TITLE_FONT = new PhetFont({ size: 15, weight: "bold" });
 const TICK_LABEL_FONT = new PhetFont({ size: 11 });
 const CONTROL_FONT = new PhetFont({ size: 13 });
@@ -28,18 +28,20 @@ const DRIVER_CENTER_X_OFFSET = -100; // offset from layout center
 const DRIVER_BOX_TOP_MODEL_Y = -0.27; // 27 cm below equilibrium in model coords
 
 // ===== DRIVER PLATE AND CONNECTION ROD =====
+// All positions defined in model coordinates for consistency
 
-const DRIVER_PLATE_HEIGHT = 20;
-const DRIVER_PLATE_VERTICAL_OFFSET = 30; // distance above driver box top
+// Driver plate rest position = -naturalLength (top of plate when spring is at rest)
+// This matches the physics where the plate is at the bottom of the spring
+const DRIVER_PLATE_REST_MODEL_Y = -0.2; // -20 cm (matches spring natural length)
+const DRIVER_PLATE_HEIGHT_MODEL = 0.02; // 2 cm plate thickness in model coords
+const DRIVER_PLATE_HEIGHT = 20; // view pixels (for legacy compatibility)
 const DRIVER_PLATE_CORNER_RADIUS = 5;
-const CONNECTION_ROD_WIDTH = 20; // wider for better visibility
-const CONNECTION_ROD_HEIGHT = 30; // base height when not oscillating
-const CONNECTION_ROD_MIN_HEIGHT = 10; // minimum height during oscillation
+const CONNECTION_ROD_WIDTH = 20; // view pixels - wider for better visibility
 const CONNECTION_ROD_CORNER_RADIUS = 0; // no corner radius - true rectangle
 
 // ===== DRIVER CONTROLS =====
 
-const CONTROL_SCALE = 0.7;
+const CONTROL_SCALE = 0.85;
 const POWER_TOGGLE_SPACING = 8;
 const POWER_TOGGLE_LEFT = 15;
 const POWER_TOGGLE_TOP = 15;
@@ -63,7 +65,7 @@ const DAMPING_RANGE = new Range(0.0, 5); // 0 N·s/m to 5 N·s/m
 
 const MODEL_VIEW_SCALE = 600; // pixels per meter (isometric scaling)
 const EQUILIBRIUM_VIEW_X = 412; // view X coordinate of model (0, 0)
-const EQUILIBRIUM_VIEW_Y = 280; // view Y coordinate of model (0, 0)
+const EQUILIBRIUM_VIEW_Y = 310; // view Y coordinate of model (0, 0) - moved down 5cm (30px)
 
 // Legacy bounds (kept for reference, may be removed later)
 const MODEL_BOUNDS_MIN = -0.5; // meters (symmetric: -0.5 m to +0.5 m = 1 m total)
@@ -162,12 +164,11 @@ const ResonanceConstants = {
   DRIVER_BOX_TOP_MODEL_Y,
 
   // Driver plate and connection rod
+  DRIVER_PLATE_REST_MODEL_Y,
+  DRIVER_PLATE_HEIGHT_MODEL,
   DRIVER_PLATE_HEIGHT,
-  DRIVER_PLATE_VERTICAL_OFFSET,
   DRIVER_PLATE_CORNER_RADIUS,
   CONNECTION_ROD_WIDTH,
-  CONNECTION_ROD_HEIGHT,
-  CONNECTION_ROD_MIN_HEIGHT,
   CONNECTION_ROD_CORNER_RADIUS,
 
   // Driver controls

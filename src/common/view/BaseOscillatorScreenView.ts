@@ -118,7 +118,7 @@ export class BaseOscillatorScreenView extends ScreenView {
         majorSpacing: 0.05, // 5 cm between major lines
         minorDivisionsPerMajor: 5, // 1 cm minor lines
         gridWidth: 550,
-        gridTopModel: 0.2, // 20 cm above equilibrium
+        gridTopModel: 0.3, // 30 cm above equilibrium
         gridBottomModel: -0.25, // 25 cm below equilibrium
         gridCenterX: this.driverNode.centerX,
       },
@@ -274,71 +274,72 @@ export class BaseOscillatorScreenView extends ScreenView {
 
   /**
    * Create the connection rod (added before driver box so box covers its bottom).
+   * Uses model coordinates for positioning to stay connected with driver plate and box.
    */
   protected createConnectionRod(simulationArea: Node): void {
-    const connectionRodHeight = ResonanceConstants.CONNECTION_ROD_HEIGHT;
     const rodWidth = ResonanceConstants.CONNECTION_ROD_WIDTH;
-    const overlapIntoBox = 15; // how far the rod extends into the driver box
+
+    // Calculate rod position using model coordinates
+    // Rod top: bottom of driver plate (plate top + plate height in model)
+    const rodTopModelY =
+      ResonanceConstants.DRIVER_PLATE_REST_MODEL_Y -
+      ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL;
+    // Rod bottom: top of driver box (with overlap so box covers it)
+    const rodBottomModelY = ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y - 0.02; // 2cm overlap into box
+
+    // Convert to view coordinates
+    const rodTopViewY = this.modelViewTransform.modelToViewY(rodTopModelY);
+    const rodBottomViewY = this.modelViewTransform.modelToViewY(rodBottomModelY);
+    const rodHeightView = rodBottomViewY - rodTopViewY;
 
     // Connection rod between control box and plate (rectangle with no corner radius)
-    // Extends into the driver box so the bottom is hidden by the box
-    this.connectionRod = new Rectangle(
-      0,
-      0,
-      rodWidth,
-      connectionRodHeight + overlapIntoBox,
-      {
-        fill: ResonanceColors.driverFillProperty,
-        stroke: ResonanceColors.driverStrokeProperty,
-        lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
-      },
-    );
+    this.connectionRod = new Rectangle(0, 0, rodWidth, rodHeightView, {
+      fill: ResonanceColors.driverFillProperty,
+      stroke: ResonanceColors.driverStrokeProperty,
+      lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
+    });
     this.connectionRod.centerX = this.driverNode.centerX;
-    // Position so the rod overlaps into the driver box (bottom hidden by box)
-    this.connectionRod.bottom = this.driverNode.top + overlapIntoBox;
+    this.connectionRod.top = rodTopViewY;
     simulationArea.addChild(this.connectionRod);
   }
 
   /**
    * Create the driver plate and marker line (added after driver box).
+   * Uses model coordinates for positioning to stay connected with the system.
    */
   protected createDriverPlateAndMarker(simulationArea: Node): void {
     const driverPlateWidth = ResonanceConstants.DRIVER_BOX_WIDTH;
-    const driverPlateHeight = ResonanceConstants.DRIVER_PLATE_HEIGHT;
     const rodWidth = ResonanceConstants.CONNECTION_ROD_WIDTH;
+
+    // Calculate plate position using model coordinates
+    const plateTopViewY = this.modelViewTransform.modelToViewY(
+      ResonanceConstants.DRIVER_PLATE_REST_MODEL_Y,
+    );
+    const plateHeightView = Math.abs(
+      this.modelViewTransform.modelToViewDeltaY(
+        ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL,
+      ),
+    );
 
     // Marker line across the connection rod - moves with driver plate to show motion
     // Use a contrasting dark color so it's visible against the gray rod
-    this.connectionRodMarker = new Line(
-      -rodWidth / 2,
-      0,
-      rodWidth / 2,
-      0,
-      {
-        stroke: "#333",
-        lineWidth: 3,
-        lineCap: "round",
-      },
-    );
+    this.connectionRodMarker = new Line(-rodWidth / 2, 0, rodWidth / 2, 0, {
+      stroke: "#333",
+      lineWidth: 3,
+      lineCap: "round",
+    });
     this.connectionRodMarker.x = this.driverNode.centerX;
     simulationArea.addChild(this.connectionRodMarker);
 
-    // Driver plate
-    this.driverPlate = new Rectangle(
-      0,
-      0,
-      driverPlateWidth,
-      driverPlateHeight,
-      {
-        fill: ResonanceColors.driverFillProperty,
-        stroke: ResonanceColors.driverStrokeProperty,
-        lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
-        cornerRadius: ResonanceConstants.DRIVER_PLATE_CORNER_RADIUS,
-      },
-    );
+    // Driver plate - positioned using model coordinates
+    this.driverPlate = new Rectangle(0, 0, driverPlateWidth, plateHeightView, {
+      fill: ResonanceColors.driverFillProperty,
+      stroke: ResonanceColors.driverStrokeProperty,
+      lineWidth: ResonanceConstants.DRIVER_BOX_LINE_WIDTH,
+      cornerRadius: ResonanceConstants.DRIVER_PLATE_CORNER_RADIUS,
+    });
     this.driverPlate.centerX = this.driverNode.centerX;
-    this.driverPlate.y =
-      this.driverNode.top - ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET;
+    this.driverPlate.y = plateTopViewY;
     simulationArea.addChild(this.driverPlate);
   }
 
@@ -515,27 +516,40 @@ export class BaseOscillatorScreenView extends ScreenView {
     // Position driver plate (its .y property is its top edge)
     this.driverPlate.y = driverTopViewY;
 
-    // Position marker line slightly below driver plate bottom (moves with plate)
-    // Offset it a bit so it's visible inside the rod area
-    this.connectionRodMarker.y =
-      driverTopViewY + ResonanceConstants.DRIVER_PLATE_HEIGHT + 8;
+    // Calculate plate bottom in model and view coordinates
+    const plateBottomModelY =
+      driverTopModelY - ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL;
+    const plateBottomViewY =
+      this.modelViewTransform.modelToViewY(plateBottomModelY);
 
     // Update connection rod to stretch/compress with driver movement
-    const driverDisplacementFromRest = driverTopModelY - -naturalLength;
-    const viewDisplacement = this.modelViewTransform.modelToViewDeltaY(
-      driverDisplacementFromRest,
-    );
-    const rodHeight = Math.max(
-      ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT,
-      ResonanceConstants.CONNECTION_ROD_HEIGHT - viewDisplacement,
-    );
+    // Rod connects plate bottom to driver box top (using model coordinates)
+    const rodBottomModelY = ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y - 0.02; // 2cm overlap
+    const rodBottomViewY = this.modelViewTransform.modelToViewY(rodBottomModelY);
+    const rodHeight = Math.max(10, rodBottomViewY - plateBottomViewY);
+
+    // Position marker line: at rest it's slightly above halfway down the rod,
+    // when plate moves it moves with the same displacement as the plate
+    const restPlateBottomModelY =
+      -naturalLength - ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL;
+    const restPlateBottomViewY =
+      this.modelViewTransform.modelToViewY(restPlateBottomModelY);
+    const restRodHeight = rodBottomViewY - restPlateBottomViewY;
+    // Offset 2cm higher (negative in view coords = higher on screen)
+    const offset2cm = Math.abs(this.modelViewTransform.modelToViewDeltaY(0.02));
+    const markerRestY = restPlateBottomViewY + restRodHeight / 2 - offset2cm;
+
+    // Add the plate displacement to the marker rest position
+    const plateDisplacementView = plateBottomViewY - restPlateBottomViewY;
+    this.connectionRodMarker.y = markerRestY + plateDisplacementView;
+
     this.connectionRod.setRect(
       0,
       0,
       ResonanceConstants.CONNECTION_ROD_WIDTH,
       rodHeight,
     );
-    this.connectionRod.bottom = this.driverNode.top;
+    this.connectionRod.top = plateBottomViewY;
 
     // Position springs and masses
     const driverCenterX = this.driverPlate.centerX;

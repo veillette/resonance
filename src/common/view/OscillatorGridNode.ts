@@ -160,27 +160,32 @@ export class OscillatorGridNode extends Node {
     this.addChild(equilibriumLine);
 
     // Create scale indicator with double arrow between two major grid lines
-    this.createScaleIndicator(gridLeft);
+    // Position in upper right corner so it doesn't obstruct the simulation
+    this.createScaleIndicator(gridRight, gridTopView);
   }
 
   /**
    * Creates a scale indicator showing the distance between major grid lines.
-   * Positioned between two actual major grid lines using modelViewTransform.
+   * Positioned in the upper right corner between two actual major grid lines.
    */
-  private createScaleIndicator(gridLeft: number): void {
-    // Position on the left side of the grid
-    const indicatorX = gridLeft + 20;
+  private createScaleIndicator(gridRight: number, _gridTopView: number): void {
+    // Position in upper right corner of the grid
+    const indicatorX = gridRight - 20;
 
-    // Double-headed arrow spanning one major grid spacing (vertical)
-    const arrowTop = this.modelViewTransform.modelToViewY(0);
-    const arrowBottom = this.modelViewTransform.modelToViewY(
-      -this.majorSpacing,
-    );
+    // Find the top two major grid lines using model coordinates
+    // Use the top of the grid and one major spacing below it
+    const topMajorLineModel =
+      Math.floor(this.gridTopModel / this.majorSpacing) * this.majorSpacing;
+    const nextMajorLineModel = topMajorLineModel - this.majorSpacing;
+
+    // Convert to view coordinates using modelViewTransform
+    const arrowTop = this.modelViewTransform.modelToViewY(topMajorLineModel);
+    const arrowBottom = this.modelViewTransform.modelToViewY(nextMajorLineModel);
 
     const arrow = new ArrowNode(indicatorX, arrowTop, indicatorX, arrowBottom, {
       doubleHead: true,
-      headHeight: 10,
-      headWidth: 10,
+      headHeight: 8,
+      headWidth: 8,
       tailWidth: 2,
       fill: ResonanceColors.textProperty,
       stroke: null,
@@ -189,9 +194,9 @@ export class OscillatorGridNode extends Node {
     // Label showing the distance (convert meters to cm)
     const distanceCm = this.majorSpacing * 100;
     const label = new Text(`${distanceCm} cm`, {
-      font: new PhetFont({ size: 13, weight: "bold" }),
+      font: new PhetFont({ size: 12 }),
       fill: ResonanceColors.textProperty,
-      left: indicatorX + 8,
+      right: indicatorX - 8,
       centerY: (arrowTop + arrowBottom) / 2,
     });
 

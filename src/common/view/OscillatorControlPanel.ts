@@ -639,10 +639,11 @@ export class OscillatorControlPanel extends Panel {
   private static createGridCheckbox(
     gridVisibleProperty: Property<boolean>,
   ): Checkbox {
-    // Use GridIcon instead of text
+    // Use GridIcon instead of text - color adapts to color profile
     const gridIcon = new GridIcon({
       size: 24,
       numberOfRows: 4,
+      stroke: ResonanceColors.gridIconProperty,
     });
 
     const checkbox = new Checkbox(gridVisibleProperty, gridIcon, {

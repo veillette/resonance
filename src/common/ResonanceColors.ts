@@ -92,8 +92,8 @@ const ResonanceColors = {
   ),
 
   equilibriumProperty: new ProfileColorProperty(resonance, "equilibrium", {
-    default: new Color(120, 255, 120),
-    projector: new Color(76, 175, 80),
+    default: new Color(140, 140, 140), // subtle dark gray
+    projector: new Color(100, 100, 100), // darker gray for light background
   }),
 
   // Driver box
@@ -186,6 +186,11 @@ const ResonanceColors = {
   gridLinesProperty: new ProfileColorProperty(resonance, "gridLines", {
     default: new Color(100, 100, 100),
     projector: new Color(160, 160, 160),
+  }),
+
+  gridIconProperty: new ProfileColorProperty(resonance, "gridIcon", {
+    default: new Color(170, 170, 170), // lighter for dark background
+    projector: new Color(80, 80, 80), // darker for light background
   }),
 
   axesProperty: new ProfileColorProperty(resonance, "axes", {

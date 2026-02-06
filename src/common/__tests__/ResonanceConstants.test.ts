@@ -220,22 +220,16 @@ describe("ResonanceConstants", () => {
       expect(ResonanceConstants.DRIVER_PLATE_HEIGHT).toBeGreaterThan(0);
     });
 
-    it("should have positive vertical offset", () => {
-      expect(ResonanceConstants.DRIVER_PLATE_VERTICAL_OFFSET).toBeGreaterThan(
-        0,
-      );
+    it("should have driver plate rest position in model coordinates", () => {
+      expect(ResonanceConstants.DRIVER_PLATE_REST_MODEL_Y).toBeLessThan(0);
     });
 
-    it("should have connection rod dimensions", () => {
+    it("should have driver plate height in model coordinates", () => {
+      expect(ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL).toBeGreaterThan(0);
+    });
+
+    it("should have connection rod width", () => {
       expect(ResonanceConstants.CONNECTION_ROD_WIDTH).toBeGreaterThan(0);
-      expect(ResonanceConstants.CONNECTION_ROD_HEIGHT).toBeGreaterThan(0);
-      expect(ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT).toBeGreaterThan(0);
-    });
-
-    it("should have min rod height less than base height", () => {
-      expect(ResonanceConstants.CONNECTION_ROD_MIN_HEIGHT).toBeLessThan(
-        ResonanceConstants.CONNECTION_ROD_HEIGHT,
-      );
     });
   });
 
