@@ -528,16 +528,12 @@ export class BaseOscillatorScreenView extends ScreenView {
     const rodBottomViewY = this.modelViewTransform.modelToViewY(rodBottomModelY);
     const rodHeight = Math.max(10, rodBottomViewY - plateBottomViewY);
 
-    // Position marker line: at rest it's slightly above halfway down the rod,
-    // when plate moves it moves with the same displacement as the plate
-    const restPlateBottomModelY =
-      -naturalLength - ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL;
-    const restPlateBottomViewY =
-      this.modelViewTransform.modelToViewY(restPlateBottomModelY);
+    // Position marker line about 1/3 down the rod at rest, moves with plate
+    const restPlateBottomViewY = this.modelViewTransform.modelToViewY(
+      -naturalLength - ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL,
+    );
     const restRodHeight = rodBottomViewY - restPlateBottomViewY;
-    // Offset 2cm higher (negative in view coords = higher on screen)
-    const offset2cm = Math.abs(this.modelViewTransform.modelToViewDeltaY(0.02));
-    const markerRestY = restPlateBottomViewY + restRodHeight / 2 - offset2cm;
+    const markerRestY = restPlateBottomViewY + restRodHeight * 0.35;
 
     // Add the plate displacement to the marker rest position
     const plateDisplacementView = plateBottomViewY - restPlateBottomViewY;
