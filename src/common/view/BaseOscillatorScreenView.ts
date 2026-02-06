@@ -97,12 +97,16 @@ export class BaseOscillatorScreenView extends ScreenView {
     const simulationArea = new Node();
 
     // ===== DRIVER CONTROL BOX =====
-    // Create driver node first to get its position for grid centering
+    // Position driver box using model coordinates so the driver plate, connection rod,
+    // and driver box are all positioned consistently through the model-view transform
     this.driverNode = new OscillatorDriverControlNode(model);
     this.driverNode.centerX =
       this.layoutBounds.centerX + ResonanceConstants.DRIVER_CENTER_X_OFFSET;
-    this.driverNode.bottom =
-      this.layoutBounds.bottom - ResonanceConstants.DRIVER_BOTTOM_MARGIN;
+    // Position driver box top using model Y coordinate
+    const driverBoxTopViewY = this.modelViewTransform.modelToViewY(
+      ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y,
+    );
+    this.driverNode.top = driverBoxTopViewY;
 
     // ===== GRID =====
     // Added FIRST to be behind everything else

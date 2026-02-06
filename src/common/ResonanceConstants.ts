@@ -16,11 +16,16 @@ const CONTROL_FONT = new PhetFont({ size: 13 });
 // ===== DRIVER BOX =====
 
 const DRIVER_BOX_WIDTH = 600;
-const DRIVER_BOX_HEIGHT = 120;
+const DRIVER_BOX_HEIGHT = 70; // slimmer height
 const DRIVER_BOX_CORNER_RADIUS = 10;
 const DRIVER_BOX_LINE_WIDTH = 2;
-const DRIVER_BOTTOM_MARGIN = 100; // distance from layout bounds bottom
+const DRIVER_BOTTOM_MARGIN = 40; // moved down (closer to bottom)
 const DRIVER_CENTER_X_OFFSET = -100; // offset from layout center
+
+// Driver box position in model coordinates (Y position for top of driver box)
+// This allows the driver plate, connection rod, and driver box to be positioned
+// consistently through the model-view transform
+const DRIVER_BOX_TOP_MODEL_Y = -0.27; // 27 cm below equilibrium in model coords
 
 // ===== DRIVER PLATE AND CONNECTION ROD =====
 
@@ -154,6 +159,7 @@ const ResonanceConstants = {
   DRIVER_BOX_LINE_WIDTH,
   DRIVER_BOTTOM_MARGIN,
   DRIVER_CENTER_X_OFFSET,
+  DRIVER_BOX_TOP_MODEL_Y,
 
   // Driver plate and connection rod
   DRIVER_PLATE_HEIGHT,

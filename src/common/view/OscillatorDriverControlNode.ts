@@ -8,16 +8,70 @@
  * - Phase Analysis
  */
 
-import { Node, Text, Rectangle, HBox, VBox } from "scenerystack/scenery";
+import { Node, Rectangle, HBox, VBox, Path, TColor } from "scenerystack/scenery";
 import { ToggleSwitch } from "scenerystack/sun";
 import { NumberProperty } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
+import { Shape } from "scenerystack/kite";
 import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
 import ResonanceColors from "../ResonanceColors.js";
 import ResonanceConstants from "../ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { CircularUpdateGuard } from "../util/index.js";
 import { NumberControlFactory } from "./NumberControlFactory.js";
+
+/**
+ * Creates a power symbol (IEC 5009) - a circle with a vertical line through the top.
+ * The "I" represents on (binary 1) and "O" represents off (binary 0).
+ */
+function createPowerSymbolNode(options: { radius?: number; lineWidth?: number; stroke?: TColor }): Node {
+  const radius = options.radius ?? 10;
+  const lineWidth = options.lineWidth ?? 2;
+  const stroke = options.stroke ?? '#666';
+
+  // Gap angle from vertical (in radians) - controls size of gap at top
+  const gapAngle = Math.PI / 5;
+
+  // Create the broken circle using line segments to avoid arc boundary issues
+  // The circle goes from (top + gap) counterclockwise around to (top - gap)
+  const segments = 32; // number of line segments to approximate the arc
+  const arcSpan = 2 * Math.PI - 2 * gapAngle; // total arc angle to draw
+  const startAngle = -Math.PI / 2 + gapAngle; // start just right of top
+
+  const circleShape = new Shape();
+  for (let i = 0; i <= segments; i++) {
+    const angle = startAngle + (i / segments) * arcSpan;
+    const x = radius * Math.cos(angle);
+    const y = radius * Math.sin(angle);
+    if (i === 0) {
+      circleShape.moveTo(x, y);
+    } else {
+      circleShape.lineTo(x, y);
+    }
+  }
+
+  const circlePath = new Path(circleShape, {
+    stroke: stroke,
+    lineWidth: lineWidth,
+    lineCap: 'round',
+    lineJoin: 'round'
+  });
+
+  // Create the vertical line through the top
+  const lineShape = new Shape()
+    .moveTo(0, -radius * 0.3)
+    .lineTo(0, -radius * 1.1);
+
+  const linePath = new Path(lineShape, {
+    stroke: stroke,
+    lineWidth: lineWidth,
+    lineCap: 'round'
+  });
+
+  return new Node({
+    children: [circlePath, linePath]
+  });
+}
 
 export class OscillatorDriverControlNode extends Node {
   public constructor(model: BaseOscillatorScreenModel) {
@@ -46,14 +100,13 @@ export class OscillatorDriverControlNode extends Node {
     );
     this.addChild(driverBox);
 
-    // Power Toggle
-    const powerToggleLabel = new Text(
-      ResonanceStrings.controls.onStringProperty,
-      {
-        font: ResonanceConstants.LABEL_FONT,
-        fill: ResonanceColors.driverTextProperty,
-      },
-    );
+    // Power Toggle with power symbol (IEC 5009) instead of "On" text
+    const powerSymbol = createPowerSymbolNode({
+      radius: 9,
+      lineWidth: 2,
+      stroke: ResonanceColors.driverTextProperty
+    });
+
     const powerToggleSwitch = new ToggleSwitch(
       model.resonanceModel.drivingEnabledProperty,
       false,
@@ -69,7 +122,7 @@ export class OscillatorDriverControlNode extends Node {
       },
     );
     const powerToggleBox = new VBox({
-      children: [powerToggleLabel, powerToggleSwitch],
+      children: [powerSymbol, powerToggleSwitch],
       spacing: ResonanceConstants.POWER_TOGGLE_SPACING,
     });
 
