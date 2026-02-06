@@ -6,9 +6,15 @@
 import { Vector2 } from "scenerystack/dot";
 import { Range } from "scenerystack/dot";
 import { Node, Circle } from "scenerystack/scenery";
-import type { ChartTransform, LinePlot, GridLineSet, TickMarkSet, TickLabelSet } from "scenerystack/bamboo";
+import type {
+  ChartTransform,
+  LinePlot,
+  GridLineSet,
+  TickMarkSet,
+  TickLabelSet,
+} from "scenerystack/bamboo";
 import ResonanceColors from "../../ResonanceColors.js";
-import resonance from '../../ResonanceNamespace.js';
+import resonance from "../../ResonanceNamespace.js";
 
 /**
  * Configuration for grid lines, tick marks, and tick labels
@@ -44,7 +50,7 @@ export default class GraphDataManager {
     linePlot: LinePlot,
     trailNode: Node,
     maxDataPoints: number,
-    gridConfig: GridVisualizationConfig
+    gridConfig: GridVisualizationConfig,
   ) {
     this.chartTransform = chartTransform;
     this.linePlot = linePlot;
@@ -113,14 +119,15 @@ export default class GraphDataManager {
    * Update axis ranges to fit all data with some padding
    */
   public updateAxisRanges(): void {
-    if (this.dataPoints.length === 0) {
+    const firstPoint = this.dataPoints[0];
+    if (this.dataPoints.length === 0 || !firstPoint) {
       return;
     }
 
-    let xMin = this.dataPoints[0].x;
-    let xMax = this.dataPoints[0].x;
-    let yMin = this.dataPoints[0].y;
-    let yMax = this.dataPoints[0].y;
+    let xMin = firstPoint.x;
+    let xMax = firstPoint.x;
+    let yMin = firstPoint.y;
+    let yMax = firstPoint.y;
 
     for (const point of this.dataPoints) {
       xMin = Math.min(xMin, point.x);
@@ -219,6 +226,7 @@ export default class GraphDataManager {
 
     for (let i = 0; i < numTrailPoints; i++) {
       const point = this.dataPoints[startIndex + i];
+      if (!point) continue;
 
       // Calculate the age of this point (0 = oldest in trail, numTrailPoints-1 = newest)
       const age = i;
@@ -240,7 +248,7 @@ export default class GraphDataManager {
 
       // Create circle for this trail point
       const circle = new Circle(radius, {
-        fill: ResonanceColors.graphLine1ColorProperty,
+        fill: ResonanceColors.plot1Property,
         opacity: opacity,
         center: viewPosition,
       });
@@ -272,4 +280,4 @@ export default class GraphDataManager {
 }
 
 // Register with namespace for debugging accessibility
-resonance.register('GraphDataManager', GraphDataManager);
+resonance.register("GraphDataManager", GraphDataManager);

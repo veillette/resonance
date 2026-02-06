@@ -14,4 +14,4 @@ export type PlottableProperty = {
 
   // Optional unit string for axis label (e.g., "m", "m/s", "J")
   unit?: string;
-}
+};

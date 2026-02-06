@@ -6,11 +6,15 @@
 
 import { Node, HBox, Text, Rectangle } from "scenerystack/scenery";
 import { ComboBox } from "scenerystack/sun";
-import { Property, DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import {
+  Property,
+  DerivedProperty,
+  type TReadOnlyProperty,
+} from "scenerystack/axon";
 import type { PlottableProperty } from "./PlottableProperty.js";
 import ResonanceColors from "../../ResonanceColors.js";
 import { PhetFont } from "scenerystack/scenery-phet";
-import resonance from '../../ResonanceNamespace.js';
+import resonance from "../../ResonanceNamespace.js";
 
 export default class GraphControlsPanel {
   private readonly availableProperties: PlottableProperty[];
@@ -22,7 +26,7 @@ export default class GraphControlsPanel {
     availableProperties: PlottableProperty[],
     xPropertyProperty: Property<PlottableProperty>,
     yPropertyProperty: Property<PlottableProperty>,
-    graphWidth: number
+    graphWidth: number,
   ) {
     this.availableProperties = availableProperties;
     this.xPropertyProperty = xPropertyProperty;
@@ -54,8 +58,8 @@ export default class GraphControlsPanel {
       value: prop,
       createNode: () =>
         new Text(prop.name, {
-          font: new PhetFont({size: 12}),
-          fill: ResonanceColors.textColorProperty,
+          font: new PhetFont({ size: 12 }),
+          fill: ResonanceColors.textProperty,
         }),
       tandemName: this.sanitizeTandemName(prop.name) + "Item",
     }));
@@ -64,19 +68,19 @@ export default class GraphControlsPanel {
       cornerRadius: 5,
       xMargin: 6,
       yMargin: 3,
-      buttonFill: ResonanceColors.controlPanelBackgroundColorProperty,
-      buttonStroke: ResonanceColors.controlPanelStrokeColorProperty,
-      listFill: ResonanceColors.controlPanelBackgroundColorProperty,
-      listStroke: ResonanceColors.controlPanelStrokeColorProperty,
-      highlightFill: ResonanceColors.controlPanelStrokeColorProperty,
+      buttonFill: ResonanceColors.controlPanelFillProperty,
+      buttonStroke: ResonanceColors.controlPanelStrokeProperty,
+      listFill: ResonanceColors.controlPanelFillProperty,
+      listStroke: ResonanceColors.controlPanelStrokeProperty,
+      highlightFill: ResonanceColors.controlPanelStrokeProperty,
     });
 
     const yItems = this.availableProperties.map((prop) => ({
       value: prop,
       createNode: () =>
         new Text(prop.name, {
-          font: new PhetFont({size: 12}),
-          fill: ResonanceColors.textColorProperty,
+          font: new PhetFont({ size: 12 }),
+          fill: ResonanceColors.textProperty,
         }),
       tandemName: this.sanitizeTandemName(prop.name) + "Item",
     }));
@@ -85,27 +89,27 @@ export default class GraphControlsPanel {
       cornerRadius: 5,
       xMargin: 6,
       yMargin: 3,
-      buttonFill: ResonanceColors.controlPanelBackgroundColorProperty,
-      buttonStroke: ResonanceColors.controlPanelStrokeColorProperty,
-      listFill: ResonanceColors.controlPanelBackgroundColorProperty,
-      listStroke: ResonanceColors.controlPanelStrokeColorProperty,
-      highlightFill: ResonanceColors.controlPanelStrokeColorProperty,
+      buttonFill: ResonanceColors.controlPanelFillProperty,
+      buttonStroke: ResonanceColors.controlPanelStrokeProperty,
+      listFill: ResonanceColors.controlPanelFillProperty,
+      listStroke: ResonanceColors.controlPanelStrokeProperty,
+      highlightFill: ResonanceColors.controlPanelStrokeProperty,
     });
 
     // Create title in format "(Y vs X)"
     const leftParen = new Text("(", {
-      font: new PhetFont({size: 14}),
-      fill: ResonanceColors.textColorProperty,
+      font: new PhetFont({ size: 14 }),
+      fill: ResonanceColors.textProperty,
     });
 
     const vsText = new Text(" vs ", {
-      font: new PhetFont({size: 14})  ,
-      fill: ResonanceColors.textColorProperty,
+      font: new PhetFont({ size: 14 }),
+      fill: ResonanceColors.textProperty,
     });
 
     const rightParen = new Text(")", {
-      font: new PhetFont({size: 14}),
-      fill: ResonanceColors.textColorProperty,
+      font: new PhetFont({ size: 14 }),
+      fill: ResonanceColors.textProperty,
     });
 
     // Arrange in horizontal layout: (Y vs X)
@@ -123,15 +127,23 @@ export default class GraphControlsPanel {
     // Create header bar with dynamic fill that darkens the control panel background
     const headerHeight = 30;
     const headerFillProperty = new DerivedProperty(
-      [ResonanceColors.controlPanelBackgroundColorProperty],
-      (backgroundColor) => backgroundColor.colorUtilsDarker(0.1)
+      [ResonanceColors.controlPanelFillProperty],
+      (backgroundColor) => backgroundColor.colorUtilsDarker(0.1),
     );
-    const headerBar = new Rectangle(0, -headerHeight, this.graphWidth, headerHeight, 5, 5, {
-      fill: headerFillProperty,
-      stroke: ResonanceColors.controlPanelStrokeColorProperty,
-      lineWidth: 2,
-      cursor: 'grab',
-    });
+    const headerBar = new Rectangle(
+      0,
+      -headerHeight,
+      this.graphWidth,
+      headerHeight,
+      5,
+      5,
+      {
+        fill: headerFillProperty,
+        stroke: ResonanceColors.controlPanelStrokeProperty,
+        lineWidth: 2,
+        cursor: "grab",
+      },
+    );
 
     return headerBar;
   }
@@ -139,10 +151,13 @@ export default class GraphControlsPanel {
   /**
    * Update header bar width when graph is resized
    */
-  public static updateHeaderBarWidth(headerBar: Rectangle, newWidth: number): void {
+  public static updateHeaderBarWidth(
+    headerBar: Rectangle,
+    newWidth: number,
+  ): void {
     headerBar.setRect(0, -30, newWidth, 30);
   }
 }
 
 // Register with namespace for debugging accessibility
-resonance.register('GraphControlsPanel', GraphControlsPanel);
+resonance.register("GraphControlsPanel", GraphControlsPanel);

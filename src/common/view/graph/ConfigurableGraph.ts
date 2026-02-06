@@ -3,7 +3,13 @@
  * This provides a flexible way to explore relationships between any two quantities.
  */
 
-import { Node, HBox, Text, Rectangle, FireListener } from "scenerystack/scenery";
+import {
+  Node,
+  HBox,
+  Text,
+  Rectangle,
+  FireListener,
+} from "scenerystack/scenery";
 import {
   ChartRectangle,
   ChartTransform,
@@ -26,7 +32,7 @@ import { PhetFont } from "scenerystack/scenery-phet";
 import GraphDataManager from "./GraphDataManager.js";
 import GraphInteractionHandler from "./GraphInteractionHandler.js";
 import GraphControlsPanel from "./GraphControlsPanel.js";
-import resonance from '../../ResonanceNamespace.js';
+import resonance from "../../ResonanceNamespace.js";
 
 export default class ConfigurableGraph extends Node {
   private readonly availableProperties: PlottableProperty[];
@@ -130,58 +136,90 @@ export default class ConfigurableGraph extends Node {
 
     // Create chart background
     this.chartRectangle = new ChartRectangle(this.chartTransform, {
-      fill: ResonanceColors.controlPanelBackgroundColorProperty,
-      stroke: ResonanceColors.controlPanelStrokeColorProperty,
+      fill: ResonanceColors.controlPanelFillProperty,
+      stroke: ResonanceColors.controlPanelStrokeProperty,
     });
     this.graphContentNode.addChild(this.chartRectangle);
 
     // Create grid lines, tick marks, and tick labels
-    const initialSpacing = GraphDataManager.calculateTickSpacing(initialRange.getLength());
+    const initialSpacing = GraphDataManager.calculateTickSpacing(
+      initialRange.getLength(),
+    );
 
-    this.verticalGridLineSet = new GridLineSet(this.chartTransform, Orientation.VERTICAL, initialSpacing, {
-      stroke: ResonanceColors.graphGridColorProperty,
-      lineWidth: 0.5,
-    });
+    this.verticalGridLineSet = new GridLineSet(
+      this.chartTransform,
+      Orientation.VERTICAL,
+      initialSpacing,
+      {
+        stroke: ResonanceColors.gridLinesProperty,
+        lineWidth: 0.5,
+      },
+    );
     this.graphContentNode.addChild(this.verticalGridLineSet);
 
-    this.horizontalGridLineSet = new GridLineSet(this.chartTransform, Orientation.HORIZONTAL, initialSpacing, {
-      stroke: ResonanceColors.graphGridColorProperty,
-      lineWidth: 0.5,
-    });
+    this.horizontalGridLineSet = new GridLineSet(
+      this.chartTransform,
+      Orientation.HORIZONTAL,
+      initialSpacing,
+      {
+        stroke: ResonanceColors.gridLinesProperty,
+        lineWidth: 0.5,
+      },
+    );
     this.graphContentNode.addChild(this.horizontalGridLineSet);
 
-    this.xTickMarkSet = new TickMarkSet(this.chartTransform, Orientation.HORIZONTAL, initialSpacing, {
-      edge: "min",
-      extent: 8,
-      stroke: ResonanceColors.controlPanelStrokeColorProperty,
-    });
+    this.xTickMarkSet = new TickMarkSet(
+      this.chartTransform,
+      Orientation.HORIZONTAL,
+      initialSpacing,
+      {
+        edge: "min",
+        extent: 8,
+        stroke: ResonanceColors.controlPanelStrokeProperty,
+      },
+    );
     this.graphContentNode.addChild(this.xTickMarkSet);
 
-    this.yTickMarkSet = new TickMarkSet(this.chartTransform, Orientation.VERTICAL, initialSpacing, {
-      edge: "min",
-      extent: 8,
-      stroke: ResonanceColors.controlPanelStrokeColorProperty,
-    });
+    this.yTickMarkSet = new TickMarkSet(
+      this.chartTransform,
+      Orientation.VERTICAL,
+      initialSpacing,
+      {
+        edge: "min",
+        extent: 8,
+        stroke: ResonanceColors.controlPanelStrokeProperty,
+      },
+    );
     this.graphContentNode.addChild(this.yTickMarkSet);
 
-    this.xTickLabelSet = new TickLabelSet(this.chartTransform, Orientation.HORIZONTAL, initialSpacing, {
-      edge: "min",
-      createLabel: (value: number) =>
-        new Text(value.toFixed(2), {
-          font: new PhetFont({size: 10}),
-          fill: ResonanceColors.graphLabelColorProperty,
-        }),
-    });
+    this.xTickLabelSet = new TickLabelSet(
+      this.chartTransform,
+      Orientation.HORIZONTAL,
+      initialSpacing,
+      {
+        edge: "min",
+        createLabel: (value: number) =>
+          new Text(value.toFixed(2), {
+            font: new PhetFont({ size: 10 }),
+            fill: ResonanceColors.textProperty,
+          }),
+      },
+    );
     this.graphContentNode.addChild(this.xTickLabelSet);
 
-    this.yTickLabelSet = new TickLabelSet(this.chartTransform, Orientation.VERTICAL, initialSpacing, {
-      edge: "min",
-      createLabel: (value: number) =>
-        new Text(value.toFixed(2), {
-          font: new PhetFont({size: 10}),
-          fill: ResonanceColors.graphLabelColorProperty,
-        }),
-    });
+    this.yTickLabelSet = new TickLabelSet(
+      this.chartTransform,
+      Orientation.VERTICAL,
+      initialSpacing,
+      {
+        edge: "min",
+        createLabel: (value: number) =>
+          new Text(value.toFixed(2), {
+            font: new PhetFont({ size: 10 }),
+            fill: ResonanceColors.textProperty,
+          }),
+      },
+    );
     this.graphContentNode.addChild(this.yTickLabelSet);
 
     // Create invisible interaction regions for axis controls
@@ -197,9 +235,9 @@ export default class ConfigurableGraph extends Node {
       axisInteractionWidth,
       height,
       {
-        fill: 'transparent',
+        fill: "transparent",
         pickable: true,
-      }
+      },
     );
     this.graphContentNode.addChild(this.yAxisInteractionRegion);
 
@@ -210,15 +248,15 @@ export default class ConfigurableGraph extends Node {
       width,
       axisInteractionHeight,
       {
-        fill: 'transparent',
+        fill: "transparent",
         pickable: true,
-      }
+      },
     );
     this.graphContentNode.addChild(this.xAxisInteractionRegion);
 
     // Create line plot
     this.linePlot = new LinePlot(this.chartTransform, [], {
-      stroke: ResonanceColors.graphLine1ColorProperty,
+      stroke: ResonanceColors.plot1Property,
       lineWidth: 2,
     });
 
@@ -234,16 +272,16 @@ export default class ConfigurableGraph extends Node {
 
     // Create axis labels
     this.xAxisLabelNode = new Text(this.formatAxisLabel(initialXProperty), {
-      font: new PhetFont({size: 12}),
-      fill: ResonanceColors.graphLabelColorProperty,
+      font: new PhetFont({ size: 12 }),
+      fill: ResonanceColors.textProperty,
       centerX: this.graphWidth / 2,
       top: this.graphHeight + 35,
     });
     this.graphContentNode.addChild(this.xAxisLabelNode);
 
     this.yAxisLabelNode = new Text(this.formatAxisLabel(initialYProperty), {
-      font: new PhetFont({size: 12}),
-      fill: ResonanceColors.graphLabelColorProperty,
+      font: new PhetFont({ size: 12 }),
+      fill: ResonanceColors.textProperty,
       rotation: -Math.PI / 2,
       centerY: this.graphHeight / 2,
       right: -35,
@@ -263,7 +301,7 @@ export default class ConfigurableGraph extends Node {
         yTickMarkSet: this.yTickMarkSet,
         xTickLabelSet: this.xTickLabelSet,
         yTickLabelSet: this.yTickLabelSet,
-      }
+      },
     );
 
     // Create controls panel helper
@@ -271,7 +309,7 @@ export default class ConfigurableGraph extends Node {
       this.availableProperties,
       this.xPropertyProperty,
       this.yPropertyProperty,
-      this.graphWidth
+      this.graphWidth,
     );
 
     // Create title panel with combo boxes for axis selection
@@ -288,15 +326,23 @@ export default class ConfigurableGraph extends Node {
     // Helper function to create a button
     const createButton = (label: string, onClick: () => void): Node => {
       const buttonText = new Text(label, {
-        font: new PhetFont({ size: 14, weight: 'bold' }),
-        fill: ResonanceColors.controlPanelStrokeColorProperty,
+        font: new PhetFont({ size: 14, weight: "bold" }),
+        fill: ResonanceColors.controlPanelStrokeProperty,
       });
 
-      const buttonBackground = new Rectangle(0, 0, buttonSize, buttonSize, 3, 3, {
-        fill: ResonanceColors.controlPanelBackgroundColorProperty,
-        stroke: ResonanceColors.controlPanelStrokeColorProperty,
-        cursor: 'pointer',
-      });
+      const buttonBackground = new Rectangle(
+        0,
+        0,
+        buttonSize,
+        buttonSize,
+        3,
+        3,
+        {
+          fill: ResonanceColors.controlPanelFillProperty,
+          stroke: ResonanceColors.controlPanelStrokeProperty,
+          cursor: "pointer",
+        },
+      );
 
       const button = new Node({
         children: [buttonBackground, buttonText],
@@ -316,44 +362,46 @@ export default class ConfigurableGraph extends Node {
       });
 
       // Add click handler
-      button.addInputListener(new FireListener({
-        fire: onClick,
-      }));
+      button.addInputListener(
+        new FireListener({
+          fire: onClick,
+        }),
+      );
 
       return button;
     };
 
     // Create rescale button
-    this.rescaleButton = createButton('↻', () => {
+    this.rescaleButton = createButton("↻", () => {
       // Reset manual zoom flag and rescale to fit data
       this.dataManager.setManuallyZoomed(false);
       this.dataManager.updateAxisRanges();
     });
 
     // Create zoom buttons (will be wired up after interactionHandler is created)
-    const zoomInButton = createButton('+', () => {
+    const zoomInButton = createButton("+", () => {
       this.interactionHandler.zoomIn();
     });
 
-    const zoomOutButton = createButton('−', () => {
+    const zoomOutButton = createButton("−", () => {
       this.interactionHandler.zoomOut();
     });
 
     // Create pan buttons (will be wired up after interactionHandler is created)
-    const panLeftButton = createButton('←', () => {
-      this.interactionHandler.pan('left');
+    const panLeftButton = createButton("←", () => {
+      this.interactionHandler.pan("left");
     });
 
-    const panRightButton = createButton('→', () => {
-      this.interactionHandler.pan('right');
+    const panRightButton = createButton("→", () => {
+      this.interactionHandler.pan("right");
     });
 
-    const panUpButton = createButton('↑', () => {
-      this.interactionHandler.pan('up');
+    const panUpButton = createButton("↑", () => {
+      this.interactionHandler.pan("up");
     });
 
-    const panDownButton = createButton('↓', () => {
-      this.interactionHandler.pan('down');
+    const panDownButton = createButton("↓", () => {
+      this.interactionHandler.pan("down");
     });
 
     // Create HBox to hold all buttons
@@ -419,7 +467,7 @@ export default class ConfigurableGraph extends Node {
         width: this.graphWidth,
         height: this.graphHeight,
       },
-      this.resizeGraph.bind(this)
+      this.resizeGraph.bind(this),
     );
 
     // Setup all interactions
@@ -427,7 +475,7 @@ export default class ConfigurableGraph extends Node {
 
     // Create and add resize handles
     const resizeHandles = this.interactionHandler.createResizeHandles();
-    resizeHandles.forEach(handle => this.addChild(handle));
+    resizeHandles.forEach((handle) => this.addChild(handle));
 
     // Link visibility property to the content node, header bar, and resize handles
     this.graphVisibleProperty.link((visible) => {
@@ -441,7 +489,7 @@ export default class ConfigurableGraph extends Node {
     // Add visual feedback for drag and resize operations
     this.isDraggingProperty.link((isDragging) => {
       this.opacity = isDragging ? 0.8 : 1.0;
-      this.headerBar.cursor = isDragging ? 'grabbing' : 'grab';
+      this.headerBar.cursor = isDragging ? "grabbing" : "grab";
     });
 
     this.isResizingProperty.link((isResizing) => {
@@ -452,9 +500,7 @@ export default class ConfigurableGraph extends Node {
   /**
    * Helper to get the string value from either a string or TReadOnlyProperty<string>
    */
-  private getNameValue(
-    name: string | TReadOnlyProperty<string>,
-  ): string {
+  private getNameValue(name: string | TReadOnlyProperty<string>): string {
     return typeof name === "string" ? name : name.value;
   }
 
@@ -489,8 +535,18 @@ export default class ConfigurableGraph extends Node {
     // Update invisible interaction regions
     const axisInteractionWidth = 60;
     const axisInteractionHeight = 30;
-    this.yAxisInteractionRegion.setRect(-axisInteractionWidth, 0, axisInteractionWidth, newHeight);
-    this.xAxisInteractionRegion.setRect(0, newHeight, newWidth, axisInteractionHeight);
+    this.yAxisInteractionRegion.setRect(
+      -axisInteractionWidth,
+      0,
+      axisInteractionWidth,
+      newHeight,
+    );
+    this.xAxisInteractionRegion.setRect(
+      0,
+      newHeight,
+      newWidth,
+      axisInteractionHeight,
+    );
 
     // Update axis labels positions
     this.xAxisLabelNode.centerX = newWidth / 2;
@@ -499,7 +555,7 @@ export default class ConfigurableGraph extends Node {
 
     // Update title panel position
     const titlePanel = this.graphContentNode.children.find(
-      (child) => child instanceof HBox
+      (child) => child instanceof HBox,
     );
     if (titlePanel) {
       titlePanel.centerX = newWidth / 2;
@@ -559,7 +615,10 @@ export default class ConfigurableGraph extends Node {
     this.graphVisibleProperty.reset();
 
     // Reset graph size to initial dimensions if it has been resized
-    if (this.graphWidth !== this.initialWidth || this.graphHeight !== this.initialHeight) {
+    if (
+      this.graphWidth !== this.initialWidth ||
+      this.graphHeight !== this.initialHeight
+    ) {
       this.resizeGraph(this.initialWidth, this.initialHeight);
     }
 
@@ -569,4 +628,4 @@ export default class ConfigurableGraph extends Node {
 }
 
 // Register with namespace for debugging accessibility
-resonance.register('ConfigurableGraph', ConfigurableGraph);
+resonance.register("ConfigurableGraph", ConfigurableGraph);
