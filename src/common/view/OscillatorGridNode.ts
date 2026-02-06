@@ -180,7 +180,8 @@ export class OscillatorGridNode extends Node {
 
     // Convert to view coordinates using modelViewTransform
     const arrowTop = this.modelViewTransform.modelToViewY(topMajorLineModel);
-    const arrowBottom = this.modelViewTransform.modelToViewY(nextMajorLineModel);
+    const arrowBottom =
+      this.modelViewTransform.modelToViewY(nextMajorLineModel);
 
     const arrow = new ArrowNode(indicatorX, arrowTop, indicatorX, arrowBottom, {
       doubleHead: true,

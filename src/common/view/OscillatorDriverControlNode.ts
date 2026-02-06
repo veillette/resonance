@@ -8,7 +8,14 @@
  * - Phase Analysis
  */
 
-import { Node, Rectangle, HBox, VBox, Path, TColor } from "scenerystack/scenery";
+import {
+  Node,
+  Rectangle,
+  HBox,
+  VBox,
+  Path,
+  TColor,
+} from "scenerystack/scenery";
 import { ToggleSwitch } from "scenerystack/sun";
 import { NumberProperty } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
@@ -24,10 +31,14 @@ import { NumberControlFactory } from "./NumberControlFactory.js";
  * Creates a power symbol (IEC 5009) - a circle with a vertical line through the top.
  * The "I" represents on (binary 1) and "O" represents off (binary 0).
  */
-function createPowerSymbolNode(options: { radius?: number; lineWidth?: number; stroke?: TColor }): Node {
+function createPowerSymbolNode(options: {
+  radius?: number;
+  lineWidth?: number;
+  stroke?: TColor;
+}): Node {
   const radius = options.radius ?? 10;
   const lineWidth = options.lineWidth ?? 2;
-  const stroke = options.stroke ?? '#666';
+  const stroke = options.stroke ?? "#666";
 
   // Gap angle from vertical (in radians) - controls size of gap at top
   const gapAngle = Math.PI / 5;
@@ -53,8 +64,8 @@ function createPowerSymbolNode(options: { radius?: number; lineWidth?: number; s
   const circlePath = new Path(circleShape, {
     stroke: stroke,
     lineWidth: lineWidth,
-    lineCap: 'round',
-    lineJoin: 'round'
+    lineCap: "round",
+    lineJoin: "round",
   });
 
   // Create the vertical line through the top
@@ -65,11 +76,11 @@ function createPowerSymbolNode(options: { radius?: number; lineWidth?: number; s
   const linePath = new Path(lineShape, {
     stroke: stroke,
     lineWidth: lineWidth,
-    lineCap: 'round'
+    lineCap: "round",
   });
 
   return new Node({
-    children: [circlePath, linePath]
+    children: [circlePath, linePath],
   });
 }
 
@@ -104,7 +115,7 @@ export class OscillatorDriverControlNode extends Node {
     const powerSymbol = createPowerSymbolNode({
       radius: 9,
       lineWidth: 2,
-      stroke: ResonanceColors.driverTextProperty
+      stroke: ResonanceColors.driverTextProperty,
     });
 
     const powerToggleSwitch = new ToggleSwitch(

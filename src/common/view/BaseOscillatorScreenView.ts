@@ -289,7 +289,8 @@ export class BaseOscillatorScreenView extends ScreenView {
 
     // Convert to view coordinates
     const rodTopViewY = this.modelViewTransform.modelToViewY(rodTopModelY);
-    const rodBottomViewY = this.modelViewTransform.modelToViewY(rodBottomModelY);
+    const rodBottomViewY =
+      this.modelViewTransform.modelToViewY(rodBottomModelY);
     const rodHeightView = rodBottomViewY - rodTopViewY;
 
     // Connection rod between control box and plate (rectangle with no corner radius)
@@ -525,7 +526,8 @@ export class BaseOscillatorScreenView extends ScreenView {
     // Update connection rod to stretch/compress with driver movement
     // Rod connects plate bottom to driver box top (using model coordinates)
     const rodBottomModelY = ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y - 0.02; // 2cm overlap
-    const rodBottomViewY = this.modelViewTransform.modelToViewY(rodBottomModelY);
+    const rodBottomViewY =
+      this.modelViewTransform.modelToViewY(rodBottomModelY);
     const rodHeight = Math.max(10, rodBottomViewY - plateBottomViewY);
 
     // Position marker line about 1/3 down the rod at rest, moves with plate
