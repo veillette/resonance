@@ -132,11 +132,12 @@ describe("ResonanceModel", () => {
       expect(model.potentialEnergyProperty.value).toBe(0);
     });
 
-    it("should include gravitational potential: PE = 0.5*k*x^2 - m*g*x", () => {
+    it("should include gravitational potential: PE = 0.5*k*x^2 + m*g*x", () => {
       model.gravityProperty.value = 10;
       model.positionProperty.value = 0.1;
-      // PE = 0.5*100*0.01 - 2.53*10*0.1 = 0.5 - 2.53 = -2.03 J
-      const expected = 0.5 * 100 * 0.01 - 2.53 * 10 * 0.1;
+      // PE = 0.5*100*0.01 + 2.53*10*0.1 = 0.5 + 2.53 = 3.03 J
+      // With positive x = upward, gravitational PE increases with height
+      const expected = 0.5 * 100 * 0.01 + 2.53 * 10 * 0.1;
       expect(model.potentialEnergyProperty.value).toBeCloseTo(expected, 5);
     });
   });

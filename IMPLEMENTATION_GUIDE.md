@@ -128,7 +128,7 @@ The simulation uses a **centimeter-scale** coordinate system optimized for reson
 #### Visual Scale Mapping
 
 ```typescript
-// Uses ModelViewTransform2.createRectangleMapping()
+// Uses ModelViewTransform2.createRectangleInvertedYMapping()
 // Maps model coordinates (-0.5 to 0.5 m) to view coordinates (pixels)
 // Ensures 1 cm in model = 1 cm on ruler
 ```
@@ -191,7 +191,7 @@ naturalFrequencyHzProperty: TReadOnlyProperty<number>; // f₀ = ω₀/(2π) Hz
 dampingRatioProperty: TReadOnlyProperty<number>; // ζ = b/(2√(mk))
 
 kineticEnergyProperty: TReadOnlyProperty<number>; // KE = ½mv²
-potentialEnergyProperty: TReadOnlyProperty<number>; // PE = ½kx² - mgx
+potentialEnergyProperty: TReadOnlyProperty<number>; // PE = ½kx² + mgx
 totalEnergyProperty: TReadOnlyProperty<number>; // E = KE + PE
 
 phaseAngleProperty: TReadOnlyProperty<number>; // phase lag (rad)
@@ -220,21 +220,21 @@ This creates a time-varying equilibrium position rather than an external driving
 #### Full Equation of Motion
 
 ```
-m·a = -k·(x - x_plate(t)) - b·v + m·g
+m·a = -k·(x - x_plate(t)) - b·v - m·g
 ```
 
 Expanding:
 
 ```
-m·a = -k·x + k·A·sin(ω·t) - b·v + m·g
+m·a = -k·x + k·A·sin(ω·t) - b·v - m·g
 ```
 
-Where:
+Where (positive x = upward):
 
 - **-k·x**: Spring restoring force (Hooke's Law)
 - **k·A·sin(ω·t)**: Effective driving force from oscillating plate
 - **-b·v**: Damping force (linear, velocity-dependent)
-- **m·g**: Gravitational force (optional, default OFF)
+- **-m·g**: Gravitational force, acts downward (optional, default OFF)
 
 **Key difference from traditional driven oscillator:**
 
@@ -259,7 +259,7 @@ getDerivatives(t: number, state: number[]): number[] {
   // Spring force relative to moving plate
   const springForce = -k * (x - platePosition)
   const dampingForce = -b * v
-  const gravityForce = m * g
+  const gravityForce = -m * g  // Gravity acts downward (negative in upward-positive coords)
 
   // Calculate acceleration
   const a = (springForce + dampingForce + gravityForce) / m

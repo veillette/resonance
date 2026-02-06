@@ -10,6 +10,18 @@ The simulation supports 1 to 10 oscillators simultaneously, allowing students to
 
 ---
 
+## Coordinate Convention
+
+The model uses a **positive-upward** coordinate system:
+
+- **Positive x** = upward (mass displaced above equilibrium)
+- **Negative x** = downward (mass displaced below equilibrium)
+- **x = 0** = equilibrium position (mass at rest, at the natural spring length above the driver plate)
+
+This matches the standard physics convention where height increases upward.
+
+---
+
 ## The Physical System
 
 ### Setup
@@ -48,18 +60,18 @@ For a single oscillator, the equation of motion comes from Newton's second law:
 
 Expanding each force:
 
-**m · a = −k · (x − x_plate) − b · v + m · g**
+**m · a = −k · (x − x_plate) − b · v − m · g**
 
-Where:
+Where (positive x = upward):
 
 - **m** = mass of the block (kg)
 - **a** = acceleration of the mass (m/s²)
 - **k** = spring constant (N/m)
-- **x** = position of the mass from equilibrium (m)
+- **x** = position of the mass from equilibrium (m, positive = upward)
 - **x_plate** = position of the driver plate = A · sin(ω · t)
 - **b** = damping coefficient (N·s/m)
-- **v** = velocity of the mass (m/s)
-- **g** = gravitational acceleration (m/s², optional in simulation)
+- **v** = velocity of the mass (m/s, positive = upward)
+- **g** = gravitational acceleration (m/s², always positive; the −m·g term makes gravity act downward)
 - **A** = amplitude of plate oscillation (m)
 - **ω** = angular frequency of driving = 2π · f (rad/s)
 
@@ -77,10 +89,10 @@ Where:
    - Without damping, oscillations would continue forever
    - With damping, energy is dissipated and oscillations decay
 
-3. **Gravitational Force**: F_gravity = m · g
-   - Constant downward force
+3. **Gravitational Force**: F_gravity = −m · g
+   - Constant downward force (negative in the upward-positive coordinate system)
    - Optional in the simulation (Moon's gravity: 1.62 m/s² when enabled)
-   - Shifts the equilibrium position but doesn't change the oscillation physics
+   - Shifts the equilibrium position downward but doesn't change the oscillation physics
 
 ---
 
@@ -149,7 +161,7 @@ Energy due to the mass's motion. Maximum when passing through equilibrium (v is 
 
 **PE = ½ · k · x²** (spring only)
 
-**PE = ½ · k · x² − m · g · x** (with gravity)
+**PE = ½ · k · x² + m · g · x** (with gravity, since positive x = upward)
 
 Energy stored in the stretched or compressed spring. Maximum at the turning points (x is maximum).
 
