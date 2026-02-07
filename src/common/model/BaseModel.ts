@@ -15,9 +15,7 @@
 import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
 import { ODESolver, ODEModel } from "./ODESolver.js";
 import { RungeKuttaSolver } from "./RungeKuttaSolver.js";
-import { AdaptiveEulerSolver } from "./AdaptiveEulerSolver.js";
 import { AdaptiveRK45Solver } from "./AdaptiveRK45Solver.js";
-import { ModifiedMidpointSolver } from "./ModifiedMidpointSolver.js";
 import { SolverType } from "./SolverType.js";
 
 export type TimeSpeed = "slow" | "normal" | "fast";
@@ -65,12 +63,6 @@ export abstract class BaseModel implements ODEModel {
 
       case SolverType.ADAPTIVE_RK45:
         return new AdaptiveRK45Solver();
-
-      case SolverType.ADAPTIVE_EULER:
-        return new AdaptiveEulerSolver();
-
-      case SolverType.MODIFIED_MIDPOINT:
-        return new ModifiedMidpointSolver(0.001, 4);
 
       default:
         console.warn(`Unknown solver type: ${String(solverType)}, using RK4`);

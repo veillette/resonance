@@ -10,8 +10,6 @@ import { BaseModel, TimeSpeed } from "../BaseModel.js";
 import { SolverType } from "../SolverType.js";
 import { RungeKuttaSolver } from "../RungeKuttaSolver.js";
 import { AdaptiveRK45Solver } from "../AdaptiveRK45Solver.js";
-import { AdaptiveEulerSolver } from "../AdaptiveEulerSolver.js";
-import { ModifiedMidpointSolver } from "../ModifiedMidpointSolver.js";
 
 /**
  * Concrete implementation of BaseModel for testing
@@ -201,15 +199,6 @@ describe("BaseModel", () => {
         expect(model.getSolver()).toBeInstanceOf(AdaptiveRK45Solver);
       });
 
-      it("should create AdaptiveEulerSolver for ADAPTIVE_EULER", () => {
-        solverTypeProperty.value = SolverType.ADAPTIVE_EULER;
-        expect(model.getSolver()).toBeInstanceOf(AdaptiveEulerSolver);
-      });
-
-      it("should create ModifiedMidpointSolver for MODIFIED_MIDPOINT", () => {
-        solverTypeProperty.value = SolverType.MODIFIED_MIDPOINT;
-        expect(model.getSolver()).toBeInstanceOf(ModifiedMidpointSolver);
-      });
     });
 
     describe("solver switching", () => {

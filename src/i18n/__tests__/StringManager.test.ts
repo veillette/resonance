@@ -215,8 +215,6 @@ describe("getStringProperties", () => {
       const common = getStringProperties().resonance.common;
       expect(common.solverRK4StringProperty).toBeDefined();
       expect(common.solverAdaptiveRK45StringProperty).toBeDefined();
-      expect(common.solverAdaptiveEulerStringProperty).toBeDefined();
-      expect(common.solverModifiedMidpointStringProperty).toBeDefined();
     });
   });
 

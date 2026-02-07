@@ -7,8 +7,6 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 export enum SolverType {
   RUNGE_KUTTA_4 = "rk4",
   ADAPTIVE_RK45 = "adaptiveRK45",
-  ADAPTIVE_EULER = "adaptiveEuler",
-  MODIFIED_MIDPOINT = "modifiedMidpoint",
 }
 
 /**
@@ -19,10 +17,6 @@ export const SolverTypeName: Record<SolverType, ReadOnlyProperty<string>> = {
     ResonanceStrings.common.solverNames.solverRK4StringProperty,
   [SolverType.ADAPTIVE_RK45]:
     ResonanceStrings.common.solverNames.solverAdaptiveRK45StringProperty,
-  [SolverType.ADAPTIVE_EULER]:
-    ResonanceStrings.common.solverNames.solverAdaptiveEulerStringProperty,
-  [SolverType.MODIFIED_MIDPOINT]:
-    ResonanceStrings.common.solverNames.solverModifiedMidpointStringProperty,
 };
 
 /**
@@ -36,9 +30,4 @@ export const SolverTypeDescription: Record<
     ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty,
   [SolverType.ADAPTIVE_RK45]:
     ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty,
-  [SolverType.ADAPTIVE_EULER]:
-    ResonanceStrings.preferences.solvers.adaptiveEulerDescriptionStringProperty,
-  [SolverType.MODIFIED_MIDPOINT]:
-    ResonanceStrings.preferences.solvers
-      .modifiedMidpointDescriptionStringProperty,
 };

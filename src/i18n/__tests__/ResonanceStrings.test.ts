@@ -194,8 +194,6 @@ describe("ResonanceStrings", () => {
       const solverNames = ResonanceStrings.common.solverNames;
       expect(solverNames.solverRK4StringProperty).toBeDefined();
       expect(solverNames.solverAdaptiveRK45StringProperty).toBeDefined();
-      expect(solverNames.solverAdaptiveEulerStringProperty).toBeDefined();
-      expect(solverNames.solverModifiedMidpointStringProperty).toBeDefined();
     });
 
     it("should have non-empty solver names", () => {

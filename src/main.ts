@@ -175,62 +175,6 @@ onReadyToLaunch(() => {
                       }),
                     tandemName: "adaptiveRK45RadioButton",
                   },
-                  {
-                    value: SolverType.ADAPTIVE_EULER,
-                    createNode: () =>
-                      new VBox({
-                        align: "left",
-                        spacing: 4,
-                        children: [
-                          new Text(
-                            ResonanceStrings.preferences.solvers
-                              .adaptiveEulerStringProperty,
-                            {
-                              font: new PhetFont(14),
-                              fill: ResonanceColors.preferencesTextProperty,
-                            },
-                          ),
-                          new Text(
-                            ResonanceStrings.preferences.solvers
-                              .adaptiveEulerDescriptionStringProperty,
-                            {
-                              font: new PhetFont(11),
-                              fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 500,
-                            },
-                          ),
-                        ],
-                      }),
-                    tandemName: "adaptiveEulerRadioButton",
-                  },
-                  {
-                    value: SolverType.MODIFIED_MIDPOINT,
-                    createNode: () =>
-                      new VBox({
-                        align: "left",
-                        spacing: 4,
-                        children: [
-                          new Text(
-                            ResonanceStrings.preferences.solvers
-                              .modifiedMidpointStringProperty,
-                            {
-                              font: new PhetFont(14),
-                              fill: ResonanceColors.preferencesTextProperty,
-                            },
-                          ),
-                          new Text(
-                            ResonanceStrings.preferences.solvers
-                              .modifiedMidpointDescriptionStringProperty,
-                            {
-                              font: new PhetFont(11),
-                              fill: ResonanceColors.preferencesTextSecondaryProperty,
-                              maxWidth: 500,
-                            },
-                          ),
-                        ],
-                      }),
-                    tandemName: "modifiedMidpointRadioButton",
-                  },
                 ],
                 {
                   spacing: 10,

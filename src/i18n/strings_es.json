@@ -90,10 +90,6 @@
         "solverRK4Description": "Método clásico de paso fijo con buena precisión y estabilidad. Mejor para la mayoría de las simulaciones.",
         "solverAdaptiveRK45": "RK45 Adaptativo",
         "solverAdaptiveRK45Description": "Método de tamaño de paso variable que ajusta automáticamente la precisión. Mejor para requisitos de alta precisión.",
-        "solverAdaptiveEuler": "Euler Adaptativo",
-        "solverAdaptiveEulerDescription": "Método adaptativo simple con tamaño de paso variable. Bueno para pruebas y depuración.",
-        "solverModifiedMidpoint": "Punto Medio Modificado",
-        "solverModifiedMidpointDescription": "Método de paso fijo con estabilidad mejorada. Buena alternativa a RK4.",
         "odeSolver": "Solucionador ODE",
         "renderer": "Renderizador",
         "rendererDescription": "Elija el método de renderizado para la visualización de partículas.",
@@ -184,9 +180,7 @@
     },
     "common": {
       "solverRK4": "Runge-Kutta de 4º Orden",
-      "solverAdaptiveRK45": "RK45 Adaptativo",
-      "solverAdaptiveEuler": "Euler Adaptativo",
-      "solverModifiedMidpoint": "Punto Medio Modificado"
+      "solverAdaptiveRK45": "RK45 Adaptativo"
     },
     "chladni": {
       "material": "Material",
