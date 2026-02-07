@@ -23,13 +23,16 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
 
     const resonanceModel = model.resonanceModel;
 
-    // Define the plottable properties available in the combo box
+    // Define the plottable properties available in the combo box.
+    // Organized by category: kinematics, forces, energy, driver/ratios.
     const plottableProperties: PlottableProperty[] = [
+      // Time
       {
         name: ResonanceStrings.controls.timeStringProperty,
         property: resonanceModel.timeProperty,
         unit: "s",
       },
+      // Kinematics
       {
         name: ResonanceStrings.controls.positionStringProperty,
         property: resonanceModel.positionProperty,
@@ -46,10 +49,37 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         unit: "m/s\u00B2",
       },
       {
+        name: ResonanceStrings.controls.rmsDisplacementStringProperty,
+        property: resonanceModel.rmsDisplacementProperty,
+        unit: "m",
+      },
+      {
+        name: ResonanceStrings.controls.rmsVelocityStringProperty,
+        property: resonanceModel.rmsVelocityProperty,
+        unit: "m/s",
+      },
+      // Forces
+      {
         name: ResonanceStrings.controls.appliedForceStringProperty,
         property: resonanceModel.appliedForceProperty,
         unit: "N",
       },
+      {
+        name: ResonanceStrings.controls.springForceStringProperty,
+        property: resonanceModel.springForceProperty,
+        unit: "N",
+      },
+      {
+        name: ResonanceStrings.controls.dampingForceStringProperty,
+        property: resonanceModel.dampingForceProperty,
+        unit: "N",
+      },
+      {
+        name: ResonanceStrings.controls.netForceStringProperty,
+        property: resonanceModel.netForceProperty,
+        unit: "N",
+      },
+      // Energy
       {
         name: ResonanceStrings.controls.kineticEnergyStringProperty,
         property: resonanceModel.kineticEnergyProperty,
@@ -59,6 +89,65 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         name: ResonanceStrings.controls.springPotentialEnergyStringProperty,
         property: resonanceModel.springPotentialEnergyProperty,
         unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.gravitationalPotentialEnergyStringProperty,
+        property: resonanceModel.gravitationalPotentialEnergyProperty,
+        unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.totalPotentialEnergyStringProperty,
+        property: resonanceModel.potentialEnergyProperty,
+        unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.totalEnergyStringProperty,
+        property: resonanceModel.totalEnergyProperty,
+        unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.driverEnergyStringProperty,
+        property: resonanceModel.driverEnergyProperty,
+        unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.thermalEnergyStringProperty,
+        property: resonanceModel.thermalEnergyProperty,
+        unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.dampingPowerStringProperty,
+        property: resonanceModel.dampingPowerProperty,
+        unit: "W",
+      },
+      {
+        name: ResonanceStrings.controls.drivingPowerStringProperty,
+        property: resonanceModel.drivingPowerProperty,
+        unit: "W",
+      },
+      {
+        name: ResonanceStrings.controls.springPowerStringProperty,
+        property: resonanceModel.springPowerProperty,
+        unit: "W",
+      },
+      {
+        name: ResonanceStrings.controls.gravitationalPowerStringProperty,
+        property: resonanceModel.gravitationalPowerProperty,
+        unit: "W",
+      },
+      // Driver and dimensionless ratios
+      {
+        name: ResonanceStrings.controls.driverPositionStringProperty,
+        property: resonanceModel.driverPositionProperty,
+        unit: "m",
+      },
+      {
+        name: ResonanceStrings.controls.frequencyRatioStringProperty,
+        property: resonanceModel.frequencyRatioProperty,
+      },
+      {
+        name: ResonanceStrings.controls.amplitudeRatioStringProperty,
+        property: resonanceModel.amplitudeRatioProperty,
       },
     ];
 
