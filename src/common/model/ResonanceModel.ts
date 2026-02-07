@@ -85,6 +85,10 @@ export class ResonanceModel extends BaseModel {
   public readonly springPowerProperty: TReadOnlyProperty<number>; // W (-kxv, spring energy exchange rate)
   public readonly gravitationalPowerProperty: TReadOnlyProperty<number>; // W (-mgv, gravitational energy exchange rate)
 
+  // Cumulative energy quantities (integrated via ODE solver)
+  public readonly driverEnergyProperty: NumberProperty; // J (∫ F_drive · v dt, total work done by driver)
+  public readonly thermalEnergyProperty: NumberProperty; // J (∫ b·v² dt, total energy dissipated as heat)
+
   // Driver and dimensionless ratios
   public readonly driverPositionProperty: TReadOnlyProperty<number>; // m (A*sin(phase))
   public readonly frequencyRatioProperty: TReadOnlyProperty<number>; // ω/ω₀ (dimensionless)
@@ -118,6 +122,10 @@ export class ResonanceModel extends BaseModel {
     this.drivingFrequencyProperty = new NumberProperty(1.0); // Start at 1.0 Hz
     this.drivingEnabledProperty = new Property<boolean>(false); // Disabled by default
     this.drivingPhaseProperty = new NumberProperty(0.0); // Start at zero phase
+
+    // Initialize cumulative energy accumulators (integrated by the ODE solver)
+    this.driverEnergyProperty = new NumberProperty(0.0); // Cumulative work done by driver
+    this.thermalEnergyProperty = new NumberProperty(0.0); // Cumulative energy dissipated as heat
 
     // Compute natural frequency: ω₀ = √(k/m)
     this.naturalFrequencyProperty = new DerivedProperty(
@@ -441,23 +449,27 @@ export class ResonanceModel extends BaseModel {
   }
 
   /**
-   * Get the current state vector [position, velocity, drivingPhase]
+   * Get the current state vector [position, velocity, drivingPhase, driverEnergy, thermalEnergy]
    */
   public override getState(): number[] {
     return [
       this.positionProperty.value,
       this.velocityProperty.value,
       this.drivingPhaseProperty.value,
+      this.driverEnergyProperty.value,
+      this.thermalEnergyProperty.value,
     ];
   }
 
   /**
-   * Set the state vector [position, velocity, drivingPhase]
+   * Set the state vector [position, velocity, drivingPhase, driverEnergy, thermalEnergy]
    */
   public override setState(state: number[]): void {
     this.positionProperty.value = state[0]!;
     this.velocityProperty.value = state[1]!;
     this.drivingPhaseProperty.value = state[2]!;
+    this.driverEnergyProperty.value = state[3]!;
+    this.thermalEnergyProperty.value = state[4]!;
   }
 
   // ============================================
@@ -533,7 +545,7 @@ export class ResonanceModel extends BaseModel {
   }
 
   /**
-   * Get the derivatives [dx/dt, dv/dt, dphase/dt] for the ODE solver
+   * Get the derivatives [dx/dt, dv/dt, dphase/dt, dDriverEnergy/dt, dThermalEnergy/dt]
    *
    * For a displacement-driven oscillator where the driver base moves sinusoidally:
    * - Driver position: y_driver = A * sin(phase)
@@ -544,6 +556,8 @@ export class ResonanceModel extends BaseModel {
    * dx/dt = v
    * dv/dt = (-k*x - b*v + m*g + k*A*sin(phase)) / m
    * dphase/dt = ω (angular frequency of driving force)
+   * dDriverEnergy/dt = F_drive * v (instantaneous power input from driver)
+   * dThermalEnergy/dt = b * v² (instantaneous power dissipated as heat)
    *
    * Using phase instead of time ensures smooth frequency changes
    */
@@ -573,10 +587,16 @@ export class ResonanceModel extends BaseModel {
     // F_total = -k*x (spring) - b*v (damping) - m*g (gravity, downward in upward-positive coords) + F_drive
     const acceleration = (-k * x - b * v - m * g + F_drive) / m;
 
+    // Cumulative energy derivatives
+    const dDriverEnergy = F_drive * v; // Power input from driver (can be negative)
+    const dThermalEnergy = b * v * v; // Power dissipated as heat (always non-negative)
+
     return [
       v, // dx/dt = v
       acceleration, // dv/dt = a
       phaseDerivative, // dphase/dt = ω
+      dDriverEnergy, // dDriverEnergy/dt = F_drive * v
+      dThermalEnergy, // dThermalEnergy/dt = b * v²
     ];
   }
 
@@ -601,6 +621,10 @@ export class ResonanceModel extends BaseModel {
     this.drivingFrequencyProperty.reset();
     this.drivingEnabledProperty.reset();
     this.drivingPhaseProperty.reset();
+
+    // Reset cumulative energy accumulators
+    this.driverEnergyProperty.reset();
+    this.thermalEnergyProperty.reset();
 
     // Reset time and playback state
     this.resetCommon();

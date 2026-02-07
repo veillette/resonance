@@ -59,6 +59,8 @@
       "driverPosition": "Posición del Excitador",
       "frequencyRatio": "Razón de Frecuencia (\u03c9/\u03c9\u2080)",
       "amplitudeRatio": "Factor de Amplificación",
+      "driverEnergy": "Energía del Excitador",
+      "thermalEnergy": "Energía Térmica",
       "graph": "Gráfica"
     },
     "preferences": {

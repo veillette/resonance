@@ -268,13 +268,17 @@ describe("ResonanceModel", () => {
       model.positionProperty.value = 1.0;
       model.velocityProperty.value = 2.0;
       model.drivingPhaseProperty.value = 3.0;
+      model.driverEnergyProperty.value = 4.0;
+      model.thermalEnergyProperty.value = 5.0;
 
       const state = model.getState();
 
-      expect(state).toHaveLength(3);
+      expect(state).toHaveLength(5);
       expect(state[0]).toBe(1.0); // position
       expect(state[1]).toBe(2.0); // velocity
       expect(state[2]).toBe(3.0); // driving phase
+      expect(state[3]).toBe(4.0); // driver energy
+      expect(state[4]).toBe(5.0); // thermal energy
     });
   });
 

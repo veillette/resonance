@@ -59,6 +59,8 @@
       "driverPosition": "Driver Position",
       "frequencyRatio": "Frequency Ratio (\u03c9/\u03c9\u2080)",
       "amplitudeRatio": "Magnification Factor",
+      "driverEnergy": "Driver Energy",
+      "thermalEnergy": "Thermal Energy",
       "graph": "Graph"
     },
     "preferences": {
