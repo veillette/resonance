@@ -41,7 +41,12 @@
       "velocity": "Velocidad",
       "acceleration": "Aceleración",
       "appliedForce": "Fuerza Aplicada",
-      "sweep": "Barrer"
+      "sweep": "Barrer",
+      "position": "Posición",
+      "time": "Tiempo",
+      "kineticEnergy": "Energía Cinética",
+      "springPotentialEnergy": "Energía Potencial del Resorte",
+      "graph": "Gráfica"
     },
     "preferences": {
       "title": "Preferencias",

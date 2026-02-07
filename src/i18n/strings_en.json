@@ -41,7 +41,12 @@
       "velocity": "Velocity",
       "acceleration": "Acceleration",
       "appliedForce": "Applied Force",
-      "sweep": "Sweep"
+      "sweep": "Sweep",
+      "position": "Position",
+      "time": "Time",
+      "kineticEnergy": "Kinetic Energy",
+      "springPotentialEnergy": "Spring Potential Energy",
+      "graph": "Graph"
     },
     "preferences": {
       "title": "Preferences",
