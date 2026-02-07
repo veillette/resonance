@@ -61,6 +61,8 @@
       "amplitudeRatio": "Magnification Factor",
       "driverEnergy": "Driver Energy",
       "thermalEnergy": "Thermal Energy",
+      "rmsDisplacement": "RMS Displacement",
+      "rmsVelocity": "RMS Velocity",
       "graph": "Graph"
     },
     "preferences": {

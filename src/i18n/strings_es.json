@@ -61,6 +61,8 @@
       "amplitudeRatio": "Factor de Amplificación",
       "driverEnergy": "Energía del Excitador",
       "thermalEnergy": "Energía Térmica",
+      "rmsDisplacement": "Desplazamiento RMS",
+      "rmsVelocity": "Velocidad RMS",
       "graph": "Gráfica"
     },
     "preferences": {

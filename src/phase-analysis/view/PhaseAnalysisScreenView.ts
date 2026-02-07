@@ -48,6 +48,16 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         property: resonanceModel.accelerationProperty,
         unit: "m/s\u00B2",
       },
+      {
+        name: ResonanceStrings.controls.rmsDisplacementStringProperty,
+        property: resonanceModel.rmsDisplacementProperty,
+        unit: "m",
+      },
+      {
+        name: ResonanceStrings.controls.rmsVelocityStringProperty,
+        property: resonanceModel.rmsVelocityProperty,
+        unit: "m/s",
+      },
       // Forces
       {
         name: ResonanceStrings.controls.appliedForceStringProperty,

@@ -89,6 +89,14 @@ export class ResonanceModel extends BaseModel {
   public readonly driverEnergyProperty: NumberProperty; // J (∫ F_drive · v dt, total work done by driver)
   public readonly thermalEnergyProperty: NumberProperty; // J (∫ b·v² dt, total energy dissipated as heat)
 
+  // Cumulative squared integrals for RMS calculations (integrated via ODE solver)
+  public readonly sumSquaredDisplacementProperty: NumberProperty; // m²·s (∫ x² dt)
+  public readonly sumSquaredVelocityProperty: NumberProperty; // m²/s (∫ v² dt)
+
+  // RMS quantities (derived from cumulative integrals and time)
+  public readonly rmsDisplacementProperty: TReadOnlyProperty<number>; // m, √(∫x²dt / t)
+  public readonly rmsVelocityProperty: TReadOnlyProperty<number>; // m/s, √(∫v²dt / t)
+
   // Driver and dimensionless ratios
   public readonly driverPositionProperty: TReadOnlyProperty<number>; // m (A*sin(phase))
   public readonly frequencyRatioProperty: TReadOnlyProperty<number>; // ω/ω₀ (dimensionless)
@@ -126,6 +134,22 @@ export class ResonanceModel extends BaseModel {
     // Initialize cumulative energy accumulators (integrated by the ODE solver)
     this.driverEnergyProperty = new NumberProperty(0.0); // Cumulative work done by driver
     this.thermalEnergyProperty = new NumberProperty(0.0); // Cumulative energy dissipated as heat
+
+    // Initialize cumulative squared integrals for RMS (integrated by the ODE solver)
+    this.sumSquaredDisplacementProperty = new NumberProperty(0.0); // ∫ x² dt
+    this.sumSquaredVelocityProperty = new NumberProperty(0.0); // ∫ v² dt
+
+    // RMS displacement = √(∫x²dt / t)
+    this.rmsDisplacementProperty = new DerivedProperty(
+      [this.sumSquaredDisplacementProperty, this.timeProperty],
+      (sumX2: number, t: number) => (t > 1e-10 ? Math.sqrt(sumX2 / t) : 0),
+    );
+
+    // RMS velocity = √(∫v²dt / t)
+    this.rmsVelocityProperty = new DerivedProperty(
+      [this.sumSquaredVelocityProperty, this.timeProperty],
+      (sumV2: number, t: number) => (t > 1e-10 ? Math.sqrt(sumV2 / t) : 0),
+    );
 
     // Compute natural frequency: ω₀ = √(k/m)
     this.naturalFrequencyProperty = new DerivedProperty(
@@ -449,7 +473,7 @@ export class ResonanceModel extends BaseModel {
   }
 
   /**
-   * Get the current state vector [position, velocity, drivingPhase, driverEnergy, thermalEnergy]
+   * Get the current state vector [position, velocity, drivingPhase, driverEnergy, thermalEnergy, sumX², sumV²]
    */
   public override getState(): number[] {
     return [
@@ -458,11 +482,13 @@ export class ResonanceModel extends BaseModel {
       this.drivingPhaseProperty.value,
       this.driverEnergyProperty.value,
       this.thermalEnergyProperty.value,
+      this.sumSquaredDisplacementProperty.value,
+      this.sumSquaredVelocityProperty.value,
     ];
   }
 
   /**
-   * Set the state vector [position, velocity, drivingPhase, driverEnergy, thermalEnergy]
+   * Set the state vector [position, velocity, drivingPhase, driverEnergy, thermalEnergy, sumX², sumV²]
    */
   public override setState(state: number[]): void {
     this.positionProperty.value = state[0]!;
@@ -470,6 +496,8 @@ export class ResonanceModel extends BaseModel {
     this.drivingPhaseProperty.value = state[2]!;
     this.driverEnergyProperty.value = state[3]!;
     this.thermalEnergyProperty.value = state[4]!;
+    this.sumSquaredDisplacementProperty.value = state[5]!;
+    this.sumSquaredVelocityProperty.value = state[6]!;
   }
 
   // ============================================
@@ -545,19 +573,22 @@ export class ResonanceModel extends BaseModel {
   }
 
   /**
-   * Get the derivatives [dx/dt, dv/dt, dphase/dt, dDriverEnergy/dt, dThermalEnergy/dt]
+   * Get the derivatives for the ODE solver.
+   * State vector: [x, v, phase, driverEnergy, thermalEnergy, sumX², sumV²]
    *
    * For a displacement-driven oscillator where the driver base moves sinusoidally:
    * - Driver position: y_driver = A * sin(phase)
    * - Spring extension: (x - y_driver)
    * - Spring force: F_spring = -k * (x - y_driver) = -k*x + k*A*sin(phase)
    *
-   * Equation of motion:
+   * Derivatives:
    * dx/dt = v
    * dv/dt = (-k*x - b*v + m*g + k*A*sin(phase)) / m
-   * dphase/dt = ω (angular frequency of driving force)
-   * dDriverEnergy/dt = F_drive * v (instantaneous power input from driver)
-   * dThermalEnergy/dt = b * v² (instantaneous power dissipated as heat)
+   * dphase/dt = ω
+   * dDriverEnergy/dt = F_drive * v
+   * dThermalEnergy/dt = b * v²
+   * d(sumX²)/dt = x²
+   * d(sumV²)/dt = v²
    *
    * Using phase instead of time ensures smooth frequency changes
    */
@@ -597,6 +628,8 @@ export class ResonanceModel extends BaseModel {
       phaseDerivative, // dphase/dt = ω
       dDriverEnergy, // dDriverEnergy/dt = F_drive * v
       dThermalEnergy, // dThermalEnergy/dt = b * v²
+      x * x, // d(sumX²)/dt = x²
+      v * v, // d(sumV²)/dt = v²
     ];
   }
 
@@ -622,9 +655,11 @@ export class ResonanceModel extends BaseModel {
     this.drivingEnabledProperty.reset();
     this.drivingPhaseProperty.reset();
 
-    // Reset cumulative energy accumulators
+    // Reset cumulative accumulators
     this.driverEnergyProperty.reset();
     this.thermalEnergyProperty.reset();
+    this.sumSquaredDisplacementProperty.reset();
+    this.sumSquaredVelocityProperty.reset();
 
     // Reset time and playback state
     this.resetCommon();

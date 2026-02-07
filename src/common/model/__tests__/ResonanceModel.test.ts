@@ -270,15 +270,19 @@ describe("ResonanceModel", () => {
       model.drivingPhaseProperty.value = 3.0;
       model.driverEnergyProperty.value = 4.0;
       model.thermalEnergyProperty.value = 5.0;
+      model.sumSquaredDisplacementProperty.value = 6.0;
+      model.sumSquaredVelocityProperty.value = 7.0;
 
       const state = model.getState();
 
-      expect(state).toHaveLength(5);
+      expect(state).toHaveLength(7);
       expect(state[0]).toBe(1.0); // position
       expect(state[1]).toBe(2.0); // velocity
       expect(state[2]).toBe(3.0); // driving phase
       expect(state[3]).toBe(4.0); // driver energy
       expect(state[4]).toBe(5.0); // thermal energy
+      expect(state[5]).toBe(6.0); // sum squared displacement
+      expect(state[6]).toBe(7.0); // sum squared velocity
     });
   });
 
