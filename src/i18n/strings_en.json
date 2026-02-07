@@ -47,6 +47,8 @@
       "kineticEnergy": "Kinetic Energy",
       "springPotentialEnergy": "Spring Potential Energy",
       "gravitationalPotentialEnergy": "Gravitational PE",
+      "totalPotentialEnergy": "Total Potential Energy",
+      "totalEnergy": "Total Mechanical Energy",
       "springForce": "Spring Force",
       "dampingForce": "Damping Force",
       "netForce": "Net Force",

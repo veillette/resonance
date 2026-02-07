@@ -86,6 +86,16 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         unit: "J",
       },
       {
+        name: ResonanceStrings.controls.totalPotentialEnergyStringProperty,
+        property: resonanceModel.potentialEnergyProperty,
+        unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.totalEnergyStringProperty,
+        property: resonanceModel.totalEnergyProperty,
+        unit: "J",
+      },
+      {
         name: ResonanceStrings.controls.dampingPowerStringProperty,
         property: resonanceModel.dampingPowerProperty,
         unit: "W",

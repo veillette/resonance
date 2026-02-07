@@ -47,6 +47,8 @@
       "kineticEnergy": "Énergie Cinétique",
       "springPotentialEnergy": "Énergie Potentielle du Ressort",
       "gravitationalPotentialEnergy": "EP Gravitationnelle",
+      "totalPotentialEnergy": "Énergie Potentielle Totale",
+      "totalEnergy": "Énergie Mécanique Totale",
       "springForce": "Force du Ressort",
       "dampingForce": "Force d'Amortissement",
       "netForce": "Force Nette",
