@@ -23,13 +23,16 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
 
     const resonanceModel = model.resonanceModel;
 
-    // Define the plottable properties available in the combo box
+    // Define the plottable properties available in the combo box.
+    // Organized by category: kinematics, forces, energy, driver/ratios.
     const plottableProperties: PlottableProperty[] = [
+      // Time
       {
         name: ResonanceStrings.controls.timeStringProperty,
         property: resonanceModel.timeProperty,
         unit: "s",
       },
+      // Kinematics
       {
         name: ResonanceStrings.controls.positionStringProperty,
         property: resonanceModel.positionProperty,
@@ -45,11 +48,28 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         property: resonanceModel.accelerationProperty,
         unit: "m/s\u00B2",
       },
+      // Forces
       {
         name: ResonanceStrings.controls.appliedForceStringProperty,
         property: resonanceModel.appliedForceProperty,
         unit: "N",
       },
+      {
+        name: ResonanceStrings.controls.springForceStringProperty,
+        property: resonanceModel.springForceProperty,
+        unit: "N",
+      },
+      {
+        name: ResonanceStrings.controls.dampingForceStringProperty,
+        property: resonanceModel.dampingForceProperty,
+        unit: "N",
+      },
+      {
+        name: ResonanceStrings.controls.netForceStringProperty,
+        property: resonanceModel.netForceProperty,
+        unit: "N",
+      },
+      // Energy
       {
         name: ResonanceStrings.controls.kineticEnergyStringProperty,
         property: resonanceModel.kineticEnergyProperty,
@@ -59,6 +79,30 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         name: ResonanceStrings.controls.springPotentialEnergyStringProperty,
         property: resonanceModel.springPotentialEnergyProperty,
         unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.gravitationalPotentialEnergyStringProperty,
+        property: resonanceModel.gravitationalPotentialEnergyProperty,
+        unit: "J",
+      },
+      {
+        name: ResonanceStrings.controls.dampingPowerStringProperty,
+        property: resonanceModel.dampingPowerProperty,
+        unit: "W",
+      },
+      // Driver and dimensionless ratios
+      {
+        name: ResonanceStrings.controls.driverPositionStringProperty,
+        property: resonanceModel.driverPositionProperty,
+        unit: "m",
+      },
+      {
+        name: ResonanceStrings.controls.frequencyRatioStringProperty,
+        property: resonanceModel.frequencyRatioProperty,
+      },
+      {
+        name: ResonanceStrings.controls.amplitudeRatioStringProperty,
+        property: resonanceModel.amplitudeRatioProperty,
       },
     ];
 

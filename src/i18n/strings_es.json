@@ -46,6 +46,14 @@
       "time": "Tiempo",
       "kineticEnergy": "Energía Cinética",
       "springPotentialEnergy": "Energía Potencial del Resorte",
+      "gravitationalPotentialEnergy": "EP Gravitacional",
+      "springForce": "Fuerza del Resorte",
+      "dampingForce": "Fuerza de Amortiguamiento",
+      "netForce": "Fuerza Neta",
+      "dampingPower": "Potencia de Amortiguamiento",
+      "driverPosition": "Posición del Excitador",
+      "frequencyRatio": "Razón de Frecuencia (\u03c9/\u03c9\u2080)",
+      "amplitudeRatio": "Factor de Amplificación",
       "graph": "Gráfica"
     },
     "preferences": {

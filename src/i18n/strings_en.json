@@ -46,6 +46,14 @@
       "time": "Time",
       "kineticEnergy": "Kinetic Energy",
       "springPotentialEnergy": "Spring Potential Energy",
+      "gravitationalPotentialEnergy": "Gravitational PE",
+      "springForce": "Spring Force",
+      "dampingForce": "Damping Force",
+      "netForce": "Net Force",
+      "dampingPower": "Damping Power",
+      "driverPosition": "Driver Position",
+      "frequencyRatio": "Frequency Ratio (\u03c9/\u03c9\u2080)",
+      "amplitudeRatio": "Magnification Factor",
       "graph": "Graph"
     },
     "preferences": {

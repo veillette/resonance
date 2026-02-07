@@ -73,6 +73,20 @@ export class ResonanceModel extends BaseModel {
   public readonly appliedForceProperty: TReadOnlyProperty<number>; // N (instantaneous driving force)
   public readonly springPotentialEnergyProperty: TReadOnlyProperty<number>; // J (½kx², without gravity)
 
+  // Instantaneous individual forces
+  public readonly springForceProperty: TReadOnlyProperty<number>; // N (-k*x)
+  public readonly dampingForceProperty: TReadOnlyProperty<number>; // N (-b*v)
+  public readonly netForceProperty: TReadOnlyProperty<number>; // N (m*a)
+
+  // Additional energy
+  public readonly gravitationalPotentialEnergyProperty: TReadOnlyProperty<number>; // J (m*g*x)
+  public readonly dampingPowerProperty: TReadOnlyProperty<number>; // W (-b*v², power dissipated)
+
+  // Driver and dimensionless ratios
+  public readonly driverPositionProperty: TReadOnlyProperty<number>; // m (A*sin(phase))
+  public readonly frequencyRatioProperty: TReadOnlyProperty<number>; // ω/ω₀ (dimensionless)
+  public readonly amplitudeRatioProperty: TReadOnlyProperty<number>; // X₀/(F₀/k) magnification factor
+
   // Phase relationships (radians, relative to driving force)
   public readonly displacementPhaseProperty: TReadOnlyProperty<number>; // same as phaseAngleProperty
   public readonly velocityPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π/2
@@ -195,6 +209,58 @@ export class ResonanceModel extends BaseModel {
       (k: number, x: number) => 0.5 * k * x * x,
     );
 
+    // Compute instantaneous spring force: F_spring = -k * x
+    this.springForceProperty = new DerivedProperty(
+      [this.springConstantProperty, this.positionProperty],
+      (k: number, x: number) => -k * x,
+    );
+
+    // Compute instantaneous damping force: F_damping = -b * v
+    this.dampingForceProperty = new DerivedProperty(
+      [this.dampingProperty, this.velocityProperty],
+      (b: number, v: number) => -b * v,
+    );
+
+    // Compute instantaneous net force: F_net = m * a
+    this.netForceProperty = new DerivedProperty(
+      [this.massProperty, this.accelerationProperty],
+      (m: number, a: number) => m * a,
+    );
+
+    // Compute gravitational potential energy: U_grav = m * g * x
+    this.gravitationalPotentialEnergyProperty = new DerivedProperty(
+      [this.massProperty, this.gravityProperty, this.positionProperty],
+      (m: number, g: number, x: number) => m * g * x,
+    );
+
+    // Compute power dissipated by damping: P = -b * v² (always non-positive)
+    this.dampingPowerProperty = new DerivedProperty(
+      [this.dampingProperty, this.velocityProperty],
+      (b: number, v: number) => -b * v * v,
+    );
+
+    // Compute driver plate position: x_driver = A * sin(phase)
+    this.driverPositionProperty = new DerivedProperty(
+      [
+        this.drivingAmplitudeProperty,
+        this.drivingPhaseProperty,
+        this.drivingEnabledProperty,
+      ],
+      (A: number, phase: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return A * Math.sin(phase);
+      },
+    );
+
+    // Compute frequency ratio: ω / ω₀ (driving frequency / natural frequency)
+    this.frequencyRatioProperty = new DerivedProperty(
+      [this.drivingFrequencyProperty, this.naturalFrequencyHzProperty],
+      (fDrive: number, fNatural: number) => {
+        if (fNatural < 1e-10) return 0;
+        return fDrive / fNatural;
+      },
+    );
+
     // Compute phase angle between displacement and driving force
     // Phase lag formula: φ = arctan(bω / (k - mω²))
     // When ω < ω₀: φ is small (displacement nearly in phase with force)
@@ -302,6 +368,16 @@ export class ResonanceModel extends BaseModel {
       (k: number, A: number, enabled: boolean) => {
         if (!enabled) return 0;
         return k * A;
+      },
+    );
+
+    // Compute amplitude ratio (magnification factor): X₀ / A_static
+    // where A_static = F₀ / k = A (the static deflection under driving force amplitude)
+    this.amplitudeRatioProperty = new DerivedProperty(
+      [this.displacementAmplitudeProperty, this.drivingAmplitudeProperty, this.drivingEnabledProperty],
+      (X0: number, A: number, enabled: boolean) => {
+        if (!enabled || A < 1e-15) return 0;
+        return X0 / A;
       },
     );
 
