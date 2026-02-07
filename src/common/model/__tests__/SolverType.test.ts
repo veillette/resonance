@@ -23,9 +23,14 @@ describe("SolverType", () => {
       expect(SolverType.ADAPTIVE_RK45).toBe("adaptiveRK45");
     });
 
-    it("should have exactly 2 solver types", () => {
+    it("should have ANALYTICAL type", () => {
+      expect(SolverType.ANALYTICAL).toBeDefined();
+      expect(SolverType.ANALYTICAL).toBe("analytical");
+    });
+
+    it("should have exactly 3 solver types", () => {
       const solverTypes = Object.values(SolverType);
-      expect(solverTypes.length).toBe(2);
+      expect(solverTypes.length).toBe(3);
     });
 
     it("should have unique string values", () => {
@@ -44,6 +49,10 @@ describe("SolverType", () => {
       expect(SolverTypeName[SolverType.ADAPTIVE_RK45]).toBeDefined();
     });
 
+    it("should have name for ANALYTICAL", () => {
+      expect(SolverTypeName[SolverType.ANALYTICAL]).toBeDefined();
+    });
+
     it("should have names for all solver types", () => {
       Object.values(SolverType).forEach((solverType) => {
         expect(SolverTypeName[solverType]).toBeDefined();
@@ -60,6 +69,12 @@ describe("SolverType", () => {
 
     it("should return ReadOnlyProperty for Adaptive RK45 name", () => {
       const nameProp = SolverTypeName[SolverType.ADAPTIVE_RK45];
+      expect(nameProp.value).toBeDefined();
+      expect(typeof nameProp.value).toBe("string");
+    });
+
+    it("should return ReadOnlyProperty for Analytical name", () => {
+      const nameProp = SolverTypeName[SolverType.ANALYTICAL];
       expect(nameProp.value).toBeDefined();
       expect(typeof nameProp.value).toBe("string");
     });
@@ -89,6 +104,10 @@ describe("SolverType", () => {
       expect(SolverTypeDescription[SolverType.ADAPTIVE_RK45]).toBeDefined();
     });
 
+    it("should have description for ANALYTICAL", () => {
+      expect(SolverTypeDescription[SolverType.ANALYTICAL]).toBeDefined();
+    });
+
     it("should have descriptions for all solver types", () => {
       Object.values(SolverType).forEach((solverType) => {
         expect(SolverTypeDescription[solverType]).toBeDefined();
@@ -105,6 +124,12 @@ describe("SolverType", () => {
 
     it("should return ReadOnlyProperty for Adaptive RK45 description", () => {
       const descProp = SolverTypeDescription[SolverType.ADAPTIVE_RK45];
+      expect(descProp.value).toBeDefined();
+      expect(typeof descProp.value).toBe("string");
+    });
+
+    it("should return ReadOnlyProperty for Analytical description", () => {
+      const descProp = SolverTypeDescription[SolverType.ANALYTICAL];
       expect(descProp.value).toBeDefined();
       expect(typeof descProp.value).toBe("string");
     });
@@ -141,6 +166,8 @@ describe("SolverType", () => {
             return "Fixed-step fourth-order Runge-Kutta";
           case SolverType.ADAPTIVE_RK45:
             return "Adaptive Dormand-Prince RK4/5";
+          case SolverType.ANALYTICAL:
+            return "Exact closed-form solution";
           default:
             return "Unknown";
         }
@@ -152,16 +179,19 @@ describe("SolverType", () => {
       expect(getSolverDescription(SolverType.ADAPTIVE_RK45)).toContain(
         "Dormand-Prince",
       );
+      expect(getSolverDescription(SolverType.ANALYTICAL)).toContain("Exact");
     });
 
     it("should be usable as object keys", () => {
       const solverConfigs: Record<SolverType, { adaptive: boolean }> = {
         [SolverType.RUNGE_KUTTA_4]: { adaptive: false },
         [SolverType.ADAPTIVE_RK45]: { adaptive: true },
+        [SolverType.ANALYTICAL]: { adaptive: false },
       };
 
       expect(solverConfigs[SolverType.RUNGE_KUTTA_4].adaptive).toBe(false);
       expect(solverConfigs[SolverType.ADAPTIVE_RK45].adaptive).toBe(true);
+      expect(solverConfigs[SolverType.ANALYTICAL].adaptive).toBe(false);
     });
 
     it("should be comparable with strict equality", () => {

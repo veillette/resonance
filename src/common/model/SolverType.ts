@@ -7,6 +7,7 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 export enum SolverType {
   RUNGE_KUTTA_4 = "rk4",
   ADAPTIVE_RK45 = "adaptiveRK45",
+  ANALYTICAL = "analytical",
 }
 
 /**
@@ -17,6 +18,8 @@ export const SolverTypeName: Record<SolverType, ReadOnlyProperty<string>> = {
     ResonanceStrings.common.solverNames.solverRK4StringProperty,
   [SolverType.ADAPTIVE_RK45]:
     ResonanceStrings.common.solverNames.solverAdaptiveRK45StringProperty,
+  [SolverType.ANALYTICAL]:
+    ResonanceStrings.common.solverNames.solverAnalyticalStringProperty,
 };
 
 /**
@@ -30,4 +33,6 @@ export const SolverTypeDescription: Record<
     ResonanceStrings.preferences.solvers.rk4DescriptionStringProperty,
   [SolverType.ADAPTIVE_RK45]:
     ResonanceStrings.preferences.solvers.adaptiveRK45DescriptionStringProperty,
+  [SolverType.ANALYTICAL]:
+    ResonanceStrings.preferences.solvers.analyticalDescriptionStringProperty,
 };

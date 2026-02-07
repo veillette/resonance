@@ -39,10 +39,13 @@ export const ResonanceStrings = {
       rk4StringProperty: simulationPrefs.solverRK4StringProperty,
       adaptiveRK45StringProperty:
         simulationPrefs.solverAdaptiveRK45StringProperty,
+      analyticalStringProperty: simulationPrefs.solverAnalyticalStringProperty,
       rk4DescriptionStringProperty:
         simulationPrefs.solverRK4DescriptionStringProperty,
       adaptiveRK45DescriptionStringProperty:
         simulationPrefs.solverAdaptiveRK45DescriptionStringProperty,
+      analyticalDescriptionStringProperty:
+        simulationPrefs.solverAnalyticalDescriptionStringProperty,
     },
   },
 
@@ -62,6 +65,8 @@ export const ResonanceStrings = {
       solverRK4StringProperty: strings.resonance.common.solverRK4StringProperty,
       solverAdaptiveRK45StringProperty:
         strings.resonance.common.solverAdaptiveRK45StringProperty,
+      solverAnalyticalStringProperty:
+        strings.resonance.common.solverAnalyticalStringProperty,
     },
   },
 

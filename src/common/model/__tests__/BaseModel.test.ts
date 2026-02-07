@@ -10,6 +10,7 @@ import { BaseModel, TimeSpeed } from "../BaseModel.js";
 import { SolverType } from "../SolverType.js";
 import { RungeKuttaSolver } from "../RungeKuttaSolver.js";
 import { AdaptiveRK45Solver } from "../AdaptiveRK45Solver.js";
+import { AnalyticalSolver } from "../AnalyticalSolver.js";
 
 /**
  * Concrete implementation of BaseModel for testing
@@ -199,6 +200,10 @@ describe("BaseModel", () => {
         expect(model.getSolver()).toBeInstanceOf(AdaptiveRK45Solver);
       });
 
+      it("should create AnalyticalSolver for ANALYTICAL", () => {
+        solverTypeProperty.value = SolverType.ANALYTICAL;
+        expect(model.getSolver()).toBeInstanceOf(AnalyticalSolver);
+      });
     });
 
     describe("solver switching", () => {

@@ -90,6 +90,8 @@
         "solverRK4Description": "Méthode classique à pas fixe avec bonne précision et stabilité. Meilleure pour la plupart des simulations.",
         "solverAdaptiveRK45": "RK45 Adaptatif",
         "solverAdaptiveRK45Description": "Méthode à taille de pas variable qui ajuste automatiquement la précision. Meilleure pour les exigences de haute précision.",
+        "solverAnalytical": "Analytique (Exact)",
+        "solverAnalyticalDescription": "Utilise des solutions mathématiques exactes. Parfaitement stable et gère les changements de paramètres en recalculant les conditions initiales.",
         "odeSolver": "Solveur EDO",
         "renderer": "Rendu",
         "rendererDescription": "Choisissez la méthode de rendu pour la visualisation des particules.",
@@ -173,7 +175,8 @@
     },
     "common": {
       "solverRK4": "Runge-Kutta de 4ème Ordre",
-      "solverAdaptiveRK45": "RK45 Adaptatif"
+      "solverAdaptiveRK45": "RK45 Adaptatif",
+      "solverAnalytical": "Analytique (Exact)"
     },
     "chladni": {
       "material": "Matériau",

@@ -175,6 +175,34 @@ onReadyToLaunch(() => {
                       }),
                     tandemName: "adaptiveRK45RadioButton",
                   },
+                  {
+                    value: SolverType.ANALYTICAL,
+                    createNode: () =>
+                      new VBox({
+                        align: "left",
+                        spacing: 4,
+                        children: [
+                          new Text(
+                            ResonanceStrings.preferences.solvers
+                              .analyticalStringProperty,
+                            {
+                              font: new PhetFont(14),
+                              fill: ResonanceColors.preferencesTextProperty,
+                            },
+                          ),
+                          new Text(
+                            ResonanceStrings.preferences.solvers
+                              .analyticalDescriptionStringProperty,
+                            {
+                              font: new PhetFont(11),
+                              fill: ResonanceColors.preferencesTextSecondaryProperty,
+                              maxWidth: 500,
+                            },
+                          ),
+                        ],
+                      }),
+                    tandemName: "analyticalRadioButton",
+                  },
                 ],
                 {
                   spacing: 10,

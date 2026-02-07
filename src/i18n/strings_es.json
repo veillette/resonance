@@ -90,6 +90,8 @@
         "solverRK4Description": "Método clásico de paso fijo con buena precisión y estabilidad. Mejor para la mayoría de las simulaciones.",
         "solverAdaptiveRK45": "RK45 Adaptativo",
         "solverAdaptiveRK45Description": "Método de tamaño de paso variable que ajusta automáticamente la precisión. Mejor para requisitos de alta precisión.",
+        "solverAnalytical": "Analítico (Exacto)",
+        "solverAnalyticalDescription": "Utiliza soluciones matemáticas exactas. Perfectamente estable y maneja cambios de parámetros recalculando las condiciones iniciales.",
         "odeSolver": "Solucionador ODE",
         "renderer": "Renderizador",
         "rendererDescription": "Elija el método de renderizado para la visualización de partículas.",
@@ -180,7 +182,8 @@
     },
     "common": {
       "solverRK4": "Runge-Kutta de 4º Orden",
-      "solverAdaptiveRK45": "RK45 Adaptativo"
+      "solverAdaptiveRK45": "RK45 Adaptativo",
+      "solverAnalytical": "Analítico (Exacto)"
     },
     "chladni": {
       "material": "Material",
