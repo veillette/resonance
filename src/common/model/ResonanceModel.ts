@@ -81,6 +81,7 @@ export class ResonanceModel extends BaseModel {
   // Additional energy
   public readonly gravitationalPotentialEnergyProperty: TReadOnlyProperty<number>; // J (m*g*x)
   public readonly dampingPowerProperty: TReadOnlyProperty<number>; // W (-b*v², power dissipated)
+  public readonly drivingPowerProperty: TReadOnlyProperty<number>; // W (F_drive*v, power input from driver)
 
   // Driver and dimensionless ratios
   public readonly driverPositionProperty: TReadOnlyProperty<number>; // m (A*sin(phase))
@@ -237,6 +238,12 @@ export class ResonanceModel extends BaseModel {
     this.dampingPowerProperty = new DerivedProperty(
       [this.dampingProperty, this.velocityProperty],
       (b: number, v: number) => -b * v * v,
+    );
+
+    // Compute power injected by the driving force: P_drive = F_drive * v
+    this.drivingPowerProperty = new DerivedProperty(
+      [this.appliedForceProperty, this.velocityProperty],
+      (F: number, v: number) => F * v,
     );
 
     // Compute driver plate position: x_driver = A * sin(phase)

@@ -126,7 +126,7 @@ describe("BaseModel", () => {
         expect(model.timeProperty.value).toBeCloseTo(initialTime + 0.1, 5);
       });
 
-      it("should step at slow speed with multiplier 0.5", () => {
+      it("should step at slow speed with multiplier 0.1", () => {
         model.position = 1;
         model.velocity = 0;
         model.timeSpeedProperty.value = "slow";
@@ -134,8 +134,8 @@ describe("BaseModel", () => {
         const initialTime = model.timeProperty.value;
         model.step(0.1);
 
-        // Slow speed: dt * 0.5 = 0.05
-        expect(model.timeProperty.value).toBeCloseTo(initialTime + 0.05, 5);
+        // Slow speed: dt * 0.1 = 0.01
+        expect(model.timeProperty.value).toBeCloseTo(initialTime + 0.01, 5);
       });
 
       it("should step at fast speed with multiplier 2.0", () => {
@@ -350,7 +350,7 @@ describe("BaseModel", () => {
   describe("all TimeSpeed values", () => {
     const speeds: TimeSpeed[] = ["slow", "normal", "fast"];
     const multipliers: Record<TimeSpeed, number> = {
-      slow: 0.5,
+      slow: 0.1,
       normal: 1.0,
       fast: 2.0,
     };

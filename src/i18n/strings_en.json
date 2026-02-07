@@ -51,6 +51,7 @@
       "dampingForce": "Damping Force",
       "netForce": "Net Force",
       "dampingPower": "Damping Power",
+      "drivingPower": "Driving Power",
       "driverPosition": "Driver Position",
       "frequencyRatio": "Frequency Ratio (\u03c9/\u03c9\u2080)",
       "amplitudeRatio": "Magnification Factor",

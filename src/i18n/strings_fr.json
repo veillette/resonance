@@ -51,6 +51,7 @@
       "dampingForce": "Force d'Amortissement",
       "netForce": "Force Nette",
       "dampingPower": "Puissance d'Amortissement",
+      "drivingPower": "Puissance d'Excitation",
       "driverPosition": "Position de l'Excitateur",
       "frequencyRatio": "Rapport de Fréquence (\u03c9/\u03c9\u2080)",
       "amplitudeRatio": "Facteur d'Amplification",

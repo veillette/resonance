@@ -90,6 +90,11 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         property: resonanceModel.dampingPowerProperty,
         unit: "W",
       },
+      {
+        name: ResonanceStrings.controls.drivingPowerStringProperty,
+        property: resonanceModel.drivingPowerProperty,
+        unit: "W",
+      },
       // Driver and dimensionless ratios
       {
         name: ResonanceStrings.controls.driverPositionStringProperty,
