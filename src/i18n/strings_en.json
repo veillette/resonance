@@ -90,10 +90,6 @@
         "solverRK4Description": "Classic fixed-step method with good accuracy and stability. Best for most simulations.",
         "solverAdaptiveRK45": "Adaptive RK45",
         "solverAdaptiveRK45Description": "Variable step size method that automatically adjusts precision. Best for high accuracy requirements.",
-        "solverAdaptiveEuler": "Adaptive Euler",
-        "solverAdaptiveEulerDescription": "Simple adaptive method with variable step size. Good for testing and debugging.",
-        "solverModifiedMidpoint": "Modified Midpoint",
-        "solverModifiedMidpointDescription": "Fixed-step method with improved stability. Good alternative to RK4.",
         "odeSolver": "ODE Solver",
         "renderer": "Renderer",
         "rendererDescription": "Choose the rendering method for particle visualization.",
@@ -184,9 +180,7 @@
     },
     "common": {
       "solverRK4": "Runge-Kutta 4th Order",
-      "solverAdaptiveRK45": "Adaptive RK45",
-      "solverAdaptiveEuler": "Adaptive Euler",
-      "solverModifiedMidpoint": "Modified Midpoint"
+      "solverAdaptiveRK45": "Adaptive RK45"
     },
     "chladni": {
       "material": "Material",

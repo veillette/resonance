@@ -118,7 +118,7 @@ describe("ResonancePreferencesModel", () => {
       model.showEnergyProperty.value = false;
       model.showVectorsProperty.value = true;
       model.showPhaseProperty.value = false;
-      model.solverTypeProperty.value = SolverType.MODIFIED_MIDPOINT;
+      model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
       const saved = JSON.parse(
         mockStorage["resonance-preferences"]!,
@@ -127,7 +127,7 @@ describe("ResonancePreferencesModel", () => {
         showEnergy: false,
         showVectors: true,
         showPhase: false,
-        solverType: SolverType.MODIFIED_MIDPOINT,
+        solverType: SolverType.ADAPTIVE_RK45,
         showModalControls: false, // Default value
         rendererType: "canvas", // Default renderer type
       });
@@ -178,11 +178,11 @@ describe("ResonancePreferencesModel", () => {
 
     it("should load solverType from localStorage", () => {
       mockStorage["resonance-preferences"] = JSON.stringify({
-        solverType: SolverType.ADAPTIVE_EULER,
+        solverType: SolverType.ADAPTIVE_RK45,
       });
 
       const model = new ResonancePreferencesModel();
-      expect(model.solverTypeProperty.value).toBe(SolverType.ADAPTIVE_EULER);
+      expect(model.solverTypeProperty.value).toBe(SolverType.ADAPTIVE_RK45);
     });
 
     it("should load all saved preferences", () => {
@@ -190,7 +190,7 @@ describe("ResonancePreferencesModel", () => {
         showEnergy: false,
         showVectors: true,
         showPhase: false,
-        solverType: SolverType.MODIFIED_MIDPOINT,
+        solverType: SolverType.ADAPTIVE_RK45,
       });
 
       const model = new ResonancePreferencesModel();
@@ -198,7 +198,7 @@ describe("ResonancePreferencesModel", () => {
       expect(model.showEnergyProperty.value).toBe(false);
       expect(model.showVectorsProperty.value).toBe(true);
       expect(model.showPhaseProperty.value).toBe(false);
-      expect(model.solverTypeProperty.value).toBe(SolverType.MODIFIED_MIDPOINT);
+      expect(model.solverTypeProperty.value).toBe(SolverType.ADAPTIVE_RK45);
     });
 
     it("should call localStorage.getItem when loading", () => {
@@ -289,7 +289,7 @@ describe("ResonancePreferencesModel", () => {
       model.showEnergyProperty.value = false;
       model.showVectorsProperty.value = true;
       model.showPhaseProperty.value = false;
-      model.solverTypeProperty.value = SolverType.MODIFIED_MIDPOINT;
+      model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
       model.reset();
 

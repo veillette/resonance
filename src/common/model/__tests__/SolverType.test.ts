@@ -23,19 +23,9 @@ describe("SolverType", () => {
       expect(SolverType.ADAPTIVE_RK45).toBe("adaptiveRK45");
     });
 
-    it("should have ADAPTIVE_EULER type", () => {
-      expect(SolverType.ADAPTIVE_EULER).toBeDefined();
-      expect(SolverType.ADAPTIVE_EULER).toBe("adaptiveEuler");
-    });
-
-    it("should have MODIFIED_MIDPOINT type", () => {
-      expect(SolverType.MODIFIED_MIDPOINT).toBeDefined();
-      expect(SolverType.MODIFIED_MIDPOINT).toBe("modifiedMidpoint");
-    });
-
-    it("should have exactly 4 solver types", () => {
+    it("should have exactly 2 solver types", () => {
       const solverTypes = Object.values(SolverType);
-      expect(solverTypes.length).toBe(4);
+      expect(solverTypes.length).toBe(2);
     });
 
     it("should have unique string values", () => {
@@ -54,14 +44,6 @@ describe("SolverType", () => {
       expect(SolverTypeName[SolverType.ADAPTIVE_RK45]).toBeDefined();
     });
 
-    it("should have name for ADAPTIVE_EULER", () => {
-      expect(SolverTypeName[SolverType.ADAPTIVE_EULER]).toBeDefined();
-    });
-
-    it("should have name for MODIFIED_MIDPOINT", () => {
-      expect(SolverTypeName[SolverType.MODIFIED_MIDPOINT]).toBeDefined();
-    });
-
     it("should have names for all solver types", () => {
       Object.values(SolverType).forEach((solverType) => {
         expect(SolverTypeName[solverType]).toBeDefined();
@@ -78,18 +60,6 @@ describe("SolverType", () => {
 
     it("should return ReadOnlyProperty for Adaptive RK45 name", () => {
       const nameProp = SolverTypeName[SolverType.ADAPTIVE_RK45];
-      expect(nameProp.value).toBeDefined();
-      expect(typeof nameProp.value).toBe("string");
-    });
-
-    it("should return ReadOnlyProperty for Adaptive Euler name", () => {
-      const nameProp = SolverTypeName[SolverType.ADAPTIVE_EULER];
-      expect(nameProp.value).toBeDefined();
-      expect(typeof nameProp.value).toBe("string");
-    });
-
-    it("should return ReadOnlyProperty for Modified Midpoint name", () => {
-      const nameProp = SolverTypeName[SolverType.MODIFIED_MIDPOINT];
       expect(nameProp.value).toBeDefined();
       expect(typeof nameProp.value).toBe("string");
     });
@@ -119,14 +89,6 @@ describe("SolverType", () => {
       expect(SolverTypeDescription[SolverType.ADAPTIVE_RK45]).toBeDefined();
     });
 
-    it("should have description for ADAPTIVE_EULER", () => {
-      expect(SolverTypeDescription[SolverType.ADAPTIVE_EULER]).toBeDefined();
-    });
-
-    it("should have description for MODIFIED_MIDPOINT", () => {
-      expect(SolverTypeDescription[SolverType.MODIFIED_MIDPOINT]).toBeDefined();
-    });
-
     it("should have descriptions for all solver types", () => {
       Object.values(SolverType).forEach((solverType) => {
         expect(SolverTypeDescription[solverType]).toBeDefined();
@@ -143,18 +105,6 @@ describe("SolverType", () => {
 
     it("should return ReadOnlyProperty for Adaptive RK45 description", () => {
       const descProp = SolverTypeDescription[SolverType.ADAPTIVE_RK45];
-      expect(descProp.value).toBeDefined();
-      expect(typeof descProp.value).toBe("string");
-    });
-
-    it("should return ReadOnlyProperty for Adaptive Euler description", () => {
-      const descProp = SolverTypeDescription[SolverType.ADAPTIVE_EULER];
-      expect(descProp.value).toBeDefined();
-      expect(typeof descProp.value).toBe("string");
-    });
-
-    it("should return ReadOnlyProperty for Modified Midpoint description", () => {
-      const descProp = SolverTypeDescription[SolverType.MODIFIED_MIDPOINT];
       expect(descProp.value).toBeDefined();
       expect(typeof descProp.value).toBe("string");
     });
@@ -191,10 +141,6 @@ describe("SolverType", () => {
             return "Fixed-step fourth-order Runge-Kutta";
           case SolverType.ADAPTIVE_RK45:
             return "Adaptive Dormand-Prince RK4/5";
-          case SolverType.ADAPTIVE_EULER:
-            return "Adaptive Euler with error estimation";
-          case SolverType.MODIFIED_MIDPOINT:
-            return "Modified midpoint (leapfrog)";
           default:
             return "Unknown";
         }
@@ -212,8 +158,6 @@ describe("SolverType", () => {
       const solverConfigs: Record<SolverType, { adaptive: boolean }> = {
         [SolverType.RUNGE_KUTTA_4]: { adaptive: false },
         [SolverType.ADAPTIVE_RK45]: { adaptive: true },
-        [SolverType.ADAPTIVE_EULER]: { adaptive: true },
-        [SolverType.MODIFIED_MIDPOINT]: { adaptive: false },
       };
 
       expect(solverConfigs[SolverType.RUNGE_KUTTA_4].adaptive).toBe(false);
