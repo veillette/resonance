@@ -68,6 +68,11 @@ export class ResonanceModel extends BaseModel {
   public readonly accelerationAmplitudeProperty: TReadOnlyProperty<number>; // m/s²
   public readonly forceAmplitudeProperty: TReadOnlyProperty<number>; // N (driving force amplitude)
 
+  // Instantaneous dynamic quantities
+  public readonly accelerationProperty: TReadOnlyProperty<number>; // m/s² (instantaneous)
+  public readonly appliedForceProperty: TReadOnlyProperty<number>; // N (instantaneous driving force)
+  public readonly springPotentialEnergyProperty: TReadOnlyProperty<number>; // J (½kx², without gravity)
+
   // Phase relationships (radians, relative to driving force)
   public readonly displacementPhaseProperty: TReadOnlyProperty<number>; // same as phaseAngleProperty
   public readonly velocityPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π/2
@@ -139,6 +144,55 @@ export class ResonanceModel extends BaseModel {
     this.totalEnergyProperty = new DerivedProperty(
       [this.kineticEnergyProperty, this.potentialEnergyProperty],
       (ke: number, pe: number) => ke + pe,
+    );
+
+    // Compute instantaneous acceleration: a = (-k*x - b*v - m*g + F_drive) / m
+    this.accelerationProperty = new DerivedProperty(
+      [
+        this.springConstantProperty,
+        this.positionProperty,
+        this.dampingProperty,
+        this.velocityProperty,
+        this.massProperty,
+        this.gravityProperty,
+        this.drivingAmplitudeProperty,
+        this.drivingPhaseProperty,
+        this.drivingEnabledProperty,
+      ],
+      (
+        k: number,
+        x: number,
+        b: number,
+        v: number,
+        m: number,
+        g: number,
+        A: number,
+        phase: number,
+        enabled: boolean,
+      ) => {
+        const F_drive = enabled ? k * A * Math.sin(phase) : 0;
+        return (-k * x - b * v - m * g + F_drive) / m;
+      },
+    );
+
+    // Compute instantaneous applied (driving) force: F = k * A * sin(phase)
+    this.appliedForceProperty = new DerivedProperty(
+      [
+        this.springConstantProperty,
+        this.drivingAmplitudeProperty,
+        this.drivingPhaseProperty,
+        this.drivingEnabledProperty,
+      ],
+      (k: number, A: number, phase: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return k * A * Math.sin(phase);
+      },
+    );
+
+    // Compute spring potential energy only (without gravity): PE_spring = ½kx²
+    this.springPotentialEnergyProperty = new DerivedProperty(
+      [this.springConstantProperty, this.positionProperty],
+      (k: number, x: number) => 0.5 * k * x * x,
     );
 
     // Compute phase angle between displacement and driving force
