@@ -82,6 +82,8 @@ export class ResonanceModel extends BaseModel {
   public readonly gravitationalPotentialEnergyProperty: TReadOnlyProperty<number>; // J (m*g*x)
   public readonly dampingPowerProperty: TReadOnlyProperty<number>; // W (-b*v², power dissipated)
   public readonly drivingPowerProperty: TReadOnlyProperty<number>; // W (F_drive*v, power input from driver)
+  public readonly springPowerProperty: TReadOnlyProperty<number>; // W (-kxv, spring energy exchange rate)
+  public readonly gravitationalPowerProperty: TReadOnlyProperty<number>; // W (-mgv, gravitational energy exchange rate)
 
   // Driver and dimensionless ratios
   public readonly driverPositionProperty: TReadOnlyProperty<number>; // m (A*sin(phase))
@@ -244,6 +246,20 @@ export class ResonanceModel extends BaseModel {
     this.drivingPowerProperty = new DerivedProperty(
       [this.appliedForceProperty, this.velocityProperty],
       (F: number, v: number) => F * v,
+    );
+
+    // Compute spring power: P_spring = F_spring * v = -k * x * v
+    // Positive when spring releases energy (restoring toward equilibrium), negative when storing
+    this.springPowerProperty = new DerivedProperty(
+      [this.springForceProperty, this.velocityProperty],
+      (F: number, v: number) => F * v,
+    );
+
+    // Compute gravitational power: P_grav = F_grav * v = -m * g * v
+    // Rate of energy exchange with gravitational field (zero when gravity is off)
+    this.gravitationalPowerProperty = new DerivedProperty(
+      [this.massProperty, this.gravityProperty, this.velocityProperty],
+      (m: number, g: number, v: number) => -m * g * v,
     );
 
     // Compute driver plate position: x_driver = A * sin(phase)
