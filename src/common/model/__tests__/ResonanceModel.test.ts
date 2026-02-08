@@ -801,14 +801,41 @@ describe("ResonanceModel", () => {
   });
 
   describe("steady-state average energy", () => {
-    it("should calculate E_avg = 0.5 * k * X0^2 when driving", () => {
+    it("should calculate E_avg = 0.25*(m*omega^2 + k)*X0^2 when driving", () => {
       model.drivingEnabledProperty.value = true;
       model.drivingFrequencyProperty.value = 2.0;
+      const m = model.massProperty.value;
       const k = model.springConstantProperty.value;
+      const omega = 2.0 * 2 * Math.PI;
       const X0 = model.displacementAmplitudeProperty.value;
-      const expected = 0.5 * k * X0 * X0;
+      const expected = 0.25 * (m * omega * omega + k) * X0 * X0;
       expect(model.steadyStateAverageEnergyProperty.value).toBeCloseTo(
         expected,
+        10,
+      );
+    });
+
+    it("should equal 0.5*k*X0^2 at resonance (where KE equals PE)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      // At resonance mω² = k, so ¼(mω² + k)X₀² = ¼(2k)X₀² = ½kX₀²
+      const k = model.springConstantProperty.value;
+      const X0 = model.displacementAmplitudeProperty.value;
+      expect(model.steadyStateAverageEnergyProperty.value).toBeCloseTo(
+        0.5 * k * X0 * X0,
+        5,
+      );
+    });
+
+    it("should equal sum of KE and PE components", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const ke = model.steadyStateKineticEnergyProperty.value;
+      const pe = model.steadyStatePotentialEnergyProperty.value;
+      expect(model.steadyStateAverageEnergyProperty.value).toBeCloseTo(
+        ke + pe,
         10,
       );
     });
@@ -964,6 +991,243 @@ describe("ResonanceModel", () => {
     it("should be zero when driving is disabled", () => {
       model.drivingEnabledProperty.value = false;
       expect(model.steadyStateRmsVelocityProperty.value).toBe(0);
+    });
+  });
+
+  describe("steady-state RMS acceleration", () => {
+    it("should calculate omega^2*X0/sqrt(2)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const A0 = model.accelerationAmplitudeProperty.value;
+      expect(model.steadyStateRmsAccelerationProperty.value).toBeCloseTo(
+        A0 / Math.SQRT2,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateRmsAccelerationProperty.value).toBe(0);
+    });
+
+    it("should be consistent with RMS velocity times omega", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 3.0;
+      const omega = 3.0 * 2 * Math.PI;
+      const rmsV = model.steadyStateRmsVelocityProperty.value;
+      expect(model.steadyStateRmsAccelerationProperty.value).toBeCloseTo(
+        rmsV * omega,
+        10,
+      );
+    });
+  });
+
+  describe("steady-state kinetic energy", () => {
+    it("should calculate <KE> = 0.25 * m * omega^2 * X0^2", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const m = model.massProperty.value;
+      const omega = 2.0 * 2 * Math.PI;
+      const X0 = model.displacementAmplitudeProperty.value;
+      const expected = 0.25 * m * omega * omega * X0 * X0;
+      expect(model.steadyStateKineticEnergyProperty.value).toBeCloseTo(
+        expected,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateKineticEnergyProperty.value).toBe(0);
+    });
+
+    it("should equal PE at resonance", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      // At resonance ω = ω₀, mω² = k, so ¼mω²X₀² = ¼kX₀²
+      expect(model.steadyStateKineticEnergyProperty.value).toBeCloseTo(
+        model.steadyStatePotentialEnergyProperty.value,
+        5,
+      );
+    });
+
+    it("should be greater than PE above resonance", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      // Drive well above natural frequency
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 3;
+      // Above resonance: mω² > k, so <KE> > <PE>
+      expect(model.steadyStateKineticEnergyProperty.value).toBeGreaterThan(
+        model.steadyStatePotentialEnergyProperty.value,
+      );
+    });
+
+    it("should be less than PE below resonance", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      // Drive well below natural frequency
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 0.1;
+      // Below resonance: mω² < k, so <KE> < <PE>
+      expect(model.steadyStateKineticEnergyProperty.value).toBeLessThan(
+        model.steadyStatePotentialEnergyProperty.value,
+      );
+    });
+
+    it("should equal 0.5 * m * rmsV^2", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const m = model.massProperty.value;
+      const rmsV = model.steadyStateRmsVelocityProperty.value;
+      expect(model.steadyStateKineticEnergyProperty.value).toBeCloseTo(
+        0.5 * m * rmsV * rmsV,
+        10,
+      );
+    });
+  });
+
+  describe("steady-state potential energy", () => {
+    it("should calculate <PE> = 0.25 * k * X0^2", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const k = model.springConstantProperty.value;
+      const X0 = model.displacementAmplitudeProperty.value;
+      const expected = 0.25 * k * X0 * X0;
+      expect(model.steadyStatePotentialEnergyProperty.value).toBeCloseTo(
+        expected,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStatePotentialEnergyProperty.value).toBe(0);
+    });
+
+    it("should equal 0.5 * k * rmsX^2", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const k = model.springConstantProperty.value;
+      const rmsX = model.steadyStateRmsDisplacementProperty.value;
+      expect(model.steadyStatePotentialEnergyProperty.value).toBeCloseTo(
+        0.5 * k * rmsX * rmsX,
+        10,
+      );
+    });
+  });
+
+  describe("steady-state driving power", () => {
+    it("should calculate <P_drive> = 0.5 * F0 * omega * X0 * sin(phi)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      model.drivingAmplitudeProperty.value = 0.01;
+      const F0 = model.forceAmplitudeProperty.value;
+      const omega = 2.0 * 2 * Math.PI;
+      const X0 = model.displacementAmplitudeProperty.value;
+      const phi = model.phaseAngleProperty.value;
+      const expected = 0.5 * F0 * omega * X0 * Math.sin(phi);
+      expect(model.steadyStateDrivingPowerProperty.value).toBeCloseTo(
+        expected,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateDrivingPowerProperty.value).toBe(0);
+    });
+
+    it("should equal negative of steady-state damping power (energy balance)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value = 2.0;
+      expect(model.steadyStateDrivingPowerProperty.value).toBeCloseTo(
+        -model.steadyStateDampingPowerProperty.value,
+        5,
+      );
+    });
+
+    it("should equal steady-state average power (magnitude)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value = 2.0;
+      expect(model.steadyStateDrivingPowerProperty.value).toBeCloseTo(
+        model.steadyStateAveragePowerProperty.value,
+        5,
+      );
+    });
+
+    it("should be maximized near resonance", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      const atResonance = model.steadyStateDrivingPowerProperty.value;
+
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 3;
+      const offResonance = model.steadyStateDrivingPowerProperty.value;
+
+      expect(atResonance).toBeGreaterThan(offResonance);
+    });
+  });
+
+  describe("steady-state damping power", () => {
+    it("should calculate <P_damp> = -0.5 * b * omega^2 * X0^2", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const b = model.dampingProperty.value;
+      const omega = 2.0 * 2 * Math.PI;
+      const X0 = model.displacementAmplitudeProperty.value;
+      const expected = -0.5 * b * omega * omega * X0 * X0;
+      expect(model.steadyStateDampingPowerProperty.value).toBeCloseTo(
+        expected,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateDampingPowerProperty.value).toBe(0);
+    });
+
+    it("should always be non-positive", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+
+      // Test at various frequencies
+      for (const freq of [0.5, 1.0, 2.0, 4.0]) {
+        model.drivingFrequencyProperty.value = freq;
+        expect(model.steadyStateDampingPowerProperty.value).toBeLessThanOrEqual(
+          0,
+        );
+      }
+    });
+
+    it("should be negative of steady-state average power", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value = 2.0;
+      expect(model.steadyStateDampingPowerProperty.value).toBeCloseTo(
+        -model.steadyStateAveragePowerProperty.value,
+        10,
+      );
+    });
+
+    it("should equal -b * rmsV^2 (in terms of RMS velocity)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const b = model.dampingProperty.value;
+      const rmsV = model.steadyStateRmsVelocityProperty.value;
+      // <-bv²> = -b<v²> = -b(V_rms)²
+      expect(model.steadyStateDampingPowerProperty.value).toBeCloseTo(
+        -b * rmsV * rmsV,
+        10,
+      );
     });
   });
 });

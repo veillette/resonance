@@ -121,6 +121,15 @@ export class ResonanceModel extends BaseModel {
   public readonly peakDisplacementAmplitudeProperty: TReadOnlyProperty<number>; // X₀ at f_peak (m)
   public readonly steadyStateRmsDisplacementProperty: TReadOnlyProperty<number>; // X₀/√2 (m)
   public readonly steadyStateRmsVelocityProperty: TReadOnlyProperty<number>; // ωX₀/√2 (m/s)
+  public readonly steadyStateRmsAccelerationProperty: TReadOnlyProperty<number>; // ω²X₀/√2 (m/s²)
+
+  // Steady-state time-averaged energy counterparts (analytical parallels to instantaneous properties)
+  public readonly steadyStateKineticEnergyProperty: TReadOnlyProperty<number>; // <KE> = ¼mω²X₀² (J)
+  public readonly steadyStatePotentialEnergyProperty: TReadOnlyProperty<number>; // <PE_spring> = ¼kX₀² (J)
+
+  // Steady-state time-averaged power counterparts (analytical parallels to instantaneous properties)
+  public readonly steadyStateDrivingPowerProperty: TReadOnlyProperty<number>; // <P_drive> = ½F₀ωX₀sin(φ) (W)
+  public readonly steadyStateDampingPowerProperty: TReadOnlyProperty<number>; // <P_damp> = -½bω²X₀² (W, non-positive)
 
   public constructor(preferencesModel: {
     solverTypeProperty: Property<SolverType>;
@@ -565,18 +574,22 @@ export class ResonanceModel extends BaseModel {
       },
     );
 
-    // Steady-state average total energy: E_avg = ½kX₀²
+    // Steady-state average total energy: E_avg = ¼(mω² + k)X₀²
     // Time-averaged energy stored in the oscillator (kinetic + potential)
-    // For a sinusoidal steady state, <KE> = <PE> = ¼kX₀², so total = ½kX₀²
+    // <KE> = ¼mω²X₀², <PE_spring> = ¼kX₀², total = ¼(mω² + k)X₀²
+    // Note: <KE> = <PE> only at resonance (ω = ω₀). Off-resonance they differ.
     this.steadyStateAverageEnergyProperty = new DerivedProperty(
       [
+        this.massProperty,
         this.springConstantProperty,
+        this.drivingFrequencyProperty,
         this.displacementAmplitudeProperty,
         this.drivingEnabledProperty,
       ],
-      (k: number, X0: number, enabled: boolean) => {
+      (m: number, k: number, freqHz: number, X0: number, enabled: boolean) => {
         if (!enabled) return 0;
-        return 0.5 * k * X0 * X0;
+        const omega = freqHz * 2 * Math.PI;
+        return 0.25 * (m * omega * omega + k) * X0 * X0;
       },
     );
 
@@ -626,6 +639,87 @@ export class ResonanceModel extends BaseModel {
     this.steadyStateRmsVelocityProperty = new DerivedProperty(
       [this.velocityAmplitudeProperty],
       (V0: number) => V0 / Math.SQRT2,
+    );
+
+    // Steady-state RMS acceleration: ω²X₀/√2
+    // Analytical RMS of sinusoidal steady-state acceleration
+    this.steadyStateRmsAccelerationProperty = new DerivedProperty(
+      [this.accelerationAmplitudeProperty],
+      (A0: number) => A0 / Math.SQRT2,
+    );
+
+    // ============================================
+    // Steady-state time-averaged energy and power
+    // (analytical counterparts to instantaneous numerical properties)
+    // ============================================
+
+    // Steady-state average kinetic energy: <KE> = ¼mω²X₀²
+    // For x(t) = X₀sin(ωt - φ), v(t) = ωX₀cos(ωt - φ), so <v²> = ω²X₀²/2
+    // Counterpart to instantaneous kineticEnergyProperty (½mv²)
+    this.steadyStateKineticEnergyProperty = new DerivedProperty(
+      [
+        this.massProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (m: number, freqHz: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return 0.25 * m * omega * omega * X0 * X0;
+      },
+    );
+
+    // Steady-state average spring potential energy: <PE_spring> = ¼kX₀²
+    // For x(t) = X₀sin(ωt - φ), <x²> = X₀²/2
+    // Counterpart to instantaneous springPotentialEnergyProperty (½kx²)
+    this.steadyStatePotentialEnergyProperty = new DerivedProperty(
+      [
+        this.springConstantProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (k: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return 0.25 * k * X0 * X0;
+      },
+    );
+
+    // Steady-state average driving power: <P_drive> = ½F₀ωX₀sin(φ)
+    // Time-averaged power input from the driver.
+    // In steady state this equals the time-averaged dissipation ½bω²X₀²
+    // (energy balance: all input power is dissipated by damping).
+    // Counterpart to instantaneous drivingPowerProperty (F_drive·v)
+    this.steadyStateDrivingPowerProperty = new DerivedProperty(
+      [
+        this.forceAmplitudeProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.phaseAngleProperty,
+        this.drivingEnabledProperty,
+      ],
+      (F0: number, freqHz: number, X0: number, phi: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return 0.5 * F0 * omega * X0 * Math.sin(phi);
+      },
+    );
+
+    // Steady-state average damping power: <P_damp> = -½bω²X₀²
+    // Time-averaged power removed by damping (always non-positive).
+    // Counterpart to instantaneous dampingPowerProperty (-bv²)
+    this.steadyStateDampingPowerProperty = new DerivedProperty(
+      [
+        this.dampingProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (b: number, freqHz: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return -0.5 * b * omega * omega * X0 * X0;
+      },
     );
   }
 
