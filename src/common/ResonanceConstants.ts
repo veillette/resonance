@@ -147,6 +147,15 @@ const SPEED_CONTROL_SPACING = 5;
 const SPEED_RADIO_BUTTON_RADIUS = 8;
 const PLAYBACK_BOTTOM_MARGIN = 20;
 
+// ===== TRACE MODE =====
+
+// Speed at which the grid scrolls (pixels per second in view coords)
+const TRACE_SCROLL_SPEED = 30;
+// Maximum number of points stored in the trace path
+const TRACE_MAX_POINTS = 2000;
+// Line width of the trace
+const TRACE_LINE_WIDTH = 2.5;
+
 // ===== FREQUENCY SWEEP =====
 
 // Sweep rate for oscillator screens (Hz per second)
@@ -262,6 +271,11 @@ const ResonanceConstants = {
   SPEED_CONTROL_SPACING,
   SPEED_RADIO_BUTTON_RADIUS,
   PLAYBACK_BOTTOM_MARGIN,
+
+  // Trace mode
+  TRACE_SCROLL_SPEED,
+  TRACE_MAX_POINTS,
+  TRACE_LINE_WIDTH,
 
   // Frequency sweep
   OSCILLATOR_SWEEP_RATE,
