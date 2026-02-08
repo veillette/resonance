@@ -5,6 +5,8 @@
 export { NumberControlFactory } from "./NumberControlFactory.js";
 export type { NumberControlFactoryOptions } from "./NumberControlFactory.js";
 export { KeyboardShortcutsNode } from "./KeyboardShortcutsNode.js";
+export { SweepButton } from "./SweepButton.js";
+export type { SweepButtonOptions } from "./SweepButton.js";
 
 // Oscillator screen shared components
 export { BaseOscillatorScreenView } from "./BaseOscillatorScreenView.js";
