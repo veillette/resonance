@@ -24,7 +24,7 @@
  * - PlaybackStateMachine: Animation state management
  */
 
-import { Property, NumberProperty, Multilink } from "scenerystack/axon";
+import { Property, NumberProperty, Multilink, StringUnionProperty } from "scenerystack/axon";
 import { Vector2, Range } from "scenerystack/dot";
 import { Material, MaterialType } from "./Material.js";
 import { ModalCalculator } from "./ModalCalculator.js";
@@ -50,6 +50,20 @@ import {
 export type { BoundaryMode, GrainCountOption };
 export { GRAIN_COUNT_OPTIONS };
 
+/**
+ * Valid time speed values for the Chladni simulation.
+ */
+export const ChladniTimeSpeedValues = ["slow", "normal"] as const;
+export type ChladniTimeSpeed = (typeof ChladniTimeSpeedValues)[number];
+
+/**
+ * Time speed multipliers matching the oscillator screens.
+ */
+const TIME_SPEED_MULTIPLIERS: Record<ChladniTimeSpeed, number> = {
+  slow: 0.1,
+  normal: 1.0,
+};
+
 export class ChladniModel {
   // Material selection
   public readonly materialProperty: Property<MaterialType>;
@@ -59,6 +73,9 @@ export class ChladniModel {
 
   // Full frequency range
   public readonly frequencyRange: Range;
+
+  // Time speed control (slow = 0.1x, normal = 1.0x)
+  public readonly timeSpeedProperty: StringUnionProperty<ChladniTimeSpeed>;
 
   // Excitation position (centered model coordinates)
   // This is where the plate is driven (e.g., by a speaker or vibrator)
@@ -110,6 +127,11 @@ export class ChladniModel {
     return this.sweepController.sweepCompletedEmitter;
   }
 
+  // Whether a sweep is active, including paused sweep (from playback state machine)
+  public get isSweepActiveProperty() {
+    return this.playbackStateMachine.isSweepActiveProperty;
+  }
+
   // Plate dimensions (from plate geometry)
   public get plateWidthProperty() {
     return this.plateGeometry.widthProperty;
@@ -140,6 +162,11 @@ export class ChladniModel {
     this.frequencyRange = new Range(FREQUENCY_MIN, FREQUENCY_MAX);
     this.frequencyProperty = new NumberProperty(FREQUENCY_DEFAULT, {
       range: this.frequencyRange,
+    });
+
+    // Initialize time speed
+    this.timeSpeedProperty = new StringUnionProperty<ChladniTimeSpeed>("normal", {
+      validValues: ChladniTimeSpeedValues,
     });
 
     // Initialize excitation position at center of plate
@@ -185,6 +212,11 @@ export class ChladniModel {
           this.sweepController.pauseSweep();
         }
       }
+    });
+
+    // Update sweep speed when time speed changes
+    this.timeSpeedProperty.lazyLink((speed: ChladniTimeSpeed) => {
+      this.sweepController.setSpeedFactor(TIME_SPEED_MULTIPLIERS[speed]);
     });
 
     // Create modal calculator
@@ -297,13 +329,18 @@ export class ChladniModel {
 
   /**
    * Step the simulation forward by dt seconds.
+   * The dt is scaled by the current time speed multiplier.
    */
   public step(dt: number): void {
     // Note: Frequency sweep is now handled automatically by Animation in the sweep controller.
     // The animation runs independently and notifies completion via sweepCompletedEmitter.
 
+    // Scale dt by time speed multiplier
+    const speed: ChladniTimeSpeed = this.timeSpeedProperty.value;
+    const adjustedDt = dt * TIME_SPEED_MULTIPLIERS[speed];
+
     // Delegate particle stepping to particle manager
-    this.particleManager.step(dt, (x, y) => this.psi(x, y));
+    this.particleManager.step(adjustedDt, (x, y) => this.psi(x, y));
   }
 
   /**
@@ -323,6 +360,17 @@ export class ChladniModel {
   }
 
   /**
+   * Toggle the frequency sweep: start if not sweeping, stop if sweeping.
+   */
+  public toggleSweep(): void {
+    if (this.isSweepingProperty.value) {
+      this.stopSweep();
+    } else {
+      this.startSweep();
+    }
+  }
+
+  /**
    * Reset the model to initial state.
    */
   public reset(): void {
@@ -331,11 +379,12 @@ export class ChladniModel {
     this.excitationPositionProperty.reset();
     this.grainCountProperty.reset();
     this.boundaryModeProperty.reset();
+    this.timeSpeedProperty.reset();
 
     // Reset extracted modules
     this.plateGeometry.reset();
-    this.playbackStateMachine.reset();
     this.sweepController.reset();
+    this.playbackStateMachine.reset();
 
     // Reinitialize particles
     this.particleManager.initialize();

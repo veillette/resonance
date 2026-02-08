@@ -24,6 +24,7 @@ import { utteranceQueue } from "../../common/util/utteranceQueue.js";
 import { ScreenView, ScreenViewOptions, audioManager } from "scenerystack/sim";
 import {
   DragListener,
+  HBox,
   KeyboardUtils,
   Node,
   Path,
@@ -35,6 +36,7 @@ import {
   ResetAllButton,
   PlayPauseStepButtonGroup,
 } from "scenerystack/scenery-phet";
+import { AquaRadioButtonGroup } from "scenerystack/sun";
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
@@ -397,6 +399,10 @@ export class ChladniScreenView extends ScreenView {
         this.model.isPlayingProperty.value =
           !this.model.isPlayingProperty.value;
       } else if (KeyboardUtils.isArrowKey(event)) {
+        // Block frequency adjustment during sweep
+        if (this.model.isSweepActiveProperty.value) {
+          return;
+        }
         event.preventDefault();
 
         if (KeyboardUtils.isKeyEvent(event, KeyboardUtils.KEY_LEFT_ARROW)) {
@@ -641,9 +647,41 @@ export class ChladniScreenView extends ScreenView {
   }
 
   /**
-   * Create the play/pause and step controls.
+   * Create the play/pause and step controls with speed radio buttons.
    */
   private createPlaybackControls(): Node {
+    // Speed radio buttons (slow / normal)
+    const speedButtons = [
+      {
+        value: "slow" as const,
+        createNode: () =>
+          new Text(ResonanceStrings.controls.slowStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+            fill: ResonanceColors.textProperty,
+          }),
+      },
+      {
+        value: "normal" as const,
+        createNode: () =>
+          new Text(ResonanceStrings.controls.normalStringProperty, {
+            font: ResonanceConstants.CONTROL_FONT,
+            fill: ResonanceColors.textProperty,
+          }),
+      },
+    ];
+
+    const speedControl = new AquaRadioButtonGroup(
+      this.model.timeSpeedProperty,
+      speedButtons,
+      {
+        orientation: "horizontal",
+        spacing: ResonanceConstants.SPEED_CONTROL_SPACING,
+        radioButtonOptions: {
+          radius: ResonanceConstants.SPEED_RADIO_BUTTON_RADIUS,
+        },
+      },
+    );
+
     const playPauseStepButtonGroup = new PlayPauseStepButtonGroup(
       this.model.isPlayingProperty,
       {
@@ -657,12 +695,17 @@ export class ChladniScreenView extends ScreenView {
       },
     );
 
+    const container = new HBox({
+      children: [speedControl, playPauseStepButtonGroup],
+      spacing: ResonanceConstants.PLAYBACK_CONTROLS_SPACING,
+    });
+
     // Position at the bottom center of the screen
-    playPauseStepButtonGroup.centerX = this.visualizationNode.centerX;
-    playPauseStepButtonGroup.bottom =
+    container.centerX = this.visualizationNode.centerX;
+    container.bottom =
       this.layoutBounds.maxY - ResonanceConstants.PLAYBACK_BOTTOM_MARGIN;
 
-    return playPauseStepButtonGroup;
+    return container;
   }
 
   public reset(): void {

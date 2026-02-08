@@ -80,11 +80,12 @@ export class FrequencySection extends VBox {
       trackWidth: 150,
     });
 
-    // Create sweep button (enabled only when not currently sweeping)
-    const sweepEnabledProperty = new DerivedProperty(
-      [model.isSweepingProperty],
-      (isSweeping) => !isSweeping,
+    // Disable frequency control while sweeping
+    const frequencyControlEnabledProperty = new DerivedProperty(
+      [model.isSweepActiveProperty],
+      (isSweepActive: boolean) => !isSweepActive,
     );
+    frequencyControlEnabledProperty.linkAttribute(frequencyControl, "enabled");
 
     const sweepIcon = createSweepIconNode({
       width: 30,
@@ -93,17 +94,17 @@ export class FrequencySection extends VBox {
       stroke: ResonanceColors.textProperty,
     });
 
+    // Sweep button acts as a toggle: start sweep when not sweeping, stop when sweeping
     const sweepButton = new RectangularPushButton({
       content: sweepIcon,
       listener: () => {
-        model.startSweep();
+        model.toggleSweep();
       },
       baseColor: ResonanceColors.subPanelFillProperty,
       disabledColor: new Color(90, 90, 90),
       buttonAppearanceStrategy: FlatAppearanceStrategy,
       xMargin: 8,
       yMargin: 6,
-      enabledProperty: sweepEnabledProperty,
       // Accessibility
       accessibleName:
         ResonanceStrings.chladni.a11y.controlPanel

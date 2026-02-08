@@ -210,14 +210,10 @@ export class PlaybackStateMachine {
 
   /**
    * Called when a sweep completes naturally (reaches max frequency).
-   * Transitions from sweeping to playing.
+   * Transitions to idle to stop the simulation (disable power).
    */
   public onSweepComplete(): void {
-    if (this.stateProperty.value === "sweeping") {
-      this.stateProperty.value = "playing";
-    } else if (this.stateProperty.value === "paused_sweeping") {
-      this.stateProperty.value = "idle";
-    }
+    this.stateProperty.value = "idle";
   }
 
   /**
