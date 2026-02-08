@@ -72,6 +72,10 @@ export class AnalyticalSolver extends ODESolver {
   private cumSumX2: number = 0;
   private cumSumV2: number = 0;
 
+  // --- Last state written by the solver (for external change detection) ---
+  private lastWrittenPosition: number = NaN;
+  private lastWrittenVelocity: number = NaN;
+
   // --- Precomputed analytical constants ---
   private regime: DampingRegime = DampingRegime.UNDERDAMPED;
   private omega0: number = 0;
@@ -167,6 +171,10 @@ export class AnalyticalSolver extends ODESolver {
       this.cumSumX2,
       this.cumSumV2,
     ]);
+
+    // 7. Track the state we wrote so we can detect external modifications (e.g. drag)
+    this.lastWrittenPosition = x_at_1;
+    this.lastWrittenVelocity = v_at_1;
   }
 
   /**
@@ -400,10 +408,19 @@ export class AnalyticalSolver extends ODESolver {
   }
 
   /**
-   * Check if parameters have changed since last resync.
+   * Check if parameters or state have changed since last resync.
+   * Detects both parameter changes (mass, k, etc.) and external state
+   * modifications (e.g., user dragging the mass to a new position).
    */
   private parametersChanged(model: ODEModel): boolean {
     if (!this.cachedParams) return true;
+
+    // Check if state was externally modified (e.g., by a drag interaction)
+    const state = model.getState();
+    if (state[0] !== this.lastWrittenPosition || state[1] !== this.lastWrittenVelocity) {
+      return true;
+    }
+
     const current = this.captureParams(model);
     return (
       current.mass !== this.cachedParams.mass ||
