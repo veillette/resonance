@@ -554,4 +554,416 @@ describe("ResonanceModel", () => {
       expect(maxOffResonance).toBeLessThan(maxAtResonance);
     });
   });
+
+  // ============================================
+  // Advanced analytical properties
+  // ============================================
+
+  describe("quality factor", () => {
+    it("should calculate Q = sqrt(mk)/b for default values", () => {
+      // Default: m=2.53, k=100, b=1.0 -> Q = sqrt(253)/1.0 ≈ 15.906
+      const expected = Math.sqrt(2.53 * 100) / 1.0;
+      expect(model.qualityFactorProperty.value).toBeCloseTo(expected, 5);
+    });
+
+    it("should equal 1/(2*zeta)", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2.0;
+      // zeta = 2/(2*sqrt(100)) = 0.1, Q = 1/(2*0.1) = 5
+      expect(model.qualityFactorProperty.value).toBeCloseTo(5, 5);
+      expect(model.qualityFactorProperty.value).toBeCloseTo(
+        1 / (2 * model.dampingRatioProperty.value),
+        5,
+      );
+    });
+
+    it("should be 0.5 for critically damped system", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      const criticalDamping = 2 * Math.sqrt(1.0 * 100); // = 20
+      model.dampingProperty.value = criticalDamping;
+      expect(model.qualityFactorProperty.value).toBeCloseTo(0.5, 5);
+    });
+
+    it("should return Infinity for zero damping", () => {
+      model.dampingProperty.value = 0;
+      expect(model.qualityFactorProperty.value).toBe(Infinity);
+    });
+
+    it("should increase with stiffer spring", () => {
+      model.dampingProperty.value = 1.0;
+      model.massProperty.value = 1.0;
+
+      model.springConstantProperty.value = 50;
+      const Q1 = model.qualityFactorProperty.value;
+
+      model.springConstantProperty.value = 200;
+      const Q2 = model.qualityFactorProperty.value;
+
+      expect(Q2).toBeGreaterThan(Q1);
+    });
+  });
+
+  describe("damped angular frequency", () => {
+    it("should calculate omega_d = omega_0 * sqrt(1 - zeta^2) for underdamped", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2.0; // zeta = 0.1
+      const omega0 = Math.sqrt(100);
+      const zeta = 2 / (2 * Math.sqrt(100)); // = 0.1
+      const expected = omega0 * Math.sqrt(1 - zeta * zeta);
+      expect(model.dampedAngularFrequencyProperty.value).toBeCloseTo(
+        expected,
+        5,
+      );
+    });
+
+    it("should be less than natural frequency for underdamped", () => {
+      model.dampingProperty.value = 1.0; // underdamped
+      expect(model.dampedAngularFrequencyProperty.value).toBeLessThan(
+        model.naturalFrequencyProperty.value,
+      );
+      expect(model.dampedAngularFrequencyProperty.value).toBeGreaterThan(0);
+    });
+
+    it("should return 0 for critically damped system", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2 * Math.sqrt(100); // critical damping
+      expect(model.dampedAngularFrequencyProperty.value).toBe(0);
+    });
+
+    it("should return 0 for overdamped system", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 50; // heavily overdamped
+      expect(model.dampedAngularFrequencyProperty.value).toBe(0);
+    });
+
+    it("should approach natural frequency for very light damping", () => {
+      model.dampingProperty.value = 0.001;
+      expect(model.dampedAngularFrequencyProperty.value).toBeCloseTo(
+        model.naturalFrequencyProperty.value,
+        2,
+      );
+    });
+  });
+
+  describe("damped frequency Hz", () => {
+    it("should equal omega_d / (2*pi)", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2.0;
+      const expected =
+        model.dampedAngularFrequencyProperty.value / (2 * Math.PI);
+      expect(model.dampedFrequencyHzProperty.value).toBeCloseTo(expected, 5);
+    });
+
+    it("should be 0 for overdamped system", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 50;
+      expect(model.dampedFrequencyHzProperty.value).toBe(0);
+    });
+  });
+
+  describe("logarithmic decrement", () => {
+    it("should calculate delta = 2*pi*zeta / sqrt(1 - zeta^2)", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2.0; // zeta = 0.1
+      const zeta = 0.1;
+      const expected = (2 * Math.PI * zeta) / Math.sqrt(1 - zeta * zeta);
+      expect(model.logarithmicDecrementProperty.value).toBeCloseTo(
+        expected,
+        5,
+      );
+    });
+
+    it("should return Infinity for critically damped system", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2 * Math.sqrt(100);
+      expect(model.logarithmicDecrementProperty.value).toBe(Infinity);
+    });
+
+    it("should return Infinity for overdamped system", () => {
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 50;
+      expect(model.logarithmicDecrementProperty.value).toBe(Infinity);
+    });
+
+    it("should be small for lightly damped system", () => {
+      model.dampingProperty.value = 0.01;
+      expect(model.logarithmicDecrementProperty.value).toBeGreaterThan(0);
+      expect(model.logarithmicDecrementProperty.value).toBeLessThan(0.1);
+    });
+  });
+
+  describe("decay time constant", () => {
+    it("should calculate tau = 2m/b", () => {
+      // Default: m=2.53, b=1.0 -> tau = 2*2.53/1.0 = 5.06 s
+      expect(model.decayTimeConstantProperty.value).toBeCloseTo(
+        (2 * 2.53) / 1.0,
+        5,
+      );
+    });
+
+    it("should return Infinity for zero damping", () => {
+      model.dampingProperty.value = 0;
+      expect(model.decayTimeConstantProperty.value).toBe(Infinity);
+    });
+
+    it("should decrease with higher damping", () => {
+      model.dampingProperty.value = 1.0;
+      const tau1 = model.decayTimeConstantProperty.value;
+
+      model.dampingProperty.value = 3.0;
+      const tau2 = model.decayTimeConstantProperty.value;
+
+      expect(tau2).toBeLessThan(tau1);
+    });
+
+    it("should increase with higher mass", () => {
+      model.massProperty.value = 1.0;
+      const tau1 = model.decayTimeConstantProperty.value;
+
+      model.massProperty.value = 3.0;
+      const tau2 = model.decayTimeConstantProperty.value;
+
+      expect(tau2).toBeGreaterThan(tau1);
+    });
+  });
+
+  describe("bandwidth", () => {
+    it("should calculate Δf = f₀/Q", () => {
+      const f0 = model.naturalFrequencyHzProperty.value;
+      const Q = model.qualityFactorProperty.value;
+      expect(model.bandwidthProperty.value).toBeCloseTo(f0 / Q, 5);
+    });
+
+    it("should be wider for higher damping", () => {
+      model.dampingProperty.value = 0.5;
+      const bw1 = model.bandwidthProperty.value;
+
+      model.dampingProperty.value = 2.0;
+      const bw2 = model.bandwidthProperty.value;
+
+      expect(bw2).toBeGreaterThan(bw1);
+    });
+
+    it("should equal b/(2*pi*m) which is the -3dB bandwidth", () => {
+      // Δf = f₀/Q = (ω₀/2π) / (√(mk)/b) = ω₀b/(2π√(mk)) = b√(k/m)/(2π√(mk))
+      // = b/(2πm) for any system
+      const expected =
+        model.dampingProperty.value / (2 * Math.PI * model.massProperty.value);
+      expect(model.bandwidthProperty.value).toBeCloseTo(expected, 5);
+    });
+  });
+
+  describe("steady-state average power", () => {
+    it("should calculate P_avg = 0.5 * b * omega^2 * X0^2 when driving", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const b = model.dampingProperty.value;
+      const omega = 2.0 * 2 * Math.PI;
+      const X0 = model.displacementAmplitudeProperty.value;
+      const expected = 0.5 * b * omega * omega * X0 * X0;
+      expect(model.steadyStateAveragePowerProperty.value).toBeCloseTo(
+        expected,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateAveragePowerProperty.value).toBe(0);
+    });
+
+    it("should be maximized near resonance", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+
+      // At resonance
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      const powerAtResonance = model.steadyStateAveragePowerProperty.value;
+
+      // Off resonance
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 3;
+      const powerOffResonance = model.steadyStateAveragePowerProperty.value;
+
+      expect(powerAtResonance).toBeGreaterThan(powerOffResonance);
+    });
+  });
+
+  describe("steady-state average energy", () => {
+    it("should calculate E_avg = 0.5 * k * X0^2 when driving", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const k = model.springConstantProperty.value;
+      const X0 = model.displacementAmplitudeProperty.value;
+      const expected = 0.5 * k * X0 * X0;
+      expect(model.steadyStateAverageEnergyProperty.value).toBeCloseTo(
+        expected,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateAverageEnergyProperty.value).toBe(0);
+    });
+
+    it("should satisfy P_avg = omega * E_avg / Q at resonance", () => {
+      // At resonance: P_avg = ω₀ E_avg / Q
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+
+      const P = model.steadyStateAveragePowerProperty.value;
+      const E = model.steadyStateAverageEnergyProperty.value;
+      const omega0 = model.naturalFrequencyProperty.value;
+      const Q = model.qualityFactorProperty.value;
+
+      if (E > 1e-15 && isFinite(Q)) {
+        expect(P).toBeCloseTo((omega0 * E) / Q, 5);
+      }
+    });
+  });
+
+  describe("peak response frequency", () => {
+    it("should calculate f_peak = f0 * sqrt(1 - 2*zeta^2) for low damping", () => {
+      model.drivingEnabledProperty.value = true;
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2.0; // zeta = 0.1
+      const f0 = model.naturalFrequencyHzProperty.value;
+      const zeta = model.dampingRatioProperty.value;
+      const expected = f0 * Math.sqrt(1 - 2 * zeta * zeta);
+      expect(model.peakResponseFrequencyProperty.value).toBeCloseTo(
+        expected,
+        5,
+      );
+    });
+
+    it("should be less than natural frequency", () => {
+      model.drivingEnabledProperty.value = true;
+      model.dampingProperty.value = 1.0;
+      expect(model.peakResponseFrequencyProperty.value).toBeLessThanOrEqual(
+        model.naturalFrequencyHzProperty.value,
+      );
+    });
+
+    it("should return 0 when zeta >= 1/sqrt(2)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      // zeta = 1/sqrt(2) => b = 2*sqrt(mk)/sqrt(2) = sqrt(2)*sqrt(mk)
+      const b = Math.sqrt(2) * Math.sqrt(100);
+      model.dampingProperty.value = b;
+      expect(model.peakResponseFrequencyProperty.value).toBe(0);
+    });
+
+    it("should return 0 when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.peakResponseFrequencyProperty.value).toBe(0);
+    });
+
+    it("should approach natural frequency for very light damping", () => {
+      model.drivingEnabledProperty.value = true;
+      model.dampingProperty.value = 0.001;
+      expect(model.peakResponseFrequencyProperty.value).toBeCloseTo(
+        model.naturalFrequencyHzProperty.value,
+        2,
+      );
+    });
+  });
+
+  describe("peak displacement amplitude", () => {
+    it("should equal A/(2*zeta*sqrt(1-zeta^2)) for underdamped", () => {
+      model.drivingEnabledProperty.value = true;
+      model.massProperty.value = 1.0;
+      model.springConstantProperty.value = 100.0;
+      model.dampingProperty.value = 2.0; // zeta = 0.1
+      model.drivingAmplitudeProperty.value = 0.01;
+
+      const A = 0.01;
+      const k = 100;
+      const zeta = 0.1;
+      const F0 = k * A;
+      const expected = F0 / (2 * k * zeta * Math.sqrt(1 - zeta * zeta));
+      expect(model.peakDisplacementAmplitudeProperty.value).toBeCloseTo(
+        expected,
+        5,
+      );
+    });
+
+    it("should be greater than static deflection for underdamped", () => {
+      model.drivingEnabledProperty.value = true;
+      model.dampingProperty.value = 1.0;
+      model.drivingAmplitudeProperty.value = 0.01;
+
+      // Static deflection = A (driver amplitude)
+      expect(model.peakDisplacementAmplitudeProperty.value).toBeGreaterThan(
+        model.drivingAmplitudeProperty.value,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.peakDisplacementAmplitudeProperty.value).toBe(0);
+    });
+
+    it("should increase with lower damping", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+
+      model.dampingProperty.value = 2.0;
+      const peak1 = model.peakDisplacementAmplitudeProperty.value;
+
+      model.dampingProperty.value = 0.5;
+      const peak2 = model.peakDisplacementAmplitudeProperty.value;
+
+      expect(peak2).toBeGreaterThan(peak1);
+    });
+  });
+
+  describe("steady-state RMS displacement", () => {
+    it("should calculate X0/sqrt(2)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const X0 = model.displacementAmplitudeProperty.value;
+      expect(model.steadyStateRmsDisplacementProperty.value).toBeCloseTo(
+        X0 / Math.SQRT2,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateRmsDisplacementProperty.value).toBe(0);
+    });
+  });
+
+  describe("steady-state RMS velocity", () => {
+    it("should calculate omega*X0/sqrt(2)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const V0 = model.velocityAmplitudeProperty.value;
+      expect(model.steadyStateRmsVelocityProperty.value).toBeCloseTo(
+        V0 / Math.SQRT2,
+        10,
+      );
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.steadyStateRmsVelocityProperty.value).toBe(0);
+    });
+  });
 });
