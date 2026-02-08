@@ -1,8 +1,7 @@
 /**
  * FrequencySweepController.ts
  *
- * Controls the frequency sweep functionality for the Chladni plate simulation.
- * Extracted from ChladniModel for separation of concerns.
+ * Controls the frequency sweep functionality for simulation screens.
  *
  * A frequency sweep automatically increases the frequency from minimum to maximum
  * over time, allowing users to observe how patterns change across the frequency range.
@@ -14,7 +13,6 @@
 import { BooleanProperty, NumberProperty, Emitter } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import { Animation, Easing } from "scenerystack/twixt";
-import { SWEEP_RATE } from "./ChladniConstants.js";
 
 /**
  * Options for creating a FrequencySweepController
@@ -23,9 +21,9 @@ export interface FrequencySweepControllerOptions {
   frequencyProperty: NumberProperty;
   frequencyRange: Range;
   /**
-   * Optional sweep rate in Hz per second. Defaults to ChladniConstants.SWEEP_RATE.
+   * Sweep rate in Hz per second.
    */
-  sweepRate?: number;
+  sweepRate: number;
 }
 
 /**
@@ -74,8 +72,8 @@ export class FrequencySweepController {
     // Initialize sweep state
     this.isSweepingProperty = new BooleanProperty(false);
 
-    // Base sweep rate from options or default from constants
-    this.baseSweepRate = options.sweepRate ?? SWEEP_RATE;
+    // Base sweep rate from options
+    this.baseSweepRate = options.sweepRate;
 
     // Create emitter for sweep completion
     this.sweepCompletedEmitter = new Emitter();

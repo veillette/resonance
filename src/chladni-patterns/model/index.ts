@@ -24,9 +24,9 @@ export type { PlateGeometryOptions } from "./PlateGeometry.js";
 export { ResonanceCurveCalculator } from "./ResonanceCurveCalculator.js";
 export type { ResonanceCurveCalculatorOptions } from "./ResonanceCurveCalculator.js";
 
-// Frequency sweep control
-export { FrequencySweepController } from "./FrequencySweepController.js";
-export type { FrequencySweepControllerOptions } from "./FrequencySweepController.js";
+// Frequency sweep control (re-exported from common)
+export { FrequencySweepController } from "../../common/model/FrequencySweepController.js";
+export type { FrequencySweepControllerOptions } from "../../common/model/FrequencySweepController.js";
 
 // Playback state management
 export { PlaybackStateMachine, PlaybackState } from "./PlaybackStateMachine.js";
