@@ -31,7 +31,7 @@ import { ModalCalculator } from "./ModalCalculator.js";
 import { ParticleManager } from "./ParticleManager.js";
 import { PlateGeometry } from "./PlateGeometry.js";
 import { ResonanceCurveCalculator } from "./ResonanceCurveCalculator.js";
-import { FrequencySweepController } from "./FrequencySweepController.js";
+import { FrequencySweepController } from "../../common/model/FrequencySweepController.js";
 import { PlaybackStateMachine, PlaybackState } from "./PlaybackStateMachine.js";
 import {
   BoundaryMode,
@@ -44,6 +44,7 @@ import {
   DEFAULT_EXCITATION_X,
   DEFAULT_EXCITATION_Y,
   DEFAULT_BOUNDARY_MODE,
+  SWEEP_RATE,
 } from "./ChladniConstants.js";
 
 // Re-export types for backward compatibility
@@ -196,6 +197,7 @@ export class ChladniModel {
     this.sweepController = new FrequencySweepController({
       frequencyProperty: this.frequencyProperty,
       frequencyRange: this.frequencyRange,
+      sweepRate: SWEEP_RATE,
     });
 
     // Listen for sweep completion from the Animation-based controller

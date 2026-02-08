@@ -25,7 +25,7 @@ import { ResonancePreferencesModel } from "../../preferences/ResonancePreference
 import { Property, NumberProperty } from "scenerystack/axon";
 import { TimeSpeed } from "./BaseModel.js";
 import { CircularUpdateGuard } from "../util/index.js";
-import { FrequencySweepController } from "../../chladni-patterns/model/FrequencySweepController.js";
+import { FrequencySweepController } from "./FrequencySweepController.js";
 import ResonanceConstants from "../ResonanceConstants.js";
 
 export type BaseOscillatorScreenModelOptions = {
