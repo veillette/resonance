@@ -182,6 +182,12 @@ const ResonanceColors = {
     projector: new Color(156, 39, 176),
   }),
 
+  // Trace line
+  traceLineProperty: new ProfileColorProperty(resonance, "traceLine", {
+    default: new Color(255, 220, 50), // Bright yellow for dark background
+    projector: new Color(200, 0, 0), // Red for projector mode
+  }),
+
   // Grid and axes
   gridLinesProperty: new ProfileColorProperty(resonance, "gridLines", {
     default: new Color(100, 100, 100),

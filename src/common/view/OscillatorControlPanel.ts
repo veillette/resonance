@@ -25,6 +25,7 @@ import {
   AlignBox,
   VStrut,
   voicingUtteranceQueue,
+  SceneryConstants,
 } from "scenerystack/scenery";
 import { NumberControl, GridIcon } from "scenerystack/scenery-phet";
 import {
@@ -64,6 +65,7 @@ export class OscillatorControlPanel extends Panel {
   public readonly gravityEnabledProperty: Property<boolean>;
   public readonly rulerVisibleProperty: Property<boolean>;
   public readonly gridVisibleProperty: Property<boolean>;
+  public readonly traceEnabledProperty: Property<boolean>;
 
   private readonly model: BaseOscillatorScreenModel;
   private readonly listenerTracker = new ListenerTracker();
@@ -94,6 +96,7 @@ export class OscillatorControlPanel extends Panel {
     layoutBounds: Bounds2,
     rulerVisibleProperty: Property<boolean>,
     gridVisibleProperty: Property<boolean>,
+    traceEnabledProperty: Property<boolean>,
     options?: OscillatorControlPanelOptions,
   ) {
     // Store model reference for use in methods
@@ -154,6 +157,11 @@ export class OscillatorControlPanel extends Panel {
     const gridCheckbox =
       OscillatorControlPanel.createGridCheckbox(gridVisibleProperty);
 
+    const traceCheckbox = OscillatorControlPanel.createTraceCheckbox(
+      traceEnabledProperty,
+      gridVisibleProperty,
+    );
+
     // --- Create sub-panel for mass/spring/resonator/frequency controls ---
     // Use a light blue color to contrast with the green main panel
     // In single oscillator mode, hide the resonator selection box
@@ -208,6 +216,7 @@ export class OscillatorControlPanel extends Panel {
           gravityBox,
           rulerCheckbox,
           gridCheckbox,
+          traceCheckbox,
         ]
       : [
           // Multiple oscillators mode: full controls
@@ -220,6 +229,7 @@ export class OscillatorControlPanel extends Panel {
           gravityBox,
           rulerCheckbox,
           gridCheckbox,
+          traceCheckbox,
         ];
 
     const controlPanelContent = new VBox({
@@ -251,6 +261,7 @@ export class OscillatorControlPanel extends Panel {
     this.gravityEnabledProperty = gravityEnabledProperty;
     this.rulerVisibleProperty = rulerVisibleProperty;
     this.gridVisibleProperty = gridVisibleProperty;
+    this.traceEnabledProperty = traceEnabledProperty;
     this.displayResonatorNumberProperty = displayResonatorNumberProperty;
     this.displayMassProperty = displayMassProperty;
     this.displaySpringConstantProperty = displaySpringConstantProperty;
@@ -665,6 +676,48 @@ export class OscillatorControlPanel extends Panel {
   }
 
   /**
+   * Creates the trace mode checkbox.
+   * Trace is only available when the grid is visible.
+   * When the grid is hidden, trace is automatically disabled and the checkbox is disabled.
+   */
+  private static createTraceCheckbox(
+    traceEnabledProperty: Property<boolean>,
+    gridVisibleProperty: Property<boolean>,
+  ): Checkbox {
+    const checkbox = new Checkbox(
+      traceEnabledProperty,
+      new Text(ResonanceStrings.controls.traceStringProperty, {
+        font: ResonanceConstants.CONTROL_FONT,
+        fill: ResonanceColors.textProperty,
+      }),
+      {
+        boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
+        accessibleName: "Trace",
+        voicingNameResponse: "Trace",
+        voicingHintResponse: "Toggle trace mode to record mass motion over time",
+      },
+    );
+
+    // Disable the trace checkbox when grid is not visible.
+    // When grid becomes hidden, also turn off trace.
+    gridVisibleProperty.link((gridVisible: boolean) => {
+      checkbox.enabled = gridVisible;
+      checkbox.opacity = gridVisible ? 1 : SceneryConstants.DISABLED_OPACITY;
+      if (!gridVisible) {
+        traceEnabledProperty.value = false;
+      }
+    });
+
+    // Announce trace state changes via voicing
+    traceEnabledProperty.lazyLink((enabled: boolean) => {
+      const announcement = enabled ? "Trace recording started" : "Trace recording stopped";
+      voicingUtteranceQueue.addToBack(announcement);
+    });
+
+    return checkbox;
+  }
+
+  /**
    * Sets up listeners that control visibility of UI elements based on resonator count.
    */
   private setupVisibilityListeners(): void {
@@ -817,6 +870,7 @@ export class OscillatorControlPanel extends Panel {
 
   public reset(): void {
     this.gravityEnabledProperty.reset();
+    this.traceEnabledProperty.reset();
   }
 
   public override dispose(): void {

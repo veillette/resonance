@@ -13,6 +13,7 @@
  * - Reset button
  * - Playback controls
  * - Ruler
+ * - Trace mode (strip-chart recording of mass motion)
  */
 
 import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
@@ -39,6 +40,8 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { OscillatorResonatorNodeBuilder } from "./OscillatorResonatorNodeBuilder.js";
 import { OscillatorMeasurementLinesNode } from "./OscillatorMeasurementLinesNode.js";
 import { OscillatorGridNode } from "./OscillatorGridNode.js";
+import { TraceDataModel } from "../model/TraceDataModel.js";
+import { OscillatorTraceNode } from "./OscillatorTraceNode.js";
 
 export class BaseOscillatorScreenView extends ScreenView {
   protected readonly model: BaseOscillatorScreenModel;
@@ -57,6 +60,8 @@ export class BaseOscillatorScreenView extends ScreenView {
   protected driverPlate!: Rectangle;
   protected connectionRod!: Rectangle;
   protected connectionRodMarker!: Line;
+  protected readonly traceDataModel: TraceDataModel;
+  protected readonly traceNode: OscillatorTraceNode;
 
   public constructor(
     model: BaseOscillatorScreenModel,
@@ -94,6 +99,9 @@ export class BaseOscillatorScreenView extends ScreenView {
     // Initialize grid properties
     this.gridVisibleProperty = new Property<boolean>(false);
 
+    // Initialize trace data model
+    this.traceDataModel = new TraceDataModel();
+
     // Create simulation area container
     const simulationArea = new Node();
 
@@ -125,6 +133,28 @@ export class BaseOscillatorScreenView extends ScreenView {
     );
     this.gridNode.visible = false;
     simulationArea.addChild(this.gridNode);
+
+    // ===== TRACE NODE =====
+    // The trace node contains its own scrolling grid and the trace line.
+    // It sits at the same layer as the static grid and replaces it when trace is active.
+    const gridTopModel = 0.3;
+    const gridBottomModel = -0.25;
+    const gridWidth = 550;
+
+    this.traceNode = new OscillatorTraceNode(
+      this.modelViewTransform,
+      this.traceDataModel,
+      this.layoutBounds,
+      {
+        penViewX: this.driverNode.centerX,
+        gridWidth: gridWidth,
+        gridTopModel: gridTopModel,
+        gridBottomModel: gridBottomModel,
+        gridCenterX: this.driverNode.centerX,
+      },
+    );
+    this.traceNode.visible = false;
+    simulationArea.addChild(this.traceNode);
 
     // ===== CONNECTION ROD (behind driver box) =====
     // Add the rod BEFORE the driver box so the box covers its bottom
@@ -166,6 +196,7 @@ export class BaseOscillatorScreenView extends ScreenView {
       this.layoutBounds,
       this.rulerVisibleProperty,
       this.gridVisibleProperty,
+      this.traceDataModel.traceEnabledProperty,
       { singleOscillatorMode: model.singleOscillatorMode },
     );
     this.addChild(this.controlPanel);
@@ -203,9 +234,36 @@ export class BaseOscillatorScreenView extends ScreenView {
       this.measurementLinesNode.visible = visible;
     });
 
-    // Update grid visibility from the shared property
-    this.gridVisibleProperty.link((visible: boolean) => {
-      this.gridNode.visible = visible;
+    // Update grid and trace visibility.
+    // When trace is enabled, the static grid is hidden and replaced by
+    // the scrolling trace node. When trace is disabled, the static grid
+    // is restored.
+    const updateGridTraceVisibility = () => {
+      const gridOn = this.gridVisibleProperty.value;
+      const traceOn = this.traceDataModel.traceEnabledProperty.value;
+
+      if (gridOn && traceOn) {
+        // Trace active: show trace node, hide static grid
+        this.gridNode.visible = false;
+        this.traceNode.visible = true;
+      } else if (gridOn) {
+        // Grid only: show static grid, hide trace
+        this.gridNode.visible = true;
+        this.traceNode.visible = false;
+      } else {
+        // Everything off
+        this.gridNode.visible = false;
+        this.traceNode.visible = false;
+      }
+    };
+
+    this.gridVisibleProperty.link(updateGridTraceVisibility);
+    this.traceDataModel.traceEnabledProperty.link((traceOn: boolean) => {
+      updateGridTraceVisibility();
+      // Clear old trace data when trace mode is toggled on
+      if (traceOn) {
+        this.traceNode.clear();
+      }
     });
 
     // Set up accessibility alerts
@@ -620,15 +678,35 @@ export class BaseOscillatorScreenView extends ScreenView {
     this.rulerVisibleProperty.reset();
     this.rulerPositionProperty.reset();
     this.gridVisibleProperty.reset();
+    this.traceDataModel.reset();
+    this.traceNode.reset();
     this.measurementLinesNode.reset();
     this.controlPanel.reset();
   }
 
-  public step(_dt: number): void {
+  public step(dt: number): void {
     // Note: model.step(dt) is called by the Screen base class, not here
     // to avoid double-stepping
 
     // Update the visual representation
     this.updateSpringAndMass();
+
+    // Record trace data and update the trace visualization
+    if (
+      this.traceDataModel.traceEnabledProperty.value &&
+      this.model.isPlayingProperty.value
+    ) {
+      // Record the position of the first (selected) resonator
+      const selectedIndex =
+        this.model.selectedResonatorIndexProperty.value;
+      const position =
+        this.model.getResonatorModel(selectedIndex).positionProperty.value;
+      this.traceDataModel.addPoint(dt, position);
+    }
+
+    // Always step the trace node so scrolling continues smoothly
+    if (this.traceDataModel.traceEnabledProperty.value) {
+      this.traceNode.step(dt);
+    }
   }
 }
