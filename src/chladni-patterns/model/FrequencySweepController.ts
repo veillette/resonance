@@ -42,9 +42,15 @@ export class FrequencySweepController {
   public readonly isSweepingProperty: BooleanProperty;
 
   /**
-   * The rate at which frequency increases during a sweep (Hz per second).
+   * The base rate at which frequency increases during a sweep (Hz per second).
    */
-  public readonly sweepRate: number;
+  private readonly baseSweepRate: number;
+
+  /**
+   * Speed factor applied to the sweep rate (e.g., 0.1 for slow mode).
+   * The effective sweep rate is baseSweepRate * speedFactor.
+   */
+  private speedFactor: number = 1;
 
   /**
    * Emitter that fires when a sweep completes naturally (reaches max frequency).
@@ -68,18 +74,25 @@ export class FrequencySweepController {
     // Initialize sweep state
     this.isSweepingProperty = new BooleanProperty(false);
 
-    // Sweep rate from options or default from constants
-    this.sweepRate = options.sweepRate ?? SWEEP_RATE;
+    // Base sweep rate from options or default from constants
+    this.baseSweepRate = options.sweepRate ?? SWEEP_RATE;
 
     // Create emitter for sweep completion
     this.sweepCompletedEmitter = new Emitter();
   }
 
   /**
+   * Get the effective sweep rate, accounting for the speed factor.
+   */
+  private getEffectiveSweepRate(): number {
+    return this.baseSweepRate * this.speedFactor;
+  }
+
+  /**
    * Calculate the duration for a sweep from a given start frequency to max.
    */
   private calculateDuration(fromFrequency: number): number {
-    return (this.frequencyRange.max - fromFrequency) / this.sweepRate;
+    return (this.frequencyRange.max - fromFrequency) / this.getEffectiveSweepRate();
   }
 
   /**
@@ -166,7 +179,6 @@ export class FrequencySweepController {
   /**
    * Toggle the sweep state.
    * If sweeping, stops the sweep. If not sweeping, starts a new sweep.
-   * @unused - Currently not used in the codebase but kept for toggle button implementations
    */
   public toggleSweep(): void {
     if (this.isSweepingProperty.value) {
@@ -177,41 +189,30 @@ export class FrequencySweepController {
   }
 
   /**
+   * Update the speed factor for the sweep animation.
+   * If a sweep is currently running (not paused), the animation is restarted
+   * from the current frequency with the new speed.
+   *
+   * @param factor - Speed multiplier (e.g., 0.1 for slow, 1.0 for normal)
+   */
+  public setSpeedFactor(factor: number): void {
+    if (this.speedFactor === factor) {
+      return;
+    }
+    this.speedFactor = factor;
+
+    // If actively animating (not paused), restart animation with new speed
+    if (this.sweepAnimation && this.isSweepingProperty.value && this.pausedFrequency === null) {
+      const currentFreq = this.frequencyProperty.value;
+      this.createAndStartAnimation(currentFreq);
+    }
+  }
+
+  /**
    * Check if a sweep is currently active.
    */
   public get isSweeping(): boolean {
     return this.isSweepingProperty.value;
-  }
-
-  /**
-   * Check if the animation is actually running (not paused).
-   * @unused - Currently not used in the codebase but kept for animation state monitoring
-   */
-  public get isAnimationRunning(): boolean {
-    return this.sweepAnimation !== null && this.pausedFrequency === null;
-  }
-
-  /**
-   * Get the progress of the current sweep as a fraction (0 to 1).
-   * @unused - Currently not used in the codebase but kept for progress indicators
-   */
-  public getSweepProgress(): number {
-    const min = this.frequencyRange.min;
-    const max = this.frequencyRange.max;
-    const current = this.frequencyProperty.value;
-    return (current - min) / (max - min);
-  }
-
-  /**
-   * Get the estimated time remaining in the sweep (in seconds).
-   * @unused - Currently not used in the codebase but kept for time estimation features
-   */
-  public getEstimatedTimeRemaining(): number {
-    if (!this.isSweepingProperty.value) {
-      return 0;
-    }
-    const remaining = this.frequencyRange.max - this.frequencyProperty.value;
-    return remaining / this.sweepRate;
   }
 
   /**
