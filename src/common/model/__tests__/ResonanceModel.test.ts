@@ -556,6 +556,308 @@ describe("ResonanceModel", () => {
   });
 
   // ============================================
+  // Force phase properties
+  // ============================================
+
+  describe("spring force phase", () => {
+    it("should be anti-phase to displacement (offset by π)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 1.0;
+      const dispPhase = model.displacementPhaseProperty.value;
+      const springPhase = model.springForcePhaseProperty.value;
+      // Should differ by exactly π (mod 2π)
+      const diff = Math.abs(springPhase - dispPhase);
+      const normalized = Math.abs(diff - Math.PI);
+      expect(normalized).toBeLessThan(1e-10);
+    });
+
+    it("should be in [-π, π]", () => {
+      model.drivingEnabledProperty.value = true;
+
+      for (const freq of [0.5, 1.0, 2.0, 4.0]) {
+        model.drivingFrequencyProperty.value = freq;
+        expect(model.springForcePhaseProperty.value).toBeGreaterThanOrEqual(
+          -Math.PI,
+        );
+        expect(model.springForcePhaseProperty.value).toBeLessThanOrEqual(
+          Math.PI,
+        );
+      }
+    });
+
+    it("should be near 0 below resonance (spring force nearly in phase with driver)", () => {
+      model.drivingEnabledProperty.value = true;
+      // Well below resonance: displacement phase ≈ 0, so spring force phase ≈ ±π
+      // which means spring force is anti-phase to driver
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 0.1;
+      const phase = model.springForcePhaseProperty.value;
+      // Displacement phase is small positive → spring force phase ≈ π (or -π)
+      expect(Math.abs(phase)).toBeGreaterThan(Math.PI * 0.8);
+    });
+
+    it("should be near 0 above resonance (spring force nearly in phase with driver)", () => {
+      model.drivingEnabledProperty.value = true;
+      // Well above resonance: displacement phase ≈ π, so spring force phase ≈ 0
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 5;
+      const phase = model.springForcePhaseProperty.value;
+      expect(Math.abs(phase)).toBeLessThan(Math.PI * 0.3);
+    });
+  });
+
+  describe("damping force phase", () => {
+    it("should be anti-phase to velocity (offset by π)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 1.0;
+      const velPhase = model.velocityPhaseProperty.value;
+      const dampPhase = model.dampingForcePhaseProperty.value;
+      // Should differ by exactly π (mod 2π)
+      let diff = Math.abs(dampPhase - velPhase);
+      if (diff > Math.PI) diff = 2 * Math.PI - diff;
+      expect(diff).toBeCloseTo(Math.PI, 5);
+    });
+
+    it("should be in [-π, π]", () => {
+      model.drivingEnabledProperty.value = true;
+
+      for (const freq of [0.5, 1.0, 2.0, 4.0]) {
+        model.drivingFrequencyProperty.value = freq;
+        expect(model.dampingForcePhaseProperty.value).toBeGreaterThanOrEqual(
+          -Math.PI,
+        );
+        expect(model.dampingForcePhaseProperty.value).toBeLessThanOrEqual(
+          Math.PI,
+        );
+      }
+    });
+
+    it("should be ±π at resonance (damping force anti-phase to driver)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      // At resonance: velocity phase = φ - π/2 = π/2 - π/2 = 0
+      // damping force phase = velocity phase + π = π
+      const phase = model.dampingForcePhaseProperty.value;
+      expect(Math.abs(phase)).toBeCloseTo(Math.PI, 2);
+    });
+  });
+
+  // ============================================
+  // Mechanical impedance analysis
+  // ============================================
+
+  describe("mechanical reactance", () => {
+    it("should calculate X = mω - k/ω", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const m = model.massProperty.value;
+      const k = model.springConstantProperty.value;
+      const omega = 2.0 * 2 * Math.PI;
+      const expected = m * omega - k / omega;
+      expect(model.mechanicalReactanceProperty.value).toBeCloseTo(expected, 5);
+    });
+
+    it("should be zero at natural frequency (resonance)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      // At resonance: mω₀ = k/ω₀ (both equal √(mk)), so X = 0
+      expect(model.mechanicalReactanceProperty.value).toBeCloseTo(0, 3);
+    });
+
+    it("should be negative below resonance (stiffness-dominated)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 0.3;
+      expect(model.mechanicalReactanceProperty.value).toBeLessThan(0);
+    });
+
+    it("should be positive above resonance (inertia-dominated)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 3;
+      expect(model.mechanicalReactanceProperty.value).toBeGreaterThan(0);
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.mechanicalReactanceProperty.value).toBe(0);
+    });
+  });
+
+  describe("impedance magnitude", () => {
+    it("should calculate |Z| = sqrt(b^2 + X^2)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const b = model.dampingProperty.value;
+      const X = model.mechanicalReactanceProperty.value;
+      const expected = Math.sqrt(b * b + X * X);
+      expect(model.impedanceMagnitudeProperty.value).toBeCloseTo(expected, 5);
+    });
+
+    it("should equal damping coefficient at resonance (purely resistive)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      // At resonance X = 0, so |Z| = b
+      expect(model.impedanceMagnitudeProperty.value).toBeCloseTo(
+        model.dampingProperty.value,
+        3,
+      );
+    });
+
+    it("should be minimized at resonance", () => {
+      model.drivingEnabledProperty.value = true;
+
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      const atResonance = model.impedanceMagnitudeProperty.value;
+
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 3;
+      const offResonance = model.impedanceMagnitudeProperty.value;
+
+      expect(atResonance).toBeLessThan(offResonance);
+    });
+
+    it("should equal F0/(omega*X0) (force/velocity ratio)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value = 2.0;
+      const F0 = model.forceAmplitudeProperty.value;
+      const omega = 2.0 * 2 * Math.PI;
+      const X0 = model.displacementAmplitudeProperty.value;
+      // |Z| = F₀ / (ωX₀) = F₀ / V₀
+      if (X0 > 1e-15) {
+        expect(model.impedanceMagnitudeProperty.value).toBeCloseTo(
+          F0 / (omega * X0),
+          5,
+        );
+      }
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.impedanceMagnitudeProperty.value).toBe(0);
+    });
+  });
+
+  describe("impedance phase", () => {
+    it("should equal displacement phase minus π/2", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const phi = model.displacementPhaseProperty.value;
+      let expected = phi - Math.PI / 2;
+      while (expected < -Math.PI) expected += 2 * Math.PI;
+      while (expected > Math.PI) expected -= 2 * Math.PI;
+      expect(model.impedancePhaseProperty.value).toBeCloseTo(expected, 10);
+    });
+
+    it("should be zero at resonance (force and velocity in phase)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      // At resonance: φ = π/2, so ∠Z = π/2 - π/2 = 0
+      expect(model.impedancePhaseProperty.value).toBeCloseTo(0, 2);
+    });
+
+    it("should be negative below resonance (stiffness-dominated)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 0.3;
+      // Below resonance: φ < π/2, so ∠Z = φ - π/2 < 0
+      expect(model.impedancePhaseProperty.value).toBeLessThan(0);
+    });
+
+    it("should be positive above resonance (inertia-dominated)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 3;
+      // Above resonance: φ > π/2, so ∠Z = φ - π/2 > 0
+      expect(model.impedancePhaseProperty.value).toBeGreaterThan(0);
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.impedancePhaseProperty.value).toBe(0);
+    });
+  });
+
+  describe("power factor", () => {
+    it("should calculate sin(φ)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value = 2.0;
+      const phi = model.phaseAngleProperty.value;
+      expect(model.powerFactorProperty.value).toBeCloseTo(Math.sin(phi), 10);
+    });
+
+    it("should be 1 at resonance (maximum power transfer)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value;
+      // At resonance: φ = π/2, sin(π/2) = 1
+      expect(model.powerFactorProperty.value).toBeCloseTo(1, 2);
+    });
+
+    it("should approach 0 far below resonance", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 0.01;
+      // φ → 0, sin(φ) → 0
+      expect(model.powerFactorProperty.value).toBeLessThan(0.1);
+    });
+
+    it("should approach 0 far above resonance", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingFrequencyProperty.value =
+        model.naturalFrequencyHzProperty.value * 10;
+      // φ → π, sin(π) → 0
+      expect(model.powerFactorProperty.value).toBeLessThan(0.1);
+    });
+
+    it("should be in range [0, 1]", () => {
+      model.drivingEnabledProperty.value = true;
+
+      for (const freq of [0.1, 0.5, 1.0, 2.0, 4.0, 6.0]) {
+        model.drivingFrequencyProperty.value = freq;
+        expect(model.powerFactorProperty.value).toBeGreaterThanOrEqual(0);
+        expect(model.powerFactorProperty.value).toBeLessThanOrEqual(1.0001);
+      }
+    });
+
+    it("should equal b/|Z| (resistance over impedance)", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value = 2.0;
+      const b = model.dampingProperty.value;
+      const Z = model.impedanceMagnitudeProperty.value;
+      if (Z > 1e-15) {
+        expect(model.powerFactorProperty.value).toBeCloseTo(b / Z, 5);
+      }
+    });
+
+    it("should be zero when driving is disabled", () => {
+      model.drivingEnabledProperty.value = false;
+      expect(model.powerFactorProperty.value).toBe(0);
+    });
+
+    it("should relate to average power: P_avg = 0.5*F0*V0*powerFactor", () => {
+      model.drivingEnabledProperty.value = true;
+      model.drivingAmplitudeProperty.value = 0.01;
+      model.drivingFrequencyProperty.value = 2.0;
+      const F0 = model.forceAmplitudeProperty.value;
+      const V0 = model.velocityAmplitudeProperty.value;
+      const pf = model.powerFactorProperty.value;
+      // P_avg = ½F₀V₀·sin(φ) = ½F₀V₀·PF
+      expect(model.steadyStateAveragePowerProperty.value).toBeCloseTo(
+        0.5 * F0 * V0 * pf,
+        5,
+      );
+    });
+  });
+
+  // ============================================
   // Advanced analytical properties
   // ============================================
 

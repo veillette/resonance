@@ -107,6 +107,14 @@ export class ResonanceModel extends BaseModel {
   public readonly velocityPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π/2
   public readonly accelerationPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π
   public readonly appliedForcePhaseProperty: TReadOnlyProperty<number>; // always 0 (reference)
+  public readonly springForcePhaseProperty: TReadOnlyProperty<number>; // displacement phase ± π (anti-phase to x)
+  public readonly dampingForcePhaseProperty: TReadOnlyProperty<number>; // velocity phase ± π (anti-phase to v)
+
+  // Mechanical impedance (force/velocity analogy to electrical circuits)
+  public readonly impedanceMagnitudeProperty: TReadOnlyProperty<number>; // |Z| = √(b² + (mω - k/ω)²) (N·s/m)
+  public readonly impedancePhaseProperty: TReadOnlyProperty<number>; // ∠Z = φ - π/2 (radians)
+  public readonly mechanicalReactanceProperty: TReadOnlyProperty<number>; // X = mω - k/ω (N·s/m)
+  public readonly powerFactorProperty: TReadOnlyProperty<number>; // sin(φ) = b/|Z| (dimensionless, [0,1])
 
   // Advanced analytical properties
   public readonly qualityFactorProperty: TReadOnlyProperty<number>; // Q = √(mk)/b (dimensionless)
@@ -492,6 +500,91 @@ export class ResonanceModel extends BaseModel {
     this.appliedForcePhaseProperty = new DerivedProperty(
       [this.drivingEnabledProperty],
       (_enabled: boolean) => 0,
+    );
+
+    // Spring force phase: F_spring = -kx is anti-phase to displacement
+    // Phase relative to driving force = displacement phase ± π
+    this.springForcePhaseProperty = new DerivedProperty(
+      [this.displacementPhaseProperty],
+      (displacementPhase: number) => {
+        // Add π and normalize to [-π, π]
+        let phase = displacementPhase + Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // Damping force phase: F_damp = -bv is anti-phase to velocity
+    // Phase relative to driving force = velocity phase ± π
+    this.dampingForcePhaseProperty = new DerivedProperty(
+      [this.velocityPhaseProperty],
+      (velocityPhase: number) => {
+        // Add π and normalize to [-π, π]
+        let phase = velocityPhase + Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // ============================================
+    // Mechanical impedance analysis
+    // Z = F/v (complex), connecting phase relationships to power transfer
+    // Analogy: force↔voltage, velocity↔current, damping↔resistance,
+    //          mass↔inductance, 1/k↔capacitance
+    // ============================================
+
+    // Mechanical reactance: X = mω - k/ω (N·s/m)
+    // Positive above resonance (inertia-dominated, "inductive")
+    // Negative below resonance (stiffness-dominated, "capacitive")
+    // Zero at resonance (purely resistive)
+    this.mechanicalReactanceProperty = new DerivedProperty(
+      [
+        this.massProperty,
+        this.springConstantProperty,
+        this.drivingFrequencyProperty,
+        this.drivingEnabledProperty,
+      ],
+      (m: number, k: number, freqHz: number, enabled: boolean) => {
+        if (!enabled || freqHz < 1e-15) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return m * omega - k / omega;
+      },
+    );
+
+    // Impedance magnitude: |Z| = √(b² + (mω - k/ω)²) = √(R² + X²) (N·s/m)
+    // Minimum at resonance where |Z| = b (purely resistive)
+    this.impedanceMagnitudeProperty = new DerivedProperty(
+      [this.dampingProperty, this.mechanicalReactanceProperty, this.drivingEnabledProperty],
+      (b: number, X: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return Math.sqrt(b * b + X * X);
+      },
+    );
+
+    // Impedance phase: ∠Z = φ - π/2 (radians)
+    // ∠Z = 0 at resonance (force and velocity in phase, maximum power transfer)
+    // ∠Z < 0 below resonance (stiffness-dominated, velocity leads force)
+    // ∠Z > 0 above resonance (inertia-dominated, force leads velocity)
+    this.impedancePhaseProperty = new DerivedProperty(
+      [this.displacementPhaseProperty, this.drivingEnabledProperty],
+      (phi: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        let phase = phi - Math.PI / 2;
+        while (phase < -Math.PI) phase += 2 * Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // Power factor: sin(φ) = cos(∠Z) = b/|Z| (dimensionless, [0, 1])
+    // Fraction of apparent power that does real work (absorbed by damping).
+    // 1 at resonance (maximum power absorption), 0 far from resonance.
+    this.powerFactorProperty = new DerivedProperty(
+      [this.phaseAngleProperty, this.drivingEnabledProperty],
+      (phi: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return Math.sin(phi);
+      },
     );
 
     // ============================================
