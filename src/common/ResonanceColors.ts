@@ -188,6 +188,16 @@ const ResonanceColors = {
     projector: new Color(200, 0, 0), // Red for projector mode
   }),
 
+  // Graph background (dark by default)
+  graphBackgroundProperty: new ProfileColorProperty(
+    resonance,
+    "graphBackground",
+    {
+      default: new Color(30, 30, 30),
+      projector: new Color(245, 245, 245),
+    },
+  ),
+
   // Grid and axes
   gridLinesProperty: new ProfileColorProperty(resonance, "gridLines", {
     default: new Color(100, 100, 100),

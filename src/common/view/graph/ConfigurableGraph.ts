@@ -136,7 +136,7 @@ export default class ConfigurableGraph extends Node {
 
     // Create chart background
     this.chartRectangle = new ChartRectangle(this.chartTransform, {
-      fill: ResonanceColors.controlPanelFillProperty,
+      fill: ResonanceColors.graphBackgroundProperty,
       stroke: ResonanceColors.controlPanelStrokeProperty,
     });
     this.graphContentNode.addChild(this.chartRectangle);

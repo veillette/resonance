@@ -46,10 +46,7 @@ import ResonanceConstants from "../ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ListenerTracker } from "../util/index.js";
 import { NumberControlFactory } from "./NumberControlFactory.js";
-import {
-  ResonancePresets,
-  getPresetName,
-} from "../model/ResonanceModel.js";
+import { ResonancePresets, getPresetName } from "../model/ResonanceModel.js";
 import type { ResonancePreset } from "../model/ResonanceModel.js";
 
 export type OscillatorControlPanelOptions = {
@@ -117,7 +114,7 @@ export class OscillatorControlPanel extends Panel {
     // --- Create all controls using extracted methods ---
 
     // Preset combo box (only shown in single oscillator mode)
-    const { presetBox, presetComboBoxListParent, presetProperty } =
+    const { presetBox, presetComboBoxListParent, presetProperty: _presetProperty } =
       OscillatorControlPanel.createPresetControls(tempModel);
 
     const gravityEnabledProperty =
@@ -786,7 +783,8 @@ export class OscillatorControlPanel extends Panel {
         boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
         accessibleName: "Trace",
         voicingNameResponse: "Trace",
-        voicingHintResponse: "Toggle trace mode to record mass motion over time",
+        voicingHintResponse:
+          "Toggle trace mode to record mass motion over time",
       },
     );
 
@@ -802,7 +800,9 @@ export class OscillatorControlPanel extends Panel {
 
     // Announce trace state changes via voicing
     traceEnabledProperty.lazyLink((enabled: boolean) => {
-      const announcement = enabled ? "Trace recording started" : "Trace recording stopped";
+      const announcement = enabled
+        ? "Trace recording started"
+        : "Trace recording stopped";
       voicingUtteranceQueue.addToBack(announcement);
     });
 
