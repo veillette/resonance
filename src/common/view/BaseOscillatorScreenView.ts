@@ -201,6 +201,7 @@ export class BaseOscillatorScreenView extends ScreenView {
     );
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);
+    this.addChild(this.controlPanel.presetComboBoxListParent);
 
     // ===== RESET ALL BUTTON =====
     const resetAllButton = new ResetAllButton({

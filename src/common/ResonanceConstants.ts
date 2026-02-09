@@ -159,8 +159,9 @@ const TRACE_LINE_WIDTH = 2.5;
 // ===== FREQUENCY SWEEP =====
 
 // Sweep rate for oscillator screens (Hz per second)
-// The frequency range is 0-6 Hz, so at 0.2 Hz/s, a full sweep takes 30 seconds
-const OSCILLATOR_SWEEP_RATE = 0.2;
+// Reduced to 1/3 of the original rate for slower, more observable sweeps.
+// At ~0.067 Hz/s, a full sweep from 0-6 Hz takes ~90 seconds.
+const OSCILLATOR_SWEEP_RATE = 0.2 / 3;
 
 const ResonanceConstants = {
   // Fonts
