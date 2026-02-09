@@ -12,13 +12,19 @@ This simulation visualizes the behavior of mass-spring systems driven by an osci
 
 A single driven, damped harmonic oscillator attached to an oscillating driver plate. Ideal for exploring the fundamentals of resonance when driving frequency matches the natural frequency.
 
+**Features:**
+- **Spring Presets**: Quick configurations (Light and Bouncy, Heavy and Slow, Underdamped, Critically Damped, Overdamped)
+- **Frequency Sweep**: Automatic sweep from min to max frequency
+- **Configurable Graph**: Plot velocity vs position (phase space) with smooth sub-frame data
+- **Trace Mode**: Enhanced grid scrolling synced with simulation speed
+
 ### Multiple Oscillators
 
-Multiple oscillators (1-10) with different natural frequencies driven simultaneously. Observe which systems resonate with the driving frequency and compare their behaviors.
+Multiple oscillators (1-10) with different natural frequencies driven simultaneously. Observe which systems resonate with the driving frequency and compare their behaviors. Includes frequency sweep functionality to observe resonance peaks across the system.
 
 ### Phase Analysis
 
-Explore phase relationships between the driving force and oscillator response. Visualize how phase lag changes as driving frequency passes through resonance.
+Explore phase relationships between the driving force and oscillator response. Visualize how phase lag changes as driving frequency passes through resonance. Includes configurable phase-space plots for detailed analysis.
 
 ### Chladni Patterns
 
@@ -37,9 +43,15 @@ Visualizes Chladni patterns - the beautiful geometric patterns formed by particl
 
 - **Multiple Oscillators**: Support for 1-10 oscillators with configurable parameters
 - **Chladni Patterns**: Visualize 2D plate vibration mode shapes
+- **Spring Presets**: Pre-configured systems for exploring different damping regimes
+- **Frequency Sweep**: Automatic frequency sweep across full range with speed synchronization
 - **Real-time Controls**: Adjust mass, spring constant, damping, driving frequency, and amplitude
 - **Configuration Modes**: Same mass, same spring constant, mixed, same frequency, or custom
 - **Visual Feedback**: Dynamic springs, color-coded elements, natural frequency display
+- **Advanced Analytics**: 25+ analytical properties (quality factor, impedance, power factor, energy dissipation, etc.)
+- **Configurable Graphs**: Phase-space plots with sub-frame data collection for smooth visualization
+- **Enhanced Trace Mode**: Grid scrolling synced with simulation speed, pause behavior, pen dot indicator
+- **Multiple Solvers**: RK4, Adaptive RK4/5, and analytical solver options
 - **Measurement Tools**: Draggable vertical ruler for precise measurements
 - **Accessibility**: Multiple color profiles (default, projector, colorblind-friendly)
 - **Internationalization**: English, Spanish, and French language support
@@ -76,8 +88,9 @@ npm run build
 ### Testing
 
 ```bash
-npm test          # Run unit tests
-npm run test:e2e  # Run end-to-end tests
+npm test              # Run unit tests (Vitest)
+npm run test:fuzz     # Run fuzz tests (Playwright, 60s)
+npm run test:coverage # Run tests with coverage report
 ```
 
 ## Physics Background
@@ -92,9 +105,28 @@ f₀ = (1/2π) × √(k/m)
 
 The driving plate oscillates sinusoidally, creating a time-varying boundary condition for the springs. At resonance, small plate displacements can produce large amplitude oscillations.
 
-### Quality Factor
+### Quality Factor and Damping Regimes
 
 The sharpness of resonance is characterized by the quality factor Q = √(km)/b, where b is the damping coefficient. Higher Q means sharper resonance peaks.
+
+**Damping regimes:**
+- **Underdamped** (ζ < 1): Oscillatory response with exponential decay
+- **Critically damped** (ζ = 1): Fastest return to equilibrium without oscillation
+- **Overdamped** (ζ > 1): Slow return to equilibrium without oscillation
+
+Where damping ratio ζ = b/(2√(mk)).
+
+### Advanced Analytics
+
+The simulation provides extensive analytical properties for deep physics exploration:
+
+- **Steady-state response**: Amplitude X₀, phase φ, RMS values
+- **Energy analysis**: Kinetic, potential, and total energy (time-averaged)
+- **Power dissipation**: Average driving power and damping power
+- **Mechanical impedance**: Reactance, magnitude, phase, power factor
+- **Resonance characteristics**: Peak frequency, half-power bandwidth, logarithmic decrement
+
+All properties update in real-time as parameters change, enabling quantitative analysis of resonance phenomena.
 
 ### Chladni Patterns
 
@@ -119,8 +151,9 @@ Particles on a vibrating plate experience forces proportional to the local displ
 
 ## Documentation
 
-- **[Implementation Guide](IMPLEMENTATION_GUIDE.md)** - Technical details on physics model, coordinate system, ODE solvers, and visual representation
-- **[Developer Guide](CLAUDE.md)** - Instructions for extending the simulation, code patterns, and API usage
+- **[Developer Guide](CLAUDE.md)** - AI assistant guide for working with the codebase, code patterns, and API usage
+- **[Physics Model Guide](doc/model.md)** - Comprehensive physics model, equations, and educational guide
+- **[Implementation Notes](doc/implementation-notes.md)** - Technical architecture and design patterns
 
 ## Technology
 

@@ -282,7 +282,7 @@ When making changes:
 
 ## Related Documentation
 
-- **[IMPLEMENTATION_GUIDE.md](../IMPLEMENTATION_GUIDE.md)** - Comprehensive physics model and technical reference
+- **[model.md](model.md)** - Comprehensive physics model and educational guide
 - **[CLAUDE.md](../CLAUDE.md)** - Quick reference for AI assistants and developers
 - **[model.md](model.md)** - Physics model for educators
 - **[chladni-recommendations.md](chladni-recommendations.md)** - Chladni screen enhancement ideas

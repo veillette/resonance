@@ -210,45 +210,139 @@ The simulation can display 1 to 10 oscillators simultaneously, each with its own
 
 ---
 
-## Preset Configurations
+## Spring Presets
 
-The simulation includes presets that demonstrate key concepts:
+The Single Oscillator screen includes quick-access presets for exploring different damping regimes:
 
 ### 1. Light and Bouncy
 
-- Mass: 0.5 kg, Spring: 50 N/m, Damping: 0.1 N·s/m
-- Natural frequency: ~1.6 Hz
-- Very light damping—oscillations persist for a long time
+- Mass: 0.1 kg, Spring: 100 N/m, Damping: 0.5 N·s/m
+- Natural frequency: ~5.03 Hz
+- Damping ratio: ζ ≈ 0.158
+- Fast, lightly damped oscillations
 
-### 2. Heavy and Slow
+### 2. Heavy and Slow (Default)
 
-- Mass: 5.0 kg, Spring: 5 N/m, Damping: 0.5 N·s/m
-- Natural frequency: ~0.16 Hz
-- Demonstrates how heavy masses oscillate slowly
+- Mass: 5.0 kg, Spring: 100 N/m, Damping: 2.0 N·s/m
+- Natural frequency: ~0.71 Hz
+- Damping ratio: ζ ≈ 0.045
+- Slow, heavy oscillations with minimal damping
 
-### 3. Underdamped (ζ = 0.2)
+### 3. Underdamped
 
-- Mass: 1 kg, Spring: 25 N/m, Damping: 2.0 N·s/m
-- Oscillates with decreasing amplitude
-- Most common real-world case
+- Mass: 0.25 kg, Spring: 100 N/m, Damping: 0.5 N·s/m
+- Natural frequency: ~3.18 Hz
+- Damping ratio: ζ ≈ 0.050
+- Classic underdamped behavior (ζ << 1)
 
-### 4. Critically Damped (ζ = 1.0)
+### 4. Critically Damped
 
-- Mass: 1 kg, Spring: 25 N/m, Damping: 10.0 N·s/m
-- Returns to equilibrium without oscillating
+- Mass: 0.25 kg, Spring: 100 N/m, Damping: 3.16 N·s/m
+- Natural frequency: ~3.18 Hz
+- Damping ratio: ζ = 1.0
+- Fastest return to equilibrium without oscillation
 - Used in car shock absorbers, door closers
 
-### 5. Overdamped (ζ = 2.0)
+### 5. Overdamped
 
-- Mass: 1 kg, Spring: 25 N/m, Damping: 20.0 N·s/m
-- Slow return without oscillation
-- Too much damping makes response sluggish
+- Mass: 0.25 kg, Spring: 100 N/m, Damping: 5.0 N·s/m
+- Natural frequency: ~3.18 Hz (undamped)
+- Damping ratio: ζ ≈ 1.58
+- Slow return to equilibrium, no oscillation
 
-### 6. Resonance Demo
+---
 
-- Mass: 1 kg, Spring: 10 N/m, Damping: 0.3 N·s/m
-- Driving frequency matches natural frequency (~0.5 Hz)
-- Shows large amplitude response at resonance
+## Advanced Analytical Properties
+
+The simulation provides extensive real-time analytical calculations beyond basic position and velocity:
+
+### Quality Factor
+
+**Q = √(m·k) / b**
+
+The quality factor quantifies the sharpness of resonance:
+- Higher Q → sharper resonance peak, less damping
+- Q = 10 means the amplitude at resonance is 10× the static displacement
+- Half-power bandwidth: Δf = f₀/Q
+
+### Steady-State Response Amplitudes
+
+When driven at frequency ω, the steady-state response has amplitude:
+
+**X₀ = F₀ / √[(k − m·ω²)² + (b·ω)²]**
+
+where F₀ is the driving force amplitude. The simulation provides:
+- Steady-state displacement amplitude
+- RMS displacement: X₀/√2
+- RMS velocity: ω·X₀/√2
+- RMS acceleration: ω²·X₀/√2
+
+### Energy Analysis
+
+The simulation tracks time-averaged energies in steady state:
+
+**Kinetic Energy**: ⟨KE⟩ = ¼·m·ω²·X₀²
+
+**Potential Energy**: ⟨PE⟩ = ¼·k·X₀²
+
+**Total Energy**: ⟨E⟩ = ¼·(m·ω² + k)·X₀²
+
+At resonance (ω = ω₀), kinetic and potential energies are equal: ⟨KE⟩ = ⟨PE⟩.
+
+### Power Dissipation
+
+**Driving Power**: ⟨P_drive⟩ = ½·F₀·ω·X₀·sin(φ)
+
+**Damping Power**: ⟨P_damp⟩ = −½·b·ω²·X₀²
+
+At steady state, these balance: ⟨P_drive⟩ + ⟨P_damp⟩ = 0
+
+### Mechanical Impedance
+
+Analogous to electrical impedance (V/I), mechanical impedance relates force to velocity:
+
+**Z = F/v** (complex)
+
+Components:
+- **Reactance**: X = m·ω − k/ω (N·s/m)
+  - Negative below resonance (spring-like)
+  - Zero at resonance
+  - Positive above resonance (mass-like)
+- **Impedance magnitude**: |Z| = √(b² + X²)
+  - Minimum at resonance where |Z| = b
+- **Impedance phase**: ∠Z = φ − π/2
+  - Zero at resonance (force and velocity in phase)
+- **Power factor**: sin(φ) = b/|Z|
+  - Unity at resonance (all power is real power)
+
+### Resonance Characteristics
+
+**Peak Response Frequency**: f_peak = f₀·√(1 − 2ζ²) for ζ < 1/√2
+
+The frequency at which amplitude is maximum (slightly below f₀ for damped systems).
+
+**Logarithmic Decrement**: δ = 2π·ζ/√(1 − ζ²)
+
+Natural log of the ratio of successive peak amplitudes in free oscillation.
+
+**Decay Time Constant**: τ = 2m/b
+
+Time for free oscillation amplitude to decay to 1/e (≈37%) of initial value.
+
+---
+
+## Frequency Sweep Feature
+
+The oscillator screens include an automatic frequency sweep function:
+
+- **Sweep Range**: From minimum (0.1 Hz) to maximum (5.0 Hz) driving frequency
+- **Sweep Rate**: 0.067 Hz/s (~90 seconds for full range)
+- **Speed Synchronization**: Sweep rate scales with simulation speed (slow/normal/fast)
+- **Automatic Driving**: Clicking sweep enables driving and starts playback
+- **Pause Behavior**: Sweep pauses when simulation is paused
+- **End Behavior**: Driving turns off and playback stops at maximum frequency
+
+This feature is ideal for observing how the system response changes through resonance, with the amplitude rising to a peak at the natural frequency and declining on either side.
 
 ---
 
@@ -354,27 +448,57 @@ This is maximum when ω ≈ ω₀ (resonance).
    - Displace the mass and release
    - Measure the oscillation period and calculate f₀
    - Compare with the theoretical value f₀ = (1/2π)√(k/m)
+   - Verify the displayed natural frequency property matches your calculation
 
-2. **Exploring Resonance**
-   - Enable driving with moderate amplitude
-   - Slowly increase driving frequency from below f₀
-   - Observe amplitude increase as f_drive approaches f₀
-   - Note the phase lag changes through resonance
+2. **Exploring Resonance with Frequency Sweep**
+   - Select a spring preset (e.g., "Underdamped")
+   - Click the frequency sweep button
+   - Watch the amplitude grow as driving frequency approaches f₀
+   - Observe the amplitude peak at resonance, then decline
+   - Note how the phase lag changes from 0° → 90° → 180°
 
-3. **Damping Comparison**
-   - Set up identical oscillators with different damping
-   - Observe which decays fastest
-   - At resonance, observe which has largest amplitude
+3. **Damping Regime Comparison**
+   - Use the preset combo box to select different damping regimes
+   - Compare underdamped, critically damped, and overdamped responses
+   - For each preset, observe:
+     - Free oscillation decay rate
+     - Amplitude at resonance (when driven)
+     - Quality factor Q value
+   - Note: critically damped has fastest return to equilibrium without oscillation
 
-4. **Multiple Oscillator Resonance**
+4. **Quality Factor Investigation**
+   - Start with high damping (low Q)
+   - Run frequency sweep and observe broad, gentle resonance peak
+   - Reduce damping (increase Q)
+   - Repeat sweep and observe sharper, taller resonance peak
+   - Verify relationship: peak amplitude ≈ Q × static displacement
+
+5. **Energy Flow Analysis**
+   - Enable driving at resonance (f_drive = f₀)
+   - Observe steady-state energy properties:
+     - ⟨KE⟩ = ⟨PE⟩ at resonance
+     - ⟨P_drive⟩ = −⟨P_damp⟩ (power balance)
+   - Change frequency off resonance and observe energy redistribution
+
+6. **Mechanical Impedance Study**
+   - Use frequency sweep while watching impedance properties
+   - Observe:
+     - Reactance X changes from negative to positive through resonance
+     - Impedance magnitude |Z| reaches minimum at resonance
+     - Power factor reaches unity (100% efficiency) at resonance
+   - Compare to electrical RLC circuit behavior
+
+7. **Multiple Oscillator Resonance**
    - Enable multiple oscillators with different natural frequencies
-   - Sweep driving frequency slowly
-   - Watch each oscillator resonate at its natural frequency
+   - Use frequency sweep to automatically scan through the range
+   - Watch each oscillator resonate at its natural frequency in sequence
+   - Observe which system responds most strongly to which driving frequency
 
-5. **Energy Conservation**
-   - Disable damping and driving
-   - Displace and release the mass
-   - Observe KE and PE oscillating while total energy remains constant
+8. **Phase-Space Plots**
+   - Open the configurable graph (if available on screen)
+   - Plot velocity vs. position to see phase-space ellipses
+   - Observe how the ellipse shape changes with driving frequency
+   - At resonance, note the maximum ellipse size
 
 ---
 

@@ -53,23 +53,36 @@ resonance/
 │   │   ├── ResonanceNamespace.ts # Namespace for color profiles
 │   │   ├── model/                # ODE solvers, base model, physics
 │   │   │   ├── ODESolver.ts           # Abstract solver interface
-│   │   │   ├── RungeKuttaSolver.ts    # RK4 (default)
-│   │   │   ├── AdaptiveRK45Solver.ts  # Adaptive RK 4/5
-│   │   │   ├── AdaptiveEulerSolver.ts # Adaptive Euler
-│   │   │   ├── ModifiedMidpointSolver.ts
+│   │   │   ├── RungeKuttaSolver.ts    # RK4, fixed 1ms steps (default)
+│   │   │   ├── AdaptiveRK45Solver.ts  # Adaptive RK4/5 with error control
+│   │   │   ├── AnalyticalSolver.ts    # Closed-form steady-state solver
 │   │   │   ├── BaseModel.ts           # Abstract model with time management
 │   │   │   ├── BaseOscillatorScreenModel.ts  # Shared oscillator screen model
-│   │   │   ├── ResonanceModel.ts      # Single oscillator physics
+│   │   │   ├── ResonanceModel.ts      # Single oscillator physics + analytical properties
 │   │   │   ├── MeasurementLineModel.ts # Measurement line model
+│   │   │   ├── TraceDataModel.ts      # Trace/grid scrolling data
+│   │   │   ├── FrequencySweepController.ts  # Frequency sweep (all oscillator screens)
+│   │   │   ├── ResonatorConfigMode.ts # Resonator configuration modes
 │   │   │   └── SolverType.ts          # Solver enumeration
 │   │   ├── view/                 # Shared view components
 │   │   │   ├── BaseOscillatorScreenView.ts   # Shared oscillator screen view
-│   │   │   ├── OscillatorControlPanel.ts     # Shared control panel
+│   │   │   ├── OscillatorControlPanel.ts     # Shared control panel (with presets)
 │   │   │   ├── OscillatorDriverControlNode.ts
 │   │   │   ├── OscillatorPlaybackControlNode.ts
 │   │   │   ├── OscillatorResonatorNodeBuilder.ts
 │   │   │   ├── OscillatorMeasurementLinesNode.ts
-│   │   │   └── KeyboardShortcutsNode.ts
+│   │   │   ├── OscillatorTraceNode.ts        # Trace visualization with grid scroll
+│   │   │   ├── OscillatorGridNode.ts         # Background grid
+│   │   │   ├── SweepButton.ts                # Frequency sweep button
+│   │   │   ├── NumberControlFactory.ts       # Reusable number control builder
+│   │   │   ├── KeyboardShortcutsNode.ts
+│   │   │   └── graph/                        # Configurable graph components
+│   │   │       ├── ConfigurableGraph.ts      # Multi-plot phase-space graph
+│   │   │       ├── GraphDataManager.ts       # Graph data collection
+│   │   │       ├── GraphControlsPanel.ts     # Graph axis controls
+│   │   │       ├── GraphInteractionHandler.ts
+│   │   │       ├── PlottableProperty.ts      # Property metadata for plotting
+│   │   │       └── GraphDataConstants.ts
 │   │   └── util/                 # Utility classes
 │   │       ├── ListenerTracker.ts
 │   │       └── CircularUpdateGuard.ts
@@ -125,7 +138,8 @@ resonance/
 │   └── fuzz/
 │       └── fuzz.spec.ts      # Playwright fuzz tests
 ├── doc/                      # Additional documentation
-├── IMPLEMENTATION_GUIDE.md   # Detailed physics and technical reference
+│   ├── model.md              # Physics model and educational guide
+│   └── implementation-notes.md  # Technical architecture notes
 └── README.md                 # User-facing overview
 ```
 
@@ -311,6 +325,106 @@ Where:
 | Driving Frequency | 1.0     | 0.1 | 5.0  | Hz    |
 | Driving Amplitude | 1.0     | 0.2 | 2.0  | cm    |
 
+### Advanced Analytical Properties
+
+`ResonanceModel` provides extensive analytical (closed-form) properties for steady-state oscillator analysis:
+
+**Basic derived properties:**
+- `naturalFrequencyProperty` - ω₀ = √(k/m) (rad/s and Hz)
+- `dampingRatioProperty` - ζ = b/(2√(mk))
+- `qualityFactorProperty` - Q = √(mk)/b
+- `dampedFrequencyProperty` - ωd = ω₀√(1-ζ²) (damped oscillation frequency)
+
+**Steady-state response:**
+- `steadyStateAmplitudeProperty` - X₀ = F₀/√[(k-mω²)² + (bω)²]
+- `steadyStatePhaseProperty` - φ = arctan(bω/(k-mω²))
+- `steadyStateRmsDisplacementProperty` - X₀/√2
+- `steadyStateRmsVelocityProperty` - ωX₀/√2
+- `steadyStateRmsAccelerationProperty` - ω²X₀/√2
+
+**Energy properties:**
+- `steadyStateKineticEnergyProperty` - ⟨KE⟩ = ¼mω²X₀²
+- `steadyStatePotentialEnergyProperty` - ⟨PE⟩ = ¼kX₀²
+- `steadyStateAverageEnergyProperty` - ⟨E⟩ = ¼(mω² + k)X₀²
+
+**Power dissipation:**
+- `steadyStateDrivingPowerProperty` - ⟨P_drive⟩ = ½F₀ωX₀sin(φ)
+- `steadyStateDampingPowerProperty` - ⟨P_damp⟩ = -½bω²X₀²
+
+**Mechanical impedance (force/velocity analogy):**
+- `mechanicalReactanceProperty` - X = mω - k/ω (N·s/m)
+- `impedanceMagnitudeProperty` - |Z| = √(b² + X²)
+- `impedancePhaseProperty` - ∠Z = φ - π/2
+- `powerFactorProperty` - sin(φ) = b/|Z|
+
+**Phase relationships:**
+- `springForcePhaseProperty` - Anti-phase to displacement (φ ± π)
+- `dampingForcePhaseProperty` - Anti-phase to velocity
+
+**Resonance characteristics:**
+- `peakResponseFrequencyProperty` - f_peak = f₀√(1-2ζ²) (frequency of maximum amplitude)
+- `peakDisplacementAmplitudeProperty` - Maximum amplitude at f_peak
+- `halfPowerBandwidthProperty` - Δf = f₀/Q
+- `logarithmicDecrementProperty` - δ = 2πζ/√(1-ζ²)
+- `decayTimeConstantProperty` - τ = 2m/b
+
+All analytical properties are `DerivedProperty` instances that update automatically when system parameters change.
+
+### Spring Presets
+
+Oscillator screens include a preset combo box with five configurations:
+
+1. **Light and Bouncy** - m=0.1kg, k=100N/m, b=0.5N·s/m (low mass, moderate stiffness)
+2. **Heavy and Slow** - m=5kg, k=100N/m, b=2N·s/m (default, high mass)
+3. **Underdamped** - m=0.25kg, k=100N/m, b=0.5N·s/m (ζ < 1, oscillatory)
+4. **Critically Damped** - m=0.25kg, k=100N/m, b=3.16N·s/m (ζ = 1, fastest return to equilibrium)
+5. **Overdamped** - m=0.25kg, k=100N/m, b=5N·s/m (ζ > 1, no oscillation)
+
+Users can select a preset to quickly explore different damping regimes, then customize parameters freely.
+
+### Frequency Sweep
+
+All oscillator screens (Single Oscillator, Multiple Oscillators, Phase Analysis) now include frequency sweep functionality:
+
+- **Sweep button** - Starts/stops automatic frequency sweep from min to max
+- **Sweep rate** - 0.067 Hz/s (~90 seconds for full 0.1-5 Hz range)
+- **Speed sync** - Sweep rate scales with time speed (slow/normal/fast)
+- **Auto-enable** - Clicking sweep automatically enables driving and starts playback
+- **Pause behavior** - Sweep pauses when simulation is paused
+- **End behavior** - Power turns off and playback stops when sweep reaches max frequency
+- **Slider disable** - Frequency slider is disabled during active sweep
+
+Implemented in `FrequencySweepController.ts` (model) and `SweepButton.ts` (view).
+
+### ODE Solvers and Sub-Step Data
+
+The simulation supports multiple ODE solvers with sub-frame data collection:
+
+**Available solvers:**
+- `RungeKuttaSolver` - RK4, fixed 1ms time steps (default)
+- `AdaptiveRK45Solver` - Adaptive RK4/5 with error control
+- `AnalyticalSolver` - Closed-form steady-state solution
+
+**Sub-step data collection:**
+- Solvers emit data at each internal sub-step via `SubStepCallback`
+- Used by `ConfigurableGraph` for smooth phase-space plots (velocity vs position)
+- Collection enabled only when graph is visible (performance optimization)
+- Decimation factor of 4 balances smoothness with memory (~8 seconds at 2000 max points)
+
+See `ODESolver.ts` for the interface and individual solver implementations for details.
+
+### Trace Mode Features
+
+Oscillator screens include an enhanced trace mode:
+
+- **Grid scroll syncing** - Grid scrolls at rate matching simulation speed (slow/normal/fast)
+- **Pause behavior** - Grid scroll pauses when simulation is paused
+- **Pen dot indicator** - Colored dot appears at trace origin matching trace line color
+- **Smooth transitions** - Seamless scroll rate changes when switching speeds mid-trace
+- **Separate offsets** - Cumulative scroll offset tracked separately from visual grid offset (which wraps for tiling)
+
+Implemented in `OscillatorTraceNode.ts` and `TraceDataModel.ts`.
+
 ## Internationalization
 
 All user-visible strings must be translatable:
@@ -367,20 +481,25 @@ callback: (_tandem: Tandem) => { ... }
 
 ## Key Files for Common Tasks
 
-| Task                        | Files                                                            |
-| --------------------------- | ---------------------------------------------------------------- |
-| Add new physics parameter   | `ResonanceModel.ts`, `ResonanceConstants.ts`                     |
-| Add new color               | `ResonanceColors.ts`                                             |
-| Add new string              | `strings_en.json`, `ResonanceStrings.ts`                         |
-| Modify oscillator controls  | `common/view/OscillatorControlPanel.ts`                          |
-| Modify Chladni controls     | `chladni-patterns/view/ChladniControlPanel.ts`                   |
-| Change solver behavior      | `common/model/` solvers                                          |
-| Add preference              | `ResonancePreferencesModel.ts`, `main.ts`                        |
-| Add new oscillator screen   | Extend `BaseOscillatorScreenModel`/`View`, register in `main.ts` |
-| Customize oscillator screen | Override methods in screen-specific model/view classes           |
+| Task                           | Files                                                            |
+| ------------------------------ | ---------------------------------------------------------------- |
+| Add new physics parameter      | `ResonanceModel.ts`, `ResonanceConstants.ts`                     |
+| Add analytical property        | `ResonanceModel.ts` (add new `DerivedProperty`)                  |
+| Add new color                  | `ResonanceColors.ts`                                             |
+| Add new string                 | `strings_en.json`, `ResonanceStrings.ts`                         |
+| Modify oscillator controls     | `common/view/OscillatorControlPanel.ts`                          |
+| Add/modify spring presets      | `common/view/OscillatorControlPanel.ts`                          |
+| Modify Chladni controls        | `chladni-patterns/view/ChladniControlPanel.ts`                   |
+| Change solver behavior         | `common/model/` solvers (RK4, RK45, Analytical)                  |
+| Modify frequency sweep         | `FrequencySweepController.ts`, `SweepButton.ts`                  |
+| Add graph plot                 | `ConfigurableGraph.ts`, `PlottableProperty.ts`                   |
+| Modify trace/grid behavior     | `OscillatorTraceNode.ts`, `TraceDataModel.ts`                    |
+| Add preference                 | `ResonancePreferencesModel.ts`, `main.ts`                        |
+| Add new oscillator screen      | Extend `BaseOscillatorScreenModel`/`View`, register in `main.ts` |
+| Customize oscillator screen    | Override methods in screen-specific model/view classes           |
 
 ## Related Documentation
 
-- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Detailed physics model, coordinate system, ODE solvers
 - **[README.md](README.md)** - User-facing features and getting started
-- **[doc/model.md](doc/model.md)** - Additional model documentation
+- **[doc/model.md](doc/model.md)** - Comprehensive physics model and educational guide
+- **[doc/implementation-notes.md](doc/implementation-notes.md)** - Technical architecture and design patterns
