@@ -46,6 +46,11 @@ import ResonanceConstants from "../ResonanceConstants.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { ListenerTracker } from "../util/index.js";
 import { NumberControlFactory } from "./NumberControlFactory.js";
+import {
+  ResonancePresets,
+  getPresetName,
+} from "../model/ResonanceModel.js";
+import type { ResonancePreset } from "../model/ResonanceModel.js";
 
 export type OscillatorControlPanelOptions = {
   /**
@@ -61,6 +66,12 @@ export class OscillatorControlPanel extends Panel {
    * so the popup list renders on top.
    */
   public readonly comboBoxListParent: Node;
+
+  /**
+   * The combo box list parent for the preset combo box (single oscillator mode).
+   * Must be added to the scene graph above the panel so the popup list renders on top.
+   */
+  public readonly presetComboBoxListParent: Node;
 
   public readonly gravityEnabledProperty: Property<boolean>;
   public readonly rulerVisibleProperty: Property<boolean>;
@@ -104,6 +115,11 @@ export class OscillatorControlPanel extends Panel {
     const singleOscillatorMode = options?.singleOscillatorMode ?? false;
 
     // --- Create all controls using extracted methods ---
+
+    // Preset combo box (only shown in single oscillator mode)
+    const { presetBox, presetComboBoxListParent, presetProperty } =
+      OscillatorControlPanel.createPresetControls(tempModel);
+
     const gravityEnabledProperty =
       OscillatorControlPanel.createGravityProperty(tempModel);
 
@@ -209,7 +225,8 @@ export class OscillatorControlPanel extends Panel {
 
     const panelChildren: Node[] = singleOscillatorMode
       ? [
-          // Single oscillator mode: no resonator count or config controls
+          // Single oscillator mode: preset combo box first, then controls
+          presetBox,
           massSpringResonatorSubPanel,
           dampingControl,
           bottomSeparator,
@@ -258,6 +275,7 @@ export class OscillatorControlPanel extends Panel {
     // Store references for instance methods
     this.model = model;
     this.comboBoxListParent = comboBoxListParent;
+    this.presetComboBoxListParent = presetComboBoxListParent;
     this.gravityEnabledProperty = gravityEnabledProperty;
     this.rulerVisibleProperty = rulerVisibleProperty;
     this.gridVisibleProperty = gridVisibleProperty;
@@ -295,6 +313,80 @@ export class OscillatorControlPanel extends Panel {
         : 0;
     });
     return gravityEnabledProperty;
+  }
+
+  /**
+   * The presets to show in the combo box for single oscillator mode.
+   * Excludes "resonanceDemo" as it's not a physical preset name.
+   */
+  private static readonly DISPLAY_PRESETS: ResonancePreset[] =
+    ResonancePresets.filter((p) => p.nameKey !== "resonanceDemo");
+
+  /**
+   * Creates the preset combo box for single oscillator mode.
+   * Allows the user to quickly set mass, spring constant, and damping
+   * to predefined configurations.
+   */
+  private static createPresetControls(model: BaseOscillatorScreenModel): {
+    presetBox: VBox;
+    presetComboBoxListParent: Node;
+    presetProperty: Property<ResonancePreset>;
+  } {
+    const displayPresets = OscillatorControlPanel.DISPLAY_PRESETS;
+
+    // Default to "Heavy and Slow"
+    const defaultPreset =
+      displayPresets.find((p) => p.nameKey === "heavyAndSlow") ??
+      displayPresets[0]!;
+
+    const presetProperty = new Property<ResonancePreset>(defaultPreset);
+
+    const comboBoxItems: ComboBoxItem<ResonancePreset>[] = displayPresets.map(
+      (preset) => ({
+        value: preset,
+        createNode: () =>
+          new Text(getPresetName(preset), {
+            font: ResonanceConstants.CONTROL_FONT,
+          }),
+      }),
+    );
+
+    const presetComboBoxListParent = new Node();
+
+    const presetComboBox = new ComboBox(
+      presetProperty,
+      comboBoxItems,
+      presetComboBoxListParent,
+      {
+        xMargin: ResonanceConstants.COMBO_BOX_X_MARGIN,
+        yMargin: ResonanceConstants.COMBO_BOX_Y_MARGIN,
+        cornerRadius: ResonanceConstants.COMBO_BOX_CORNER_RADIUS,
+      },
+    );
+
+    const presetLabel = new Text(
+      ResonanceStrings.controls.resonatorConfigStringProperty,
+      {
+        font: ResonanceConstants.LABEL_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
+
+    const presetBox = new VBox({
+      children: [presetLabel, presetComboBox],
+      spacing: ResonanceConstants.COMBO_BOX_SPACING,
+      align: "left",
+    });
+
+    // Apply preset when selection changes
+    presetProperty.link((preset: ResonancePreset) => {
+      const resonator = model.resonanceModel;
+      resonator.massProperty.value = preset.mass;
+      resonator.springConstantProperty.value = preset.springConstant;
+      resonator.dampingProperty.value = preset.damping;
+    });
+
+    return { presetBox, presetComboBoxListParent, presetProperty };
   }
 
   /**

@@ -17,7 +17,7 @@ import {
   TColor,
 } from "scenerystack/scenery";
 import { ToggleSwitch } from "scenerystack/sun";
-import { NumberProperty } from "scenerystack/axon";
+import { DerivedProperty, NumberProperty } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { BaseOscillatorScreenModel } from "../model/BaseOscillatorScreenModel.js";
@@ -150,6 +150,13 @@ export class OscillatorDriverControlNode extends Node {
       minorTickSpacing: 0.5,
     });
 
+    // Disable frequency control while sweeping
+    const frequencyEnabledProperty = new DerivedProperty(
+      [model.sweepController.isSweepingProperty],
+      (isSweeping: boolean) => !isSweeping,
+    );
+    frequencyEnabledProperty.linkAttribute(frequencyControl, "enabled");
+
     // Amplitude Control (display in cm, model in meters)
     const amplitudeCmProperty = new NumberProperty(
       model.resonanceModel.drivingAmplitudeProperty.value * 100,
@@ -187,7 +194,7 @@ export class OscillatorDriverControlNode extends Node {
     // Sweep button - toggle to start/stop frequency sweep
     const sweepButton = new SweepButton({
       toggleSweep: () => {
-        model.sweepController.toggleSweep();
+        model.toggleSweep();
       },
       iconStroke: ResonanceColors.driverTextProperty,
       accessibleName:

@@ -101,6 +101,34 @@ export class BaseOscillatorScreenModel {
       sweepRate: ResonanceConstants.OSCILLATOR_SWEEP_RATE,
     });
 
+    // When sweep completes, turn off driving (power off) and stop playback
+    this.sweepController.sweepCompletedEmitter.addListener(() => {
+      this.resonanceModel.drivingEnabledProperty.value = false;
+      this.resonanceModel.isPlayingProperty.value = false;
+    });
+
+    // Pause/resume sweep animation based on playback state
+    this.resonanceModel.isPlayingProperty.lazyLink((isPlaying: boolean) => {
+      if (this.sweepController.isSweeping) {
+        if (isPlaying) {
+          this.sweepController.resumeSweep();
+        } else {
+          this.sweepController.pauseSweep();
+        }
+      }
+    });
+
+    // Update sweep speed factor when time speed changes
+    const timeSpeedMultipliers: Record<string, number> = {
+      slow: 0.1,
+      normal: 1.0,
+      fast: 2.0,
+    };
+    this.resonanceModel.timeSpeedProperty.lazyLink((speed: string) => {
+      const factor = timeSpeedMultipliers[speed] ?? 1.0;
+      this.sweepController.setSpeedFactor(factor);
+    });
+
     // Pre-create all resonator models
     for (let i = 1; i < BaseOscillatorScreenModel.MAX_RESONATORS; i++) {
       const model = new ResonanceModel(preferencesModel);
@@ -321,6 +349,35 @@ export class BaseOscillatorScreenModel {
    */
   public getNaturalFrequencyHz(index: number): number {
     return this.getResonatorModel(index).naturalFrequencyHzProperty.value;
+  }
+
+  /**
+   * Start a frequency sweep from minimum to maximum frequency.
+   * Enables driving and starts playback if not already playing.
+   */
+  public startSweep(): void {
+    this.resonanceModel.drivingEnabledProperty.value = true;
+    this.resonanceModel.isPlayingProperty.value = true;
+    this.sweepController.startSweep();
+  }
+
+  /**
+   * Stop an active frequency sweep.
+   * The current frequency is preserved.
+   */
+  public stopSweep(): void {
+    this.sweepController.stopSweep();
+  }
+
+  /**
+   * Toggle the frequency sweep: start if not sweeping, stop if sweeping.
+   */
+  public toggleSweep(): void {
+    if (this.sweepController.isSweeping) {
+      this.stopSweep();
+    } else {
+      this.startSweep();
+    }
   }
 
   public reset(): void {

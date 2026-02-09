@@ -1073,38 +1073,38 @@ export const ResonancePresets: ResonancePreset[] = [
   {
     nameKey: "heavyAndSlow",
     mass: 5.0,
-    springConstant: 5,
+    springConstant: 10, // Minimum k for slow natural frequency
     damping: 0.5,
     initialPosition: 1.0,
     drivingAmplitude: 0.015, // 1.5 cm displacement
-    drivingFrequency: 0.16, // Near natural frequency ~0.159 Hz
+    drivingFrequency: 0.2, // Near natural frequency √(10/5)/(2π) ≈ 0.225 Hz
   },
   {
     nameKey: "underdamped",
     mass: 1.0,
     springConstant: 25,
-    damping: 2.0, // ζ = 0.2 (underdamped)
+    damping: 2.0, // ζ = b/(2√(mk)) = 2/(2√25) = 0.2 (underdamped)
     initialPosition: 1.0,
     drivingAmplitude: 0.01, // 1 cm displacement
     drivingFrequency: 0.8, // Near natural frequency ~0.796 Hz
   },
   {
     nameKey: "criticallyDamped",
-    mass: 1.0,
+    mass: 0.25,
     springConstant: 25,
-    damping: 10.0, // ζ = 1.0 (critical damping = 2√(mk))
+    damping: 5.0, // ζ = 5/(2√(0.25×25)) = 5/5 = 1.0 (critical damping)
     initialPosition: 1.0,
     drivingAmplitude: 0.01, // 1 cm displacement
-    drivingFrequency: 0.8,
+    drivingFrequency: 1.6, // Near natural frequency √(25/0.25)/(2π) ≈ 1.59 Hz
   },
   {
     nameKey: "overdamped",
-    mass: 1.0,
-    springConstant: 25,
-    damping: 20.0, // ζ = 2.0 (overdamped)
+    mass: 0.25,
+    springConstant: 10,
+    damping: 5.0, // ζ = 5/(2√(0.25×10)) = 5/√10 ≈ 1.58 (overdamped)
     initialPosition: 1.0,
     drivingAmplitude: 0.01, // 1 cm displacement
-    drivingFrequency: 0.8,
+    drivingFrequency: 1.0, // Near natural frequency √(10/0.25)/(2π) ≈ 1.01 Hz
   },
   {
     nameKey: "resonanceDemo",
