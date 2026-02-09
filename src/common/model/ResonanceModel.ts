@@ -107,6 +107,37 @@ export class ResonanceModel extends BaseModel {
   public readonly velocityPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π/2
   public readonly accelerationPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π
   public readonly appliedForcePhaseProperty: TReadOnlyProperty<number>; // always 0 (reference)
+  public readonly springForcePhaseProperty: TReadOnlyProperty<number>; // displacement phase ± π (anti-phase to x)
+  public readonly dampingForcePhaseProperty: TReadOnlyProperty<number>; // velocity phase ± π (anti-phase to v)
+
+  // Mechanical impedance (force/velocity analogy to electrical circuits)
+  public readonly impedanceMagnitudeProperty: TReadOnlyProperty<number>; // |Z| = √(b² + (mω - k/ω)²) (N·s/m)
+  public readonly impedancePhaseProperty: TReadOnlyProperty<number>; // ∠Z = φ - π/2 (radians)
+  public readonly mechanicalReactanceProperty: TReadOnlyProperty<number>; // X = mω - k/ω (N·s/m)
+  public readonly powerFactorProperty: TReadOnlyProperty<number>; // sin(φ) = b/|Z| (dimensionless, [0,1])
+
+  // Advanced analytical properties
+  public readonly qualityFactorProperty: TReadOnlyProperty<number>; // Q = √(mk)/b (dimensionless)
+  public readonly dampedAngularFrequencyProperty: TReadOnlyProperty<number>; // ω_d = ω₀√(1-ζ²) (rad/s)
+  public readonly dampedFrequencyHzProperty: TReadOnlyProperty<number>; // f_d = ω_d/(2π) (Hz)
+  public readonly logarithmicDecrementProperty: TReadOnlyProperty<number>; // δ = 2πζ/√(1-ζ²)
+  public readonly decayTimeConstantProperty: TReadOnlyProperty<number>; // τ = 2m/b (s)
+  public readonly bandwidthProperty: TReadOnlyProperty<number>; // Δf = f₀/Q (Hz)
+  public readonly steadyStateAveragePowerProperty: TReadOnlyProperty<number>; // P_avg = ½bω²X₀² (W)
+  public readonly steadyStateAverageEnergyProperty: TReadOnlyProperty<number>; // E_avg = ½kX₀² (J)
+  public readonly peakResponseFrequencyProperty: TReadOnlyProperty<number>; // f_peak = f₀√(1-2ζ²) (Hz)
+  public readonly peakDisplacementAmplitudeProperty: TReadOnlyProperty<number>; // X₀ at f_peak (m)
+  public readonly steadyStateRmsDisplacementProperty: TReadOnlyProperty<number>; // X₀/√2 (m)
+  public readonly steadyStateRmsVelocityProperty: TReadOnlyProperty<number>; // ωX₀/√2 (m/s)
+  public readonly steadyStateRmsAccelerationProperty: TReadOnlyProperty<number>; // ω²X₀/√2 (m/s²)
+
+  // Steady-state time-averaged energy counterparts (analytical parallels to instantaneous properties)
+  public readonly steadyStateKineticEnergyProperty: TReadOnlyProperty<number>; // <KE> = ¼mω²X₀² (J)
+  public readonly steadyStatePotentialEnergyProperty: TReadOnlyProperty<number>; // <PE_spring> = ¼kX₀² (J)
+
+  // Steady-state time-averaged power counterparts (analytical parallels to instantaneous properties)
+  public readonly steadyStateDrivingPowerProperty: TReadOnlyProperty<number>; // <P_drive> = ½F₀ωX₀sin(φ) (W)
+  public readonly steadyStateDampingPowerProperty: TReadOnlyProperty<number>; // <P_damp> = -½bω²X₀² (W, non-positive)
 
   public constructor(preferencesModel: {
     solverTypeProperty: Property<SolverType>;
@@ -469,6 +500,319 @@ export class ResonanceModel extends BaseModel {
     this.appliedForcePhaseProperty = new DerivedProperty(
       [this.drivingEnabledProperty],
       (_enabled: boolean) => 0,
+    );
+
+    // Spring force phase: F_spring = -kx is anti-phase to displacement
+    // Phase relative to driving force = displacement phase ± π
+    this.springForcePhaseProperty = new DerivedProperty(
+      [this.displacementPhaseProperty],
+      (displacementPhase: number) => {
+        // Add π and normalize to [-π, π]
+        let phase = displacementPhase + Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // Damping force phase: F_damp = -bv is anti-phase to velocity
+    // Phase relative to driving force = velocity phase ± π
+    this.dampingForcePhaseProperty = new DerivedProperty(
+      [this.velocityPhaseProperty],
+      (velocityPhase: number) => {
+        // Add π and normalize to [-π, π]
+        let phase = velocityPhase + Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // ============================================
+    // Mechanical impedance analysis
+    // Z = F/v (complex), connecting phase relationships to power transfer
+    // Analogy: force↔voltage, velocity↔current, damping↔resistance,
+    //          mass↔inductance, 1/k↔capacitance
+    // ============================================
+
+    // Mechanical reactance: X = mω - k/ω (N·s/m)
+    // Positive above resonance (inertia-dominated, "inductive")
+    // Negative below resonance (stiffness-dominated, "capacitive")
+    // Zero at resonance (purely resistive)
+    this.mechanicalReactanceProperty = new DerivedProperty(
+      [
+        this.massProperty,
+        this.springConstantProperty,
+        this.drivingFrequencyProperty,
+        this.drivingEnabledProperty,
+      ],
+      (m: number, k: number, freqHz: number, enabled: boolean) => {
+        if (!enabled || freqHz < 1e-15) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return m * omega - k / omega;
+      },
+    );
+
+    // Impedance magnitude: |Z| = √(b² + (mω - k/ω)²) = √(R² + X²) (N·s/m)
+    // Minimum at resonance where |Z| = b (purely resistive)
+    this.impedanceMagnitudeProperty = new DerivedProperty(
+      [this.dampingProperty, this.mechanicalReactanceProperty, this.drivingEnabledProperty],
+      (b: number, X: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return Math.sqrt(b * b + X * X);
+      },
+    );
+
+    // Impedance phase: ∠Z = φ - π/2 (radians)
+    // ∠Z = 0 at resonance (force and velocity in phase, maximum power transfer)
+    // ∠Z < 0 below resonance (stiffness-dominated, velocity leads force)
+    // ∠Z > 0 above resonance (inertia-dominated, force leads velocity)
+    this.impedancePhaseProperty = new DerivedProperty(
+      [this.displacementPhaseProperty, this.drivingEnabledProperty],
+      (phi: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        let phase = phi - Math.PI / 2;
+        while (phase < -Math.PI) phase += 2 * Math.PI;
+        while (phase > Math.PI) phase -= 2 * Math.PI;
+        return phase;
+      },
+    );
+
+    // Power factor: sin(φ) = cos(∠Z) = b/|Z| (dimensionless, [0, 1])
+    // Fraction of apparent power that does real work (absorbed by damping).
+    // 1 at resonance (maximum power absorption), 0 far from resonance.
+    this.powerFactorProperty = new DerivedProperty(
+      [this.phaseAngleProperty, this.drivingEnabledProperty],
+      (phi: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return Math.sin(phi);
+      },
+    );
+
+    // ============================================
+    // Advanced analytical properties
+    // ============================================
+
+    // Quality factor: Q = √(mk)/b
+    // Measures how underdamped the oscillator is. Higher Q means sharper resonance.
+    // Q > 0.5 → underdamped, Q = 0.5 → critically damped, Q < 0.5 → overdamped
+    this.qualityFactorProperty = new DerivedProperty(
+      [this.massProperty, this.springConstantProperty, this.dampingProperty],
+      (m: number, k: number, b: number) => {
+        if (b < 1e-15) return Infinity;
+        return Math.sqrt(m * k) / b;
+      },
+    );
+
+    // Damped angular frequency: ω_d = ω₀√(1 - ζ²)
+    // Only meaningful for underdamped systems (ζ < 1). Returns 0 for critically/overdamped.
+    this.dampedAngularFrequencyProperty = new DerivedProperty(
+      [this.naturalFrequencyProperty, this.dampingRatioProperty],
+      (omega0: number, zeta: number) => {
+        const zetaSq = zeta * zeta;
+        if (zetaSq >= 1) return 0;
+        return omega0 * Math.sqrt(1 - zetaSq);
+      },
+    );
+
+    // Damped frequency in Hz: f_d = ω_d / (2π)
+    this.dampedFrequencyHzProperty = new DerivedProperty(
+      [this.dampedAngularFrequencyProperty],
+      (omegaD: number) => omegaD / (2 * Math.PI),
+    );
+
+    // Logarithmic decrement: δ = 2πζ/√(1-ζ²)
+    // Ratio of successive peak amplitudes in free decay: A_n/A_{n+1} = e^δ
+    // Only meaningful for underdamped systems (ζ < 1). Returns Infinity for critically/overdamped.
+    this.logarithmicDecrementProperty = new DerivedProperty(
+      [this.dampingRatioProperty],
+      (zeta: number) => {
+        const zetaSq = zeta * zeta;
+        if (zetaSq >= 1) return Infinity;
+        return (2 * Math.PI * zeta) / Math.sqrt(1 - zetaSq);
+      },
+    );
+
+    // Decay time constant: τ = 2m/b
+    // The envelope of free oscillations decays as e^{-t/τ}
+    this.decayTimeConstantProperty = new DerivedProperty(
+      [this.massProperty, this.dampingProperty],
+      (m: number, b: number) => {
+        if (b < 1e-15) return Infinity;
+        return (2 * m) / b;
+      },
+    );
+
+    // Bandwidth (half-power): Δf = f₀/Q
+    // Width of the resonance peak at 1/√2 of maximum amplitude (≈ -3 dB points)
+    this.bandwidthProperty = new DerivedProperty(
+      [this.naturalFrequencyHzProperty, this.qualityFactorProperty],
+      (f0: number, Q: number) => {
+        if (!isFinite(Q) || Q < 1e-15) return f0 > 0 ? Infinity : 0;
+        return f0 / Q;
+      },
+    );
+
+    // Steady-state average power dissipated: P_avg = ½bω²X₀²
+    // Time-averaged power absorbed from driver (equals power dissipated by damping)
+    this.steadyStateAveragePowerProperty = new DerivedProperty(
+      [
+        this.dampingProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (b: number, freqHz: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return 0.5 * b * omega * omega * X0 * X0;
+      },
+    );
+
+    // Steady-state average total energy: E_avg = ¼(mω² + k)X₀²
+    // Time-averaged energy stored in the oscillator (kinetic + potential)
+    // <KE> = ¼mω²X₀², <PE_spring> = ¼kX₀², total = ¼(mω² + k)X₀²
+    // Note: <KE> = <PE> only at resonance (ω = ω₀). Off-resonance they differ.
+    this.steadyStateAverageEnergyProperty = new DerivedProperty(
+      [
+        this.massProperty,
+        this.springConstantProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (m: number, k: number, freqHz: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return 0.25 * (m * omega * omega + k) * X0 * X0;
+      },
+    );
+
+    // Peak response frequency: f_peak = f₀√(1 - 2ζ²)
+    // The driving frequency that produces maximum displacement amplitude.
+    // Only exists for ζ < 1/√2. For higher damping, amplitude is maximized at f=0.
+    this.peakResponseFrequencyProperty = new DerivedProperty(
+      [this.naturalFrequencyHzProperty, this.dampingRatioProperty, this.drivingEnabledProperty],
+      (f0: number, zeta: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const term = 1 - 2 * zeta * zeta;
+        if (term <= 0) return 0; // No resonance peak for ζ ≥ 1/√2
+        return f0 * Math.sqrt(term);
+      },
+    );
+
+    // Peak displacement amplitude: X₀ evaluated at f_peak
+    // X_peak = F₀ / (2kζ√(1-ζ²)) = A / (2ζ√(1-ζ²))  (for ζ < 1/√2)
+    this.peakDisplacementAmplitudeProperty = new DerivedProperty(
+      [
+        this.drivingAmplitudeProperty,
+        this.springConstantProperty,
+        this.dampingRatioProperty,
+        this.drivingEnabledProperty,
+      ],
+      (A: number, k: number, zeta: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const term = 1 - zeta * zeta;
+        if (zeta * zeta >= 0.5 || term <= 0) {
+          // No resonance peak; maximum is at DC. Return static deflection F₀/k = A
+          return A;
+        }
+        const F0 = k * A;
+        return F0 / (2 * k * zeta * Math.sqrt(term));
+      },
+    );
+
+    // Steady-state RMS displacement: X₀/√2
+    // Analytical RMS of sinusoidal steady-state displacement (no transient contribution)
+    this.steadyStateRmsDisplacementProperty = new DerivedProperty(
+      [this.displacementAmplitudeProperty],
+      (X0: number) => X0 / Math.SQRT2,
+    );
+
+    // Steady-state RMS velocity: ωX₀/√2
+    // Analytical RMS of sinusoidal steady-state velocity
+    this.steadyStateRmsVelocityProperty = new DerivedProperty(
+      [this.velocityAmplitudeProperty],
+      (V0: number) => V0 / Math.SQRT2,
+    );
+
+    // Steady-state RMS acceleration: ω²X₀/√2
+    // Analytical RMS of sinusoidal steady-state acceleration
+    this.steadyStateRmsAccelerationProperty = new DerivedProperty(
+      [this.accelerationAmplitudeProperty],
+      (A0: number) => A0 / Math.SQRT2,
+    );
+
+    // ============================================
+    // Steady-state time-averaged energy and power
+    // (analytical counterparts to instantaneous numerical properties)
+    // ============================================
+
+    // Steady-state average kinetic energy: <KE> = ¼mω²X₀²
+    // For x(t) = X₀sin(ωt - φ), v(t) = ωX₀cos(ωt - φ), so <v²> = ω²X₀²/2
+    // Counterpart to instantaneous kineticEnergyProperty (½mv²)
+    this.steadyStateKineticEnergyProperty = new DerivedProperty(
+      [
+        this.massProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (m: number, freqHz: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return 0.25 * m * omega * omega * X0 * X0;
+      },
+    );
+
+    // Steady-state average spring potential energy: <PE_spring> = ¼kX₀²
+    // For x(t) = X₀sin(ωt - φ), <x²> = X₀²/2
+    // Counterpart to instantaneous springPotentialEnergyProperty (½kx²)
+    this.steadyStatePotentialEnergyProperty = new DerivedProperty(
+      [
+        this.springConstantProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (k: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        return 0.25 * k * X0 * X0;
+      },
+    );
+
+    // Steady-state average driving power: <P_drive> = ½F₀ωX₀sin(φ)
+    // Time-averaged power input from the driver.
+    // In steady state this equals the time-averaged dissipation ½bω²X₀²
+    // (energy balance: all input power is dissipated by damping).
+    // Counterpart to instantaneous drivingPowerProperty (F_drive·v)
+    this.steadyStateDrivingPowerProperty = new DerivedProperty(
+      [
+        this.forceAmplitudeProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.phaseAngleProperty,
+        this.drivingEnabledProperty,
+      ],
+      (F0: number, freqHz: number, X0: number, phi: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return 0.5 * F0 * omega * X0 * Math.sin(phi);
+      },
+    );
+
+    // Steady-state average damping power: <P_damp> = -½bω²X₀²
+    // Time-averaged power removed by damping (always non-positive).
+    // Counterpart to instantaneous dampingPowerProperty (-bv²)
+    this.steadyStateDampingPowerProperty = new DerivedProperty(
+      [
+        this.dampingProperty,
+        this.drivingFrequencyProperty,
+        this.displacementAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
+      (b: number, freqHz: number, X0: number, enabled: boolean) => {
+        if (!enabled) return 0;
+        const omega = freqHz * 2 * Math.PI;
+        return -0.5 * b * omega * omega * X0 * X0;
+      },
     );
   }
 
