@@ -11,7 +11,7 @@
  * Final update: y_new = y + (k1 + 2*k2 + 2*k3 + k4) * dt/6
  */
 
-import { ODESolver, ODEModel } from "./ODESolver.js";
+import { ODESolver, ODEModel, SubStepCallback } from "./ODESolver.js";
 
 export class RungeKuttaSolver extends ODESolver {
   private fixedTimestep: number;
@@ -38,14 +38,22 @@ export class RungeKuttaSolver extends ODESolver {
   /**
    * Integrate the system forward by dt using RK4
    * If dt > fixedTimestep, subdivides into smaller steps
+   * @param onSubStep - optional callback invoked after each sub-step with elapsed time and state
    */
-  public override step(dt: number, model: ODEModel): void {
+  public override step(
+    dt: number,
+    model: ODEModel,
+    onSubStep?: SubStepCallback,
+  ): void {
     // Subdivide large timesteps
     const numSteps = Math.ceil(dt / this.fixedTimestep);
     const actualDt = dt / numSteps;
+    let elapsedTime = 0;
 
     for (let i = 0; i < numSteps; i++) {
       this.stepExact(actualDt, model);
+      elapsedTime += actualDt;
+      onSubStep?.(elapsedTime, model.getState());
     }
   }
 

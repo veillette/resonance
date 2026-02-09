@@ -91,7 +91,8 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         unit: "J",
       },
       {
-        name: ResonanceStrings.controls.gravitationalPotentialEnergyStringProperty,
+        name: ResonanceStrings.controls
+          .gravitationalPotentialEnergyStringProperty,
         property: resonanceModel.gravitationalPotentialEnergyProperty,
         unit: "J",
       },
@@ -198,6 +199,11 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
     this.addChild(graphCheckbox);
     this.addChild(this.configurableGraph);
     this.addChild(comboBoxListParent);
+
+    // Enable sub-step data collection only when graph is visible (performance optimization)
+    this.configurableGraph.getGraphVisibleProperty().link((visible) => {
+      model.resonanceModel.subStepCollectionEnabled = visible;
+    });
   }
 
   public override step(dt: number): void {
@@ -205,7 +211,17 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
 
     // Add data points to the graph when the simulation is playing
     if (this.model.isPlayingProperty.value) {
-      this.configurableGraph.addDataPoint();
+      const phaseModel = this.model as PhaseAnalysisModel;
+      const resonanceModel = phaseModel.resonanceModel;
+
+      // Use sub-step data if available for smooth phase-space plots
+      if (resonanceModel.hasSubStepData()) {
+        const subStepData = resonanceModel.flushSubStepData();
+        this.configurableGraph.addDataPointsFromSubSteps(subStepData);
+      } else {
+        // Fall back to single-point sampling (e.g., during drag)
+        this.configurableGraph.addDataPoint();
+      }
     }
   }
 

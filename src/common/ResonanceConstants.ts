@@ -163,6 +163,16 @@ const TRACE_LINE_WIDTH = 2.5;
 // At ~0.067 Hz/s, a full sweep from 0-6 Hz takes ~90 seconds.
 const OSCILLATOR_SWEEP_RATE = 0.2 / 3;
 
+// ===== SUB-STEP DATA COLLECTION =====
+
+// Decimation factor for sub-step data (keep every Nth sub-step)
+// At 1ms sub-steps and decimation of 4, we sample every 4ms
+// This gives ~8 seconds of data at 2000 max points
+const SUB_STEP_DECIMATION = 4;
+
+// Maximum data points for phase-space plots where orbit shape matters
+const GRAPH_MAX_DATA_POINTS = 2000;
+
 const ResonanceConstants = {
   // Fonts
   LABEL_FONT,
@@ -280,6 +290,10 @@ const ResonanceConstants = {
 
   // Frequency sweep
   OSCILLATOR_SWEEP_RATE,
+
+  // Sub-step data collection
+  SUB_STEP_DECIMATION,
+  GRAPH_MAX_DATA_POINTS,
 };
 
 export default ResonanceConstants;

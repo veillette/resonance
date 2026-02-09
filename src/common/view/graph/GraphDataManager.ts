@@ -94,6 +94,38 @@ export default class GraphDataManager {
   }
 
   /**
+   * Add multiple data points at once (for sub-step data).
+   * More efficient than calling addDataPoint repeatedly.
+   * @param points - Array of [x, y] value pairs
+   */
+  public addDataPoints(points: Array<{ x: number; y: number }>): void {
+    if (points.length === 0) return;
+
+    // Add all valid points
+    for (const { x, y } of points) {
+      if (isFinite(x) && isFinite(y)) {
+        this.dataPoints.push(new Vector2(x, y));
+      }
+    }
+
+    // Remove oldest points if we exceed max
+    while (this.dataPoints.length > this.maxDataPoints) {
+      this.dataPoints.shift();
+    }
+
+    // Update the line plot
+    this.linePlot.setDataSet(this.dataPoints);
+
+    // Auto-scale the axes if we have data and user hasn't manually zoomed
+    if (this.dataPoints.length > 1 && !this.isManuallyZoomed) {
+      this.updateAxisRanges();
+    }
+
+    // Update the trail visualization
+    this.updateTrail();
+  }
+
+  /**
    * Clear all data points
    */
   public clearData(): void {

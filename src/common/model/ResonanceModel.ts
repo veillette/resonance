@@ -23,7 +23,7 @@ import {
   TReadOnlyProperty,
   ReadOnlyProperty,
 } from "scenerystack/axon";
-import { BaseModel } from "./BaseModel.js";
+import { BaseModel, SubStepDataPoint } from "./BaseModel.js";
 import { SolverType } from "./SolverType.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
@@ -138,6 +138,10 @@ export class ResonanceModel extends BaseModel {
   // Steady-state time-averaged power counterparts (analytical parallels to instantaneous properties)
   public readonly steadyStateDrivingPowerProperty: TReadOnlyProperty<number>; // <P_drive> = ½F₀ωX₀sin(φ) (W)
   public readonly steadyStateDampingPowerProperty: TReadOnlyProperty<number>; // <P_damp> = -½bω²X₀² (W, non-positive)
+
+  // Sub-step data collection for high-resolution graph plotting
+  private subStepDataBuffer: SubStepDataPoint[] = [];
+  public subStepCollectionEnabled: boolean = false;
 
   public constructor(preferencesModel: {
     solverTypeProperty: Property<SolverType>;
@@ -460,7 +464,11 @@ export class ResonanceModel extends BaseModel {
     // Compute amplitude ratio (magnification factor): X₀ / A_static
     // where A_static = F₀ / k = A (the static deflection under driving force amplitude)
     this.amplitudeRatioProperty = new DerivedProperty(
-      [this.displacementAmplitudeProperty, this.drivingAmplitudeProperty, this.drivingEnabledProperty],
+      [
+        this.displacementAmplitudeProperty,
+        this.drivingAmplitudeProperty,
+        this.drivingEnabledProperty,
+      ],
       (X0: number, A: number, enabled: boolean) => {
         if (!enabled || A < 1e-15) return 0;
         return X0 / A;
@@ -554,7 +562,11 @@ export class ResonanceModel extends BaseModel {
     // Impedance magnitude: |Z| = √(b² + (mω - k/ω)²) = √(R² + X²) (N·s/m)
     // Minimum at resonance where |Z| = b (purely resistive)
     this.impedanceMagnitudeProperty = new DerivedProperty(
-      [this.dampingProperty, this.mechanicalReactanceProperty, this.drivingEnabledProperty],
+      [
+        this.dampingProperty,
+        this.mechanicalReactanceProperty,
+        this.drivingEnabledProperty,
+      ],
       (b: number, X: number, enabled: boolean) => {
         if (!enabled) return 0;
         return Math.sqrt(b * b + X * X);
@@ -690,7 +702,11 @@ export class ResonanceModel extends BaseModel {
     // The driving frequency that produces maximum displacement amplitude.
     // Only exists for ζ < 1/√2. For higher damping, amplitude is maximized at f=0.
     this.peakResponseFrequencyProperty = new DerivedProperty(
-      [this.naturalFrequencyHzProperty, this.dampingRatioProperty, this.drivingEnabledProperty],
+      [
+        this.naturalFrequencyHzProperty,
+        this.dampingRatioProperty,
+        this.drivingEnabledProperty,
+      ],
       (f0: number, zeta: number, enabled: boolean) => {
         if (!enabled) return 0;
         const term = 1 - 2 * zeta * zeta;
@@ -791,7 +807,13 @@ export class ResonanceModel extends BaseModel {
         this.phaseAngleProperty,
         this.drivingEnabledProperty,
       ],
-      (F0: number, freqHz: number, X0: number, phi: number, enabled: boolean) => {
+      (
+        F0: number,
+        freqHz: number,
+        X0: number,
+        phi: number,
+        enabled: boolean,
+      ) => {
         if (!enabled) return 0;
         const omega = freqHz * 2 * Math.PI;
         return 0.5 * F0 * omega * X0 * Math.sin(phi);
@@ -1007,6 +1029,71 @@ export class ResonanceModel extends BaseModel {
 
     // Reset time and playback state
     this.resetCommon();
+
+    // Clear sub-step buffer
+    this.subStepDataBuffer = [];
+  }
+
+  /**
+   * Override of BaseModel.onSubStep to collect sub-step data.
+   * Called at each sub-step during ODE integration.
+   */
+  protected override onSubStep(state: number[]): void {
+    this.collectSubStepData(state);
+  }
+
+  /**
+   * Collect a sub-step data point from the solver callback.
+   * Called by BaseModel when sub-step collection is enabled.
+   * @param state - The state vector [position, velocity, phase, ...]
+   */
+  public collectSubStepData(state: number[]): void {
+    if (!this.subStepCollectionEnabled) return;
+
+    const position = state[0]!;
+    const velocity = state[1]!;
+    const phase = state[2]!;
+
+    // Compute derived quantities from state
+    const m = this.massProperty.value;
+    const k = this.springConstantProperty.value;
+    const A = this.drivingAmplitudeProperty.value;
+
+    // Compute acceleration and applied force at this state
+    const appliedForce = this.drivingEnabledProperty.value
+      ? k * A * Math.sin(phase)
+      : 0;
+    const acceleration =
+      (-k * position -
+        this.dampingProperty.value * velocity -
+        m * this.gravityProperty.value +
+        appliedForce) /
+      m;
+
+    this.subStepDataBuffer.push({
+      time: this.timeProperty.value,
+      position,
+      velocity,
+      acceleration,
+      appliedForce,
+    });
+  }
+
+  /**
+   * Get and clear the sub-step data buffer.
+   * @returns Array of sub-step data points collected since last flush
+   */
+  public flushSubStepData(): SubStepDataPoint[] {
+    const data = this.subStepDataBuffer;
+    this.subStepDataBuffer = [];
+    return data;
+  }
+
+  /**
+   * Check if there is sub-step data available.
+   */
+  public hasSubStepData(): boolean {
+    return this.subStepDataBuffer.length > 0;
   }
 
   /**

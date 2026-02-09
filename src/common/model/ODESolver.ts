@@ -3,6 +3,14 @@
  * Solvers integrate equations of the form dy/dt = f(t, y)
  */
 
+/**
+ * Callback invoked at each sub-step during ODE integration.
+ * This allows high-resolution data collection for smooth graph plotting.
+ * @param elapsedTime - Time elapsed since the start of the step() call
+ * @param state - The state vector at this sub-step
+ */
+export type SubStepCallback = (elapsedTime: number, state: number[]) => void;
+
 export type ODEModel = {
   /**
    * Get the current state vector
@@ -28,8 +36,13 @@ export abstract class ODESolver {
    * Integrate the ODE system forward by dt
    * @param dt - time step in seconds
    * @param model - the model to integrate
+   * @param onSubStep - optional callback invoked at each internal sub-step
    */
-  public abstract step(dt: number, model: ODEModel): void;
+  public abstract step(
+    dt: number,
+    model: ODEModel,
+    onSubStep?: SubStepCallback,
+  ): void;
 
   /**
    * Set the fixed timestep for the solver (if applicable)

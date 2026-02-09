@@ -140,6 +140,11 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
     this.addChild(graphCheckbox);
     this.addChild(this.configurableGraph);
     this.addChild(comboBoxListParent);
+
+    // Enable sub-step data collection only when graph is visible (performance optimization)
+    this.configurableGraph.getGraphVisibleProperty().link((visible) => {
+      model.resonanceModel.subStepCollectionEnabled = visible;
+    });
   }
 
   /**
@@ -174,7 +179,17 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
 
     // Add data points to the graph when the simulation is playing
     if (this.model.isPlayingProperty.value) {
-      this.configurableGraph.addDataPoint();
+      const singleModel = this.model as SingleOscillatorModel;
+      const resonanceModel = singleModel.resonanceModel;
+
+      // Use sub-step data if available for smooth phase-space plots
+      if (resonanceModel.hasSubStepData()) {
+        const subStepData = resonanceModel.flushSubStepData();
+        this.configurableGraph.addDataPointsFromSubSteps(subStepData);
+      } else {
+        // Fall back to single-point sampling (e.g., during drag)
+        this.configurableGraph.addDataPoint();
+      }
     }
   }
 }

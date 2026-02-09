@@ -13,13 +13,24 @@
  */
 
 import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
-import { ODESolver, ODEModel } from "./ODESolver.js";
+import { ODESolver, ODEModel, SubStepCallback } from "./ODESolver.js";
 import { RungeKuttaSolver } from "./RungeKuttaSolver.js";
 import { AdaptiveRK45Solver } from "./AdaptiveRK45Solver.js";
 import { AnalyticalSolver } from "./AnalyticalSolver.js";
 import { SolverType } from "./SolverType.js";
 
 export type TimeSpeed = "slow" | "normal" | "fast";
+
+/**
+ * Data point collected at each sub-step for high-resolution graph plotting.
+ */
+export type SubStepDataPoint = {
+  time: number;
+  position: number;
+  velocity: number;
+  acceleration: number;
+  appliedForce: number;
+};
 
 export abstract class BaseModel implements ODEModel {
   // Time management
@@ -30,6 +41,9 @@ export abstract class BaseModel implements ODEModel {
   // ODE solver
   protected solver: ODESolver;
   private readonly solverTypeProperty: Property<SolverType>;
+
+  // Sub-step callback for data collection (bound once for performance)
+  private readonly boundSubStepCallback: SubStepCallback;
 
   // Time speed multipliers
   private readonly timeSpeedMultipliers: Record<TimeSpeed, number> = {
@@ -52,6 +66,11 @@ export abstract class BaseModel implements ODEModel {
     this.solverTypeProperty.link((solverType) => {
       this.solver = this.createSolver(solverType);
     });
+
+    // Bind sub-step callback once for performance
+    this.boundSubStepCallback = (_elapsedTime: number, state: number[]) => {
+      this.onSubStep(state);
+    };
   }
 
   /**
@@ -96,11 +115,21 @@ export abstract class BaseModel implements ODEModel {
       adjustedDt = cappedDt * speedMultiplier;
     }
 
-    // Integrate the physics
-    this.solver.step(adjustedDt, this);
+    // Integrate the physics with sub-step callback for data collection
+    this.solver.step(adjustedDt, this, this.boundSubStepCallback);
 
     // Update time
     this.timeProperty.value += adjustedDt;
+  }
+
+  /**
+   * Called at each sub-step during ODE integration.
+   * Subclasses can override to collect high-resolution data for graph plotting.
+   * @param state - The state vector at this sub-step
+   */
+  protected onSubStep(_state: number[]): void {
+    // Default implementation does nothing
+    // ResonanceModel overrides this to collect sub-step data
   }
 
   /**

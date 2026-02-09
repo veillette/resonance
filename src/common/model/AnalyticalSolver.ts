@@ -17,7 +17,7 @@
  * - Overdamped (ζ > 1): Slow exponential decay
  */
 
-import { ODESolver, ODEModel } from "./ODESolver.js";
+import { ODESolver, ODEModel, SubStepCallback } from "./ODESolver.js";
 
 /**
  * Extended model interface for direct parameter access.
@@ -61,6 +61,9 @@ const enum DampingRegime {
  * Uses the same ODESolver API as RungeKuttaSolver and AdaptiveRK45Solver.
  */
 export class AnalyticalSolver extends ODESolver {
+  // Sub-step interval for synthetic sub-stepping (matches RK4's 1ms default)
+  private static readonly SUB_STEP_INTERVAL = 0.001;
+
   // --- Cached state from last resync ---
   private cachedParams: OscillatorParams | null = null;
   private localTime: number = 0;
@@ -101,8 +104,13 @@ export class AnalyticalSolver extends ODESolver {
   /**
    * Override of ODESolver.step().
    * This is the ONLY public method — same signature as RungeKuttaSolver.step().
+   * @param onSubStep - optional callback invoked at synthetic sub-step intervals
    */
-  public override step(dt: number, model: ODEModel): void {
+  public override step(
+    dt: number,
+    model: ODEModel,
+    onSubStep?: SubStepCallback,
+  ): void {
     if (dt === 0) return; // No-op for zero timestep
 
     // 1. Detect parameter changes (uses extension interface internally)
@@ -149,21 +157,46 @@ export class AnalyticalSolver extends ODESolver {
     const b = this.dampingCoeff;
     this.cumThermalEnergy +=
       sixth_dt *
-      (b * v_at_0 * v_at_0 +
-        4 * b * v_at_mid * v_at_mid +
-        b * v_at_1 * v_at_1);
+      (b * v_at_0 * v_at_0 + 4 * b * v_at_mid * v_at_mid + b * v_at_1 * v_at_1);
 
     // Sum squared displacement: ∫ x² dt
     this.cumSumX2 +=
-      sixth_dt *
-      (x_at_0 * x_at_0 + 4 * x_at_mid * x_at_mid + x_at_1 * x_at_1);
+      sixth_dt * (x_at_0 * x_at_0 + 4 * x_at_mid * x_at_mid + x_at_1 * x_at_1);
 
     // Sum squared velocity: ∫ v² dt
     this.cumSumV2 +=
-      sixth_dt *
-      (v_at_0 * v_at_0 + 4 * v_at_mid * v_at_mid + v_at_1 * v_at_1);
+      sixth_dt * (v_at_0 * v_at_0 + 4 * v_at_mid * v_at_mid + v_at_1 * v_at_1);
 
-    // 6. Write new state back through the standard API
+    // 6. Generate synthetic sub-steps for graph data collection
+    if (onSubStep) {
+      const numSubSteps = Math.max(
+        1,
+        Math.ceil(dt / AnalyticalSolver.SUB_STEP_INTERVAL),
+      );
+      const subStepDt = dt / numSubSteps;
+
+      for (let i = 1; i <= numSubSteps; i++) {
+        const subTau = tau0 + i * subStepDt;
+        const subX = this.computePosition(subTau);
+        const subV = this.computeVelocity(subTau);
+        const subPhase = this.computePhase(subTau);
+
+        // Create state array for this sub-step
+        // Note: cumulative energies are approximated at final values
+        // This is acceptable since sub-steps are for visualization, not physics
+        onSubStep(i * subStepDt, [
+          subX,
+          subV,
+          subPhase,
+          this.cumDriverEnergy,
+          this.cumThermalEnergy,
+          this.cumSumX2,
+          this.cumSumV2,
+        ]);
+      }
+    }
+
+    // 7. Write new state back through the standard API
     model.setState([
       x_at_1,
       v_at_1,
@@ -174,7 +207,7 @@ export class AnalyticalSolver extends ODESolver {
       this.cumSumV2,
     ]);
 
-    // 7. Track the state we wrote so we can detect external modifications
+    // 8. Track the state we wrote so we can detect external modifications
     this.lastWrittenPosition = x_at_1;
     this.lastWrittenVelocity = v_at_1;
   }
@@ -279,8 +312,7 @@ export class AnalyticalSolver extends ODESolver {
         // At τ = 0: x_h(0) = C₁
         // ẋ_h(0) = -ζω₀ C₁ + ω_d C₂
         this.C1 = residualX;
-        this.C2 =
-          (residualV + this.zeta * this.omega0 * this.C1) / this.omegaD;
+        this.C2 = (residualV + this.zeta * this.omega0 * this.C1) / this.omegaD;
         break;
       case DampingRegime.CRITICALLY_DAMPED:
         // x_h(τ) = (C₁ + C₂τ) e^(-ω₀τ)
@@ -419,7 +451,10 @@ export class AnalyticalSolver extends ODESolver {
 
     // Check if position or velocity was modified externally since our last step
     const state = model.getState();
-    if (state[0] !== this.lastWrittenPosition || state[1] !== this.lastWrittenVelocity) {
+    if (
+      state[0] !== this.lastWrittenPosition ||
+      state[1] !== this.lastWrittenVelocity
+    ) {
       return true;
     }
 

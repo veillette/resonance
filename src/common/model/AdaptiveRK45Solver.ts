@@ -7,7 +7,7 @@
  * difference to estimate the local truncation error.
  */
 
-import { ODESolver, ODEModel } from "./ODESolver.js";
+import { ODESolver, ODEModel, SubStepCallback } from "./ODESolver.js";
 
 export class AdaptiveRK45Solver extends ODESolver {
   private maxTimestep: number = 0.01;
@@ -52,9 +52,15 @@ export class AdaptiveRK45Solver extends ODESolver {
 
   /**
    * Integrate the system forward by dt using adaptive RK45
+   * @param onSubStep - optional callback invoked after each accepted sub-step
    */
-  public override step(dt: number, model: ODEModel): void {
+  public override step(
+    dt: number,
+    model: ODEModel,
+    onSubStep?: SubStepCallback,
+  ): void {
     let remainingTime = dt;
+    let elapsedTime = 0;
     let currentTimestep = Math.min(this.maxTimestep, dt);
 
     while (remainingTime > 0) {
@@ -63,7 +69,9 @@ export class AdaptiveRK45Solver extends ODESolver {
 
       if (result.success) {
         remainingTime -= actualDt;
+        elapsedTime += actualDt;
         currentTimestep = result.nextTimestep;
+        onSubStep?.(elapsedTime, model.getState());
       } else {
         currentTimestep = result.nextTimestep;
       }
@@ -74,6 +82,8 @@ export class AdaptiveRK45Solver extends ODESolver {
           "AdaptiveRK45Solver: Timestep became too small, forcing step",
         );
         this.forceStep(remainingTime, model);
+        elapsedTime = dt; // We've consumed all time
+        onSubStep?.(elapsedTime, model.getState());
         break;
       }
     }

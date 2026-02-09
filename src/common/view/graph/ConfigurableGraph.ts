@@ -27,7 +27,9 @@ import {
 import { Orientation } from "scenerystack/phet-core";
 import { Shape } from "scenerystack/kite";
 import type { PlottableProperty } from "./PlottableProperty.js";
+import type { SubStepDataPoint } from "../../model/BaseModel.js";
 import ResonanceColors from "../../ResonanceColors.js";
+import ResonanceConstants from "../../ResonanceConstants.js";
 import { PhetFont } from "scenerystack/scenery-phet";
 import GraphDataManager from "./GraphDataManager.js";
 import GraphInteractionHandler from "./GraphInteractionHandler.js";
@@ -84,6 +86,9 @@ export default class ConfigurableGraph extends Node {
   // Control buttons
   private readonly rescaleButton: Node;
   private readonly controlButtonsPanel: Node;
+
+  // Sub-step decimation counter for high-resolution data
+  private decimationCounter: number = 0;
 
   /**
    * @param availableProperties - List of properties that can be plotted
@@ -584,6 +589,86 @@ export default class ConfigurableGraph extends Node {
    */
   public clearData(): void {
     this.dataManager.clearData();
+    this.decimationCounter = 0;
+  }
+
+  /**
+   * Add data points from sub-step data collected during ODE integration.
+   * Maps the sub-step data to the currently selected x and y axes.
+   * Uses decimation to prevent memory overflow while maintaining smooth curves.
+   * @param subStepData - Array of sub-step data points from the model
+   */
+  public addDataPointsFromSubSteps(subStepData: SubStepDataPoint[]): void {
+    if (subStepData.length === 0) return;
+
+    const xProperty = this.xPropertyProperty.value;
+    const yProperty = this.yPropertyProperty.value;
+
+    // Map sub-step data to x/y values with decimation
+    const mappedPoints: Array<{ x: number; y: number }> = [];
+    const decimation = ResonanceConstants.SUB_STEP_DECIMATION;
+
+    for (const point of subStepData) {
+      this.decimationCounter++;
+
+      // Only keep every Nth point
+      if (this.decimationCounter >= decimation) {
+        this.decimationCounter = 0;
+
+        const x = this.getValueForAxis(xProperty, point);
+        const y = this.getValueForAxis(yProperty, point);
+
+        if (x !== null && y !== null) {
+          mappedPoints.push({ x, y });
+        }
+      }
+    }
+
+    if (mappedPoints.length > 0) {
+      this.dataManager.addDataPoints(mappedPoints);
+    }
+  }
+
+  /**
+   * Get the value for a specific axis from a sub-step data point.
+   * Returns null if the axis property is not available in sub-step data.
+   */
+  private getValueForAxis(
+    axisProperty: PlottableProperty,
+    point: SubStepDataPoint,
+  ): number | null {
+    // Get the property name to determine which value to extract
+    const name =
+      typeof axisProperty.name === "string"
+        ? axisProperty.name
+        : axisProperty.name.value;
+
+    // Map common property names to sub-step data fields
+    // This handles the most commonly plotted quantities
+    const lowerName = name.toLowerCase();
+
+    if (lowerName.includes("time")) {
+      return point.time;
+    }
+    if (lowerName.includes("position") || lowerName.includes("displacement")) {
+      return point.position;
+    }
+    if (lowerName.includes("velocity") && !lowerName.includes("rms")) {
+      return point.velocity;
+    }
+    if (lowerName.includes("acceleration") && !lowerName.includes("rms")) {
+      return point.acceleration;
+    }
+    if (
+      lowerName.includes("applied") ||
+      (lowerName.includes("force") && lowerName.includes("driv"))
+    ) {
+      return point.appliedForce;
+    }
+
+    // For properties not in sub-step data, fall back to current property value
+    // This handles derived properties like energy, RMS values, etc.
+    return axisProperty.property.value;
   }
 
   /**

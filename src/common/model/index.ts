@@ -3,7 +3,7 @@
  */
 
 export { ODESolver } from "./ODESolver.js";
-export type { ODEModel } from "./ODESolver.js";
+export type { ODEModel, SubStepCallback } from "./ODESolver.js";
 export { RungeKuttaSolver } from "./RungeKuttaSolver.js";
 export { AdaptiveRK45Solver } from "./AdaptiveRK45Solver.js";
 export { AnalyticalSolver } from "./AnalyticalSolver.js";
@@ -14,7 +14,7 @@ export {
   SolverTypeDescription,
 } from "./SolverType.js";
 export { BaseModel } from "./BaseModel.js";
-export type { TimeSpeed } from "./BaseModel.js";
+export type { TimeSpeed, SubStepDataPoint } from "./BaseModel.js";
 export { BaseOscillatorScreenModel } from "./BaseOscillatorScreenModel.js";
 export {
   ResonanceModel,
