@@ -12,11 +12,13 @@
  * line don't extend outside the visible area.
  */
 
-import { Node, Path } from "scenerystack/scenery";
+import { Node, Path, Circle } from "scenerystack/scenery";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Bounds2 } from "scenerystack/dot";
+import type { TReadOnlyProperty } from "scenerystack/axon";
 import { TraceDataModel } from "../model/TraceDataModel.js";
+import type { TimeSpeed } from "../model/BaseModel.js";
 import ResonanceColors from "../ResonanceColors.js";
 import ResonanceConstants from "../ResonanceConstants.js";
 import { OscillatorGridNode } from "./OscillatorGridNode.js";
@@ -36,12 +38,15 @@ export interface OscillatorTraceNodeOptions {
   majorSpacing?: number;
   /** Minor divisions per major grid spacing */
   minorDivisionsPerMajor?: number;
+  /** Property for the current time speed (slow/normal/fast) */
+  timeSpeedProperty?: TReadOnlyProperty<TimeSpeed>;
 }
 
 export class OscillatorTraceNode extends Node {
   private readonly modelViewTransform: ModelViewTransform2;
   private readonly traceData: TraceDataModel;
   private readonly tracePath: Path;
+  private readonly penDot: Circle;
   private readonly scrollingGridContainer: Node;
   private readonly gridNode: OscillatorGridNode;
 
@@ -52,8 +57,26 @@ export class OscillatorTraceNode extends Node {
   private readonly gridLeft: number;
   private readonly gridRight: number;
 
-  /** Current scroll offset in view pixels (increases over time as grid moves left) */
+  /** Property for time speed (to sync trace scroll with simulation speed) */
+  private readonly timeSpeedProperty: TReadOnlyProperty<TimeSpeed> | null;
+
+  /** Time speed multipliers matching BaseModel */
+  private readonly timeSpeedMultipliers: Record<TimeSpeed, number> = {
+    slow: 0.1,
+    normal: 1.0,
+    fast: 2.0,
+  };
+
+  /** Cumulative scroll offset in view pixels (never wraps, used for point positioning) */
   private scrollOffset = 0;
+
+  /** Visual grid offset (wraps for seamless tiling) */
+  private gridVisualOffset = 0;
+
+  /** Get the current scroll offset (for recording points) */
+  public getScrollOffset(): number {
+    return this.scrollOffset;
+  }
 
   public constructor(
     modelViewTransform: ModelViewTransform2,
@@ -99,6 +122,9 @@ export class OscillatorTraceNode extends Node {
     this.scrollingGridContainer = new Node({ children: [this.gridNode] });
     this.addChild(this.scrollingGridContainer);
 
+    // Store time speed property for scroll speed adjustment
+    this.timeSpeedProperty = options.timeSpeedProperty ?? null;
+
     // Trace line path
     this.tracePath = new Path(null, {
       stroke: ResonanceColors.traceLineProperty,
@@ -107,6 +133,13 @@ export class OscillatorTraceNode extends Node {
       lineCap: "round",
     });
     this.addChild(this.tracePath);
+
+    // Pen dot at the trace origin (where the trace is being drawn)
+    this.penDot = new Circle(5, {
+      fill: ResonanceColors.traceLineProperty,
+      x: this.penViewX,
+    });
+    this.addChild(this.penDot);
   }
 
   /**
@@ -118,17 +151,24 @@ export class OscillatorTraceNode extends Node {
       return;
     }
 
-    // Scroll the grid to the left
-    this.scrollOffset += ResonanceConstants.TRACE_SCROLL_SPEED * dt;
+    // Apply time speed multiplier to sync scroll with simulation speed
+    const speedMultiplier = this.timeSpeedProperty
+      ? this.timeSpeedMultipliers[this.timeSpeedProperty.value]
+      : 1.0;
 
-    // Wrap the scroll offset so the grid tiles seamlessly.
-    // The grid is 3x wide, so we wrap at 1x width.
+    // Update cumulative scroll offset (never wraps, used for point positioning)
+    const scrollDelta =
+      ResonanceConstants.TRACE_SCROLL_SPEED * dt * speedMultiplier;
+    this.scrollOffset += scrollDelta;
+
+    // Update visual grid offset (wraps for seamless tiling)
+    this.gridVisualOffset += scrollDelta;
     const wrapWidth = this.gridWidth;
-    if (this.scrollOffset > wrapWidth) {
-      this.scrollOffset -= wrapWidth;
+    if (this.gridVisualOffset > wrapWidth) {
+      this.gridVisualOffset -= wrapWidth;
     }
 
-    this.scrollingGridContainer.x = -this.scrollOffset;
+    this.scrollingGridContainer.x = -this.gridVisualOffset;
 
     // Rebuild the trace path from data points
     this.updateTracePath();
@@ -137,27 +177,25 @@ export class OscillatorTraceNode extends Node {
   /**
    * Rebuild the trace line shape from the collected data points.
    *
-   * Each point has a time and a position. The most recent point appears at
-   * the pen x-position. Older points are to the left of the pen, at a
-   * distance proportional to how much time has passed (scrollSpeed * deltaT).
+   * Each point stores the scroll offset when it was recorded. The x-position
+   * is calculated as the difference between current and recorded scroll offset.
+   * This ensures smooth transitions when speed changes.
    */
   private updateTracePath(): void {
     const points = this.traceData.getPoints();
     if (points.length < 2) {
       this.tracePath.shape = null;
+      this.penDot.visible = false;
       return;
     }
-
-    const elapsed = this.traceData.getElapsedTime();
-    const scrollSpeed = ResonanceConstants.TRACE_SCROLL_SPEED;
 
     const shape = new Shape();
     let started = false;
 
     for (const pt of points) {
-      // Time ago = elapsed - pt.time
-      // View x = penViewX - scrollSpeed * timeAgo
-      const viewX = this.penViewX - scrollSpeed * (elapsed - pt.time);
+      // Calculate x position based on scroll offset difference
+      // Points recorded earlier have smaller scrollOffset, so they appear to the left
+      const viewX = this.penViewX - (this.scrollOffset - pt.scrollOffset);
 
       // Skip points that have scrolled off the left side
       if (viewX < this.gridLeft) {
@@ -179,13 +217,22 @@ export class OscillatorTraceNode extends Node {
     }
 
     this.tracePath.shape = shape;
+
+    // Update pen dot position to match the most recent point
+    const lastPoint = points[points.length - 1];
+    if (lastPoint) {
+      this.penDot.y = this.modelViewTransform.modelToViewY(lastPoint.position);
+      this.penDot.visible = true;
+    }
   }
 
   /** Clear the trace visualization and reset scroll */
   public clear(): void {
     this.scrollOffset = 0;
+    this.gridVisualOffset = 0;
     this.scrollingGridContainer.x = 0;
     this.tracePath.shape = null;
+    this.penDot.visible = false;
     this.traceData.clear();
   }
 

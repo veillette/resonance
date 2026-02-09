@@ -103,22 +103,46 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
     // Create a parent node for combo box dropdowns (must be above the graph in z-order)
     const comboBoxListParent = new Node();
 
-    // Create the configurable graph
+    // Calculate graph position:
+    // - Right of the mass (mass is at layoutBounds.centerX + DRIVER_CENTER_X_OFFSET)
+    // - Left of the control panel
+    // - Top aligned with control panel top
+    // - Bottom above the driver plate
+    const massAreaRight =
+      this.layoutBounds.centerX +
+      ResonanceConstants.DRIVER_CENTER_X_OFFSET +
+      ResonanceConstants.MAX_MASS_SIZE / 2 +
+      60; // margin after mass
+    const controlPanelLeft =
+      this.controlPanel.left - 20; // margin before control panel
+    const graphWidth = Math.min(350, controlPanelLeft - massAreaRight);
+
+    // Calculate height: from control panel top to above driver plate
+    // Account for graph header elements (title panel + header bar ~60px)
+    const graphHeaderOffset = 60;
+    const driverPlateTopViewY = this.modelViewTransform.modelToViewY(
+      ResonanceConstants.DRIVER_PLATE_REST_MODEL_Y,
+    );
+    const graphTop = this.controlPanel.top + graphHeaderOffset;
+    const graphBottom = driverPlateTopViewY - 40; // margin above driver
+    const graphHeight = Math.min(300, graphBottom - graphTop);
+
+    // Create the configurable graph with calculated dimensions
     this.configurableGraph = new ConfigurableGraph(
       plottableProperties,
       initialXProperty,
       initialYProperty,
-      350,
-      250,
+      graphWidth,
+      graphHeight,
       2000,
       comboBoxListParent,
     );
 
-    // Position the graph below the vector control panel
-    this.configurableGraph.x = this.layoutBounds.left + 20;
-    this.configurableGraph.y = this.vectorControlPanel.bottom + 50;
+    // Position the graph (graphTop already includes the header offset)
+    this.configurableGraph.x = massAreaRight;
+    this.configurableGraph.y = graphTop;
 
-    // Add a checkbox to toggle graph visibility
+    // Add a checkbox to toggle graph visibility (position above the graph)
     const graphCheckboxLabel = new Text(
       ResonanceStrings.controls.graphStringProperty,
       {
@@ -134,7 +158,7 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
         spacing: 6,
       },
     );
-    graphCheckbox.left = this.layoutBounds.left + 20;
+    graphCheckbox.left = this.vectorControlPanel.left;
     graphCheckbox.top = this.vectorControlPanel.bottom + 10;
 
     this.addChild(graphCheckbox);

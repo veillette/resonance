@@ -151,6 +151,7 @@ export class BaseOscillatorScreenView extends ScreenView {
         gridTopModel: gridTopModel,
         gridBottomModel: gridBottomModel,
         gridCenterX: this.driverNode.centerX,
+        timeSpeedProperty: model.resonanceModel.timeSpeedProperty,
       },
     );
     this.traceNode.visible = false;
@@ -698,15 +699,18 @@ export class BaseOscillatorScreenView extends ScreenView {
       this.model.isPlayingProperty.value
     ) {
       // Record the position of the first (selected) resonator
-      const selectedIndex =
-        this.model.selectedResonatorIndexProperty.value;
+      const selectedIndex = this.model.selectedResonatorIndexProperty.value;
       const position =
         this.model.getResonatorModel(selectedIndex).positionProperty.value;
-      this.traceDataModel.addPoint(dt, position);
+      // Pass current scroll offset so points maintain position when speed changes
+      this.traceDataModel.addPoint(this.traceNode.getScrollOffset(), position);
     }
 
-    // Always step the trace node so scrolling continues smoothly
-    if (this.traceDataModel.traceEnabledProperty.value) {
+    // Step the trace node only when playing (grid stops when paused)
+    if (
+      this.traceDataModel.traceEnabledProperty.value &&
+      this.model.isPlayingProperty.value
+    ) {
       this.traceNode.step(dt);
     }
   }

@@ -13,8 +13,8 @@ import { BooleanProperty } from "scenerystack/axon";
 import ResonanceConstants from "../ResonanceConstants.js";
 
 export interface TracePoint {
-  /** Elapsed time since trace started (seconds) */
-  time: number;
+  /** Scroll offset when this point was recorded (pixels) */
+  scrollOffset: number;
   /** Mass position in model coordinates (meters) */
   position: number;
 }
@@ -26,21 +26,17 @@ export class TraceDataModel {
   /** Accumulated trace points */
   private readonly points: TracePoint[] = [];
 
-  /** Time elapsed since trace was started (seconds) */
-  private elapsedTime = 0;
-
   public constructor() {
     this.traceEnabledProperty = new BooleanProperty(false);
   }
 
   /**
    * Record a new data point. Called every frame while trace mode is active.
-   * @param dt - time step in seconds
+   * @param scrollOffset - current scroll offset in pixels
    * @param position - mass position in model coordinates
    */
-  public addPoint(dt: number, position: number): void {
-    this.elapsedTime += dt;
-    this.points.push({ time: this.elapsedTime, position });
+  public addPoint(scrollOffset: number, position: number): void {
+    this.points.push({ scrollOffset, position });
 
     // Trim old points to keep memory bounded
     if (this.points.length > ResonanceConstants.TRACE_MAX_POINTS) {
@@ -56,15 +52,9 @@ export class TraceDataModel {
     return this.points;
   }
 
-  /** Get the elapsed time since trace started */
-  public getElapsedTime(): number {
-    return this.elapsedTime;
-  }
-
-  /** Clear all trace data and reset elapsed time */
+  /** Clear all trace data */
   public clear(): void {
     this.points.length = 0;
-    this.elapsedTime = 0;
   }
 
   /** Reset the model (disable trace and clear data) */
