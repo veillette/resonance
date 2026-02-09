@@ -166,20 +166,55 @@ const ResonanceColors = {
     projector: new Color(156, 39, 176),
   }),
 
-  // Plots
+  // Plots (10 colors for up to 10 resonators)
   plot1Property: new ProfileColorProperty(resonance, "plot1", {
-    default: new Color(100, 180, 255),
+    default: new Color(100, 180, 255), // Blue
     projector: new Color(33, 150, 243),
   }),
 
   plot2Property: new ProfileColorProperty(resonance, "plot2", {
-    default: new Color(255, 120, 80),
+    default: new Color(255, 120, 80), // Orange
     projector: new Color(255, 87, 34),
   }),
 
   plot3Property: new ProfileColorProperty(resonance, "plot3", {
-    default: new Color(200, 100, 255),
+    default: new Color(100, 220, 100), // Green
+    projector: new Color(76, 175, 80),
+  }),
+
+  plot4Property: new ProfileColorProperty(resonance, "plot4", {
+    default: new Color(255, 100, 150), // Pink
+    projector: new Color(233, 30, 99),
+  }),
+
+  plot5Property: new ProfileColorProperty(resonance, "plot5", {
+    default: new Color(180, 130, 255), // Purple
     projector: new Color(156, 39, 176),
+  }),
+
+  plot6Property: new ProfileColorProperty(resonance, "plot6", {
+    default: new Color(255, 220, 80), // Yellow
+    projector: new Color(255, 193, 7),
+  }),
+
+  plot7Property: new ProfileColorProperty(resonance, "plot7", {
+    default: new Color(100, 220, 220), // Cyan
+    projector: new Color(0, 188, 212),
+  }),
+
+  plot8Property: new ProfileColorProperty(resonance, "plot8", {
+    default: new Color(255, 160, 180), // Light pink
+    projector: new Color(240, 98, 146),
+  }),
+
+  plot9Property: new ProfileColorProperty(resonance, "plot9", {
+    default: new Color(180, 200, 120), // Lime
+    projector: new Color(139, 195, 74),
+  }),
+
+  plot10Property: new ProfileColorProperty(resonance, "plot10", {
+    default: new Color(200, 180, 255), // Lavender
+    projector: new Color(149, 117, 205),
   }),
 
   // Trace line
@@ -365,5 +400,24 @@ const ResonanceColors = {
     },
   ),
 };
+
+/**
+ * Get an array of plot color properties for multi-series graphs.
+ * Returns up to 10 distinct colors for different resonators.
+ */
+export function getPlotColors() {
+  return [
+    ResonanceColors.plot1Property,
+    ResonanceColors.plot2Property,
+    ResonanceColors.plot3Property,
+    ResonanceColors.plot4Property,
+    ResonanceColors.plot5Property,
+    ResonanceColors.plot6Property,
+    ResonanceColors.plot7Property,
+    ResonanceColors.plot8Property,
+    ResonanceColors.plot9Property,
+    ResonanceColors.plot10Property,
+  ];
+}
 
 export default ResonanceColors;

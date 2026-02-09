@@ -1,6 +1,7 @@
 /**
  * Manages data points, axis ranges, and visualization updates for a configurable graph.
  * Handles auto-scaling, tick spacing calculations, and trail point rendering.
+ * Supports multiple data series for multi-resonator plots.
  */
 
 import { Vector2 } from "scenerystack/dot";
@@ -29,10 +30,12 @@ export interface GridVisualizationConfig {
 }
 
 export default class GraphDataManager {
-  private readonly dataPoints: Vector2[] = [];
+  // Data points for each series
+  private readonly seriesDataPoints: Vector2[][];
+  private readonly numSeries: number;
   private readonly maxDataPoints: number;
   private readonly chartTransform: ChartTransform;
-  private readonly linePlot: LinePlot;
+  private readonly linePlots: LinePlot[];
   private readonly trailNode: Node;
   private readonly trailLength: number = 5;
   private isManuallyZoomed: boolean = false;
@@ -47,13 +50,18 @@ export default class GraphDataManager {
 
   public constructor(
     chartTransform: ChartTransform,
-    linePlot: LinePlot,
+    linePlots: LinePlot | LinePlot[],
     trailNode: Node,
     maxDataPoints: number,
     gridConfig: GridVisualizationConfig,
   ) {
     this.chartTransform = chartTransform;
-    this.linePlot = linePlot;
+    this.linePlots = Array.isArray(linePlots) ? linePlots : [linePlots];
+    this.numSeries = this.linePlots.length;
+    this.seriesDataPoints = [];
+    for (let i = 0; i < this.numSeries; i++) {
+      this.seriesDataPoints.push([]);
+    }
     this.trailNode = trailNode;
     this.maxDataPoints = maxDataPoints;
     this.verticalGridLineSet = gridConfig.verticalGridLineSet;
@@ -65,72 +73,108 @@ export default class GraphDataManager {
   }
 
   /**
-   * Add a new data point to the graph
+   * Get the number of series this manager supports
    */
-  public addDataPoint(xValue: number, yValue: number): void {
-    // Skip invalid values
-    if (!isFinite(xValue) || !isFinite(yValue)) {
-      return;
-    }
-
-    // Add point
-    this.dataPoints.push(new Vector2(xValue, yValue));
-
-    // Remove oldest point if we exceed max
-    if (this.dataPoints.length > this.maxDataPoints) {
-      this.dataPoints.shift();
-    }
-
-    // Update the line plot
-    this.linePlot.setDataSet(this.dataPoints);
-
-    // Auto-scale the axes if we have data and user hasn't manually zoomed
-    if (this.dataPoints.length > 1 && !this.isManuallyZoomed) {
-      this.updateAxisRanges();
-    }
-
-    // Update the trail visualization
-    this.updateTrail();
+  public getNumSeries(): number {
+    return this.numSeries;
   }
 
   /**
-   * Add multiple data points at once (for sub-step data).
+   * Add a new data point to a specific series (default: series 0)
+   */
+  public addDataPoint(
+    xValue: number,
+    yValue: number,
+    seriesIndex: number = 0,
+  ): void {
+    // Skip invalid values or out-of-range series
+    if (
+      !isFinite(xValue) ||
+      !isFinite(yValue) ||
+      seriesIndex < 0 ||
+      seriesIndex >= this.numSeries
+    ) {
+      return;
+    }
+
+    const dataPoints = this.seriesDataPoints[seriesIndex]!;
+
+    // Add point
+    dataPoints.push(new Vector2(xValue, yValue));
+
+    // Remove oldest point if we exceed max
+    if (dataPoints.length > this.maxDataPoints) {
+      dataPoints.shift();
+    }
+
+    // Update the line plot for this series
+    this.linePlots[seriesIndex]!.setDataSet(dataPoints);
+
+    // Auto-scale the axes if we have data and user hasn't manually zoomed
+    if (this.getTotalDataPointCount() > 1 && !this.isManuallyZoomed) {
+      this.updateAxisRanges();
+    }
+
+    // Update the trail visualization (only for first series)
+    if (seriesIndex === 0) {
+      this.updateTrail();
+    }
+  }
+
+  /**
+   * Add multiple data points at once to a specific series (for sub-step data).
    * More efficient than calling addDataPoint repeatedly.
    * @param points - Array of [x, y] value pairs
+   * @param seriesIndex - Which series to add to (default: 0)
    */
-  public addDataPoints(points: Array<{ x: number; y: number }>): void {
-    if (points.length === 0) return;
+  public addDataPoints(
+    points: Array<{ x: number; y: number }>,
+    seriesIndex: number = 0,
+  ): void {
+    if (
+      points.length === 0 ||
+      seriesIndex < 0 ||
+      seriesIndex >= this.numSeries
+    ) {
+      return;
+    }
+
+    const dataPoints = this.seriesDataPoints[seriesIndex]!;
 
     // Add all valid points
     for (const { x, y } of points) {
       if (isFinite(x) && isFinite(y)) {
-        this.dataPoints.push(new Vector2(x, y));
+        dataPoints.push(new Vector2(x, y));
       }
     }
 
     // Remove oldest points if we exceed max
-    while (this.dataPoints.length > this.maxDataPoints) {
-      this.dataPoints.shift();
+    while (dataPoints.length > this.maxDataPoints) {
+      dataPoints.shift();
     }
 
-    // Update the line plot
-    this.linePlot.setDataSet(this.dataPoints);
+    // Update the line plot for this series
+    this.linePlots[seriesIndex]!.setDataSet(dataPoints);
 
     // Auto-scale the axes if we have data and user hasn't manually zoomed
-    if (this.dataPoints.length > 1 && !this.isManuallyZoomed) {
+    if (this.getTotalDataPointCount() > 1 && !this.isManuallyZoomed) {
       this.updateAxisRanges();
     }
 
-    // Update the trail visualization
-    this.updateTrail();
+    // Update the trail visualization (only for first series)
+    if (seriesIndex === 0) {
+      this.updateTrail();
+    }
   }
 
   /**
-   * Clear all data points
+   * Clear all data points for all series
    */
   public clearData(): void {
-    this.dataPoints.length = 0;
-    this.linePlot.setDataSet([]);
+    for (let i = 0; i < this.numSeries; i++) {
+      this.seriesDataPoints[i]!.length = 0;
+      this.linePlots[i]!.setDataSet([]);
+    }
 
     // Reset to default ranges
     const defaultRange = new Range(-10, 10);
@@ -148,24 +192,28 @@ export default class GraphDataManager {
   }
 
   /**
-   * Update axis ranges to fit all data with some padding
+   * Update axis ranges to fit all data from all series with some padding
    */
   public updateAxisRanges(): void {
-    const firstPoint = this.dataPoints[0];
-    if (this.dataPoints.length === 0 || !firstPoint) {
-      return;
+    // Gather all points from all series
+    let xMin = Infinity;
+    let xMax = -Infinity;
+    let yMin = Infinity;
+    let yMax = -Infinity;
+    let hasData = false;
+
+    for (const dataPoints of this.seriesDataPoints) {
+      for (const point of dataPoints) {
+        hasData = true;
+        xMin = Math.min(xMin, point.x);
+        xMax = Math.max(xMax, point.x);
+        yMin = Math.min(yMin, point.y);
+        yMax = Math.max(yMax, point.y);
+      }
     }
 
-    let xMin = firstPoint.x;
-    let xMax = firstPoint.x;
-    let yMin = firstPoint.y;
-    let yMax = firstPoint.y;
-
-    for (const point of this.dataPoints) {
-      xMin = Math.min(xMin, point.x);
-      xMax = Math.max(xMax, point.x);
-      yMin = Math.min(yMin, point.y);
-      yMax = Math.max(yMax, point.y);
+    if (!hasData) {
+      return;
     }
 
     // Add 10% padding with a minimum to ensure reasonable range sizes
@@ -241,23 +289,26 @@ export default class GraphDataManager {
   }
 
   /**
-   * Update the trail visualization showing the most recent points
+   * Update the trail visualization showing the most recent points (first series only)
    */
   public updateTrail(): void {
     // Clear existing trail circles
     this.trailNode.removeAllChildren();
 
+    const dataPoints = this.seriesDataPoints[0];
+    if (!dataPoints) return;
+
     // Get the last N points (up to trailLength)
-    const numTrailPoints = Math.min(this.trailLength, this.dataPoints.length);
+    const numTrailPoints = Math.min(this.trailLength, dataPoints.length);
     if (numTrailPoints === 0) {
       return;
     }
 
     // Start from the most recent points
-    const startIndex = this.dataPoints.length - numTrailPoints;
+    const startIndex = dataPoints.length - numTrailPoints;
 
     for (let i = 0; i < numTrailPoints; i++) {
-      const point = this.dataPoints[startIndex + i];
+      const point = dataPoints[startIndex + i];
       if (!point) continue;
 
       // Calculate the age of this point (0 = oldest in trail, numTrailPoints-1 = newest)
@@ -304,10 +355,24 @@ export default class GraphDataManager {
   }
 
   /**
-   * Get the number of data points
+   * Get the number of data points in a specific series (default: series 0)
    */
-  public getDataPointCount(): number {
-    return this.dataPoints.length;
+  public getDataPointCount(seriesIndex: number = 0): number {
+    if (seriesIndex < 0 || seriesIndex >= this.numSeries) {
+      return 0;
+    }
+    return this.seriesDataPoints[seriesIndex]!.length;
+  }
+
+  /**
+   * Get the total number of data points across all series
+   */
+  public getTotalDataPointCount(): number {
+    let total = 0;
+    for (const dataPoints of this.seriesDataPoints) {
+      total += dataPoints.length;
+    }
+    return total;
   }
 }
 

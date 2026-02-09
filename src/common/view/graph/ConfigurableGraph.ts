@@ -28,7 +28,7 @@ import { Orientation } from "scenerystack/phet-core";
 import { Shape } from "scenerystack/kite";
 import type { PlottableProperty } from "./PlottableProperty.js";
 import type { SubStepDataPoint } from "../../model/BaseModel.js";
-import ResonanceColors from "../../ResonanceColors.js";
+import ResonanceColors, { getPlotColors } from "../../ResonanceColors.js";
 import ResonanceConstants from "../../ResonanceConstants.js";
 import { PhetFont } from "scenerystack/scenery-phet";
 import GraphDataManager from "./GraphDataManager.js";
@@ -41,7 +41,8 @@ export default class ConfigurableGraph extends Node {
   private readonly xPropertyProperty: Property<PlottableProperty>;
   private readonly yPropertyProperty: Property<PlottableProperty>;
   private readonly chartTransform: ChartTransform;
-  private readonly linePlot: LinePlot;
+  private readonly linePlots: LinePlot[];
+  private readonly numSeries: number;
   private readonly chartRectangle: ChartRectangle;
   private graphWidth: number;
   private graphHeight: number;
@@ -98,6 +99,7 @@ export default class ConfigurableGraph extends Node {
    * @param height - Graph height in pixels
    * @param maxDataPoints - Maximum number of points to store
    * @param listParent - Parent node for combo box lists
+   * @param numSeries - Number of data series to support (for multi-resonator plots)
    */
   public constructor(
     availableProperties: PlottableProperty[],
@@ -107,6 +109,7 @@ export default class ConfigurableGraph extends Node {
     height: number,
     maxDataPoints: number = 2000,
     listParent: Node,
+    numSeries: number = 1,
   ) {
     super();
 
@@ -259,18 +262,26 @@ export default class ConfigurableGraph extends Node {
     );
     this.graphContentNode.addChild(this.xAxisInteractionRegion);
 
-    // Create line plot
-    this.linePlot = new LinePlot(this.chartTransform, [], {
-      stroke: ResonanceColors.plot1Property,
-      lineWidth: 2,
-    });
+    // Create line plots for each series with different colors
+    this.numSeries = numSeries;
+    this.linePlots = [];
+    const plotColors = getPlotColors();
+
+    for (let i = 0; i < numSeries; i++) {
+      const colorProperty = plotColors[i % plotColors.length]!;
+      const linePlot = new LinePlot(this.chartTransform, [], {
+        stroke: colorProperty,
+        lineWidth: 2,
+      });
+      this.linePlots.push(linePlot);
+    }
 
     // Create trail node for showing recent points
     this.trailNode = new Node();
 
-    // Wrap line plot and trail in a clipped container to prevent overflow beyond the grid
+    // Wrap line plots and trail in a clipped container to prevent overflow beyond the grid
     this.clippedDataContainer = new Node({
-      children: [this.linePlot, this.trailNode],
+      children: [...this.linePlots, this.trailNode],
       clipArea: Shape.rect(0, 0, width, height),
     });
     this.graphContentNode.addChild(this.clippedDataContainer);
@@ -293,10 +304,10 @@ export default class ConfigurableGraph extends Node {
     });
     this.graphContentNode.addChild(this.yAxisLabelNode);
 
-    // Initialize data manager
+    // Initialize data manager with all line plots
     this.dataManager = new GraphDataManager(
       this.chartTransform,
-      this.linePlot,
+      this.linePlots,
       this.trailNode,
       maxDataPoints,
       {
@@ -576,12 +587,20 @@ export default class ConfigurableGraph extends Node {
 
   /**
    * Add a new data point based on current property values
+   * @param seriesIndex - Which series to add to (default: 0)
    */
-  public addDataPoint(): void {
+  public addDataPoint(seriesIndex: number = 0): void {
     const xValue = this.xPropertyProperty.value.property.value;
     const yValue = this.yPropertyProperty.value.property.value;
 
-    this.dataManager.addDataPoint(xValue, yValue);
+    this.dataManager.addDataPoint(xValue, yValue, seriesIndex);
+  }
+
+  /**
+   * Get the number of series this graph supports
+   */
+  public getNumSeries(): number {
+    return this.numSeries;
   }
 
   /**
@@ -597,8 +616,12 @@ export default class ConfigurableGraph extends Node {
    * Maps the sub-step data to the currently selected x and y axes.
    * Uses decimation to prevent memory overflow while maintaining smooth curves.
    * @param subStepData - Array of sub-step data points from the model
+   * @param seriesIndex - Which series to add to (default: 0)
    */
-  public addDataPointsFromSubSteps(subStepData: SubStepDataPoint[]): void {
+  public addDataPointsFromSubSteps(
+    subStepData: SubStepDataPoint[],
+    seriesIndex: number = 0,
+  ): void {
     if (subStepData.length === 0) return;
 
     const xProperty = this.xPropertyProperty.value;
@@ -625,7 +648,7 @@ export default class ConfigurableGraph extends Node {
     }
 
     if (mappedPoints.length > 0) {
-      this.dataManager.addDataPoints(mappedPoints);
+      this.dataManager.addDataPoints(mappedPoints, seriesIndex);
     }
   }
 
@@ -683,6 +706,31 @@ export default class ConfigurableGraph extends Node {
    */
   public getYProperty(): PlottableProperty {
     return this.yPropertyProperty.value;
+  }
+
+  /**
+   * Get the x-axis property Property (for observing changes)
+   */
+  public getXPropertyProperty(): Property<PlottableProperty> {
+    return this.xPropertyProperty;
+  }
+
+  /**
+   * Get the y-axis property Property (for observing changes)
+   */
+  public getYPropertyProperty(): Property<PlottableProperty> {
+    return this.yPropertyProperty;
+  }
+
+  /**
+   * Add a data point to a specific series with explicit x/y values
+   */
+  public addDataPointForSeries(
+    xValue: number,
+    yValue: number,
+    seriesIndex: number,
+  ): void {
+    this.dataManager.addDataPoint(xValue, yValue, seriesIndex);
   }
 
   /**

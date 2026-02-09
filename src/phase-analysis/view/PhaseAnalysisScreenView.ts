@@ -9,6 +9,7 @@ import { Node, Text } from "scenerystack/scenery";
 import { Checkbox } from "scenerystack/sun";
 import { BaseOscillatorScreenView } from "../../common/view/BaseOscillatorScreenView.js";
 import { PhaseAnalysisModel } from "../model/PhaseAnalysisModel.js";
+import { ResonanceModel } from "../../common/model/ResonanceModel.js";
 import ConfigurableGraph from "../../common/view/graph/ConfigurableGraph.js";
 import type { PlottableProperty } from "../../common/view/graph/PlottableProperty.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
@@ -159,7 +160,9 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
     // Create a parent node for combo box dropdowns (must be above the graph in z-order)
     const comboBoxListParent = new Node();
 
-    // Create the configurable graph
+    // Create the configurable graph with support for multiple resonators
+    // Use MAX_RESONATORS so graph can handle any number of active resonators
+    const maxResonators = 10; // BaseOscillatorScreenModel.MAX_RESONATORS
     this.configurableGraph = new ConfigurableGraph(
       plottableProperties,
       initialXProperty,
@@ -168,6 +171,7 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
       250,
       2000,
       comboBoxListParent,
+      maxResonators,
     );
 
     // Position the graph in the upper-left area of the screen
@@ -200,9 +204,12 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
     this.addChild(this.configurableGraph);
     this.addChild(comboBoxListParent);
 
-    // Enable sub-step data collection only when graph is visible (performance optimization)
+    // Enable sub-step data collection for all resonators when graph is visible
     this.configurableGraph.getGraphVisibleProperty().link((visible) => {
-      model.resonanceModel.subStepCollectionEnabled = visible;
+      // Enable for all resonator models
+      for (const resonatorModel of model.resonatorModels) {
+        resonatorModel.subStepCollectionEnabled = visible;
+      }
     });
   }
 
@@ -212,17 +219,59 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
     // Add data points to the graph when the simulation is playing
     if (this.model.isPlayingProperty.value) {
       const phaseModel = this.model as PhaseAnalysisModel;
-      const resonanceModel = phaseModel.resonanceModel;
+      const resonatorCount = phaseModel.resonatorCountProperty.value;
 
-      // Use sub-step data if available for smooth phase-space plots
-      if (resonanceModel.hasSubStepData()) {
-        const subStepData = resonanceModel.flushSubStepData();
-        this.configurableGraph.addDataPointsFromSubSteps(subStepData);
-      } else {
-        // Fall back to single-point sampling (e.g., during drag)
-        this.configurableGraph.addDataPoint();
+      // Add data for each active resonator
+      for (let i = 0; i < resonatorCount; i++) {
+        const resonatorModel = phaseModel.getResonatorModel(i);
+
+        // Use sub-step data if available for smooth phase-space plots
+        if (resonatorModel.hasSubStepData()) {
+          const subStepData = resonatorModel.flushSubStepData();
+          this.configurableGraph.addDataPointsFromSubSteps(subStepData, i);
+        } else {
+          // Fall back to single-point sampling (e.g., during drag)
+          // For multi-series, we need to get values from each resonator
+          const xProp = this.configurableGraph.getXPropertyProperty().value;
+          const yProp = this.configurableGraph.getYPropertyProperty().value;
+          const xValue = this.getPropertyValueForResonator(xProp, resonatorModel);
+          const yValue = this.getPropertyValueForResonator(yProp, resonatorModel);
+          if (xValue !== null && yValue !== null) {
+            this.configurableGraph.addDataPointForSeries(xValue, yValue, i);
+          }
+        }
       }
     }
+  }
+
+  /**
+   * Get a property value from a specific resonator model.
+   * Maps the plottable property to the resonator's corresponding property.
+   */
+  private getPropertyValueForResonator(
+    prop: PlottableProperty,
+    resonatorModel: ResonanceModel,
+  ): number | null {
+    const name =
+      typeof prop.name === "string" ? prop.name : prop.name.value;
+    const lowerName = name.toLowerCase();
+
+    // Map common property names to resonator model properties
+    if (lowerName.includes("time")) {
+      return resonatorModel.timeProperty.value;
+    }
+    if (lowerName.includes("position") || lowerName.includes("displacement")) {
+      return resonatorModel.positionProperty.value;
+    }
+    if (lowerName.includes("velocity") && !lowerName.includes("rms")) {
+      return resonatorModel.velocityProperty.value;
+    }
+    if (lowerName.includes("acceleration") && !lowerName.includes("rms")) {
+      return resonatorModel.accelerationProperty.value;
+    }
+
+    // For other properties, return null (will use first resonator's value)
+    return null;
   }
 
   public override reset(): void {
