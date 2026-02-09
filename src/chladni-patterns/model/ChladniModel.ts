@@ -24,7 +24,12 @@
  * - PlaybackStateMachine: Animation state management
  */
 
-import { Property, NumberProperty, Multilink, StringUnionProperty } from "scenerystack/axon";
+import {
+  Property,
+  NumberProperty,
+  Multilink,
+  StringUnionProperty,
+} from "scenerystack/axon";
 import { Vector2, Range } from "scenerystack/dot";
 import { Material, MaterialType } from "./Material.js";
 import { ModalCalculator } from "./ModalCalculator.js";
@@ -166,9 +171,12 @@ export class ChladniModel {
     });
 
     // Initialize time speed
-    this.timeSpeedProperty = new StringUnionProperty<ChladniTimeSpeed>("normal", {
-      validValues: ChladniTimeSpeedValues,
-    });
+    this.timeSpeedProperty = new StringUnionProperty<ChladniTimeSpeed>(
+      "normal",
+      {
+        validValues: ChladniTimeSpeedValues,
+      },
+    );
 
     // Initialize excitation position at center of plate
     this.excitationPositionProperty = new Property<Vector2>(

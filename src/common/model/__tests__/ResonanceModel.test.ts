@@ -977,10 +977,7 @@ describe("ResonanceModel", () => {
       model.dampingProperty.value = 2.0; // zeta = 0.1
       const zeta = 0.1;
       const expected = (2 * Math.PI * zeta) / Math.sqrt(1 - zeta * zeta);
-      expect(model.logarithmicDecrementProperty.value).toBeCloseTo(
-        expected,
-        5,
-      );
+      expect(model.logarithmicDecrementProperty.value).toBeCloseTo(expected, 5);
     });
 
     it("should return Infinity for critically damped system", () => {

@@ -90,7 +90,9 @@ export class FrequencySweepController {
    * Calculate the duration for a sweep from a given start frequency to max.
    */
   private calculateDuration(fromFrequency: number): number {
-    return (this.frequencyRange.max - fromFrequency) / this.getEffectiveSweepRate();
+    return (
+      (this.frequencyRange.max - fromFrequency) / this.getEffectiveSweepRate()
+    );
   }
 
   /**
@@ -200,7 +202,11 @@ export class FrequencySweepController {
     this.speedFactor = factor;
 
     // If actively animating (not paused), restart animation with new speed
-    if (this.sweepAnimation && this.isSweepingProperty.value && this.pausedFrequency === null) {
+    if (
+      this.sweepAnimation &&
+      this.isSweepingProperty.value &&
+      this.pausedFrequency === null
+    ) {
       const currentFreq = this.frequencyProperty.value;
       this.createAndStartAnimation(currentFreq);
     }

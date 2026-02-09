@@ -349,7 +349,9 @@ describe("AnalyticalSolver", () => {
       const analyticalModel = new ResonanceModel({
         solverTypeProperty: analyticalSolverType,
       });
-      const rk4Model = new ResonanceModel({ solverTypeProperty: rk4SolverType });
+      const rk4Model = new ResonanceModel({
+        solverTypeProperty: rk4SolverType,
+      });
 
       // Same initial conditions
       analyticalModel.positionProperty.value = 0.1;
