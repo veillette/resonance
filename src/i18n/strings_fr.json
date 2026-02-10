@@ -60,6 +60,7 @@
       "driverPosition": "Position de l'Excitateur",
       "frequencyRatio": "Rapport de Fréquence (\u03c9/\u03c9\u2080)",
       "amplitudeRatio": "Facteur d'Amplification",
+      "phase": "Phase",
       "driverEnergy": "Énergie du Moteur",
       "thermalEnergy": "Énergie Thermique",
       "rmsDisplacement": "Déplacement RMS",

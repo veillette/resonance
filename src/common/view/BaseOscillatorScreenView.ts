@@ -676,17 +676,20 @@ export class BaseOscillatorScreenView extends ScreenView {
 
       // Configure spring
       const springNode = this.springNodes[i]!;
-      const springRadius = springNode.radiusProperty.value;
-      const loopsTimesRadius = ResonanceConstants.SPRING_LOOPS * springRadius;
+      const loopsTimesRadius =
+        ResonanceConstants.SPRING_LOOPS * ResonanceConstants.SPRING_RADIUS;
 
       // Spring length in view - use absolute value for rendering
       const springLengthView =
         Math.abs(springLengthModel) * ResonanceConstants.MODEL_VIEW_SCALE;
 
       // Calculate xScale to make spring coils fill the visual distance
+      // With phase=π, the ParametricSpringNode total length is:
+      //   totalLength = leftEndLength + xScale × loops × radius + rightEndLength
+      // So: xScale = (springLengthView - endLengths) / (loops × radius)
       const xScale = Math.max(
         ResonanceConstants.MIN_SPRING_XSCALE,
-        (springLengthView - endLengths - 2 * springRadius) / loopsTimesRadius,
+        (springLengthView - endLengths) / loopsTimesRadius,
       );
 
       springNode.xScaleProperty.value = xScale;
@@ -694,12 +697,15 @@ export class BaseOscillatorScreenView extends ScreenView {
       // Position spring to connect driver plate top to mass bottom
       // Normal case: mass above driver, spring extends upward (rotation -90°)
       // Abnormal case: mass below driver, spring extends downward (rotation +90°)
+      //
+      // ParametricSpringNode origin is at "left center" - with -90° rotation:
+      // - The origin becomes the bottom of the spring (at driver plate)
+      // - The spring extends upward to the mass
+      // No offset needed - the origin should be at the driver plate top
       const massAboveDriver = springLengthModel > 0;
       springNode.rotation = massAboveDriver ? -Math.PI / 2 : Math.PI / 2;
       springNode.x = xCenter;
-      springNode.y = massAboveDriver
-        ? driverTopViewY - leftEndLengthView
-        : driverTopViewY + leftEndLengthView;
+      springNode.y = driverTopViewY;
     }
   }
 

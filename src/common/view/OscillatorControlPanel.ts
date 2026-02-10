@@ -113,9 +113,9 @@ export class OscillatorControlPanel extends Panel {
 
     // --- Create all controls using extracted methods ---
 
-    // Preset combo box (only shown in single oscillator mode)
+    // Preset combo box (only shown and applied in single oscillator mode)
     const { presetBox, presetComboBoxListParent, presetProperty: _presetProperty } =
-      OscillatorControlPanel.createPresetControls(tempModel);
+      OscillatorControlPanel.createPresetControls(tempModel, singleOscillatorMode);
 
     const gravityEnabledProperty =
       OscillatorControlPanel.createGravityProperty(tempModel);
@@ -323,8 +323,13 @@ export class OscillatorControlPanel extends Panel {
    * Creates the preset combo box for single oscillator mode.
    * Allows the user to quickly set mass, spring constant, and damping
    * to predefined configurations.
+   * @param model - The oscillator screen model
+   * @param singleOscillatorMode - If true, applies preset values to the model
    */
-  private static createPresetControls(model: BaseOscillatorScreenModel): {
+  private static createPresetControls(
+    model: BaseOscillatorScreenModel,
+    singleOscillatorMode: boolean,
+  ): {
     presetBox: VBox;
     presetComboBoxListParent: Node;
     presetProperty: Property<ResonancePreset>;
@@ -375,13 +380,16 @@ export class OscillatorControlPanel extends Panel {
       align: "left",
     });
 
-    // Apply preset when selection changes
-    presetProperty.link((preset: ResonancePreset) => {
-      const resonator = model.resonanceModel;
-      resonator.massProperty.value = preset.mass;
-      resonator.springConstantProperty.value = preset.springConstant;
-      resonator.dampingProperty.value = preset.damping;
-    });
+    // Apply preset when selection changes (only in single oscillator mode)
+    // In multiple oscillator mode, the configuration mode (SAME_MASS, etc.) controls parameters
+    if (singleOscillatorMode) {
+      presetProperty.link((preset: ResonancePreset) => {
+        const resonator = model.resonanceModel;
+        resonator.massProperty.value = preset.mass;
+        resonator.springConstantProperty.value = preset.springConstant;
+        resonator.dampingProperty.value = preset.damping;
+      });
+    }
 
     return { presetBox, presetComboBoxListParent, presetProperty };
   }

@@ -60,6 +60,7 @@
       "driverPosition": "Driver Position",
       "frequencyRatio": "Frequency Ratio (\u03c9/\u03c9\u2080)",
       "amplitudeRatio": "Magnification Factor",
+      "phase": "Phase",
       "driverEnergy": "Driver Energy",
       "thermalEnergy": "Thermal Energy",
       "rmsDisplacement": "RMS Displacement",

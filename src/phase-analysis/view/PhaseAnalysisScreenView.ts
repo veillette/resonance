@@ -117,26 +117,6 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         property: resonanceModel.thermalEnergyProperty,
         unit: "J",
       },
-      {
-        name: ResonanceStrings.controls.dampingPowerStringProperty,
-        property: resonanceModel.dampingPowerProperty,
-        unit: "W",
-      },
-      {
-        name: ResonanceStrings.controls.drivingPowerStringProperty,
-        property: resonanceModel.drivingPowerProperty,
-        unit: "W",
-      },
-      {
-        name: ResonanceStrings.controls.springPowerStringProperty,
-        property: resonanceModel.springPowerProperty,
-        unit: "W",
-      },
-      {
-        name: ResonanceStrings.controls.gravitationalPowerStringProperty,
-        property: resonanceModel.gravitationalPowerProperty,
-        unit: "W",
-      },
       // Driver and dimensionless ratios
       {
         name: ResonanceStrings.controls.driverPositionStringProperty,
@@ -150,6 +130,16 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
       {
         name: ResonanceStrings.controls.amplitudeRatioStringProperty,
         property: resonanceModel.amplitudeRatioProperty,
+      },
+      {
+        name: ResonanceStrings.controls.frequencyStringProperty,
+        property: resonanceModel.drivingFrequencyProperty,
+        unit: "Hz",
+      },
+      {
+        name: ResonanceStrings.controls.phaseStringProperty,
+        property: resonanceModel.displacementPhaseProperty,
+        unit: "rad",
       },
     ];
 

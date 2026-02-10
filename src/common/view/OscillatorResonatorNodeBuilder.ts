@@ -8,8 +8,8 @@
  * - Phase Analysis
  */
 
-import { Node, Text, Rectangle } from "scenerystack/scenery";
-import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
+import { Node, Text, Rectangle, Color, LinearGradient } from "scenerystack/scenery";
+import { DragListener, KeyboardDragListener, Path } from "scenerystack/scenery";
 import { ParametricSpringNode, PhetFont } from "scenerystack/scenery-phet";
 import { Vector2Property } from "scenerystack/dot";
 import { Vector2, Bounds2 } from "scenerystack/dot";
@@ -46,8 +46,9 @@ export interface ResonatorBuildResult {
 
 export class OscillatorResonatorNodeBuilder {
   /**
-   * Calculate mass box size based on mass value using surface area scaling.
-   * Surface area scales linearly with mass, so side length scales with √mass.
+   * Calculate mass box size based on mass value using cubic root scaling.
+   * Cubic root scaling prevents large masses from becoming too large visually,
+   * which helps avoid overlap between adjacent resonators.
    */
   public static calculateMassSize(mass: number): number {
     const minMass = ResonanceConstants.MASS_RANGE.min;
@@ -55,9 +56,9 @@ export class OscillatorResonatorNodeBuilder {
     const minSize = ResonanceConstants.MIN_MASS_SIZE;
     const maxSize = ResonanceConstants.MAX_MASS_SIZE;
 
-    // Surface area scaling: side = minSize + (maxSize - minSize) × √((mass - minMass) / (maxMass - minMass))
+    // Cubic root scaling: side = minSize + (maxSize - minSize) × ∛((mass - minMass) / (maxMass - minMass))
     const normalizedMass = (mass - minMass) / (maxMass - minMass);
-    const size = minSize + (maxSize - minSize) * Math.sqrt(normalizedMass);
+    const size = minSize + (maxSize - minSize) * Math.cbrt(normalizedMass);
 
     return size;
   }
@@ -115,17 +116,75 @@ export class OscillatorResonatorNodeBuilder {
       descriptionContent: springDescription,
     });
 
-    // Line width varies with spring constant
+    // Two-phase spring visualization based on spring constant:
+    // Phase 1 (below threshold): thickness increases, color stays red
+    // Phase 2 (above threshold): thickness at max, color transitions red -> purple
+    //
+    // Access internal paths for color modification
+    // ParametricSpringNode children are [backPath, frontPath]
+    const backPath = springNode.children[0] as Path;
+    const frontPath = springNode.children[1] as Path;
+
+    // Get the spring radius for gradient calculations
+    const yRadius =
+      ResonanceConstants.SPRING_RADIUS *
+      ResonanceConstants.SPRING_ASPECT_RATIO;
+
     resonatorModel.springConstantProperty.link((springConstant: number) => {
       const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
       const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-      const normalizedK = (springConstant - minK) / (maxK - minK);
-      const lineWidth =
-        ResonanceConstants.SPRING_LINE_WIDTH_MIN +
-        normalizedK *
-          (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
-            ResonanceConstants.SPRING_LINE_WIDTH_MIN);
+      const threshold = ResonanceConstants.SPRING_THICKNESS_THRESHOLD;
+
+      // Get base colors from color properties
+      const softColor = ResonanceColors.springProperty.value;
+      const softBackColor = ResonanceColors.springBackProperty.value;
+      const stiffColor = ResonanceColors.springStiffProperty.value;
+      const stiffBackColor = ResonanceColors.springStiffBackProperty.value;
+
+      let lineWidth: number;
+      let frontColor: Color;
+      let middleColor: Color;
+      let backColor: Color;
+
+      if (springConstant <= threshold) {
+        // Phase 1: Thickness varies from min to max, color stays at soft (red)
+        const normalizedK = (springConstant - minK) / (threshold - minK);
+        lineWidth =
+          ResonanceConstants.SPRING_LINE_WIDTH_MIN +
+          normalizedK *
+            (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
+              ResonanceConstants.SPRING_LINE_WIDTH_MIN);
+        frontColor = softColor;
+        middleColor = softColor;
+        backColor = softBackColor;
+      } else {
+        // Phase 2: Thickness at max, color interpolates from red to purple
+        lineWidth = ResonanceConstants.SPRING_LINE_WIDTH_MAX;
+        const colorRatio = (springConstant - threshold) / (maxK - threshold);
+        // Blend from soft color (red) to stiff color (purple)
+        frontColor = Color.interpolateRGBA(softColor, stiffColor, colorRatio);
+        middleColor = frontColor;
+        backColor = Color.interpolateRGBA(
+          softBackColor,
+          stiffBackColor,
+          colorRatio,
+        );
+      }
+
+      // Update line width
       springNode.lineWidthProperty.value = lineWidth;
+
+      // Update path strokes with new gradients (matching ParametricSpringNode's internal structure)
+      frontPath.stroke = new LinearGradient(0, -yRadius, 0, yRadius)
+        .addColorStop(0, middleColor)
+        .addColorStop(0.35, frontColor)
+        .addColorStop(0.65, frontColor)
+        .addColorStop(1, middleColor);
+
+      backPath.stroke = new LinearGradient(0, -yRadius, 0, yRadius)
+        .addColorStop(0, middleColor)
+        .addColorStop(0.5, backColor)
+        .addColorStop(1, middleColor);
     });
 
     return springNode;

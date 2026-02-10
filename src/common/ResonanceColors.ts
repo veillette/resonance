@@ -266,6 +266,23 @@ const ResonanceColors = {
     projector: new Color(102, 0, 0), // #660000
   }),
 
+  // Spring color for high spring constant (purple, used above threshold)
+  // This creates a visual transition: red (soft) -> purple (stiff)
+  springStiffProperty: new ProfileColorProperty(resonance, "springStiff", {
+    default: new Color(160, 80, 220), // purple
+    projector: new Color(128, 0, 200),
+  }),
+
+  // Spring back color for high spring constant
+  springStiffBackProperty: new ProfileColorProperty(
+    resonance,
+    "springStiffBack",
+    {
+      default: new Color(100, 40, 140), // darker purple
+      projector: new Color(80, 0, 128),
+    },
+  ),
+
   // Gravity toggle colors
   gravityToggleOffProperty: new ProfileColorProperty(
     resonance,
