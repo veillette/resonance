@@ -89,10 +89,6 @@ const SPRING_POINTS_PER_LOOP = 40;
 const SPRING_LINE_WIDTH = 1;
 const SPRING_LINE_WIDTH_MIN = 1; // minimum line width based on spring constant
 const SPRING_LINE_WIDTH_MAX = 5; // maximum line width based on spring constant
-// Threshold where thickness stops increasing and color starts changing
-// Below this: thickness varies from min to max
-// Above this: thickness stays at max, color transitions from red to purple
-const SPRING_THICKNESS_THRESHOLD = 400; // N/m
 // Spring end lengths in model coordinates (meters)
 // These are the straight stem portions before/after the coils
 const SPRING_LEFT_END_LENGTH_MODEL = 0.005; // 0.5 cm stem at driver plate
@@ -238,7 +234,6 @@ const ResonanceConstants = {
   SPRING_LINE_WIDTH,
   SPRING_LINE_WIDTH_MIN,
   SPRING_LINE_WIDTH_MAX,
-  SPRING_THICKNESS_THRESHOLD,
   SPRING_LEFT_END_LENGTH_MODEL,
   SPRING_RIGHT_END_LENGTH_MODEL,
   MIN_SPRING_XSCALE,

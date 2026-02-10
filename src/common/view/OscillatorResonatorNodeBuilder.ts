@@ -116,9 +116,10 @@ export class OscillatorResonatorNodeBuilder {
       descriptionContent: springDescription,
     });
 
-    // Two-phase spring visualization based on spring constant:
-    // Phase 1 (below threshold): thickness increases, color stays red
-    // Phase 2 (above threshold): thickness at max, color transitions red -> purple
+    // Gradual spring visualization based on spring constant:
+    // - Thickness: changes more dramatically at low k (square root scaling)
+    //   This makes small spring constant differences visually apparent
+    // - Color: transitions linearly from red (soft) to purple (stiff)
     //
     // Access internal paths for color modification
     // ParametricSpringNode children are [backPath, frontPath]
@@ -133,7 +134,6 @@ export class OscillatorResonatorNodeBuilder {
     resonatorModel.springConstantProperty.link((springConstant: number) => {
       const minK = ResonanceConstants.SPRING_CONSTANT_RANGE.min;
       const maxK = ResonanceConstants.SPRING_CONSTANT_RANGE.max;
-      const threshold = ResonanceConstants.SPRING_THICKNESS_THRESHOLD;
 
       // Get base colors from color properties
       const softColor = ResonanceColors.springProperty.value;
@@ -141,35 +141,34 @@ export class OscillatorResonatorNodeBuilder {
       const stiffColor = ResonanceColors.springStiffProperty.value;
       const stiffBackColor = ResonanceColors.springStiffBackProperty.value;
 
-      let lineWidth: number;
-      let frontColor: Color;
-      let middleColor: Color;
-      let backColor: Color;
+      // Normalize spring constant to [0, 1] range, clamped to handle edge cases
+      const normalizedK = Math.max(
+        0,
+        Math.min(1, (springConstant - minK) / (maxK - minK)),
+      );
 
-      if (springConstant <= threshold) {
-        // Phase 1: Thickness varies from min to max, color stays at soft (red)
-        const normalizedK = (springConstant - minK) / (threshold - minK);
-        lineWidth =
-          ResonanceConstants.SPRING_LINE_WIDTH_MIN +
-          normalizedK *
-            (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
-              ResonanceConstants.SPRING_LINE_WIDTH_MIN);
-        frontColor = softColor;
-        middleColor = softColor;
-        backColor = softBackColor;
-      } else {
-        // Phase 2: Thickness at max, color interpolates from red to purple
-        lineWidth = ResonanceConstants.SPRING_LINE_WIDTH_MAX;
-        const colorRatio = (springConstant - threshold) / (maxK - threshold);
-        // Blend from soft color (red) to stiff color (purple)
-        frontColor = Color.interpolateRGBA(softColor, stiffColor, colorRatio);
-        middleColor = frontColor;
-        backColor = Color.interpolateRGBA(
-          softBackColor,
-          stiffBackColor,
-          colorRatio,
-        );
-      }
+      // Thickness uses square root scaling for more dramatic change at low k
+      // sqrt(0) = 0, sqrt(0.25) = 0.5, sqrt(1) = 1
+      // This means at 25% of the range, thickness is already at 50% of max
+      const thicknessRatio = Math.sqrt(normalizedK);
+      const lineWidth =
+        ResonanceConstants.SPRING_LINE_WIDTH_MIN +
+        thicknessRatio *
+          (ResonanceConstants.SPRING_LINE_WIDTH_MAX -
+            ResonanceConstants.SPRING_LINE_WIDTH_MIN);
+
+      // Color transitions linearly from red to purple over entire range
+      const frontColor = Color.interpolateRGBA(
+        softColor,
+        stiffColor,
+        normalizedK,
+      );
+      const middleColor = frontColor;
+      const backColor = Color.interpolateRGBA(
+        softBackColor,
+        stiffBackColor,
+        normalizedK,
+      );
 
       // Update line width
       springNode.lineWidthProperty.value = lineWidth;
