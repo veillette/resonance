@@ -11,6 +11,45 @@
     <meta name="phet-sim-level" content="production" />
 
     <title>Resonance</title>
+
+    <!-- Pre-initialize phet globals before any modules load -->
+    <script>
+      // Set up phet namespace with initial values
+      // This runs before ES modules, ensuring init() values are available early
+      self.phet = self.phet || {};
+      self.phet.chipper = self.phet.chipper || {};
+      self.phet.chipper.project = 'resonance';
+      self.phet.chipper.version = '1.0.0';
+      self.phet.chipper.brand = 'made-with-scenerystack';
+      self.phet.chipper.locale = 'en';
+      self.phet.chipper.isDebugBuild = false;
+      self.phet.chipper.isSceneryStack = true;
+      self.phet.chipper.allowLocaleSwitching = true;
+      self.phet.chipper.availableLocales = ['en', 'es', 'fr'];
+      self.phet.chipper.strings = { en: {}, es: {}, fr: {} };
+      self.phet.chipper.packageObject = {
+        name: 'resonance',
+        version: '1.0.0',
+        phet: {
+          simulation: true,
+          runnable: true,
+          supportedBrands: ['made-with-scenerystack'],
+          simFeatures: {
+            colorProfiles: ['default', 'projector'],
+            supportsDynamicLocale: true,
+            supportsInteractiveDescription: true,
+            supportsInteractiveHighlights: true,
+            supportsVoicing: false,
+            supportsCoreVoicing: false,
+            supportsPanAndZoom: true,
+            supportedRegionsAndCultures: ['usa'],
+            supportsSound: false
+          }
+        }
+      };
+      // Splash data URI will be set by init() - use inline placeholder
+      self.PHET_SPLASH_DATA_URI = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="#1a1a2e"/><text x="300" y="200" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" dominant-baseline="middle">Loading Resonance...</text></svg>');
+    </script>
   </head>
   <body style="background-color: black">
     <script type="module" src="./src/main.ts"></script>

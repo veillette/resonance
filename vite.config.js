@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
-import packageJson from "./package.json";
 
 // Simple splash SVG placeholder for brands
 const splashSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
@@ -31,10 +30,9 @@ function generateSplashPlugin() {
 export default defineConfig({
   // So the build can be served from an arbitrary path
   base: "./",
-  define: {
-    // Provide packageObject for SceneryStack's update checker
-    "phet.chipper.packageObject": JSON.stringify(packageJson),
-  },
+  // Note: We intentionally do NOT define phet.chipper.packageObject here.
+  // The inline script in index.html sets this at runtime before modules load,
+  // which is required for proper initialization order with SceneryStack.
   plugins: [generateSplashPlugin()],
   build: {
     rollupOptions: {

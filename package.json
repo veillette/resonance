@@ -3,6 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "phet": {
+    "simulation": true,
+    "runnable": true,
+    "supportedBrands": ["made-with-scenerystack"],
+    "simFeatures": {
+      "colorProfiles": ["default", "projector"],
+      "supportsDynamicLocale": true,
+      "supportsInteractiveDescription": true,
+      "supportsInteractiveHighlights": true,
+      "supportsVoicing": false,
+      "supportsPanAndZoom": true,
+      "supportsSound": false
+    }
+  },
   "scripts": {
     "start": "npx vite",
     "build": "npx tsc && npx vite build",
