@@ -15,6 +15,21 @@ import type { PlottableProperty } from "./PlottableProperty.js";
 import ResonanceColors from "../../ResonanceColors.js";
 import { PhetFont } from "scenerystack/scenery-phet";
 import resonance from "../../ResonanceNamespace.js";
+import { ResonanceStrings } from "../../../i18n/ResonanceStrings.js";
+
+// Font sizes
+const COMBO_BOX_FONT = new PhetFont({ size: 12 });
+const TITLE_FONT = new PhetFont({ size: 14 });
+
+// Layout constants
+const COMBO_BOX_CORNER_RADIUS = 5;
+const COMBO_BOX_X_MARGIN = 6;
+const COMBO_BOX_Y_MARGIN = 3;
+const TITLE_SPACING = 3;
+const HEADER_HEIGHT = 30;
+const HEADER_CORNER_RADIUS = 5;
+const HEADER_LINE_WIDTH = 2;
+const HEADER_DARKEN_FACTOR = 0.1;
 
 export default class GraphControlsPanel {
   private readonly availableProperties: PlottableProperty[];
@@ -58,16 +73,16 @@ export default class GraphControlsPanel {
       value: prop,
       createNode: () =>
         new Text(prop.name, {
-          font: new PhetFont({ size: 12 }),
+          font: COMBO_BOX_FONT,
           fill: ResonanceColors.textProperty,
         }),
       tandemName: this.sanitizeTandemName(prop.name) + "Item",
     }));
 
     const xComboBox = new ComboBox(this.xPropertyProperty, xItems, listParent, {
-      cornerRadius: 5,
-      xMargin: 6,
-      yMargin: 3,
+      cornerRadius: COMBO_BOX_CORNER_RADIUS,
+      xMargin: COMBO_BOX_X_MARGIN,
+      yMargin: COMBO_BOX_Y_MARGIN,
       buttonFill: ResonanceColors.controlPanelFillProperty,
       buttonStroke: ResonanceColors.controlPanelStrokeProperty,
       listFill: ResonanceColors.controlPanelFillProperty,
@@ -79,16 +94,16 @@ export default class GraphControlsPanel {
       value: prop,
       createNode: () =>
         new Text(prop.name, {
-          font: new PhetFont({ size: 12 }),
+          font: COMBO_BOX_FONT,
           fill: ResonanceColors.textProperty,
         }),
       tandemName: this.sanitizeTandemName(prop.name) + "Item",
     }));
 
     const yComboBox = new ComboBox(this.yPropertyProperty, yItems, listParent, {
-      cornerRadius: 5,
-      xMargin: 6,
-      yMargin: 3,
+      cornerRadius: COMBO_BOX_CORNER_RADIUS,
+      xMargin: COMBO_BOX_X_MARGIN,
+      yMargin: COMBO_BOX_Y_MARGIN,
       buttonFill: ResonanceColors.controlPanelFillProperty,
       buttonStroke: ResonanceColors.controlPanelStrokeProperty,
       listFill: ResonanceColors.controlPanelFillProperty,
@@ -98,23 +113,29 @@ export default class GraphControlsPanel {
 
     // Create title in format "(Y vs X)"
     const leftParen = new Text("(", {
-      font: new PhetFont({ size: 14 }),
+      font: TITLE_FONT,
       fill: ResonanceColors.textProperty,
     });
 
-    const vsText = new Text(" vs ", {
-      font: new PhetFont({ size: 14 }),
-      fill: ResonanceColors.textProperty,
-    });
+    const vsText = new Text(
+      new DerivedProperty(
+        [ResonanceStrings.controls.graphVsStringProperty],
+        (vs: string) => ` ${vs} `,
+      ),
+      {
+        font: TITLE_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
 
     const rightParen = new Text(")", {
-      font: new PhetFont({ size: 14 }),
+      font: TITLE_FONT,
       fill: ResonanceColors.textProperty,
     });
 
     // Arrange in horizontal layout: (Y vs X)
     return new HBox({
-      spacing: 3,
+      spacing: TITLE_SPACING,
       align: "center",
       children: [leftParen, yComboBox, vsText, xComboBox, rightParen],
     });
@@ -125,22 +146,21 @@ export default class GraphControlsPanel {
    */
   public createHeaderBar(): Rectangle {
     // Create header bar with dynamic fill that darkens the control panel background
-    const headerHeight = 30;
     const headerFillProperty = new DerivedProperty(
       [ResonanceColors.controlPanelFillProperty],
-      (backgroundColor) => backgroundColor.colorUtilsDarker(0.1),
+      (backgroundColor) => backgroundColor.colorUtilsDarker(HEADER_DARKEN_FACTOR),
     );
     const headerBar = new Rectangle(
       0,
-      -headerHeight,
+      -HEADER_HEIGHT,
       this.graphWidth,
-      headerHeight,
-      5,
-      5,
+      HEADER_HEIGHT,
+      HEADER_CORNER_RADIUS,
+      HEADER_CORNER_RADIUS,
       {
         fill: headerFillProperty,
         stroke: ResonanceColors.controlPanelStrokeProperty,
-        lineWidth: 2,
+        lineWidth: HEADER_LINE_WIDTH,
         cursor: "grab",
       },
     );
@@ -155,7 +175,7 @@ export default class GraphControlsPanel {
     headerBar: Rectangle,
     newWidth: number,
   ): void {
-    headerBar.setRect(0, -30, newWidth, 30);
+    headerBar.setRect(0, -HEADER_HEIGHT, newWidth, HEADER_HEIGHT);
   }
 }
 

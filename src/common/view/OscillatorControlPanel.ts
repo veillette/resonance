@@ -726,7 +726,11 @@ export class OscillatorControlPanel extends Panel {
 
     // Announce visibility changes via voicing
     rulerVisibleProperty.lazyLink((visible: boolean) => {
-      const announcement = visible ? "Ruler shown" : "Ruler hidden";
+      const alerts = ResonanceStrings.a11y.alerts as unknown as {
+        rulerShownStringProperty: { value: string };
+        rulerHiddenStringProperty: { value: string };
+      };
+      const announcement = visible ? alerts.rulerShownStringProperty.value : alerts.rulerHiddenStringProperty.value;
       voicingUtteranceQueue.addToBack(announcement);
     });
 
@@ -749,15 +753,19 @@ export class OscillatorControlPanel extends Panel {
     const checkbox = new Checkbox(gridVisibleProperty, gridIcon, {
       boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
       // Accessibility
-      accessibleName: "Grid",
+      accessibleName: ResonanceStrings.a11y.resonatorPanel.gridCheckboxLabelStringProperty,
       // Voicing support
-      voicingNameResponse: "Grid",
-      voicingHintResponse: "Toggle grid visibility",
+      voicingNameResponse: ResonanceStrings.a11y.resonatorPanel.gridCheckboxLabelStringProperty,
+      voicingHintResponse: ResonanceStrings.a11y.resonatorPanel.gridCheckboxDescriptionStringProperty,
     });
 
     // Announce visibility changes via voicing
     gridVisibleProperty.lazyLink((visible: boolean) => {
-      const announcement = visible ? "Grid shown" : "Grid hidden";
+      const gridAlerts = ResonanceStrings.a11y.alerts as unknown as {
+        gridShownStringProperty: { value: string };
+        gridHiddenStringProperty: { value: string };
+      };
+      const announcement = visible ? gridAlerts.gridShownStringProperty.value : gridAlerts.gridHiddenStringProperty.value;
       voicingUtteranceQueue.addToBack(announcement);
     });
 
@@ -781,10 +789,9 @@ export class OscillatorControlPanel extends Panel {
       }),
       {
         boxWidth: ResonanceConstants.RULER_CHECKBOX_BOX_WIDTH,
-        accessibleName: "Trace",
-        voicingNameResponse: "Trace",
-        voicingHintResponse:
-          "Toggle trace mode to record mass motion over time",
+        accessibleName: ResonanceStrings.a11y.resonatorPanel.traceCheckboxLabelStringProperty,
+        voicingNameResponse: ResonanceStrings.a11y.resonatorPanel.traceCheckboxLabelStringProperty,
+        voicingHintResponse: ResonanceStrings.a11y.resonatorPanel.traceCheckboxDescriptionStringProperty,
       },
     );
 
@@ -800,9 +807,13 @@ export class OscillatorControlPanel extends Panel {
 
     // Announce trace state changes via voicing
     traceEnabledProperty.lazyLink((enabled: boolean) => {
+      const traceAlerts = ResonanceStrings.a11y.alerts as unknown as {
+        traceStartedStringProperty: { value: string };
+        traceStoppedStringProperty: { value: string };
+      };
       const announcement = enabled
-        ? "Trace recording started"
-        : "Trace recording stopped";
+        ? traceAlerts.traceStartedStringProperty.value
+        : traceAlerts.traceStoppedStringProperty.value;
       voicingUtteranceQueue.addToBack(announcement);
     });
 

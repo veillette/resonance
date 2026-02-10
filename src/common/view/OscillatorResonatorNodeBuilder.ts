@@ -22,6 +22,11 @@ import ResonanceConstants from "../ResonanceConstants.js";
 import { CircularUpdateGuard } from "../util/index.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 
+// Named constants for magic numbers
+const MASS_BOX_CORNER_RADIUS = 3;
+const KEYBOARD_DRAG_SPEED = 150; // pixels per second
+const KEYBOARD_SHIFT_DRAG_SPEED = 50; // pixels per second, slower with shift key
+
 /**
  * Context needed to build resonator nodes.
  */
@@ -152,7 +157,7 @@ export class OscillatorResonatorNodeBuilder {
         fill: ResonanceColors.massProperty,
         stroke: ResonanceColors.massStrokeProperty,
         lineWidth: ResonanceConstants.MASS_STROKE_LINE_WIDTH,
-        cornerRadius: 3,
+        cornerRadius: MASS_BOX_CORNER_RADIUS,
       },
     );
     // Use a fixed font size based on max resonators to avoid label size changes
@@ -266,8 +271,8 @@ export class OscillatorResonatorNodeBuilder {
     const keyboardDragListener = new KeyboardDragListener({
       positionProperty: massPositionProperty,
       dragBoundsProperty: new Property(layoutBounds),
-      dragSpeed: 150, // pixels per second
-      shiftDragSpeed: 50, // slower with shift key
+      dragSpeed: KEYBOARD_DRAG_SPEED,
+      shiftDragSpeed: KEYBOARD_SHIFT_DRAG_SPEED,
       start: () => {
         resonatorModel.isDraggingProperty.value = true;
         selectedResonatorIndexProperty.value = index;

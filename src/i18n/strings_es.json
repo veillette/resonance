@@ -64,7 +64,10 @@
       "thermalEnergy": "Energía Térmica",
       "rmsDisplacement": "Desplazamiento RMS",
       "rmsVelocity": "Velocidad RMS",
-      "graph": "Gráfica"
+      "graph": "Gráfica",
+      "fast": "Rápido",
+      "grid": "Cuadrícula",
+      "graphVs": "vs"
     },
     "preferences": {
       "title": "Preferencias",
@@ -153,7 +156,11 @@
         "gravityToggleLabel": "Interruptor de Gravedad",
         "gravityToggleDescription": "Activa o desactiva la gravedad en la simulación",
         "rulerCheckboxLabel": "Visibilidad de la Regla",
-        "rulerCheckboxDescription": "Muestra u oculta la regla de medición"
+        "rulerCheckboxDescription": "Muestra u oculta la regla de medición",
+        "gridCheckboxLabel": "Cuadrícula",
+        "gridCheckboxDescription": "Alternar visibilidad de la cuadrícula",
+        "traceCheckboxLabel": "Traza",
+        "traceCheckboxDescription": "Alternar modo de traza para registrar el movimiento de la masa"
       },
       "resonator": {
         "springLabel": "Resorte {{number}}",
@@ -166,8 +173,27 @@
         "simulationPaused": "Simulación pausada",
         "gravityOn": "Gravedad activada",
         "gravityOff": "Gravedad desactivada",
-        "resonatorCount": "{{count}} resonadores"
-      }
+        "resonatorCount": "{{count}} resonadores",
+        "rulerShown": "Regla visible",
+        "rulerHidden": "Regla oculta",
+        "gridShown": "Cuadrícula visible",
+        "gridHidden": "Cuadrícula oculta",
+        "traceStarted": "Grabación de traza iniciada",
+        "traceStopped": "Grabación de traza detenida"
+      },
+      "measurementLinePattern": "Línea de Medición {{number}}",
+      "rulerAccessibleName": "Regla"
+    },
+    "keyboardHelp": {
+      "simulationControls": "Controles de Simulación",
+      "playPause": "Reproducir / Pausar",
+      "adjustFrequency": "Ajustar Frecuencia",
+      "largeFrequencySteps": "Pasos de Frecuencia Grandes",
+      "resetSimulation": "Restablecer Simulación",
+      "stopFrequencySweep": "Detener Barrido de Frecuencia",
+      "dragControls": "Controles de Arrastre",
+      "moveObjects": "Mover Objetos",
+      "fineMovement": "Movimiento Fino"
     },
     "presets": {
       "lightAndBouncy": "Ligero y Elástico",
@@ -217,6 +243,7 @@
         "visualizationLabel": "Visualización de Placa de Chladni",
         "excitationMarkerLabel": "Punto de Excitación",
         "excitationMarkerDescription": "Marcador arrastrable que muestra dónde se excita la placa. Use las teclas de flecha para mover. Mantenga presionado Shift para control fino.",
+        "excitationMarkerVoicingHint": "Use las teclas de flecha para mover. Mantenga presionado Shift para control fino.",
         "resonancePeakAlert": "Pico de resonancia detectado a {{frequency}} Hz",
         "sweepCompleteAlert": "Barrido de frecuencia completado",
         "simulationPlayingAlert": "Simulación reproduciendo",

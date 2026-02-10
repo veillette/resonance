@@ -24,6 +24,9 @@ import { Matrix3 } from "scenerystack/dot";
 // Excitation marker properties
 const EXCITATION_MARKER_RADIUS = 12;
 const EXCITATION_MARKER_INNER_RADIUS = 4;
+const EXCITATION_MARKER_LINE_WIDTH = 3;
+const KEYBOARD_DRAG_SPEED = 0.05; // meters per second (model units)
+const KEYBOARD_SHIFT_DRAG_SPEED = 0.01; // slower with shift key for fine control
 
 /**
  * Options for creating an ExcitationMarkerNode.
@@ -124,7 +127,7 @@ export class ExcitationMarkerNode extends VoicingNode {
     this.voicingNameResponse =
       ResonanceStrings.chladni.a11y.excitationMarkerLabelStringProperty;
     this.voicingHintResponse =
-      "Use arrow keys to move. Hold Shift for fine control.";
+      ResonanceStrings.chladni.a11y.excitationMarkerVoicingHintStringProperty;
   }
 
   /**
@@ -160,7 +163,7 @@ export class ExcitationMarkerNode extends VoicingNode {
     // Outer circle (ring)
     const outerCircle = new Circle(EXCITATION_MARKER_RADIUS, {
       stroke: ResonanceColors.frequencyTrackProperty,
-      lineWidth: 3,
+      lineWidth: EXCITATION_MARKER_LINE_WIDTH,
       fill: null,
     });
     this.addChild(outerCircle);
@@ -232,8 +235,8 @@ export class ExcitationMarkerNode extends VoicingNode {
     const keyboardDragListener = new KeyboardDragListener({
       positionProperty: this.model.excitationPositionProperty,
       dragBoundsProperty: dragBoundsProperty,
-      dragSpeed: 0.05, // meters per second (model units)
-      shiftDragSpeed: 0.01, // slower with shift key for fine control
+      dragSpeed: KEYBOARD_DRAG_SPEED,
+      shiftDragSpeed: KEYBOARD_SHIFT_DRAG_SPEED,
       transform: invertYTransform,
     });
 

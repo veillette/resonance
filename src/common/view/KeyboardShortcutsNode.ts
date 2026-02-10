@@ -15,6 +15,11 @@ import {
   LetterKeyNode,
 } from "scenerystack/scenery-phet";
 import resonance from "../ResonanceNamespace.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+
+// Layout constants
+const COLUMN_SPACING = 20;
+const SECTION_SPACING = 15;
 
 /**
  * Custom keyboard help section for simulation-specific shortcuts.
@@ -23,19 +28,19 @@ class SimulationShortcutsKeyboardHelpSection extends KeyboardHelpSection {
   public constructor() {
     // Play/Pause with Space
     const playPauseRow = KeyboardHelpSectionRow.labelWithIcon(
-      "Play / Pause",
+      ResonanceStrings.keyboardHelp.playPauseStringProperty,
       TextKeyNode.space(),
     );
 
     // Adjust frequency with arrow keys
     const frequencyRow = KeyboardHelpSectionRow.labelWithIcon(
-      "Adjust Frequency",
+      ResonanceStrings.keyboardHelp.adjustFrequencyStringProperty,
       KeyboardHelpIconFactory.leftRightArrowKeysRowIcon(),
     );
 
     // Large frequency steps with Shift + arrows
     const largeStepRow = KeyboardHelpSectionRow.labelWithIcon(
-      "Large Frequency Steps",
+      ResonanceStrings.keyboardHelp.largeFrequencyStepsStringProperty,
       KeyboardHelpIconFactory.shiftPlusIcon(
         KeyboardHelpIconFactory.upDownArrowKeysRowIcon(),
       ),
@@ -43,17 +48,17 @@ class SimulationShortcutsKeyboardHelpSection extends KeyboardHelpSection {
 
     // Reset with R key
     const resetRow = KeyboardHelpSectionRow.labelWithIcon(
-      "Reset Simulation",
+      ResonanceStrings.keyboardHelp.resetSimulationStringProperty,
       new LetterKeyNode("R"),
     );
 
     // Stop sweep with Escape
     const escapeRow = KeyboardHelpSectionRow.labelWithIcon(
-      "Stop Frequency Sweep",
+      ResonanceStrings.keyboardHelp.stopFrequencySweepStringProperty,
       TextKeyNode.esc(),
     );
 
-    super("Simulation Controls", [
+    super(ResonanceStrings.keyboardHelp.simulationControlsStringProperty, [
       playPauseRow,
       frequencyRow,
       largeStepRow,
@@ -70,19 +75,19 @@ class DragObjectsKeyboardHelpSection extends KeyboardHelpSection {
   public constructor() {
     // Move with arrow keys
     const moveRow = KeyboardHelpSectionRow.labelWithIcon(
-      "Move Objects",
+      ResonanceStrings.keyboardHelp.moveObjectsStringProperty,
       KeyboardHelpIconFactory.arrowOrWasdKeysRowIcon(),
     );
 
     // Fine control with Shift
     const fineRow = KeyboardHelpSectionRow.labelWithIcon(
-      "Fine Movement",
+      ResonanceStrings.keyboardHelp.fineMovementStringProperty,
       KeyboardHelpIconFactory.shiftPlusIcon(
         KeyboardHelpIconFactory.arrowOrWasdKeysRowIcon(),
       ),
     );
 
-    super("Drag Controls", [moveRow, fineRow]);
+    super(ResonanceStrings.keyboardHelp.dragControlsStringProperty, [moveRow, fineRow]);
   }
 }
 
@@ -106,8 +111,8 @@ export class KeyboardShortcutsNode extends TwoColumnKeyboardHelpContent {
       [simulationSection, dragSection],
       [sliderControlsSection, basicActionsSection],
       {
-        columnSpacing: 20,
-        sectionSpacing: 15,
+        columnSpacing: COLUMN_SPACING,
+        sectionSpacing: SECTION_SPACING,
       },
     );
   }

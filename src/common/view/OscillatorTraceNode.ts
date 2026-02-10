@@ -23,6 +23,14 @@ import ResonanceColors from "../ResonanceColors.js";
 import ResonanceConstants from "../ResonanceConstants.js";
 import { OscillatorGridNode } from "./OscillatorGridNode.js";
 
+// Pen dot radius in view coordinates
+const PEN_DOT_RADIUS = 5;
+
+// Time speed multipliers matching BaseModel
+const TIME_SPEED_SLOW = 0.1;
+const TIME_SPEED_NORMAL = 1.0;
+const TIME_SPEED_FAST = 2.0;
+
 export interface OscillatorTraceNodeOptions {
   /** The x-position of the pen (where the trace is written), in view coordinates */
   penViewX: number;
@@ -62,9 +70,9 @@ export class OscillatorTraceNode extends Node {
 
   /** Time speed multipliers matching BaseModel */
   private readonly timeSpeedMultipliers: Record<TimeSpeed, number> = {
-    slow: 0.1,
-    normal: 1.0,
-    fast: 2.0,
+    slow: TIME_SPEED_SLOW,
+    normal: TIME_SPEED_NORMAL,
+    fast: TIME_SPEED_FAST,
   };
 
   /** Cumulative scroll offset in view pixels (never wraps, used for point positioning) */
@@ -135,7 +143,7 @@ export class OscillatorTraceNode extends Node {
     this.addChild(this.tracePath);
 
     // Pen dot at the trace origin (where the trace is being drawn)
-    this.penDot = new Circle(5, {
+    this.penDot = new Circle(PEN_DOT_RADIUS, {
       fill: ResonanceColors.traceLineProperty,
       x: this.penViewX,
     });

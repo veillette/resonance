@@ -17,6 +17,42 @@ import {
   MeasurementLinesModel,
 } from "../model/MeasurementLineModel.js";
 import ResonanceColors from "../ResonanceColors.js";
+import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
+
+// --- Named constants (hoisted magic numbers) ---
+
+/** Dash pattern for the horizontal measurement line [dash length, gap length] in view coordinates. */
+const LINE_DASH_PATTERN = [10, 6];
+
+/** Width of the draggable handle in view coordinates. */
+const HANDLE_WIDTH = 12;
+
+/** Height of the draggable handle in view coordinates. */
+const HANDLE_HEIGHT = 20;
+
+/** Corner radius of the draggable handle. */
+const HANDLE_CORNER_RADIUS = 3;
+
+/** Horizontal offset of the handle from the left end of the line, in view coordinates. */
+const HANDLE_OFFSET = -5;
+
+/** Keyboard drag speed in pixels per second for normal arrow-key movement. */
+const KEYBOARD_DRAG_SPEED = 100;
+
+/** Keyboard drag speed in pixels per second when Shift is held for fine movement. */
+const KEYBOARD_SHIFT_DRAG_SPEED = 50;
+
+/** Minimum vertical displacement (meters) below equilibrium that a measurement line can reach. */
+const MIN_DISPLACEMENT = -0.4;
+
+/** Maximum vertical displacement (meters) above equilibrium that a measurement line can reach. */
+const MAX_DISPLACEMENT = 0.3;
+
+/** Initial vertical position (meters) of measurement line 1 at equilibrium. */
+const INITIAL_LINE1_POSITION = 0.0;
+
+/** Initial vertical position (meters) of measurement line 2 above equilibrium. */
+const INITIAL_LINE2_POSITION = 0.14;
 
 /**
  * View for a single draggable measurement line with a handle.
@@ -36,7 +72,7 @@ class MeasurementLineNode extends Node {
     const line = new Line(0, 0, lineLength, 0, {
       stroke: ResonanceColors.textProperty,
       lineWidth: 2,
-      lineDash: [10, 6],
+      lineDash: LINE_DASH_PATTERN,
     });
     line.centerX = 0;
     this.addChild(line);
@@ -65,7 +101,8 @@ class MeasurementLineNode extends Node {
     // Make focusable for keyboard navigation
     this.tagName = "div";
     this.focusable = true;
-    this.accessibleName = `Measurement Line ${lineNumber}`;
+    const measurementLinePattern = ResonanceStrings.a11y.measurementLinePatternStringProperty as unknown as { value: string };
+    this.accessibleName = measurementLinePattern.value.replace("{{number}}", String(lineNumber));
 
     // Position the node based on model position
     // With isometric transform, model Y=0 is equilibrium, use modelToViewY directly
