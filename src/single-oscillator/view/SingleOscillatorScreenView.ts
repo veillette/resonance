@@ -7,8 +7,6 @@
  */
 
 import { ScreenViewOptions } from "scenerystack/sim";
-import { Node, Text } from "scenerystack/scenery";
-import { Checkbox } from "scenerystack/sun";
 import { BaseOscillatorScreenView } from "../../common/view/BaseOscillatorScreenView.js";
 import { SingleOscillatorModel } from "../model/SingleOscillatorModel.js";
 import { OscillatorVectorNode } from "./OscillatorVectorNode.js";
@@ -17,7 +15,6 @@ import ConfigurableGraph from "../../common/view/graph/ConfigurableGraph.js";
 import type { PlottableProperty } from "../../common/view/graph/PlottableProperty.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import ResonanceConstants from "../../common/ResonanceConstants.js";
-import ResonanceColors from "../../common/ResonanceColors.js";
 
 export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
   private readonly vectorNode: OscillatorVectorNode;
@@ -61,33 +58,36 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
     // ===== CONFIGURABLE GRAPH =====
     const resonanceModel = model.resonanceModel;
 
-    // Define the plottable properties for the Single Oscillator screen.
-    // Limited to: position, velocity, acceleration, applied force, frequency, and time.
     const plottableProperties: PlottableProperty[] = [
       {
         name: ResonanceStrings.controls.timeStringProperty,
         property: resonanceModel.timeProperty,
         unit: "s",
+        subStepAccessor: (point) => point.time,
       },
       {
         name: ResonanceStrings.controls.positionStringProperty,
         property: resonanceModel.positionProperty,
         unit: "m",
+        subStepAccessor: (point) => point.position,
       },
       {
         name: ResonanceStrings.controls.velocityStringProperty,
         property: resonanceModel.velocityProperty,
         unit: "m/s",
+        subStepAccessor: (point) => point.velocity,
       },
       {
         name: ResonanceStrings.controls.accelerationStringProperty,
         property: resonanceModel.accelerationProperty,
         unit: "m/s\u00B2",
+        subStepAccessor: (point) => point.acceleration,
       },
       {
         name: ResonanceStrings.controls.appliedForceStringProperty,
         property: resonanceModel.appliedForceProperty,
         unit: "N",
+        subStepAccessor: (point) => point.appliedForce,
       },
       {
         name: ResonanceStrings.controls.frequencyStringProperty,
@@ -96,18 +96,9 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
       },
     ];
 
-    // Default: position (y-axis) vs time (x-axis)
-    const initialXProperty = plottableProperties[0]!; // Time
-    const initialYProperty = plottableProperties[1]!; // Position
-
-    // Create a parent node for combo box dropdowns (must be above the graph in z-order)
-    const comboBoxListParent = new Node();
-
     // Calculate graph position:
     // - Right of the mass (mass is at layoutBounds.centerX + DRIVER_CENTER_X_OFFSET)
     // - Left of the control panel
-    // - Top aligned with control panel top
-    // - Bottom above the driver plate
     const massAreaRight =
       this.layoutBounds.centerX +
       ResonanceConstants.DRIVER_CENTER_X_OFFSET +
@@ -118,7 +109,6 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
     const graphWidth = Math.min(350, controlPanelLeft - massAreaRight);
 
     // Calculate height: from control panel top to above driver plate
-    // Account for graph header elements (title panel + header bar ~60px)
     const graphHeaderOffset = 60;
     const driverPlateTopViewY = this.modelViewTransform.modelToViewY(
       ResonanceConstants.DRIVER_PLATE_REST_MODEL_Y,
@@ -127,48 +117,24 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
     const graphBottom = driverPlateTopViewY - 40; // margin above driver
     const graphHeight = Math.min(300, graphBottom - graphTop);
 
-    // Create the configurable graph with calculated dimensions
-    this.configurableGraph = new ConfigurableGraph(
+    // Create graph, checkbox, and combo box parent via shared helper
+    const { graph, checkbox } = this.createConfigurableGraphSetup({
       plottableProperties,
-      initialXProperty,
-      initialYProperty,
+      initialXIndex: 0, // Time
+      initialYIndex: 1, // Position
       graphWidth,
       graphHeight,
-      2000,
-      comboBoxListParent,
-    );
+    });
 
-    // Position the graph (graphTop already includes the header offset)
+    this.configurableGraph = graph;
+
+    // Position the graph
     this.configurableGraph.x = massAreaRight;
     this.configurableGraph.y = graphTop;
 
-    // Add a checkbox to toggle graph visibility (position above the graph)
-    const graphCheckboxLabel = new Text(
-      ResonanceStrings.controls.graphStringProperty,
-      {
-        font: ResonanceConstants.CONTROL_FONT,
-        fill: ResonanceColors.textProperty,
-      },
-    );
-    const graphCheckbox = new Checkbox(
-      this.configurableGraph.getGraphVisibleProperty(),
-      graphCheckboxLabel,
-      {
-        boxWidth: 14,
-        spacing: 6,
-      },
-    );
-    graphCheckbox.left = this.vectorControlPanel.left;
-    graphCheckbox.top = this.vectorControlPanel.bottom + 10;
-
-    this.addChild(graphCheckbox);
-    this.addChild(this.configurableGraph);
-    this.addChild(comboBoxListParent);
-
-    // Enable sub-step data collection only when graph is visible (performance optimization)
-    this.configurableGraph.getGraphVisibleProperty().link((visible) => {
-      model.resonanceModel.subStepCollectionEnabled = visible;
-    });
+    // Position the checkbox below the vector control panel
+    checkbox.left = this.vectorControlPanel.left;
+    checkbox.top = this.vectorControlPanel.bottom + 10;
   }
 
   /**
@@ -201,19 +167,7 @@ export class SingleOscillatorScreenView extends BaseOscillatorScreenView {
     // Update the vector arrows based on current physics values
     this.vectorNode.updateVectors();
 
-    // Add data points to the graph when the simulation is playing
-    if (this.model.isPlayingProperty.value) {
-      const singleModel = this.model as SingleOscillatorModel;
-      const resonanceModel = singleModel.resonanceModel;
-
-      // Use sub-step data if available for smooth phase-space plots
-      if (resonanceModel.hasSubStepData()) {
-        const subStepData = resonanceModel.flushSubStepData();
-        this.configurableGraph.addDataPointsFromSubSteps(subStepData);
-      } else {
-        // Fall back to single-point sampling (e.g., during drag)
-        this.configurableGraph.addDataPoint();
-      }
-    }
+    // Feed data to graph
+    this.stepConfigurableGraph(this.configurableGraph);
   }
 }
