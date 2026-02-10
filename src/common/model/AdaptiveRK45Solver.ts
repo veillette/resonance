@@ -59,17 +59,22 @@ export class AdaptiveRK45Solver extends ODESolver {
     model: ODEModel,
     onSubStep?: SubStepCallback,
   ): void {
-    let remainingTime = dt;
+    // Handle negative dt for stepping backward in time
+    const sign = dt >= 0 ? 1 : -1;
+    const absDt = Math.abs(dt);
+
+    let remainingTime = absDt;
     let elapsedTime = 0;
-    let currentTimestep = Math.min(this.maxTimestep, dt);
+    let currentTimestep = Math.min(this.maxTimestep, absDt);
 
     while (remainingTime > 0) {
-      const actualDt = Math.min(currentTimestep, remainingTime);
-      const result = this.tryStep(actualDt, model);
+      const absActualDt = Math.min(currentTimestep, remainingTime);
+      const signedActualDt = sign * absActualDt;
+      const result = this.tryStep(signedActualDt, model);
 
       if (result.success) {
-        remainingTime -= actualDt;
-        elapsedTime += actualDt;
+        remainingTime -= absActualDt;
+        elapsedTime += signedActualDt;
         currentTimestep = result.nextTimestep;
         onSubStep?.(elapsedTime, model.getState());
       } else {
@@ -81,7 +86,7 @@ export class AdaptiveRK45Solver extends ODESolver {
         console.warn(
           "AdaptiveRK45Solver: Timestep became too small, forcing step",
         );
-        this.forceStep(remainingTime, model);
+        this.forceStep(sign * remainingTime, model);
         elapsedTime = dt; // We've consumed all time
         onSubStep?.(elapsedTime, model.getState());
         break;

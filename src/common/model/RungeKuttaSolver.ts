@@ -45,9 +45,13 @@ export class RungeKuttaSolver extends ODESolver {
     model: ODEModel,
     onSubStep?: SubStepCallback,
   ): void {
+    // Handle negative dt for stepping backward in time
+    const sign = dt >= 0 ? 1 : -1;
+    const absDt = Math.abs(dt);
+
     // Subdivide large timesteps
-    const numSteps = Math.ceil(dt / this.fixedTimestep);
-    const actualDt = dt / numSteps;
+    const numSteps = Math.ceil(absDt / this.fixedTimestep);
+    const actualDt = (sign * absDt) / numSteps;
     let elapsedTime = 0;
 
     for (let i = 0; i < numSteps; i++) {
