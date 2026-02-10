@@ -78,10 +78,6 @@
       },
       "simulation": {
         "title": "Simulación",
-        "displayOptions": "Opciones de Visualización",
-        "showEnergy": "Mostrar Energía",
-        "showVectors": "Mostrar Vectores",
-        "showPhase": "Mostrar Fase",
         "units": "Unidades",
         "unitsMetric": "Métrico",
         "unitsImperial": "Imperial",

@@ -50,59 +50,23 @@ describe("ResonancePreferencesModel", () => {
   });
 
   describe("default values", () => {
-    it("should have correct default for showEnergy", () => {
-      const model = new ResonancePreferencesModel();
-      expect(model.showEnergyProperty.value).toBe(true);
-    });
-
-    it("should have correct default for showVectors", () => {
-      const model = new ResonancePreferencesModel();
-      expect(model.showVectorsProperty.value).toBe(false);
-    });
-
-    it("should have correct default for showPhase", () => {
-      const model = new ResonancePreferencesModel();
-      expect(model.showPhaseProperty.value).toBe(true);
-    });
-
     it("should have correct default for solverType", () => {
       const model = new ResonancePreferencesModel();
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
+
+    it("should have correct default for showModalControls", () => {
+      const model = new ResonancePreferencesModel();
+      expect(model.showModalControlsProperty.value).toBe(false);
+    });
+
+    it("should have correct default for rendererType", () => {
+      const model = new ResonancePreferencesModel();
+      expect(model.rendererTypeProperty.value).toBe("canvas");
+    });
   });
 
   describe("persistence save", () => {
-    it("should save showEnergy changes to localStorage", () => {
-      const model = new ResonancePreferencesModel();
-      model.showEnergyProperty.value = false;
-
-      expect(mockStorage["resonance-preferences"]).toBeDefined();
-      const saved = JSON.parse(
-        mockStorage["resonance-preferences"]!,
-      ) as StoredPreferences;
-      expect(saved.showEnergy).toBe(false);
-    });
-
-    it("should save showVectors changes to localStorage", () => {
-      const model = new ResonancePreferencesModel();
-      model.showVectorsProperty.value = true;
-
-      const saved = JSON.parse(
-        mockStorage["resonance-preferences"]!,
-      ) as StoredPreferences;
-      expect(saved.showVectors).toBe(true);
-    });
-
-    it("should save showPhase changes to localStorage", () => {
-      const model = new ResonancePreferencesModel();
-      model.showPhaseProperty.value = false;
-
-      const saved = JSON.parse(
-        mockStorage["resonance-preferences"]!,
-      ) as StoredPreferences;
-      expect(saved.showPhase).toBe(false);
-    });
-
     it("should save solverType changes to localStorage", () => {
       const model = new ResonancePreferencesModel();
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
@@ -115,18 +79,12 @@ describe("ResonancePreferencesModel", () => {
 
     it("should save all preferences together", () => {
       const model = new ResonancePreferencesModel();
-      model.showEnergyProperty.value = false;
-      model.showVectorsProperty.value = true;
-      model.showPhaseProperty.value = false;
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
       const saved = JSON.parse(
         mockStorage["resonance-preferences"]!,
       ) as StoredPreferences;
       expect(saved).toEqual({
-        showEnergy: false,
-        showVectors: true,
-        showPhase: false,
         solverType: SolverType.ADAPTIVE_RK45,
         showModalControls: false, // Default value
         rendererType: "canvas", // Default renderer type
@@ -138,7 +96,7 @@ describe("ResonancePreferencesModel", () => {
       const setItemMock = (setItemSpy as SetItemSpyLike).mock;
       const initialCallCount = setItemMock.calls.length;
 
-      model.showEnergyProperty.value = false;
+      model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
       expect(setItemSpy).toHaveBeenCalledWith(
         "resonance-preferences",
@@ -149,33 +107,6 @@ describe("ResonancePreferencesModel", () => {
   });
 
   describe("persistence load", () => {
-    it("should load showEnergy from localStorage", () => {
-      mockStorage["resonance-preferences"] = JSON.stringify({
-        showEnergy: false,
-      });
-
-      const model = new ResonancePreferencesModel();
-      expect(model.showEnergyProperty.value).toBe(false);
-    });
-
-    it("should load showVectors from localStorage", () => {
-      mockStorage["resonance-preferences"] = JSON.stringify({
-        showVectors: true,
-      });
-
-      const model = new ResonancePreferencesModel();
-      expect(model.showVectorsProperty.value).toBe(true);
-    });
-
-    it("should load showPhase from localStorage", () => {
-      mockStorage["resonance-preferences"] = JSON.stringify({
-        showPhase: false,
-      });
-
-      const model = new ResonancePreferencesModel();
-      expect(model.showPhaseProperty.value).toBe(false);
-    });
-
     it("should load solverType from localStorage", () => {
       mockStorage["resonance-preferences"] = JSON.stringify({
         solverType: SolverType.ADAPTIVE_RK45,
@@ -185,20 +116,27 @@ describe("ResonancePreferencesModel", () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.ADAPTIVE_RK45);
     });
 
+    it("should load showModalControls from localStorage", () => {
+      mockStorage["resonance-preferences"] = JSON.stringify({
+        showModalControls: true,
+      });
+
+      const model = new ResonancePreferencesModel();
+      expect(model.showModalControlsProperty.value).toBe(true);
+    });
+
     it("should load all saved preferences", () => {
       mockStorage["resonance-preferences"] = JSON.stringify({
-        showEnergy: false,
-        showVectors: true,
-        showPhase: false,
         solverType: SolverType.ADAPTIVE_RK45,
+        showModalControls: true,
+        rendererType: "webgl",
       });
 
       const model = new ResonancePreferencesModel();
 
-      expect(model.showEnergyProperty.value).toBe(false);
-      expect(model.showVectorsProperty.value).toBe(true);
-      expect(model.showPhaseProperty.value).toBe(false);
       expect(model.solverTypeProperty.value).toBe(SolverType.ADAPTIVE_RK45);
+      expect(model.showModalControlsProperty.value).toBe(true);
+      expect(model.rendererTypeProperty.value).toBe("webgl");
     });
 
     it("should call localStorage.getItem when loading", () => {
@@ -215,10 +153,9 @@ describe("ResonancePreferencesModel", () => {
       // Should not throw, should use defaults
       const model = new ResonancePreferencesModel();
 
-      expect(model.showEnergyProperty.value).toBe(true);
-      expect(model.showVectorsProperty.value).toBe(false);
-      expect(model.showPhaseProperty.value).toBe(true);
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
+      expect(model.showModalControlsProperty.value).toBe(false);
+      expect(model.rendererTypeProperty.value).toBe("canvas");
     });
 
     it("should use defaults when localStorage is empty", () => {
@@ -226,55 +163,26 @@ describe("ResonancePreferencesModel", () => {
 
       const model = new ResonancePreferencesModel();
 
-      expect(model.showEnergyProperty.value).toBe(true);
-      expect(model.showVectorsProperty.value).toBe(false);
-      expect(model.showPhaseProperty.value).toBe(true);
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
+      expect(model.showModalControlsProperty.value).toBe(false);
+      expect(model.rendererTypeProperty.value).toBe("canvas");
     });
 
     it("should handle partial saved data gracefully", () => {
       mockStorage["resonance-preferences"] = JSON.stringify({
-        showEnergy: false,
+        showModalControls: true,
         // Missing other fields
       });
 
       const model = new ResonancePreferencesModel();
 
-      expect(model.showEnergyProperty.value).toBe(false); // Loaded
-      expect(model.showVectorsProperty.value).toBe(false); // Default
-      expect(model.showPhaseProperty.value).toBe(true); // Default
+      expect(model.showModalControlsProperty.value).toBe(true); // Loaded
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4); // Default
+      expect(model.rendererTypeProperty.value).toBe("canvas"); // Default
     });
   });
 
   describe("reset functionality", () => {
-    it("should reset showEnergy to default", () => {
-      const model = new ResonancePreferencesModel();
-      model.showEnergyProperty.value = false;
-
-      model.reset();
-
-      expect(model.showEnergyProperty.value).toBe(true);
-    });
-
-    it("should reset showVectors to default", () => {
-      const model = new ResonancePreferencesModel();
-      model.showVectorsProperty.value = true;
-
-      model.reset();
-
-      expect(model.showVectorsProperty.value).toBe(false);
-    });
-
-    it("should reset showPhase to default", () => {
-      const model = new ResonancePreferencesModel();
-      model.showPhaseProperty.value = false;
-
-      model.reset();
-
-      expect(model.showPhaseProperty.value).toBe(true);
-    });
-
     it("should reset solverType to default", () => {
       const model = new ResonancePreferencesModel();
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
@@ -284,24 +192,40 @@ describe("ResonancePreferencesModel", () => {
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
 
-    it("should reset all properties at once", () => {
+    it("should reset showModalControls to default", () => {
       const model = new ResonancePreferencesModel();
-      model.showEnergyProperty.value = false;
-      model.showVectorsProperty.value = true;
-      model.showPhaseProperty.value = false;
-      model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
+      model.showModalControlsProperty.value = true;
 
       model.reset();
 
-      expect(model.showEnergyProperty.value).toBe(true);
-      expect(model.showVectorsProperty.value).toBe(false);
-      expect(model.showPhaseProperty.value).toBe(true);
+      expect(model.showModalControlsProperty.value).toBe(false);
+    });
+
+    it("should reset rendererType to default", () => {
+      const model = new ResonancePreferencesModel();
+      model.rendererTypeProperty.value = "webgl";
+
+      model.reset();
+
+      expect(model.rendererTypeProperty.value).toBe("canvas");
+    });
+
+    it("should reset all properties at once", () => {
+      const model = new ResonancePreferencesModel();
+      model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
+      model.showModalControlsProperty.value = true;
+      model.rendererTypeProperty.value = "webgl";
+
+      model.reset();
+
       expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
+      expect(model.showModalControlsProperty.value).toBe(false);
+      expect(model.rendererTypeProperty.value).toBe("canvas");
     });
 
     it("should trigger save after reset", () => {
       const model = new ResonancePreferencesModel();
-      model.showEnergyProperty.value = false;
+      model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
       const setItemMock: { calls: [string, string][] } = (
         setItemSpy as SetItemSpyLike
       ).mock;
@@ -323,7 +247,7 @@ describe("ResonancePreferencesModel", () => {
       // Should not throw, should use defaults
       const model = new ResonancePreferencesModel();
 
-      expect(model.showEnergyProperty.value).toBe(true);
+      expect(model.solverTypeProperty.value).toBe(SolverType.RUNGE_KUTTA_4);
     });
 
     it("should handle localStorage.setItem throwing", () => {
@@ -334,7 +258,7 @@ describe("ResonancePreferencesModel", () => {
       // Should not throw when saving
       const model = new ResonancePreferencesModel();
       expect(() => {
-        model.showEnergyProperty.value = false;
+        model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
       }).not.toThrow();
     });
   });
@@ -345,18 +269,17 @@ describe("ResonancePreferencesModel", () => {
       const setItemMock = (setItemSpy as SetItemSpyLike).mock;
       const initialCount = setItemMock.calls.length;
 
-      model.showEnergyProperty.value = false;
-      model.showVectorsProperty.value = true;
-      model.showPhaseProperty.value = false;
       model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
+      model.showModalControlsProperty.value = true;
+      model.rendererTypeProperty.value = "webgl";
 
-      // Should have called setItem 4 more times (once for each property change)
-      expect(setItemMock.calls.length).toBe(initialCount + 4);
+      // Should have called setItem 3 more times (once for each property change)
+      expect(setItemMock.calls.length).toBe(initialCount + 3);
     });
 
     it("should save with correct key", () => {
       const model = new ResonancePreferencesModel();
-      model.showEnergyProperty.value = false;
+      model.solverTypeProperty.value = SolverType.ADAPTIVE_RK45;
 
       const setItemMock = (setItemSpy as SetItemSpyLike).mock;
       const mockCalls = setItemMock.calls;

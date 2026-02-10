@@ -3,7 +3,7 @@
  *
  * Renders the simulation-specific preferences content shown in the Preferences dialog,
  * organized into two sections:
- * - Oscillator Screens: display options (energy, vectors, phase) and solver method
+ * - Oscillator Screens: solver method selection
  * - Chladni Screen: modal controls toggle and renderer selection
  */
 
@@ -30,7 +30,7 @@ export class ResonancePreferencesNode extends VBox {
 
   /**
    * Create the Oscillator Screens preferences section:
-   * display options checkboxes and solver method radio buttons.
+   * solver method radio buttons.
    */
   private static createOscillatorSection(
     preferencesModel: ResonancePreferencesModel,
@@ -43,38 +43,12 @@ export class ResonancePreferencesNode extends VBox {
       },
     );
 
-    const displayOptionsSection = new VBox({
-      align: "left",
-      spacing: 8,
-      children: [
-        new Text(
-          ResonanceStrings.preferences.simulation.displayOptionsStringProperty,
-          {
-            font: new PhetFont({ size: 14, weight: "bold" }),
-            fill: ResonanceColors.preferencesTextProperty,
-          },
-        ),
-        ResonancePreferencesNode.createCheckbox(
-          preferencesModel.showEnergyProperty,
-          ResonanceStrings.preferences.simulation.showEnergyStringProperty,
-        ),
-        ResonancePreferencesNode.createCheckbox(
-          preferencesModel.showVectorsProperty,
-          ResonanceStrings.preferences.simulation.showVectorsStringProperty,
-        ),
-        ResonancePreferencesNode.createCheckbox(
-          preferencesModel.showPhaseProperty,
-          ResonanceStrings.preferences.simulation.showPhaseStringProperty,
-        ),
-      ],
-    });
-
     const solverSection = ResonancePreferencesNode.createSolverSection(preferencesModel);
 
     return new VBox({
       align: "left",
       spacing: 12,
-      children: [header, displayOptionsSection, solverSection],
+      children: [header, solverSection],
     });
   }
 
@@ -251,23 +225,6 @@ export class ResonancePreferencesNode extends VBox {
         rendererRadioButtonGroup,
       ],
     });
-  }
-
-  /**
-   * Create a standard preferences checkbox with consistent styling.
-   */
-  private static createCheckbox(
-    property: import("scenerystack/axon").BooleanProperty,
-    labelStringProperty: import("scenerystack/axon").TReadOnlyProperty<string>,
-  ): Checkbox {
-    return new Checkbox(
-      property,
-      new Text(labelStringProperty, {
-        font: new PhetFont(14),
-        fill: ResonanceColors.preferencesTextProperty,
-      }),
-      { boxWidth: 16 },
-    );
   }
 
   /**
