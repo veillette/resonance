@@ -25,7 +25,7 @@ import {
   RulerNode,
   ParametricSpringNode,
 } from "scenerystack/scenery-phet";
-import { Rectangle, Node, Line } from "scenerystack/scenery";
+import { Rectangle, Node, Line, Text } from "scenerystack/scenery";
 import { DragListener, KeyboardDragListener } from "scenerystack/scenery";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
@@ -42,6 +42,9 @@ import { OscillatorMeasurementLinesNode } from "./OscillatorMeasurementLinesNode
 import { OscillatorGridNode } from "./OscillatorGridNode.js";
 import { TraceDataModel } from "../model/TraceDataModel.js";
 import { OscillatorTraceNode } from "./OscillatorTraceNode.js";
+import { Checkbox } from "scenerystack/sun";
+import ConfigurableGraph from "./graph/ConfigurableGraph.js";
+import type { PlottableProperty } from "./graph/PlottableProperty.js";
 
 export class BaseOscillatorScreenView extends ScreenView {
   protected readonly model: BaseOscillatorScreenModel;
@@ -712,6 +715,93 @@ export class BaseOscillatorScreenView extends ScreenView {
       this.model.isPlayingProperty.value
     ) {
       this.traceNode.step(dt);
+    }
+  }
+
+  /**
+   * Create a ConfigurableGraph with its visibility checkbox and combo box list parent.
+   * Handles the common wiring: visibility-to-subStepCollection link, child addition.
+   * Callers are responsible for positioning the returned elements.
+   */
+  protected createConfigurableGraphSetup(options: {
+    plottableProperties: PlottableProperty[];
+    initialXIndex: number;
+    initialYIndex: number;
+    graphWidth: number;
+    graphHeight: number;
+    maxDataPoints?: number;
+    initiallyVisible?: boolean;
+  }): {
+    graph: ConfigurableGraph;
+    checkbox: Checkbox;
+    comboBoxListParent: Node;
+  } {
+    const {
+      plottableProperties,
+      initialXIndex,
+      initialYIndex,
+      graphWidth,
+      graphHeight,
+      maxDataPoints = 2000,
+      initiallyVisible = false,
+    } = options;
+
+    const initialXProperty = plottableProperties[initialXIndex]!;
+    const initialYProperty = plottableProperties[initialYIndex]!;
+
+    const comboBoxListParent = new Node();
+
+    const graph = new ConfigurableGraph(
+      plottableProperties,
+      initialXProperty,
+      initialYProperty,
+      graphWidth,
+      graphHeight,
+      maxDataPoints,
+      comboBoxListParent,
+    );
+
+    if (initiallyVisible) {
+      graph.getGraphVisibleProperty().value = true;
+    }
+
+    const checkboxLabel = new Text(
+      ResonanceStrings.controls.graphStringProperty,
+      {
+        font: ResonanceConstants.CONTROL_FONT,
+        fill: ResonanceColors.textProperty,
+      },
+    );
+    const checkbox = new Checkbox(graph.getGraphVisibleProperty(), checkboxLabel, {
+      boxWidth: 14,
+      spacing: 6,
+    });
+
+    this.addChild(checkbox);
+    this.addChild(graph);
+    this.addChild(comboBoxListParent);
+
+    // Enable sub-step data collection only when graph is visible (performance optimization)
+    graph.getGraphVisibleProperty().link((visible) => {
+      this.model.resonanceModel.subStepCollectionEnabled = visible;
+    });
+
+    return { graph, checkbox, comboBoxListParent };
+  }
+
+  /**
+   * Feed sub-step (or single-point) data to a ConfigurableGraph during simulation step.
+   * Call this from subclass step() methods.
+   */
+  protected stepConfigurableGraph(graph: ConfigurableGraph): void {
+    if (this.model.isPlayingProperty.value) {
+      const resonanceModel = this.model.resonanceModel;
+      if (resonanceModel.hasSubStepData()) {
+        const subStepData = resonanceModel.flushSubStepData();
+        graph.addDataPointsFromSubSteps(subStepData);
+      } else {
+        graph.addDataPoint();
+      }
     }
   }
 }

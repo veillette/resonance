@@ -631,42 +631,17 @@ export default class ConfigurableGraph extends Node {
 
   /**
    * Get the value for a specific axis from a sub-step data point.
-   * Returns null if the axis property is not available in sub-step data.
+   * Uses the type-safe subStepAccessor when available, otherwise falls back
+   * to the current property value for derived quantities (energy, RMS, etc.).
    */
   private getValueForAxis(
     axisProperty: PlottableProperty,
     point: SubStepDataPoint,
   ): number | null {
-    // Get the property name to determine which value to extract
-    const name =
-      typeof axisProperty.name === "string"
-        ? axisProperty.name
-        : axisProperty.name.value;
-
-    // Map common property names to sub-step data fields
-    // This handles the most commonly plotted quantities
-    const lowerName = name.toLowerCase();
-
-    if (lowerName.includes("time")) {
-      return point.time;
+    if (axisProperty.subStepAccessor) {
+      return axisProperty.subStepAccessor(point);
     }
-    if (lowerName.includes("position") || lowerName.includes("displacement")) {
-      return point.position;
-    }
-    if (lowerName.includes("velocity") && !lowerName.includes("rms")) {
-      return point.velocity;
-    }
-    if (lowerName.includes("acceleration") && !lowerName.includes("rms")) {
-      return point.acceleration;
-    }
-    if (
-      lowerName.includes("applied") ||
-      (lowerName.includes("force") && lowerName.includes("driv"))
-    ) {
-      return point.appliedForce;
-    }
-
-    // For properties not in sub-step data, fall back to current property value
+    // For properties without sub-step data, fall back to current property value.
     // This handles derived properties like energy, RMS values, etc.
     return axisProperty.property.value;
   }

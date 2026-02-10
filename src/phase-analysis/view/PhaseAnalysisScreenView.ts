@@ -5,15 +5,11 @@
  */
 
 import { ScreenViewOptions } from "scenerystack/sim";
-import { Node, Text } from "scenerystack/scenery";
-import { Checkbox } from "scenerystack/sun";
 import { BaseOscillatorScreenView } from "../../common/view/BaseOscillatorScreenView.js";
 import { PhaseAnalysisModel } from "../model/PhaseAnalysisModel.js";
 import ConfigurableGraph from "../../common/view/graph/ConfigurableGraph.js";
 import type { PlottableProperty } from "../../common/view/graph/PlottableProperty.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
-import ResonanceConstants from "../../common/ResonanceConstants.js";
-import ResonanceColors from "../../common/ResonanceColors.js";
 
 export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
   private readonly configurableGraph: ConfigurableGraph;
@@ -31,22 +27,26 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         name: ResonanceStrings.controls.timeStringProperty,
         property: resonanceModel.timeProperty,
         unit: "s",
+        subStepAccessor: (point) => point.time,
       },
       // Kinematics
       {
         name: ResonanceStrings.controls.positionStringProperty,
         property: resonanceModel.positionProperty,
         unit: "m",
+        subStepAccessor: (point) => point.position,
       },
       {
         name: ResonanceStrings.controls.velocityStringProperty,
         property: resonanceModel.velocityProperty,
         unit: "m/s",
+        subStepAccessor: (point) => point.velocity,
       },
       {
         name: ResonanceStrings.controls.accelerationStringProperty,
         property: resonanceModel.accelerationProperty,
         unit: "m/s\u00B2",
+        subStepAccessor: (point) => point.acceleration,
       },
       {
         name: ResonanceStrings.controls.rmsDisplacementStringProperty,
@@ -63,6 +63,7 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
         name: ResonanceStrings.controls.appliedForceStringProperty,
         property: resonanceModel.appliedForceProperty,
         unit: "N",
+        subStepAccessor: (point) => point.appliedForce,
       },
       {
         name: ResonanceStrings.controls.springForceStringProperty,
@@ -152,77 +153,30 @@ export class PhaseAnalysisScreenView extends BaseOscillatorScreenView {
       },
     ];
 
-    // Default: velocity (y-axis) vs time (x-axis)
-    const initialXProperty = plottableProperties[0]!; // Time
-    const initialYProperty = plottableProperties[2]!; // Velocity
-
-    // Create a parent node for combo box dropdowns (must be above the graph in z-order)
-    const comboBoxListParent = new Node();
-
-    // Create the configurable graph
-    this.configurableGraph = new ConfigurableGraph(
+    // Create graph, checkbox, and combo box parent via shared helper
+    const { graph, checkbox } = this.createConfigurableGraphSetup({
       plottableProperties,
-      initialXProperty,
-      initialYProperty,
-      350,
-      250,
-      2000,
-      comboBoxListParent,
-    );
+      initialXIndex: 0, // Time
+      initialYIndex: 2, // Velocity
+      graphWidth: 350,
+      graphHeight: 250,
+      initiallyVisible: true,
+    });
+
+    this.configurableGraph = graph;
 
     // Position the graph in the upper-left area of the screen
     this.configurableGraph.x = this.layoutBounds.left + 20;
     this.configurableGraph.y = this.layoutBounds.top + 60;
 
-    // Make the graph visible by default on this screen
-    this.configurableGraph.getGraphVisibleProperty().value = true;
-
-    // Add a checkbox to toggle graph visibility
-    const graphCheckboxLabel = new Text(
-      ResonanceStrings.controls.graphStringProperty,
-      {
-        font: ResonanceConstants.CONTROL_FONT,
-        fill: ResonanceColors.textProperty,
-      },
-    );
-    const graphCheckbox = new Checkbox(
-      this.configurableGraph.getGraphVisibleProperty(),
-      graphCheckboxLabel,
-      {
-        boxWidth: 14,
-        spacing: 6,
-      },
-    );
-    graphCheckbox.left = this.layoutBounds.left + 20;
-    graphCheckbox.top = this.layoutBounds.top + 10;
-
-    this.addChild(graphCheckbox);
-    this.addChild(this.configurableGraph);
-    this.addChild(comboBoxListParent);
-
-    // Enable sub-step data collection only when graph is visible (performance optimization)
-    this.configurableGraph.getGraphVisibleProperty().link((visible) => {
-      model.resonanceModel.subStepCollectionEnabled = visible;
-    });
+    // Position the checkbox above the graph
+    checkbox.left = this.layoutBounds.left + 20;
+    checkbox.top = this.layoutBounds.top + 10;
   }
 
   public override step(dt: number): void {
     super.step(dt);
-
-    // Add data points to the graph when the simulation is playing
-    if (this.model.isPlayingProperty.value) {
-      const phaseModel = this.model as PhaseAnalysisModel;
-      const resonanceModel = phaseModel.resonanceModel;
-
-      // Use sub-step data if available for smooth phase-space plots
-      if (resonanceModel.hasSubStepData()) {
-        const subStepData = resonanceModel.flushSubStepData();
-        this.configurableGraph.addDataPointsFromSubSteps(subStepData);
-      } else {
-        // Fall back to single-point sampling (e.g., during drag)
-        this.configurableGraph.addDataPoint();
-      }
-    }
+    this.stepConfigurableGraph(this.configurableGraph);
   }
 
   public override reset(): void {
