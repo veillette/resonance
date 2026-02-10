@@ -37,9 +37,9 @@ const ARROW_HEAD_HEIGHT = 8;
 const ARROW_HEAD_WIDTH = 8;
 const ARROW_TAIL_WIDTH = 2;
 
-// Scale label styling
-const SCALE_LABEL_FONT_SIZE = 12;
-const SCALE_LABEL_RIGHT_OFFSET = -8; // offset from indicator X position
+// Scale label styling (reserved for future use)
+const _SCALE_LABEL_FONT_SIZE = 12;
+const _SCALE_LABEL_RIGHT_OFFSET = -8; // offset from indicator X position
 
 export interface OscillatorGridNodeOptions {
   /** Spacing between major grid lines in model coordinates (meters) */

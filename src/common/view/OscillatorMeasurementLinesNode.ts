@@ -25,34 +25,34 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 const LINE_DASH_PATTERN = [10, 6];
 
 /** Width of the draggable handle in view coordinates. */
-const HANDLE_WIDTH = 12;
+const _HANDLE_WIDTH = 12;
 
 /** Height of the draggable handle in view coordinates. */
-const HANDLE_HEIGHT = 20;
+const _HANDLE_HEIGHT = 20;
 
 /** Corner radius of the draggable handle. */
-const HANDLE_CORNER_RADIUS = 3;
+const _HANDLE_CORNER_RADIUS = 3;
 
 /** Horizontal offset of the handle from the left end of the line, in view coordinates. */
-const HANDLE_OFFSET = -5;
+const _HANDLE_OFFSET = -5;
 
 /** Keyboard drag speed in pixels per second for normal arrow-key movement. */
-const KEYBOARD_DRAG_SPEED = 100;
+const _KEYBOARD_DRAG_SPEED = 100;
 
 /** Keyboard drag speed in pixels per second when Shift is held for fine movement. */
-const KEYBOARD_SHIFT_DRAG_SPEED = 50;
+const _KEYBOARD_SHIFT_DRAG_SPEED = 50;
 
 /** Minimum vertical displacement (meters) below equilibrium that a measurement line can reach. */
-const MIN_DISPLACEMENT = -0.4;
+const _MIN_DISPLACEMENT = -0.4;
 
 /** Maximum vertical displacement (meters) above equilibrium that a measurement line can reach. */
-const MAX_DISPLACEMENT = 0.3;
+const _MAX_DISPLACEMENT = 0.3;
 
 /** Initial vertical position (meters) of measurement line 1 at equilibrium. */
-const INITIAL_LINE1_POSITION = 0.0;
+const _INITIAL_LINE1_POSITION = 0.0;
 
 /** Initial vertical position (meters) of measurement line 2 above equilibrium. */
-const INITIAL_LINE2_POSITION = 0.14;
+const _INITIAL_LINE2_POSITION = 0.14;
 
 /**
  * View for a single draggable measurement line with a handle.
