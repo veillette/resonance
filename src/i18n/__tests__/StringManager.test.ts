@@ -157,10 +157,6 @@ describe("getStringProperties", () => {
     it("should have simulation preferences labels", () => {
       const sim = getStringProperties().resonance.preferences.simulation;
       expect(sim.titleStringProperty).toBeDefined();
-      expect(sim.displayOptionsStringProperty).toBeDefined();
-      expect(sim.showEnergyStringProperty).toBeDefined();
-      expect(sim.showVectorsStringProperty).toBeDefined();
-      expect(sim.showPhaseStringProperty).toBeDefined();
     });
 
     it("should have units labels", () => {

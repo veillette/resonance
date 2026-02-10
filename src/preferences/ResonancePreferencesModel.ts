@@ -18,9 +18,6 @@ export type RendererType = (typeof RendererType)[keyof typeof RendererType];
 
 /** Shape of preferences as stored in localStorage (may be partial) */
 export interface StoredPreferences {
-  showEnergy?: boolean;
-  showVectors?: boolean;
-  showPhase?: boolean;
   showModalControls?: boolean;
   solverType?: SolverType;
   rendererType?: RendererType;
@@ -28,9 +25,6 @@ export interface StoredPreferences {
 
 export class ResonancePreferencesModel {
   // Simulation preferences
-  public readonly showEnergyProperty: BooleanProperty;
-  public readonly showVectorsProperty: BooleanProperty;
-  public readonly showPhaseProperty: BooleanProperty;
   public readonly solverTypeProperty: Property<SolverType>;
 
   // Chladni screen preferences
@@ -44,9 +38,6 @@ export class ResonancePreferencesModel {
 
   public constructor() {
     // Simulation preferences
-    this.showEnergyProperty = new BooleanProperty(true);
-    this.showVectorsProperty = new BooleanProperty(false);
-    this.showPhaseProperty = new BooleanProperty(true);
     this.solverTypeProperty = new Property<SolverType>(
       SolverType.RUNGE_KUTTA_4,
     );
@@ -70,15 +61,6 @@ export class ResonancePreferencesModel {
       if (saved) {
         const preferences = JSON.parse(saved) as StoredPreferences;
 
-        if (preferences.showEnergy !== undefined) {
-          this.showEnergyProperty.value = preferences.showEnergy;
-        }
-        if (preferences.showVectors !== undefined) {
-          this.showVectorsProperty.value = preferences.showVectors;
-        }
-        if (preferences.showPhase !== undefined) {
-          this.showPhaseProperty.value = preferences.showPhase;
-        }
         if (preferences.solverType) {
           this.solverTypeProperty.value = preferences.solverType;
         }
@@ -100,9 +82,6 @@ export class ResonancePreferencesModel {
   private savePreferences(): void {
     try {
       const preferences = {
-        showEnergy: this.showEnergyProperty.value,
-        showVectors: this.showVectorsProperty.value,
-        showPhase: this.showPhaseProperty.value,
         solverType: this.solverTypeProperty.value,
         showModalControls: this.showModalControlsProperty.value,
         rendererType: this.rendererTypeProperty.value,
@@ -124,9 +103,6 @@ export class ResonancePreferencesModel {
     this.loadPreferences();
 
     // Save whenever any preference changes
-    this.showEnergyProperty.link(() => this.savePreferences());
-    this.showVectorsProperty.link(() => this.savePreferences());
-    this.showPhaseProperty.link(() => this.savePreferences());
     this.solverTypeProperty.link(() => this.savePreferences());
     this.showModalControlsProperty.link(() => this.savePreferences());
     this.rendererTypeProperty.link(() => this.savePreferences());
@@ -136,9 +112,6 @@ export class ResonancePreferencesModel {
    * Reset all preferences to default values
    */
   public reset(): void {
-    this.showEnergyProperty.reset();
-    this.showVectorsProperty.reset();
-    this.showPhaseProperty.reset();
     this.solverTypeProperty.reset();
     this.showModalControlsProperty.reset();
     this.rendererTypeProperty.reset();
