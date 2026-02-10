@@ -28,6 +28,17 @@ import { CircularUpdateGuard } from "../util/index.js";
 import { NumberControlFactory } from "./NumberControlFactory.js";
 import { SweepButton } from "./SweepButton.js";
 
+// Power symbol geometry
+const POWER_SYMBOL_RADIUS = 9;
+const POWER_SYMBOL_GAP_ANGLE = Math.PI / 5;
+const CIRCLE_SEGMENTS = 32;
+const POWER_LINE_START_RATIO = 0.3;
+const POWER_LINE_END_RATIO = 1.1;
+
+// Toggle switch and layout
+const TOGGLE_SWITCH_SCALE = 0.7;
+const CONTROLS_SPACING = 25;
+
 /**
  * Creates a power symbol (IEC 5009) - a circle with a vertical line through the top.
  * The "I" represents on (binary 1) and "O" represents off (binary 0).
@@ -39,14 +50,14 @@ function createPowerSymbolNode(options: {
 }): Node {
   const radius = options.radius ?? 10;
   const lineWidth = options.lineWidth ?? 2;
-  const stroke = options.stroke ?? "#666";
+  const stroke = options.stroke ?? ResonanceColors.iconStrokeProperty;
 
   // Gap angle from vertical (in radians) - controls size of gap at top
-  const gapAngle = Math.PI / 5;
+  const gapAngle = POWER_SYMBOL_GAP_ANGLE;
 
   // Create the broken circle using line segments to avoid arc boundary issues
   // The circle goes from (top + gap) counterclockwise around to (top - gap)
-  const segments = 32; // number of line segments to approximate the arc
+  const segments = CIRCLE_SEGMENTS; // number of line segments to approximate the arc
   const arcSpan = 2 * Math.PI - 2 * gapAngle; // total arc angle to draw
   const startAngle = -Math.PI / 2 + gapAngle; // start just right of top
 
@@ -71,8 +82,8 @@ function createPowerSymbolNode(options: {
 
   // Create the vertical line through the top
   const lineShape = new Shape()
-    .moveTo(0, -radius * 0.3)
-    .lineTo(0, -radius * 1.1);
+    .moveTo(0, -radius * POWER_LINE_START_RATIO)
+    .lineTo(0, -radius * POWER_LINE_END_RATIO);
 
   const linePath = new Path(lineShape, {
     stroke: stroke,
@@ -114,7 +125,7 @@ export class OscillatorDriverControlNode extends Node {
 
     // Power Toggle with power symbol (IEC 5009) instead of "On" text
     const powerSymbol = createPowerSymbolNode({
-      radius: 9,
+      radius: POWER_SYMBOL_RADIUS,
       lineWidth: 2,
       stroke: ResonanceColors.driverTextProperty,
     });
@@ -126,8 +137,8 @@ export class OscillatorDriverControlNode extends Node {
       {
         trackFillLeft: ResonanceColors.toggleTrackOffProperty,
         trackFillRight: ResonanceColors.toggleTrackOnProperty,
-        thumbFill: "white",
-        scale: 0.7,
+        thumbFill: ResonanceColors.toggleThumbProperty,
+        scale: TOGGLE_SWITCH_SCALE,
         // Accessibility
         accessibleName:
           ResonanceStrings.a11y.driverControl.powerToggleLabelStringProperty,
@@ -209,7 +220,7 @@ export class OscillatorDriverControlNode extends Node {
         sweepButton,
         amplitudeControl,
       ],
-      spacing: 25,
+      spacing: CONTROLS_SPACING,
     });
     controlsBox.center = driverBox.center;
     this.addChild(controlsBox);

@@ -46,6 +46,30 @@ import { Checkbox } from "scenerystack/sun";
 import ConfigurableGraph from "./graph/ConfigurableGraph.js";
 import type { PlottableProperty } from "./graph/PlottableProperty.js";
 
+// ===== Layout and grid constants =====
+const GRID_MAJOR_SPACING = 0.05; // 5 cm between major grid lines (model meters)
+const GRID_MINOR_DIVISIONS_PER_MAJOR = 5; // 1 cm minor grid lines
+const GRID_WIDTH = 550; // grid width in view pixels
+const GRID_TOP_MODEL = 0.3; // 30 cm above equilibrium (model meters)
+const GRID_BOTTOM_MODEL = -0.25; // 25 cm below equilibrium (model meters)
+
+// ===== Connection rod constants =====
+const CONNECTION_ROD_OVERLAP = 0.02; // 2 cm overlap into driver box (model meters)
+const CONNECTION_ROD_MARKER_LINE_WIDTH = 3;
+const CONNECTION_ROD_MARKER_REST_FRACTION = 0.35; // marker positioned ~1/3 down the rod at rest
+
+// ===== Rod / plate view constraints =====
+const MIN_ROD_HEIGHT_VIEW = 10; // minimum rod height in view pixels
+
+// ===== Ruler drag constants =====
+const RULER_DRAG_MARGIN = 20; // keep at least this many pixels visible on each edge
+const RULER_KEYBOARD_DRAG_SPEED = 150; // pixels per second
+const RULER_KEYBOARD_SHIFT_DRAG_SPEED = 50; // slower with shift key
+
+// ===== Graph checkbox constants =====
+const GRAPH_CHECKBOX_BOX_WIDTH = 14;
+const GRAPH_CHECKBOX_SPACING = 6;
+
 export class BaseOscillatorScreenView extends ScreenView {
   protected readonly model: BaseOscillatorScreenModel;
   protected readonly modelViewTransform: ModelViewTransform2;
@@ -126,11 +150,11 @@ export class BaseOscillatorScreenView extends ScreenView {
       this.modelViewTransform,
       this.layoutBounds,
       {
-        majorSpacing: 0.05, // 5 cm between major lines
-        minorDivisionsPerMajor: 5, // 1 cm minor lines
-        gridWidth: 550,
-        gridTopModel: 0.3, // 30 cm above equilibrium
-        gridBottomModel: -0.25, // 25 cm below equilibrium
+        majorSpacing: GRID_MAJOR_SPACING,
+        minorDivisionsPerMajor: GRID_MINOR_DIVISIONS_PER_MAJOR,
+        gridWidth: GRID_WIDTH,
+        gridTopModel: GRID_TOP_MODEL,
+        gridBottomModel: GRID_BOTTOM_MODEL,
         gridCenterX: this.driverNode.centerX,
       },
     );
@@ -140,9 +164,9 @@ export class BaseOscillatorScreenView extends ScreenView {
     // ===== TRACE NODE =====
     // The trace node contains its own scrolling grid and the trace line.
     // It sits at the same layer as the static grid and replaces it when trace is active.
-    const gridTopModel = 0.3;
-    const gridBottomModel = -0.25;
-    const gridWidth = 550;
+    const gridTopModel = GRID_TOP_MODEL;
+    const gridBottomModel = GRID_BOTTOM_MODEL;
+    const gridWidth = GRID_WIDTH;
 
     this.traceNode = new OscillatorTraceNode(
       this.modelViewTransform,
@@ -348,7 +372,7 @@ export class BaseOscillatorScreenView extends ScreenView {
       ResonanceConstants.DRIVER_PLATE_REST_MODEL_Y -
       ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL;
     // Rod bottom: top of driver box (with overlap so box covers it)
-    const rodBottomModelY = ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y - 0.02; // 2cm overlap into box
+    const rodBottomModelY = ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y - CONNECTION_ROD_OVERLAP; // 2cm overlap into box
 
     // Convert to view coordinates
     const rodTopViewY = this.modelViewTransform.modelToViewY(rodTopModelY);
@@ -388,8 +412,8 @@ export class BaseOscillatorScreenView extends ScreenView {
     // Marker line across the connection rod - moves with driver plate to show motion
     // Use a contrasting dark color so it's visible against the gray rod
     this.connectionRodMarker = new Line(-rodWidth / 2, 0, rodWidth / 2, 0, {
-      stroke: "#333",
-      lineWidth: 3,
+      stroke: ResonanceColors.connectionRodMarkerProperty,
+      lineWidth: CONNECTION_ROD_MARKER_LINE_WIDTH,
       lineCap: "round",
     });
     this.connectionRodMarker.x = this.driverNode.centerX;
@@ -456,7 +480,7 @@ export class BaseOscillatorScreenView extends ScreenView {
     // Drag handling - keep ruler within visible bounds so it's always grabbable
     // The ruler is rotated, so its "width" in view is actually its thickness,
     // and its "height" in view is its length
-    const margin = 20; // Keep at least this many pixels visible on each edge
+    const margin = RULER_DRAG_MARGIN;
     const rulerThickness = ResonanceConstants.RULER_THICKNESS_VIEW;
 
     const dragBounds = new Bounds2(
@@ -483,15 +507,15 @@ export class BaseOscillatorScreenView extends ScreenView {
     // Make focusable for keyboard navigation
     rulerNode.tagName = "div";
     rulerNode.focusable = true;
-    rulerNode.accessibleName = "Ruler";
+    rulerNode.accessibleName = ResonanceStrings.a11y.rulerAccessibleNameStringProperty;
 
     // KeyboardDragListener for keyboard navigation
     const keyboardDragListener = new KeyboardDragListener({
       positionProperty: this.rulerPositionProperty,
       transform: this.modelViewTransform,
       dragBoundsProperty: new Property(dragBoundsModel),
-      dragSpeed: 150, // pixels per second
-      shiftDragSpeed: 50, // slower with shift key
+      dragSpeed: RULER_KEYBOARD_DRAG_SPEED,
+      shiftDragSpeed: RULER_KEYBOARD_SHIFT_DRAG_SPEED,
     });
     rulerNode.addInputListener(keyboardDragListener);
 
@@ -588,17 +612,17 @@ export class BaseOscillatorScreenView extends ScreenView {
 
     // Update connection rod to stretch/compress with driver movement
     // Rod connects plate bottom to driver box top (using model coordinates)
-    const rodBottomModelY = ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y - 0.02; // 2cm overlap
+    const rodBottomModelY = ResonanceConstants.DRIVER_BOX_TOP_MODEL_Y - CONNECTION_ROD_OVERLAP; // 2cm overlap
     const rodBottomViewY =
       this.modelViewTransform.modelToViewY(rodBottomModelY);
-    const rodHeight = Math.max(10, rodBottomViewY - plateBottomViewY);
+    const rodHeight = Math.max(MIN_ROD_HEIGHT_VIEW, rodBottomViewY - plateBottomViewY);
 
     // Position marker line about 1/3 down the rod at rest, moves with plate
     const restPlateBottomViewY = this.modelViewTransform.modelToViewY(
       -naturalLength - ResonanceConstants.DRIVER_PLATE_HEIGHT_MODEL,
     );
     const restRodHeight = rodBottomViewY - restPlateBottomViewY;
-    const markerRestY = restPlateBottomViewY + restRodHeight * 0.35;
+    const markerRestY = restPlateBottomViewY + restRodHeight * CONNECTION_ROD_MARKER_REST_FRACTION;
 
     // Add the plate displacement to the marker rest position
     const plateDisplacementView = plateBottomViewY - restPlateBottomViewY;
@@ -773,8 +797,8 @@ export class BaseOscillatorScreenView extends ScreenView {
       },
     );
     const checkbox = new Checkbox(graph.getGraphVisibleProperty(), checkboxLabel, {
-      boxWidth: 14,
-      spacing: 6,
+      boxWidth: GRAPH_CHECKBOX_BOX_WIDTH,
+      spacing: GRAPH_CHECKBOX_SPACING,
     });
 
     this.addChild(checkbox);

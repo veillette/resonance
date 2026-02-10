@@ -341,6 +341,38 @@ const ResonanceColors = {
     },
   ),
 
+  // Button disabled color
+  buttonDisabledProperty: new ProfileColorProperty(
+    resonance,
+    "buttonDisabled",
+    {
+      default: new Color(90, 90, 90),
+      projector: new Color(180, 180, 180),
+    },
+  ),
+
+  // Toggle switch thumb color
+  toggleThumbProperty: new ProfileColorProperty(resonance, "toggleThumb", {
+    default: new Color(255, 255, 255),
+    projector: new Color(255, 255, 255),
+  }),
+
+  // Icon stroke color (power symbol, sweep icon)
+  iconStrokeProperty: new ProfileColorProperty(resonance, "iconStroke", {
+    default: new Color(102, 102, 102), // #666
+    projector: new Color(80, 80, 80),
+  }),
+
+  // Connection rod marker stroke
+  connectionRodMarkerProperty: new ProfileColorProperty(
+    resonance,
+    "connectionRodMarker",
+    {
+      default: new Color(51, 51, 51), // #333
+      projector: new Color(100, 100, 100),
+    },
+  ),
+
   // Displacement colormap colors (blue-white-red gradient)
   colormapNegativeProperty: new ProfileColorProperty(
     resonance,

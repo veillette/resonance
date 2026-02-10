@@ -13,6 +13,34 @@ import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Bounds2 } from "scenerystack/dot";
 import ResonanceColors from "../ResonanceColors.js";
 
+// Default grid options
+const DEFAULT_MAJOR_SPACING = 0.05; // 5 cm between major grid lines (meters)
+const DEFAULT_MINOR_DIVISIONS_PER_MAJOR = 5; // 1 cm minor lines
+const DEFAULT_GRID_WIDTH = 500; // view coordinates
+const DEFAULT_GRID_TOP_MODEL = 0.25; // 25 cm above equilibrium (meters)
+const DEFAULT_GRID_BOTTOM_MODEL = -0.3; // 30 cm below equilibrium (meters)
+const DEFAULT_GRID_CENTER_X_OFFSET = -100; // offset from layoutBounds centerX
+
+// Threshold for treating a model Y value as zero (equilibrium)
+const Y_ZERO_THRESHOLD = 0.0001;
+
+// Grid line styling
+const MINOR_LINE_WIDTH = 1;
+const MINOR_LINE_OPACITY = 0.6;
+const MAJOR_LINE_WIDTH = 1.5;
+const MAJOR_LINE_OPACITY = 0.9;
+const EQUILIBRIUM_LINE_WIDTH = 3;
+
+// Scale indicator arrow dimensions
+const SCALE_INDICATOR_X_OFFSET = -20; // offset from grid right edge
+const ARROW_HEAD_HEIGHT = 8;
+const ARROW_HEAD_WIDTH = 8;
+const ARROW_TAIL_WIDTH = 2;
+
+// Scale label styling
+const SCALE_LABEL_FONT_SIZE = 12;
+const SCALE_LABEL_RIGHT_OFFSET = -8; // offset from indicator X position
+
 export interface OscillatorGridNodeOptions {
   /** Spacing between major grid lines in model coordinates (meters) */
   majorSpacing?: number;
@@ -45,13 +73,13 @@ export class OscillatorGridNode extends Node {
     super();
 
     this.modelViewTransform = modelViewTransform;
-    this.majorSpacing = options?.majorSpacing ?? 0.05; // 5 cm default
-    this.minorDivisionsPerMajor = options?.minorDivisionsPerMajor ?? 5; // 1 cm minor lines
-    this.gridWidth = options?.gridWidth ?? 500;
+    this.majorSpacing = options?.majorSpacing ?? DEFAULT_MAJOR_SPACING;
+    this.minorDivisionsPerMajor = options?.minorDivisionsPerMajor ?? DEFAULT_MINOR_DIVISIONS_PER_MAJOR;
+    this.gridWidth = options?.gridWidth ?? DEFAULT_GRID_WIDTH;
     // Use model coordinates for top and bottom
-    this.gridTopModel = options?.gridTopModel ?? 0.25; // 25 cm above equilibrium
-    this.gridBottomModel = options?.gridBottomModel ?? -0.3; // 30 cm below equilibrium
-    this.gridCenterX = options?.gridCenterX ?? layoutBounds.centerX - 100;
+    this.gridTopModel = options?.gridTopModel ?? DEFAULT_GRID_TOP_MODEL;
+    this.gridBottomModel = options?.gridBottomModel ?? DEFAULT_GRID_BOTTOM_MODEL;
+    this.gridCenterX = options?.gridCenterX ?? layoutBounds.centerX + DEFAULT_GRID_CENTER_X_OFFSET;
 
     // Create the grid
     this.createGrid();
@@ -106,7 +134,7 @@ export class OscillatorGridNode extends Node {
         const viewY = this.modelViewTransform.modelToViewY(modelY);
 
         // Skip the y=0 line (will be drawn separately as bold)
-        if (Math.abs(modelY) < 0.0001) continue;
+        if (Math.abs(modelY) < Y_ZERO_THRESHOLD) continue;
 
         const isMajor = minorIndex === 0;
         const shape = isMajor ? majorLinesShape : minorLinesShape;
@@ -132,14 +160,14 @@ export class OscillatorGridNode extends Node {
     // Create path nodes for grid lines with better visibility for projector mode
     const minorLinesNode = new Path(minorLinesShape, {
       stroke: ResonanceColors.gridLinesProperty,
-      lineWidth: 1,
-      opacity: 0.6,
+      lineWidth: MINOR_LINE_WIDTH,
+      opacity: MINOR_LINE_OPACITY,
     });
 
     const majorLinesNode = new Path(majorLinesShape, {
       stroke: ResonanceColors.gridLinesProperty,
-      lineWidth: 1.5,
-      opacity: 0.9,
+      lineWidth: MAJOR_LINE_WIDTH,
+      opacity: MAJOR_LINE_OPACITY,
     });
 
     // Bold y=0 (equilibrium) line - positioned using modelViewTransform
@@ -150,7 +178,7 @@ export class OscillatorGridNode extends Node {
       equilibriumViewY,
       {
         stroke: ResonanceColors.equilibriumProperty,
-        lineWidth: 3,
+        lineWidth: EQUILIBRIUM_LINE_WIDTH,
       },
     );
 
@@ -170,7 +198,7 @@ export class OscillatorGridNode extends Node {
    */
   private createScaleIndicator(gridRight: number, _gridTopView: number): void {
     // Position in upper right corner of the grid
-    const indicatorX = gridRight - 20;
+    const indicatorX = gridRight + SCALE_INDICATOR_X_OFFSET;
 
     // Find the top two major grid lines using model coordinates
     // Use the top of the grid and one major spacing below it
@@ -185,9 +213,9 @@ export class OscillatorGridNode extends Node {
 
     const arrow = new ArrowNode(indicatorX, arrowTop, indicatorX, arrowBottom, {
       doubleHead: true,
-      headHeight: 8,
-      headWidth: 8,
-      tailWidth: 2,
+      headHeight: ARROW_HEAD_HEIGHT,
+      headWidth: ARROW_HEAD_WIDTH,
+      tailWidth: ARROW_TAIL_WIDTH,
       fill: ResonanceColors.textProperty,
       stroke: null,
     });

@@ -71,9 +71,9 @@ export type SweepRateOption = {
  * Available sweep rate options
  */
 export const SWEEP_RATE_OPTIONS: readonly SweepRateOption[] = [
-  { value: SWEEP_RATE_SLOW, name: "Slow" },
-  { value: SWEEP_RATE_NORMAL, name: "Normal" },
-  { value: SWEEP_RATE_FAST, name: "Fast" },
+  { value: SWEEP_RATE_SLOW, name: "slow" },
+  { value: SWEEP_RATE_NORMAL, name: "normal" },
+  { value: SWEEP_RATE_FAST, name: "fast" },
 ] as const;
 
 /**

@@ -20,6 +20,20 @@ import { TReadOnlyProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import ResonanceColors from "../ResonanceColors.js";
 
+// Icon dimensions
+const SWEEP_ICON_WIDTH = 30;
+const SWEEP_ICON_HEIGHT = 16;
+const SWEEP_ICON_LINE_WIDTH = 2;
+
+// Button layout margins
+const BUTTON_X_MARGIN = 8;
+const BUTTON_Y_MARGIN = 6;
+
+// Chirp waveform parameters (cycles over the icon width)
+const CHIRP_START_FREQUENCY = 1.5;
+const CHIRP_END_FREQUENCY = 6;
+const CHIRP_NUM_POINTS = 60;
+
 /**
  * Options for creating a SweepButton.
  */
@@ -52,26 +66,25 @@ function createSweepIconNode(options: {
   lineWidth?: number;
   stroke?: TColor;
 }): Node {
-  const width = options.width ?? 30;
-  const height = options.height ?? 16;
-  const lineWidth = options.lineWidth ?? 2;
-  const stroke = options.stroke ?? "#666";
+  const width = options.width ?? SWEEP_ICON_WIDTH;
+  const height = options.height ?? SWEEP_ICON_HEIGHT;
+  const lineWidth = options.lineWidth ?? SWEEP_ICON_LINE_WIDTH;
+  const stroke = options.stroke ?? ResonanceColors.iconStrokeProperty;
 
   // Create a sinusoidal wave with increasing frequency (chirp)
   // The frequency increases quadratically from left to right
   const shape = new Shape();
-  const numPoints = 60;
-
-  for (let i = 0; i <= numPoints; i++) {
-    const t = i / numPoints; // 0 to 1 across the width
+  for (let i = 0; i <= CHIRP_NUM_POINTS; i++) {
+    const t = i / CHIRP_NUM_POINTS; // 0 to 1 across the width
     const x = t * width;
 
     // Quadratic chirp: frequency increases with position
     // phase = 2pi * (f0 * t + (f1 - f0) * t^2 / 2)
-    // where f0 = 1.5 cycles, f1 = 6 cycles over the width
-    const f0 = 1.5;
-    const f1 = 6;
-    const phase = 2 * Math.PI * (f0 * t + ((f1 - f0) * t * t) / 2);
+    const phase =
+      2 *
+      Math.PI *
+      (CHIRP_START_FREQUENCY * t +
+        ((CHIRP_END_FREQUENCY - CHIRP_START_FREQUENCY) * t * t) / 2);
 
     const y = (height / 2) * Math.sin(phase);
 
@@ -99,9 +112,9 @@ export class SweepButton extends RectangularPushButton {
     const iconStroke = options.iconStroke ?? ResonanceColors.textProperty;
 
     const sweepIcon = createSweepIconNode({
-      width: 30,
-      height: 16,
-      lineWidth: 2,
+      width: SWEEP_ICON_WIDTH,
+      height: SWEEP_ICON_HEIGHT,
+      lineWidth: SWEEP_ICON_LINE_WIDTH,
       stroke: iconStroke,
     });
 
@@ -111,10 +124,10 @@ export class SweepButton extends RectangularPushButton {
         options.toggleSweep();
       },
       baseColor: ResonanceColors.subPanelFillProperty,
-      disabledColor: new Color(90, 90, 90),
+      disabledColor: ResonanceColors.buttonDisabledProperty,
       buttonAppearanceStrategy: FlatAppearanceStrategy,
-      xMargin: 8,
-      yMargin: 6,
+      xMargin: BUTTON_X_MARGIN,
+      yMargin: BUTTON_Y_MARGIN,
       accessibleName: options.accessibleName,
     });
   }

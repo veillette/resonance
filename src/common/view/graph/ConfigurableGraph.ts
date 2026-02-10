@@ -36,6 +36,35 @@ import GraphInteractionHandler from "./GraphInteractionHandler.js";
 import GraphControlsPanel from "./GraphControlsPanel.js";
 import resonance from "../../ResonanceNamespace.js";
 
+// Grid line styling
+const GRID_LINE_WIDTH = 0.5;
+const PLOT_LINE_WIDTH = 2;
+const TICK_EXTENT = 8;
+const TICK_LABEL_FONT = new PhetFont({ size: 10 });
+const TICK_LABEL_DECIMALS = 2;
+
+// Axis labels
+const AXIS_LABEL_FONT = new PhetFont({ size: 12 });
+const AXIS_LABEL_OFFSET = 35;
+
+// Axis interaction regions
+const Y_AXIS_INTERACTION_WIDTH = 60;
+const X_AXIS_INTERACTION_HEIGHT = 30;
+
+// Control button styling
+const BUTTON_SIZE = 24;
+const BUTTON_PADDING = 4;
+const BUTTON_SPACING = 2;
+const BUTTON_CORNER_RADIUS = 3;
+const BUTTON_FONT = new PhetFont({ size: 14, weight: "bold" });
+const BUTTON_HOVER_OPACITY = 0.8;
+const TITLE_BOTTOM_OFFSET = -5;
+
+// Resize handle
+const RESIZE_HANDLE_SIZE = 16;
+const RESIZE_DOT_RADIUS = 2;
+const RESIZE_DOT_SPACING = 5;
+
 export default class ConfigurableGraph extends Node {
   private readonly availableProperties: PlottableProperty[];
   private readonly xPropertyProperty: Property<PlottableProperty>;
@@ -157,7 +186,7 @@ export default class ConfigurableGraph extends Node {
       initialSpacing,
       {
         stroke: ResonanceColors.gridLinesProperty,
-        lineWidth: 0.5,
+        lineWidth: GRID_LINE_WIDTH,
       },
     );
     this.graphContentNode.addChild(this.verticalGridLineSet);
@@ -168,7 +197,7 @@ export default class ConfigurableGraph extends Node {
       initialSpacing,
       {
         stroke: ResonanceColors.gridLinesProperty,
-        lineWidth: 0.5,
+        lineWidth: GRID_LINE_WIDTH,
       },
     );
     this.graphContentNode.addChild(this.horizontalGridLineSet);
@@ -179,7 +208,7 @@ export default class ConfigurableGraph extends Node {
       initialSpacing,
       {
         edge: "min",
-        extent: 8,
+        extent: TICK_EXTENT,
         stroke: ResonanceColors.controlPanelStrokeProperty,
       },
     );
@@ -191,7 +220,7 @@ export default class ConfigurableGraph extends Node {
       initialSpacing,
       {
         edge: "min",
-        extent: 8,
+        extent: TICK_EXTENT,
         stroke: ResonanceColors.controlPanelStrokeProperty,
       },
     );
@@ -204,8 +233,8 @@ export default class ConfigurableGraph extends Node {
       {
         edge: "min",
         createLabel: (value: number) =>
-          new Text(value.toFixed(2), {
-            font: new PhetFont({ size: 10 }),
+          new Text(value.toFixed(TICK_LABEL_DECIMALS), {
+            font: TICK_LABEL_FONT,
             fill: ResonanceColors.textProperty,
           }),
       },
@@ -219,8 +248,8 @@ export default class ConfigurableGraph extends Node {
       {
         edge: "min",
         createLabel: (value: number) =>
-          new Text(value.toFixed(2), {
-            font: new PhetFont({ size: 10 }),
+          new Text(value.toFixed(TICK_LABEL_DECIMALS), {
+            font: TICK_LABEL_FONT,
             fill: ResonanceColors.textProperty,
           }),
       },
@@ -230,8 +259,8 @@ export default class ConfigurableGraph extends Node {
     // Create invisible interaction regions for axis controls
     // These regions capture mouse/touch events across the entire tick label area,
     // not just on the text labels themselves
-    const axisInteractionWidth = 60; // Width for Y-axis region (left side)
-    const axisInteractionHeight = 30; // Height for X-axis region (bottom)
+    const axisInteractionWidth = Y_AXIS_INTERACTION_WIDTH;
+    const axisInteractionHeight = X_AXIS_INTERACTION_HEIGHT;
 
     // Y-axis interaction region (left side of graph, covering full height)
     this.yAxisInteractionRegion = new Rectangle(
@@ -262,7 +291,7 @@ export default class ConfigurableGraph extends Node {
     // Create line plot
     this.linePlot = new LinePlot(this.chartTransform, [], {
       stroke: ResonanceColors.plot1Property,
-      lineWidth: 2,
+      lineWidth: PLOT_LINE_WIDTH,
     });
 
     // Create trail node for showing recent points
@@ -277,19 +306,19 @@ export default class ConfigurableGraph extends Node {
 
     // Create axis labels
     this.xAxisLabelNode = new Text(this.formatAxisLabel(initialXProperty), {
-      font: new PhetFont({ size: 12 }),
+      font: AXIS_LABEL_FONT,
       fill: ResonanceColors.textProperty,
       centerX: this.graphWidth / 2,
-      top: this.graphHeight + 35,
+      top: this.graphHeight + AXIS_LABEL_OFFSET,
     });
     this.graphContentNode.addChild(this.xAxisLabelNode);
 
     this.yAxisLabelNode = new Text(this.formatAxisLabel(initialYProperty), {
-      font: new PhetFont({ size: 12 }),
+      font: AXIS_LABEL_FONT,
       fill: ResonanceColors.textProperty,
       rotation: -Math.PI / 2,
       centerY: this.graphHeight / 2,
-      right: -35,
+      right: -AXIS_LABEL_OFFSET,
     });
     this.graphContentNode.addChild(this.yAxisLabelNode);
 
@@ -320,18 +349,18 @@ export default class ConfigurableGraph extends Node {
     // Create title panel with combo boxes for axis selection
     const titlePanel = controlsPanel.createTitlePanel(listParent);
     titlePanel.centerX = this.graphWidth / 2;
-    titlePanel.bottom = -5;
+    titlePanel.bottom = TITLE_BOTTOM_OFFSET;
     this.graphContentNode.addChild(titlePanel);
 
     // Create control buttons panel with rescale, zoom, and pan buttons
-    const buttonSize = 24;
-    const buttonPadding = 4;
-    const buttonSpacing = 2;
+    const buttonSize = BUTTON_SIZE;
+    const buttonPadding = BUTTON_PADDING;
+    const buttonSpacing = BUTTON_SPACING;
 
     // Helper function to create a button
     const createButton = (label: string, onClick: () => void): Node => {
       const buttonText = new Text(label, {
-        font: new PhetFont({ size: 14, weight: "bold" }),
+        font: BUTTON_FONT,
         fill: ResonanceColors.controlPanelStrokeProperty,
       });
 
@@ -340,8 +369,8 @@ export default class ConfigurableGraph extends Node {
         0,
         buttonSize,
         buttonSize,
-        3,
-        3,
+        BUTTON_CORNER_RADIUS,
+        BUTTON_CORNER_RADIUS,
         {
           fill: ResonanceColors.controlPanelFillProperty,
           stroke: ResonanceColors.controlPanelStrokeProperty,
@@ -359,7 +388,7 @@ export default class ConfigurableGraph extends Node {
       // Add hover effect
       button.addInputListener({
         enter: () => {
-          buttonBackground.opacity = 0.8;
+          buttonBackground.opacity = BUTTON_HOVER_OPACITY;
         },
         exit: () => {
           buttonBackground.opacity = 1.0;

@@ -75,6 +75,9 @@ export const ResonanceStrings = {
 
   // Accessibility strings for oscillator screen
   a11y: strings.resonance.a11y,
+
+  // Keyboard help strings
+  keyboardHelp: strings.resonance.keyboardHelp,
 };
 
 // Export for backward compatibility

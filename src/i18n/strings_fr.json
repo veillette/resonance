@@ -64,7 +64,10 @@
       "thermalEnergy": "Énergie Thermique",
       "rmsDisplacement": "Déplacement RMS",
       "rmsVelocity": "Vitesse RMS",
-      "graph": "Graphique"
+      "graph": "Graphique",
+      "fast": "Rapide",
+      "grid": "Grille",
+      "graphVs": "vs"
     },
     "preferences": {
       "title": "Préférences",
@@ -153,14 +156,44 @@
         "gravityToggleLabel": "Interrupteur de Gravité",
         "gravityToggleDescription": "Active ou désactive la gravité dans la simulation",
         "rulerCheckboxLabel": "Visibilité de la Règle",
-        "rulerCheckboxDescription": "Affiche ou masque la règle de mesure"
+        "rulerCheckboxDescription": "Affiche ou masque la règle de mesure",
+        "gridCheckboxLabel": "Grille",
+        "gridCheckboxDescription": "Basculer la visibilité de la grille",
+        "traceCheckboxLabel": "Tracé",
+        "traceCheckboxDescription": "Basculer le mode tracé pour enregistrer le mouvement de la masse"
       },
       "resonator": {
         "springLabel": "Ressort {{number}}",
         "springDescription": "Ressort élastique connectant la masse {{number}} à la plaque conductrice",
         "massLabel": "Masse {{number}}",
         "massDescription": "Masse déplaçable sur le résonateur {{number}}. Utilisez les touches fléchées pour déplacer verticalement."
-      }
+      },
+      "alerts": {
+        "simulationPlaying": "Simulation en cours",
+        "simulationPaused": "Simulation en pause",
+        "gravityOn": "Gravité activée",
+        "gravityOff": "Gravité désactivée",
+        "resonatorCount": "{{count}} résonateurs",
+        "rulerShown": "Règle affichée",
+        "rulerHidden": "Règle masquée",
+        "gridShown": "Grille affichée",
+        "gridHidden": "Grille masquée",
+        "traceStarted": "Enregistrement du tracé démarré",
+        "traceStopped": "Enregistrement du tracé arrêté"
+      },
+      "measurementLinePattern": "Ligne de Mesure {{number}}",
+      "rulerAccessibleName": "Règle"
+    },
+    "keyboardHelp": {
+      "simulationControls": "Contrôles de Simulation",
+      "playPause": "Lecture / Pause",
+      "adjustFrequency": "Ajuster la Fréquence",
+      "largeFrequencySteps": "Grands Pas de Fréquence",
+      "resetSimulation": "Réinitialiser la Simulation",
+      "stopFrequencySweep": "Arrêter le Balayage de Fréquence",
+      "dragControls": "Contrôles de Déplacement",
+      "moveObjects": "Déplacer les Objets",
+      "fineMovement": "Mouvement Fin"
     },
     "presets": {
       "lightAndBouncy": "Léger et Élastique",
@@ -210,6 +243,7 @@
         "visualizationLabel": "Visualisation de la Plaque de Chladni",
         "excitationMarkerLabel": "Point d'Excitation",
         "excitationMarkerDescription": "Marqueur déplaçable indiquant où la plaque est excitée. Utilisez les touches fléchées pour déplacer. Maintenez Shift pour un contrôle précis.",
+        "excitationMarkerVoicingHint": "Utilisez les touches fléchées pour déplacer. Maintenez Shift pour un contrôle précis.",
         "resonancePeakAlert": "Pic de résonance détecté à {{frequency}} Hz",
         "sweepCompleteAlert": "Balayage de fréquence terminé",
         "simulationPlayingAlert": "Simulation en cours",

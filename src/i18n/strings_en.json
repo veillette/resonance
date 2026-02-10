@@ -64,7 +64,10 @@
       "thermalEnergy": "Thermal Energy",
       "rmsDisplacement": "RMS Displacement",
       "rmsVelocity": "RMS Velocity",
-      "graph": "Graph"
+      "graph": "Graph",
+      "fast": "Fast",
+      "grid": "Grid",
+      "graphVs": "vs"
     },
     "preferences": {
       "title": "Preferences",
@@ -153,7 +156,11 @@
         "gravityToggleLabel": "Gravity Toggle",
         "gravityToggleDescription": "Turns gravity on or off for the simulation",
         "rulerCheckboxLabel": "Ruler Visibility",
-        "rulerCheckboxDescription": "Shows or hides the measurement ruler"
+        "rulerCheckboxDescription": "Shows or hides the measurement ruler",
+        "gridCheckboxLabel": "Grid",
+        "gridCheckboxDescription": "Toggle grid visibility",
+        "traceCheckboxLabel": "Trace",
+        "traceCheckboxDescription": "Toggle trace mode to record mass motion over time"
       },
       "resonator": {
         "springLabel": "Spring {{number}}",
@@ -166,8 +173,27 @@
         "simulationPaused": "Simulation paused",
         "gravityOn": "Gravity enabled",
         "gravityOff": "Gravity disabled",
-        "resonatorCount": "{{count}} resonators"
-      }
+        "resonatorCount": "{{count}} resonators",
+        "rulerShown": "Ruler shown",
+        "rulerHidden": "Ruler hidden",
+        "gridShown": "Grid shown",
+        "gridHidden": "Grid hidden",
+        "traceStarted": "Trace recording started",
+        "traceStopped": "Trace recording stopped"
+      },
+      "measurementLinePattern": "Measurement Line {{number}}",
+      "rulerAccessibleName": "Ruler"
+    },
+    "keyboardHelp": {
+      "simulationControls": "Simulation Controls",
+      "playPause": "Play / Pause",
+      "adjustFrequency": "Adjust Frequency",
+      "largeFrequencySteps": "Large Frequency Steps",
+      "resetSimulation": "Reset Simulation",
+      "stopFrequencySweep": "Stop Frequency Sweep",
+      "dragControls": "Drag Controls",
+      "moveObjects": "Move Objects",
+      "fineMovement": "Fine Movement"
     },
     "presets": {
       "lightAndBouncy": "Light and Bouncy",
@@ -217,6 +243,7 @@
         "visualizationLabel": "Chladni Plate Visualization",
         "excitationMarkerLabel": "Excitation Point",
         "excitationMarkerDescription": "Draggable marker showing where the plate is driven. Use arrow keys to move. Hold Shift for fine control.",
+        "excitationMarkerVoicingHint": "Use arrow keys to move. Hold Shift for fine control.",
         "resonancePeakAlert": "Resonance peak detected at {{frequency}} Hz",
         "sweepCompleteAlert": "Frequency sweep complete",
         "simulationPlayingAlert": "Simulation playing",
