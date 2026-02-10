@@ -55,6 +55,11 @@ export type OscillatorControlPanelOptions = {
    * configuration combo box, and resonator selection spinner).
    */
   singleOscillatorMode?: boolean;
+
+  /**
+   * If false, the trace checkbox is hidden. Default is true.
+   */
+  showTrace?: boolean;
 };
 
 export class OscillatorControlPanel extends Panel {
@@ -110,6 +115,7 @@ export class OscillatorControlPanel extends Panel {
     // Store model reference for use in methods
     const tempModel = model;
     const singleOscillatorMode = options?.singleOscillatorMode ?? false;
+    const showTrace = options?.showTrace ?? true;
 
     // --- Create all controls using extracted methods ---
 
@@ -230,7 +236,7 @@ export class OscillatorControlPanel extends Panel {
           gravityBox,
           rulerCheckbox,
           gridCheckbox,
-          traceCheckbox,
+          ...(showTrace ? [traceCheckbox] : []),
         ]
       : [
           // Multiple oscillators mode: full controls
@@ -243,7 +249,7 @@ export class OscillatorControlPanel extends Panel {
           gravityBox,
           rulerCheckbox,
           gridCheckbox,
-          traceCheckbox,
+          ...(showTrace ? [traceCheckbox] : []),
         ];
 
     const controlPanelContent = new VBox({

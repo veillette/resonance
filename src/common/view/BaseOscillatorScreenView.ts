@@ -34,7 +34,10 @@ import ResonanceColors from "../ResonanceColors.js";
 import ResonanceConstants from "../ResonanceConstants.js";
 import { Property } from "scenerystack/axon";
 import { OscillatorDriverControlNode } from "./OscillatorDriverControlNode.js";
-import { OscillatorControlPanel } from "./OscillatorControlPanel.js";
+import {
+  OscillatorControlPanel,
+  OscillatorControlPanelOptions,
+} from "./OscillatorControlPanel.js";
 import { OscillatorPlaybackControlNode } from "./OscillatorPlaybackControlNode.js";
 import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 import { OscillatorResonatorNodeBuilder } from "./OscillatorResonatorNodeBuilder.js";
@@ -225,7 +228,10 @@ export class BaseOscillatorScreenView extends ScreenView {
       this.rulerVisibleProperty,
       this.gridVisibleProperty,
       this.traceDataModel.traceEnabledProperty,
-      { singleOscillatorMode: model.singleOscillatorMode },
+      {
+        singleOscillatorMode: model.singleOscillatorMode,
+        ...this.getControlPanelOptions(),
+      },
     );
     this.addChild(this.controlPanel);
     this.addChild(this.controlPanel.comboBoxListParent);
@@ -717,6 +723,14 @@ export class BaseOscillatorScreenView extends ScreenView {
     this.traceNode.reset();
     this.measurementLinesNode.reset();
     this.controlPanel.reset();
+  }
+
+  /**
+   * Override in subclasses to provide additional control panel options.
+   * For example, to hide the trace checkbox, return { showTrace: false }.
+   */
+  protected getControlPanelOptions(): Partial<OscillatorControlPanelOptions> {
+    return {};
   }
 
   public step(dt: number): void {
