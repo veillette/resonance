@@ -10,7 +10,7 @@
  */
 
 import { DerivedProperty, Multilink } from "scenerystack/axon";
-import { Node, Line, Text, Rectangle } from "scenerystack/scenery";
+import { Node, Line, Text } from "scenerystack/scenery";
 import {
   ChartTransform,
   ChartRectangle,
@@ -31,7 +31,7 @@ import { ResonanceStrings } from "../../i18n/ResonanceStrings.js";
 const CHART_WIDTH = 220;
 const CHART_HEIGHT = 120;
 
-// Fixed total height including axis labels (prevents layout shifts)
+// Total height including space for axis tick marks and labels below the chart
 const TOTAL_HEIGHT = CHART_HEIGHT + 35;
 
 // Number of sample points for the curve
@@ -53,7 +53,7 @@ export class ResonanceCurveNode extends Node {
   // Hz label
   private readonly hzLabel: Text;
 
-  // Fixed size container to prevent layout shifts
+  // Container for all chart content (chart area, ticks, labels)
   private readonly fixedContainer: Node;
 
   // Track current window range
@@ -75,16 +75,8 @@ export class ResonanceCurveNode extends Node {
       modelYRange: new Range(0, 1), // Normalized amplitude
     });
 
-    // Create a fixed-size container that prevents layout shifts
-    // This ensures the overall node bounds stay constant
+    // Container for all chart content
     this.fixedContainer = new Node();
-
-    // Invisible rectangle to establish fixed bounds
-    const boundsRect = new Rectangle(0, 0, CHART_WIDTH, TOTAL_HEIGHT, {
-      fill: null,
-      stroke: null,
-    });
-    this.fixedContainer.addChild(boundsRect);
 
     // Background rectangle
     this.chartRectangle = new ChartRectangle(this.chartTransform, {
@@ -187,6 +179,13 @@ export class ResonanceCurveNode extends Node {
 
     // Add the fixed container to this node
     this.addChild(this.fixedContainer);
+
+    // Set explicit local bounds so that the node always reports the same bounds
+    // regardless of which tick labels are currently visible. Without this, tick
+    // labels near the chart edges extend the node's bounds, causing parent layout
+    // (VBox centering, right-alignment) to shift as the x-axis window scrolls.
+    // The origin (0,0) is the top-left of the chart area.
+    this.localBounds = new Bounds2(0, 0, CHART_WIDTH, TOTAL_HEIGHT);
 
     this.updateFrequencyMarker();
 
