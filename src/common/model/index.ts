@@ -8,11 +8,7 @@ export { RungeKuttaSolver } from "./RungeKuttaSolver.js";
 export { AdaptiveRK45Solver } from "./AdaptiveRK45Solver.js";
 export { AnalyticalSolver } from "./AnalyticalSolver.js";
 export type { AnalyticalODEModel } from "./AnalyticalSolver.js";
-export {
-  SolverType,
-  SolverTypeName,
-  SolverTypeDescription,
-} from "./SolverType.js";
+export { SolverType } from "./SolverType.js";
 export { BaseModel } from "./BaseModel.js";
 export type { TimeSpeed, SubStepDataPoint } from "./BaseModel.js";
 export { BaseOscillatorScreenModel } from "./BaseOscillatorScreenModel.js";

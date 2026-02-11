@@ -12,6 +12,7 @@ export enum SolverType {
 
 /**
  * Human-readable names for solver types (localized)
+ * @unused Not referenced in production code; only used in tests.
  */
 export const SolverTypeName: Record<SolverType, ReadOnlyProperty<string>> = {
   [SolverType.RUNGE_KUTTA_4]:
@@ -24,6 +25,7 @@ export const SolverTypeName: Record<SolverType, ReadOnlyProperty<string>> = {
 
 /**
  * Human-readable descriptions for solver types (localized)
+ * @unused Not referenced in production code; only used in tests.
  */
 export const SolverTypeDescription: Record<
   SolverType,

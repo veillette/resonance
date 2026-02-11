@@ -677,6 +677,7 @@ export default class ConfigurableGraph extends Node {
 
   /**
    * Get the current x-axis property
+   * @unused Not called from outside this class.
    */
   public getXProperty(): PlottableProperty {
     return this.xPropertyProperty.value;
@@ -684,6 +685,7 @@ export default class ConfigurableGraph extends Node {
 
   /**
    * Get the current y-axis property
+   * @unused Not called from outside this class.
    */
   public getYProperty(): PlottableProperty {
     return this.yPropertyProperty.value;

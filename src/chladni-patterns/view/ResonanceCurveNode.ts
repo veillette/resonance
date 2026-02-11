@@ -333,6 +333,7 @@ export class ResonanceCurveNode extends Node {
 
   /**
    * Force a full update of the curve and marker.
+   * @unused Not called from outside this class; updates are driven by internal property links.
    */
   public update(): void {
     this.updateWindowRange();

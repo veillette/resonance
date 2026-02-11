@@ -31,6 +31,12 @@ const TIME_SPEED_SLOW = 0.1;
 const TIME_SPEED_NORMAL = 1.0;
 const TIME_SPEED_FAST = 2.0;
 
+const TIME_SPEED_MULTIPLIERS: Record<TimeSpeed, number> = {
+  slow: TIME_SPEED_SLOW,
+  normal: TIME_SPEED_NORMAL,
+  fast: TIME_SPEED_FAST,
+};
+
 export interface OscillatorTraceNodeOptions {
   /** The x-position of the pen (where the trace is written), in view coordinates */
   penViewX: number;
@@ -67,13 +73,6 @@ export class OscillatorTraceNode extends Node {
 
   /** Property for time speed (to sync trace scroll with simulation speed) */
   private readonly timeSpeedProperty: TReadOnlyProperty<TimeSpeed> | null;
-
-  /** Time speed multipliers matching BaseModel */
-  private readonly timeSpeedMultipliers: Record<TimeSpeed, number> = {
-    slow: TIME_SPEED_SLOW,
-    normal: TIME_SPEED_NORMAL,
-    fast: TIME_SPEED_FAST,
-  };
 
   /** Cumulative scroll offset in view pixels (never wraps, used for point positioning) */
   private scrollOffset = 0;
@@ -161,7 +160,7 @@ export class OscillatorTraceNode extends Node {
 
     // Apply time speed multiplier to sync scroll with simulation speed
     const speedMultiplier = this.timeSpeedProperty
-      ? this.timeSpeedMultipliers[this.timeSpeedProperty.value]
+      ? TIME_SPEED_MULTIPLIERS[this.timeSpeedProperty.value]
       : 1.0;
 
     // Update cumulative scroll offset (never wraps, used for point positioning)
