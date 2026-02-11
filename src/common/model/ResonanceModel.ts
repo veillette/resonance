@@ -51,6 +51,7 @@ export class ResonanceModel extends BaseModel {
 
   // Derived properties
   public readonly naturalFrequencyProperty: TReadOnlyProperty<number>; // ω₀ = √(k/m) (rad/s)
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly dampingRatioProperty: TReadOnlyProperty<number>; // ζ = b/(2√(mk))
   public readonly naturalFrequencyHzProperty: TReadOnlyProperty<number>; // f₀ = ω₀/(2π) (Hz)
 
@@ -63,9 +64,12 @@ export class ResonanceModel extends BaseModel {
   public readonly phaseAngleProperty: TReadOnlyProperty<number>; // radians
 
   // Steady-state amplitudes
-  public readonly displacementAmplitudeProperty: TReadOnlyProperty<number>; // meters
+  public readonly displacementAmplitudeProperty: TReadOnlyProperty<number>; // meters — internal dependency for amplitudeRatioProperty
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly velocityAmplitudeProperty: TReadOnlyProperty<number>; // m/s
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly accelerationAmplitudeProperty: TReadOnlyProperty<number>; // m/s²
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly forceAmplitudeProperty: TReadOnlyProperty<number>; // N (driving force amplitude)
 
   // Instantaneous dynamic quantities
@@ -80,9 +84,13 @@ export class ResonanceModel extends BaseModel {
 
   // Additional energy
   public readonly gravitationalPotentialEnergyProperty: TReadOnlyProperty<number>; // J (m*g*x)
+  /** @unused Not referenced outside this class; not in any plottable properties list. */
   public readonly dampingPowerProperty: TReadOnlyProperty<number>; // W (-b*v², power dissipated)
+  /** @unused Not referenced outside this class; not in any plottable properties list. */
   public readonly drivingPowerProperty: TReadOnlyProperty<number>; // W (F_drive*v, power input from driver)
+  /** @unused Not referenced outside this class; not in any plottable properties list. */
   public readonly springPowerProperty: TReadOnlyProperty<number>; // W (-kxv, spring energy exchange rate)
+  /** @unused Not referenced outside this class; not in any plottable properties list. */
   public readonly gravitationalPowerProperty: TReadOnlyProperty<number>; // W (-mgv, gravitational energy exchange rate)
 
   // Cumulative energy quantities (integrated via ODE solver)
@@ -104,39 +112,65 @@ export class ResonanceModel extends BaseModel {
 
   // Phase relationships (radians, relative to driving force)
   public readonly displacementPhaseProperty: TReadOnlyProperty<number>; // same as phaseAngleProperty
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly velocityPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π/2
+  /** @unused Not referenced outside this class. */
   public readonly accelerationPhaseProperty: TReadOnlyProperty<number>; // displacement phase - π
+  /** @unused Not referenced outside this class. */
   public readonly appliedForcePhaseProperty: TReadOnlyProperty<number>; // always 0 (reference)
+  /** @unused Not referenced outside this class. */
   public readonly springForcePhaseProperty: TReadOnlyProperty<number>; // displacement phase ± π (anti-phase to x)
+  /** @unused Not referenced outside this class. */
   public readonly dampingForcePhaseProperty: TReadOnlyProperty<number>; // velocity phase ± π (anti-phase to v)
 
   // Mechanical impedance (force/velocity analogy to electrical circuits)
+  /** @unused Not referenced outside this class. */
   public readonly impedanceMagnitudeProperty: TReadOnlyProperty<number>; // |Z| = √(b² + (mω - k/ω)²) (N·s/m)
+  /** @unused Not referenced outside this class. */
   public readonly impedancePhaseProperty: TReadOnlyProperty<number>; // ∠Z = φ - π/2 (radians)
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly mechanicalReactanceProperty: TReadOnlyProperty<number>; // X = mω - k/ω (N·s/m)
+  /** @unused Not referenced outside this class. */
   public readonly powerFactorProperty: TReadOnlyProperty<number>; // sin(φ) = b/|Z| (dimensionless, [0,1])
 
   // Advanced analytical properties
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly qualityFactorProperty: TReadOnlyProperty<number>; // Q = √(mk)/b (dimensionless)
+  /** @unused Not referenced outside this class (internal dependency only). */
   public readonly dampedAngularFrequencyProperty: TReadOnlyProperty<number>; // ω_d = ω₀√(1-ζ²) (rad/s)
+  /** @unused Not referenced outside this class. */
   public readonly dampedFrequencyHzProperty: TReadOnlyProperty<number>; // f_d = ω_d/(2π) (Hz)
+  /** @unused Not referenced outside this class. */
   public readonly logarithmicDecrementProperty: TReadOnlyProperty<number>; // δ = 2πζ/√(1-ζ²)
+  /** @unused Not referenced outside this class. */
   public readonly decayTimeConstantProperty: TReadOnlyProperty<number>; // τ = 2m/b (s)
+  /** @unused Not referenced outside this class. */
   public readonly bandwidthProperty: TReadOnlyProperty<number>; // Δf = f₀/Q (Hz)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateAveragePowerProperty: TReadOnlyProperty<number>; // P_avg = ½bω²X₀² (W)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateAverageEnergyProperty: TReadOnlyProperty<number>; // E_avg = ½kX₀² (J)
+  /** @unused Not referenced outside this class. */
   public readonly peakResponseFrequencyProperty: TReadOnlyProperty<number>; // f_peak = f₀√(1-2ζ²) (Hz)
+  /** @unused Not referenced outside this class. */
   public readonly peakDisplacementAmplitudeProperty: TReadOnlyProperty<number>; // X₀ at f_peak (m)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateRmsDisplacementProperty: TReadOnlyProperty<number>; // X₀/√2 (m)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateRmsVelocityProperty: TReadOnlyProperty<number>; // ωX₀/√2 (m/s)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateRmsAccelerationProperty: TReadOnlyProperty<number>; // ω²X₀/√2 (m/s²)
 
   // Steady-state time-averaged energy counterparts (analytical parallels to instantaneous properties)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateKineticEnergyProperty: TReadOnlyProperty<number>; // <KE> = ¼mω²X₀² (J)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStatePotentialEnergyProperty: TReadOnlyProperty<number>; // <PE_spring> = ¼kX₀² (J)
 
   // Steady-state time-averaged power counterparts (analytical parallels to instantaneous properties)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateDrivingPowerProperty: TReadOnlyProperty<number>; // <P_drive> = ½F₀ωX₀sin(φ) (W)
+  /** @unused Not referenced outside this class. */
   public readonly steadyStateDampingPowerProperty: TReadOnlyProperty<number>; // <P_damp> = -½bω²X₀² (W, non-positive)
 
   // Sub-step data collection for high-resolution graph plotting
@@ -873,6 +907,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the phase of displacement relative to the driving force.
    * Range: [0, π] where 0 = in phase, π/2 = at resonance, π = anti-phase
+   * @unused Not called from outside this class.
    */
   public getDisplacementPhase(): number {
     return this.displacementPhaseProperty.value;
@@ -881,6 +916,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the phase of velocity relative to the driving force.
    * Velocity leads displacement by 90° (π/2).
+   * @unused Not called from outside this class.
    */
   public getVelocityPhase(): number {
     return this.velocityPhaseProperty.value;
@@ -889,6 +925,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the phase of acceleration relative to the driving force.
    * Acceleration leads displacement by 180° (π).
+   * @unused Not called from outside this class.
    */
   public getAccelerationPhase(): number {
     return this.accelerationPhaseProperty.value;
@@ -897,6 +934,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the phase of the applied (driving) force.
    * This is always 0 as it serves as the reference phase.
+   * @unused Not called from outside this class.
    */
   public getAppliedForcePhase(): number {
     return this.appliedForcePhaseProperty.value;
@@ -909,6 +947,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the steady-state displacement amplitude (meters).
    * X₀ = F₀ / √[(k - mω²)² + (bω)²]
+   * @unused Not called from outside this class.
    */
   public getDisplacementAmplitude(): number {
     return this.displacementAmplitudeProperty.value;
@@ -917,6 +956,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the steady-state velocity amplitude (m/s).
    * A_v = ω × X₀
+   * @unused Not called from outside this class.
    */
   public getVelocityAmplitude(): number {
     return this.velocityAmplitudeProperty.value;
@@ -925,6 +965,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the steady-state acceleration amplitude (m/s²).
    * A_a = ω² × X₀
+   * @unused Not called from outside this class.
    */
   public getAccelerationAmplitude(): number {
     return this.accelerationAmplitudeProperty.value;
@@ -933,6 +974,7 @@ export class ResonanceModel extends BaseModel {
   /**
    * Get the driving force amplitude (N).
    * F₀ = k × A (spring constant × driver amplitude)
+   * @unused Not called from outside this class.
    */
   public getForceAmplitude(): number {
     return this.forceAmplitudeProperty.value;

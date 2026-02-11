@@ -46,29 +46,3 @@ export function createChladniTransform(
   );
 }
 
-/**
- * Configuration object for creating transforms, used when passing multiple parameters.
- */
-export interface ChladniTransformConfig {
-  plateWidth: number;
-  plateHeight: number;
-  viewWidth: number;
-  viewHeight: number;
-}
-
-/**
- * Creates a ModelViewTransform2 from a configuration object.
- *
- * @param config - Configuration with plate and view dimensions
- * @returns A ModelViewTransform2 with Y inversion
- */
-export function createChladniTransformFromConfig(
-  config: ChladniTransformConfig,
-): ModelViewTransform2 {
-  return createChladniTransform(
-    config.plateWidth,
-    config.plateHeight,
-    config.viewWidth,
-    config.viewHeight,
-  );
-}

@@ -80,7 +80,9 @@ export const ResonanceStrings = {
   keyboardHelp: strings.resonance.keyboardHelp,
 };
 
-// Export for backward compatibility
+/**
+ * @unused Not referenced in production code; only used in tests.
+ */
 export const resonanceStringManager = StringManager.getInstance();
 
 // Export StringManager for direct access when needed

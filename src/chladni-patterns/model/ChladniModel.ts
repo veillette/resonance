@@ -444,14 +444,17 @@ export class ChladniModel {
 
   // --- Convenience Getters ---
 
+  /** @unused Not referenced outside this class. */
   public get frequency(): number {
     return this.frequencyProperty.value;
   }
 
+  /** @unused Not referenced outside this class. */
   public get materialName(): string {
     return this.materialProperty.value.name;
   }
 
+  /** @unused Not referenced outside this class. */
   public get particleCount(): number {
     return this.grainCountProperty.value.value;
   }
@@ -464,14 +467,17 @@ export class ChladniModel {
     return this.plateGeometry.height;
   }
 
+  /** @unused Not referenced outside this class. */
   public get aspectRatio(): number {
     return this.plateGeometry.aspectRatio;
   }
 
+  /** @unused Not referenced outside this class. */
   public get defaultPlateWidth(): number {
     return this.plateGeometry.defaultWidth;
   }
 
+  /** @unused Not referenced outside this class. */
   public get defaultPlateHeight(): number {
     return this.plateGeometry.defaultHeight;
   }
